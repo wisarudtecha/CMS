@@ -4,10 +4,15 @@
   "version": "2.0.2",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run lingui:setup && concurrently \"vite\" \"npm run lingui:watch\"",
+    "dev:vite": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "extract": "lingui extract",
+    "compile": "lingui compile",
+    "lingui:setup": "lingui extract && lingui compile",
+    "lingui:watch": "concurrently \"lingui extract --watch\" \"lingui compile --watch\""
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
@@ -16,6 +21,7 @@
     "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@lingui/react": "^5.3.2",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
     "apexcharts": "^4.1.0",
@@ -34,10 +40,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.3.2",
+    "@lingui/vite-plugin": "^5.3.2",
     "@tailwindcss/postcss": "^4.0.8",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
     "eslint": "^9.19.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
