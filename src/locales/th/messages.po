@@ -1,0 +1,253 @@
+# Thai translations for CMS
+# Copyright (C) 2025 CMS
+# This file is distributed under the same license as the CMS package.
+#
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-06-06\n"
+"PO-Revision-Date: 2025-06-06\n"
+"Last-Translator: Developer <wisarud@callvoice.co.th>\n"
+"Language-Team: Thai <en@example.com>\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+
+# Pluralization examples
+#~ msgid "{count, plural, =0 {No items} =1 {One item} other {# items}}"
+#~ msgstr "{count, plural, =0 {No items} =1 {One item} other {# items}}"
+
+#~ msgid "{count, plural, =0 {No messages} =1 {One message} other {# messages}}"
+#~ msgstr "{count, plural, =0 {No messages} =1 {One message} other {# messages}}"
+
+#~ msgid "{count, plural, =0 {No users online} =1 {One user online} other {# users online}}"
+#~ msgstr "{count, plural, =0 {No users online} =1 {One user online} other {# users online}}"
+
+#~ msgid "action.cancel"
+#~ msgstr "Cancel"
+
+#~ msgid "action.create"
+#~ msgstr "Create"
+
+#~ msgid "action.delete"
+#~ msgstr "Delete"
+
+#~ msgid "action.edit"
+#~ msgstr "Edit"
+
+#~ msgid "action.loading"
+#~ msgstr "Loading..."
+
+# Common actions
+#~ msgid "action.save"
+#~ msgstr "Save"
+
+#~ msgid "action.submit"
+#~ msgstr "Submit"
+
+#~ msgid "auth.email"
+#~ msgstr "Email address"
+
+#~ msgid "auth.forgot_password"
+#~ msgstr "Forgot your password?"
+
+#~ msgid "auth.invalid_credentials"
+#~ msgstr "Invalid email or password. Please try again."
+
+# Authentication
+#~ msgid "auth.login"
+#~ msgstr "Log in"
+
+#~ msgid "auth.password"
+#~ msgstr "Password"
+
+#~ msgid "auth.register"
+#~ msgstr "Sign up"
+
+#~ msgid "auth.welcome_back"
+#~ msgstr "Welcome back!"
+
+#~ msgid "date.last_week"
+#~ msgstr "Last week"
+
+# Date and time
+#~ msgid "date.today"
+#~ msgstr "Today"
+
+#~ msgid "date.yesterday"
+#~ msgstr "Yesterday"
+
+# Error messages
+#~ msgid "error.generic"
+#~ msgstr "Something went wrong. Please try again."
+
+#~ msgid "error.invalid_email"
+#~ msgstr "Please enter a valid email address"
+
+#~ msgid "error.network"
+#~ msgstr "Network error. Please check your connection."
+
+#~ msgid "error.not_found"
+#~ msgstr "Page not found"
+
+#~ msgid "error.required_field"
+#~ msgstr "This field is required"
+
+#~ msgid "error.unauthorized"
+#~ msgstr "You don't have permission to access this page."
+
+# Footer
+#~ msgid "footer.copyright"
+#~ msgstr "© 2025 MyApp. All rights reserved."
+
+#~ msgid "footer.privacy_policy"
+#~ msgstr "Privacy Policy"
+
+#~ msgid "footer.terms_of_service"
+#~ msgstr "Terms of Service"
+
+#~ msgid "nav.about"
+#~ msgstr "About"
+
+#~ msgid "nav.contact"
+#~ msgstr "Contact"
+
+# Navigation
+#~ msgid "nav.home"
+#~ msgstr "Home"
+
+#: src/components/header/LangDropdown.tsx:34
+msgid "nav.language"
+msgstr "ภาษา"
+
+#~ msgid "nav.logout"
+#~ msgstr "Log out"
+
+#: src/components/header/NotificationDropdown.tsx:60
+msgid "nav.notification"
+msgstr "แจ้งเตือน"
+
+#: src/components/header/NotificationDropdown.tsx:379
+msgid "nav.notification.all"
+msgstr "ดูแจ้งเตือนทั้งหมด"
+
+#~ msgid "nav.profile"
+#~ msgstr "Profile"
+
+#: src/layout/AppHeader.tsx:149
+msgid "nav.search.placeholder"
+msgstr "ค้นหาหรือพิมพ์คำสั่ง..."
+
+#~ msgid "nav.settings"
+#~ msgstr "Settings"
+
+#: src/components/header/UserDropdown.tsx:113
+msgid "nav.user.account_settings"
+msgstr "การตั้งค่าบัญชี"
+
+#: src/components/header/UserDropdown.tsx:87
+msgid "nav.user.edit_profile"
+msgstr "แก้ไขโปรไฟล์"
+
+#: src/components/header/UserDropdown.tsx:163
+msgid "nav.user.sign_out"
+msgstr "ออกจากระบบ"
+
+#: src/components/header/UserDropdown.tsx:139
+msgid "nav.user.support"
+msgstr "สนับสนุน"
+
+#~ msgid "notifications.empty"
+#~ msgstr "No notifications yet"
+
+#~ msgid "notifications.mark_all_read"
+#~ msgstr "Mark all as read"
+
+#~ msgid "notifications.new_message"
+#~ msgstr "You have a new message from {sender}"
+
+# Notifications
+#~ msgid "notifications.title"
+#~ msgstr "Notifications"
+
+#~ msgid "profile.bio"
+#~ msgstr "Bio"
+
+#~ msgid "profile.joined_date"
+#~ msgstr "Member since {date}"
+
+#~ msgid "profile.name"
+#~ msgstr "Full Name"
+
+# User profile
+#~ msgid "profile.title"
+#~ msgstr "User Profile"
+
+#~ msgid "search.no_results"
+#~ msgstr "No results found for \"{query}\""
+
+# Search
+#~ msgid "search.placeholder"
+#~ msgstr "Search..."
+
+#~ msgid "search.results_count"
+#~ msgstr "{count, plural, =0 {No results} =1 {1 result} other {# results}} found"
+
+#~ msgid "settings.account"
+#~ msgstr "Account Settings"
+
+#~ msgid "settings.language"
+#~ msgstr "Language"
+
+#~ msgid "settings.notifications"
+#~ msgstr "Notifications"
+
+#~ msgid "settings.privacy"
+#~ msgstr "Privacy & Security"
+
+#~ msgid "settings.theme"
+#~ msgstr "Theme"
+
+#~ msgid "settings.theme.auto"
+#~ msgstr "System"
+
+#~ msgid "settings.theme.dark"
+#~ msgstr "Dark"
+
+#~ msgid "settings.theme.light"
+#~ msgstr "Light"
+
+# Settings page
+#~ msgid "settings.title"
+#~ msgstr "Settings"
+
+#~ msgid "success.created"
+#~ msgstr "Item created successfully!"
+
+#~ msgid "success.deleted"
+#~ msgstr "Item deleted successfully!"
+
+# Success messages
+#~ msgid "success.saved"
+#~ msgstr "Changes saved successfully!"
+
+#~ msgid "time.hours_ago"
+#~ msgstr "{count} hours ago"
+
+#: src/pages/Test/Lingui.tsx:16
+msgid "time.just_now"
+msgstr "Just now"
+
+#~ msgid "time.minutes_ago"
+#~ msgstr "{count} minutes ago"
+
+# Complex message with variables
+#~ msgid "user.greeting"
+#~ msgstr "Hello {name}, you have {unreadCount, plural, =0 {no unread messages} =1 {one unread message} other {# unread messages}}."
+
+# Welcome message with HTML
+#~ msgid "welcome.message"
+#~ msgstr "Welcome to <strong>MyApp</strong>! Get started by exploring our features."
