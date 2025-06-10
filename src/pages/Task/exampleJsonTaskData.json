@@ -1,0 +1,263 @@
+[
+  {
+    "_id": "60c72b2f9f1b2c001f8e4e9a",
+    "tenant_id": "tenant123",
+    "form_id": "product_inquiry_form",
+    "created_by": "user_johndoe",
+    "assigned_to": "agent_janesmith",
+    "current_status": "Open",
+    "current_step": "Initial Review",
+    "workflow_id": "customer_support_workflow",
+    "data": {
+      "customer_name": "Alice Wonderland",
+      "customer_email": "alice.w@example.com",
+      "inquiry_type": "Product Information",
+      "product_SKU": "PROD-XYZ-789",
+      "message": "I have a question about the features of your new smart toaster. Specifically, does it integrate with voice assistants?",
+      "attachment_ids": [
+        "file_abc123",
+        "file_def456"
+      ]
+    },
+    "history": [
+      {
+        "timestamp": "2025-06-09T10:00:00Z",
+        "status": "Created",
+        "performed_by": "user_johndoe",
+        "notes": "New inquiry submitted via website."
+      },
+      {
+        "timestamp": "2025-06-09T10:15:00Z",
+        "status": "Assigned",
+        "performed_by": "system",
+        "assigned_to": "agent_janesmith",
+        "notes": "Automatically assigned to Jane Smith based on inquiry type."
+      },
+      {
+        "timestamp": "2025-06-10T09:30:00Z",
+        "status": "In Progress",
+        "performed_by": "agent_janesmith",
+        "notes": "Began researching product specifications for smart toaster."
+      }
+    ],
+    "SLA_info": {
+      "priority": "High",
+      "due_by": "2025-06-11T10:00:00Z",
+      "breach_status": "On Track"
+    },
+    "timestamps": {
+      "created": "2025-06-09T10:00:00Z",
+      "updated": "2025-06-10T09:30:00Z",
+      "closed": null
+    }
+  },
+  {
+    "_id": "60c72b2f9f1b2c001f8e4e9b",
+    "tenant_id": "tenant123",
+    "form_id": "technical_support_request",
+    "created_by": "user_bobross",
+    "assigned_to": "tech_support_david",
+    "current_status": "Awaiting Customer Reply",
+    "current_step": "Customer Confirmation",
+    "workflow_id": "tech_support_workflow",
+    "data": {
+      "customer_name": "Bob Ross",
+      "customer_email": "bob.r@example.com",
+      "issue_type": "Software Bug",
+      "device_model": "Laptop-Pro-X",
+      "operating_system": "Windows 11",
+      "problem_description": "My painting software crashes randomly when saving large files. Error code: 0x80070005.",
+      "screenshots_attached": true
+    },
+    "history": [
+      {
+        "timestamp": "2025-06-08T14:30:00Z",
+        "status": "Created",
+        "performed_by": "user_bobross",
+        "notes": "Software bug report."
+      },
+      {
+        "timestamp": "2025-06-08T14:45:00Z",
+        "status": "Assigned",
+        "performed_by": "system",
+        "assigned_to": "tech_support_david",
+        "notes": "Assigned to David for software related issues."
+      },
+      {
+        "timestamp": "2025-06-09T11:00:00Z",
+        "status": "Resolved (Pending Customer)",
+        "performed_by": "tech_support_david",
+        "notes": "Provided a workaround: disable cloud sync before saving. Awaiting customer confirmation."
+      }
+    ],
+    "SLA_info": {
+      "priority": "Medium",
+      "due_by": "2025-06-12T14:30:00Z",
+      "breach_status": "On Track"
+    },
+    "timestamps": {
+      "created": "2025-06-08T14:30:00Z",
+      "updated": "2025-06-09T11:00:00Z",
+      "closed": null
+    }
+  },
+  {
+    "_id": "60c72b2f9f1b2c001f8e4e9c",
+    "tenant_id": "tenant124",
+    "form_id": "hr_onboarding_request",
+    "created_by": "hr_manager_sara",
+    "assigned_to": "hr_specialist_liam",
+    "current_status": "In Progress",
+    "current_step": "Background Check",
+    "workflow_id": "new_hire_onboarding",
+    "data": {
+      "new_hire_name": "Charlie Brown",
+      "position": "Junior Developer",
+      "start_date": "2025-07-01",
+      "department": "Engineering",
+      "equipment_needed": [
+        "Laptop",
+        "Monitor",
+        "Keyboard",
+        "Mouse"
+      ],
+      "access_requirements": [
+        "Jira",
+        "Gitlab",
+        "Slack"
+      ]
+    },
+    "history": [
+      {
+        "timestamp": "2025-06-07T09:00:00Z",
+        "status": "Created",
+        "performed_by": "hr_manager_sara",
+        "notes": "New onboarding request for Charlie Brown."
+      },
+      {
+        "timestamp": "2025-06-07T09:15:00Z",
+        "status": "Assigned",
+        "performed_by": "system",
+        "assigned_to": "hr_specialist_liam",
+        "notes": "Automatically assigned to Liam."
+      },
+      {
+        "timestamp": "2025-06-07T14:00:00Z",
+        "status": "In Progress",
+        "performed_by": "hr_specialist_liam",
+        "notes": "Initiated background check and ordered equipment."
+      }
+    ],
+    "SLA_info": {
+      "priority": "High",
+      "due_by": "2025-06-25T17:00:00Z",
+      "breach_status": "On Track"
+    },
+    "timestamps": {
+      "created": "2025-06-07T09:00:00Z",
+      "updated": "2025-06-07T14:00:00Z",
+      "closed": null
+    }
+  },
+  {
+    "_id": "60c72b2f9f1b2c001f8e4e9d",
+    "tenant_id": "tenant125",
+    "form_id": "maintenance_request",
+    "created_by": "facility_user_frank",
+    "assigned_to": "maintenance_tech_olivia",
+    "current_status": "Completed",
+    "current_step": "Completion",
+    "workflow_id": "facility_maintenance_workflow",
+    "data": {
+      "location": "Building C, Room 301",
+      "issue_description": "Leaky faucet in the third-floor bathroom.",
+      "severity": "Moderate",
+      "reported_date": "2025-06-05",
+      "completion_notes": "Replaced faulty washer in faucet. No more leaks."
+    },
+    "history": [
+      {
+        "timestamp": "2025-06-05T08:00:00Z",
+        "status": "Created",
+        "performed_by": "facility_user_frank",
+        "notes": "Leaky faucet reported."
+      },
+      {
+        "timestamp": "2025-06-05T08:30:00Z",
+        "status": "Assigned",
+        "performed_by": "system",
+        "assigned_to": "maintenance_tech_olivia",
+        "notes": "Assigned to Olivia."
+      },
+      {
+        "timestamp": "2025-06-05T11:00:00Z",
+        "status": "In Progress",
+        "performed_by": "maintenance_tech_olivia",
+        "notes": "Started investigation and repair."
+      },
+      {
+        "timestamp": "2025-06-05T12:00:00Z",
+        "status": "Closed",
+        "performed_by": "maintenance_tech_olivia",
+        "notes": "Faucet repaired. Issue resolved."
+      }
+    ],
+    "SLA_info": {
+      "priority": "Medium",
+      "due_by": "2025-06-06T08:00:00Z",
+      "breach_status": "Met"
+    },
+    "timestamps": {
+      "created": "2025-06-05T08:00:00Z",
+      "updated": "2025-06-05T12:00:00Z",
+      "closed": "2025-06-05T12:00:00Z"
+    }
+  },
+  {
+    "_id": "60c72b2f9f1b2c001f8e4e9e",
+    "tenant_id": "tenant123",
+    "form_id": "account_reset_request",
+    "created_by": "user_patricestar",
+    "assigned_to": "it_helpdesk_emily",
+    "current_status": "Approval",
+    "current_step": "Manager Approval",
+    "workflow_id": "it_account_management",
+    "data": {
+      "user_id": "patricestar",
+      "reason_for_reset": "Forgot password and locked account.",
+      "security_questions_answered": true,
+      "manager_email_for_approval": "squidward.t@example.com"
+    },
+    "history": [
+      {
+        "timestamp": "2025-06-10T09:00:00Z",
+        "status": "Created",
+        "performed_by": "user_patricestar",
+        "notes": "Account reset request submitted."
+      },
+      {
+        "timestamp": "2025-06-10T09:05:00Z",
+        "status": "Assigned",
+        "performed_by": "system",
+        "assigned_to": "it_helpdesk_emily",
+        "notes": "Assigned to IT Helpdesk."
+      },
+      {
+        "timestamp": "2025-06-10T09:15:00Z",
+        "status": "Pending Approval",
+        "performed_by": "it_helpdesk_emily",
+        "notes": "Sent approval request to manager."
+      }
+    ],
+    "SLA_info": {
+      "priority": "High",
+      "due_by": "2025-06-10T17:00:00Z",
+      "breach_status": "On Track"
+    },
+    "timestamps": {
+      "created": "2025-06-10T09:00:00Z",
+      "updated": "2025-06-10T09:15:00Z",
+      "closed": null
+    }
+  }
+]

@@ -15,6 +15,7 @@ import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
 import DynamicForm from "./pages/Forms/DynamicForm";
+import Kanban from "./pages/Task/kanban";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -47,7 +48,7 @@ export default function App() {
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
-
+            <Route path="/kanban" element={<Kanban />} />
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
