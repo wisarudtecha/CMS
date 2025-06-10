@@ -3,9 +3,13 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
 
-import { Trans } from "@lingui/react/macro";
+// import { Trans } from "@lingui/react/macro";
+
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function UserDropdown() {
+  const { t } = useTranslation();
+
   const [isOpen, setIsOpen] = useState(false);
 
   function toggleDropdown() {
@@ -84,7 +88,8 @@ export default function UserDropdown() {
                 />
               </svg>
               {/* Edit profile */}
-              <Trans>nav.user.edit_profile</Trans>
+              {/* <Trans>nav.user.edit_profile</Trans> */}
+              {t("navigation.topbar.profile.edit_profile")}
             </DropdownItem>
           </li>
           <li>
@@ -110,7 +115,8 @@ export default function UserDropdown() {
                 />
               </svg>
               {/* Account settings */}
-              <Trans>nav.user.account_settings</Trans>
+              {/* <Trans>nav.user.account_settings</Trans> */}
+              {t("navigation.topbar.profile.account_settings")}
             </DropdownItem>
           </li>
           <li>
@@ -136,7 +142,8 @@ export default function UserDropdown() {
                 />
               </svg>
               {/* Support */}
-              <Trans>nav.user.support</Trans>
+              {/* <Trans>nav.user.support</Trans> */}
+              {t("navigation.topbar.profile.support")}
             </DropdownItem>
           </li>
         </ul>
@@ -160,7 +167,8 @@ export default function UserDropdown() {
             />
           </svg>
           {/* Sign out */}
-          <Trans>nav.user.sign_out</Trans>
+          {/* <Trans>nav.user.sign_out</Trans> */}
+          {t("navigation.topbar.profile.sign_out")}
         </Link>
       </Dropdown>
     </div>

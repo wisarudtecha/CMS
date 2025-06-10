@@ -20,7 +20,21 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Type checking */
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    /* Paths */
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+    }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+  ]
 }

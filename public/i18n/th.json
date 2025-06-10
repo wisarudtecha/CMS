@@ -1,0 +1,144 @@
+{
+  "common": {
+    "welcome": "ยินดีต้อนรับ",
+    "hello": "สวัสดี",
+    "goodbye": "ลาก่อน",
+    "yes": "ใช่",
+    "no": "ไม่",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "add": "เพิ่ม",
+    "search": "ค้นหา",
+    "loading": "กำลังโหลด...",
+    "error": "เกิดข้อผิดพลาด",
+    "success": "สำเร็จ"
+  },
+  "navigation": {
+    "topbar": {
+      "search": {
+        "title": "ค้นหา",
+        "placeholder": "ค้นหาหรือพิมพ์คำสั่ง...",
+        "search_button": "ค้นหา",
+        "no_results": "ไม่พบผลลัพธ์"
+      },
+      "settings": {
+        "title": "การตั้งค่า",
+        "language": "ภาษา",
+        "theme": "ธีม",
+        "notification": {
+          "title": "การแจ้งเตือน",
+          "mark_all_as_read": "ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว",
+          "no_notifications": "ไม่พบการแจ้งเตือน",
+          "view_all_notifications": "ดูการแจ้งเตือนทั้งหมด"
+        }
+      },
+      "profile": {
+        "edit_profile": "โปรไฟล์",
+        "account_settings": "การตั้งค่าบัญชี",
+        "support": "ช่วยเหลือ",
+        "sign_out": "ออกจากระบบ"
+      }
+    },
+    "sidebar": {
+      "menu": {
+        "title": "เมนู",
+        "dashboard": {
+          "title": "แดชบอร์ด",
+          "nested": {
+            "ecommerce": "อีคอมเมิร์ซ"
+          }
+        },
+        "calendar": "ปฏิทิน",
+        "user_profile": "โปรไฟล์ผู้ใช้",
+        "forms": {
+          "title": "แบบฟอร์ม",
+          "nested": {
+            "form_elements": "องค์ประกอบแบบฟอร์ม"
+          }
+        },
+        "tables": {
+          "title": "ตาราง",
+          "nested": {
+            "basic_tables": "ตารางพื้นฐาน"
+          }
+        },
+        "pages": {
+          "title": "หน้า",
+          "nested": {
+            "blank_page": "หน้าเปล่า",
+            "404_error": "ข้อผิดพลาด 404"
+          }
+        }
+      },
+      "other": {
+        "title": "อื่นๆ",
+        "charts": {
+          "title": "กราฟ",
+          "nested": {
+            "line_chart": "กราฟเส้น",
+            "bar_chart": "กราฟแท่ง"
+          }
+        },
+        "ui_elements": {
+          "title": "องค์ประกอบ UI",
+          "nested": {
+            "alerts": "การแจ้งเตือน",
+            "avatar": "อวาตาร์",
+            "badge": "ป้าย",
+            "buttons": "ปุ่ม",
+            "images": "รูปภาพ",
+            "videos": "วิดีโอ"
+          }
+        },
+        "authentication": {
+          "title": "การยืนยันตัวตน",
+          "nested": {
+            "sign_in": "เข้าสู่ระบบ",
+            "sing_up": "ลงทะเบียน"
+          }
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "อีเมล",
+    "password": "รหัสผ่าน",
+    "name": "ชื่อ",
+    "phone": "เบอร์โทรศัพท์",
+    "address": "ที่อยู่",
+    "required": "จำเป็นต้องกรอก",
+    "invalid_email": "อีเมลไม่ถูกต้อง"
+  },
+  "messages": {
+    "welcome_user": "ยินดีต้อนรับ {{name}}",
+    "items_count": "มี {{count}} รายการ",
+    "last_updated": "อัปเดตล่าสุด {{date}}"
+  },
+  "status": {
+    "active": "ใช้งาน",
+    "inactive": "ไม่ใช้งาน",
+    "pending": "รอดำเนินการ",
+    "completed": "เสร็จสมบูรณ์",
+    "failed": "ล้มเหลว"
+  },
+  "errors": {
+    "not_found": "ไม่พบหน้า",
+    "unauthorized": "ไม่ได้รับอนุญาต",
+    "forbidden": "ห้ามเข้าถึง",
+    "server_error": "ข้อผิดพลาดของเซิร์ฟเวอร์",
+    "network_error": "ข้อผิดพลาดเครือข่าย"
+  },
+  "buttons": {
+    "submit": "ส่ง",
+    "reset": "รีเซ็ต",
+    "view_details": "ดูรายละเอียด",
+    "download": "ดาวน์โหลด"
+  },
+  "notifications": {
+    "new_message": "ข้อความใหม่จาก {{sender}}",
+    "task_completed": "{{task}} เสร็จสมบูรณ์"
+  }
+}

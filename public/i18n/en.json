@@ -1,0 +1,144 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "hello": "Hello",
+    "goodbye": "Goodbye",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "topbar": {
+      "search": {
+        "title": "Search",
+        "placeholder": "Search or type command...",
+        "search_button": "Search",
+        "no_results": "No results found"
+      },
+      "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "notification": {
+          "title": "Notifications",
+          "mark_all_as_read": "Mark all as read",
+          "no_notifications": "No notifications found",
+          "view_all_notifications": "View all notifications"
+        }
+      },
+      "profile": {
+        "edit_profile": "Profile",
+        "account_settings": "Account Settings",
+        "support": "Email",
+        "sign_out": "Sign out"
+      }
+    },
+    "sidebar": {
+      "menu": {
+        "title": "Menu",
+        "dashboard": {
+          "title": "Dashboard",
+          "nested": {
+            "ecommerce": "Ecommerce"
+          }
+        },
+        "calendar": "Calendar",
+        "user_profile": "User Profile",
+        "forms": {
+          "title": "Forms",
+          "nested": {
+            "form_elements": "Form Elements"
+          }
+        },
+        "tables": {
+          "title": "Tables",
+          "nested": {
+            "basic_tables": "Basic Tables"
+          }
+        },
+        "pages": {
+          "title": "Pages",
+          "nested": {
+            "blank_page": "Blank Page",
+            "404_error": "404 Error"
+          }
+        }
+      },
+      "other": {
+        "title": "Others",
+        "charts": {
+          "title": "Charts",
+          "nested": {
+            "line_chart": "Line Chart",
+            "bar_chart": "Bar Chart"
+          }
+        },
+        "ui_elements": {
+          "title": "UI Elements",
+          "nested": {
+            "alerts": "Alerts",
+            "avatar": "Avatar",
+            "badge": "Badge",
+            "buttons": "Buttons",
+            "images": "Images",
+            "videos": "Videos"
+          }
+        },
+        "authentication": {
+          "title": "Authentication",
+          "nested": {
+            "sign_in": "Sign In",
+            "sing_up": "Sign Up"
+          }
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "required": "Required",
+    "invalid_email": "Invalid email"
+  },
+  "messages": {
+    "welcome_user": "Welcome {{name}}",
+    "items_count": "{{count}} items",
+    "last_updated": "Last updated {{date}}"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "errors": {
+    "not_found": "Page not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "server_error": "Server error",
+    "network_error": "Network error"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "reset": "Reset",
+    "view_details": "View details",
+    "download": "Download"
+  },
+  "notifications": {
+    "new_message": "{{count}} new messages",
+    "update_available": "Update available"
+  }
+}

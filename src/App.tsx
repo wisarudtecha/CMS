@@ -21,22 +21,22 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 
-import { i18n } from "@lingui/core";
-import { I18nProvider } from "@lingui/react";
-import { messages as enMessages } from "./locales/en/messages";
-import { messages as thMessages } from "./locales/th/messages";
+// import { i18n } from "@lingui/core";
+// import { I18nProvider } from "@lingui/react";
+// import { messages as enMessages } from "./locales/en/messages";
+// import { messages as thMessages } from "./locales/th/messages";
 
 import Lingui from "./pages/Test/Lingui";
 
-i18n.load({
-  en: enMessages,
-  th: thMessages,
-});
-i18n.activate("en");
+// i18n.load({
+//   en: enMessages,
+//   th: thMessages,
+// });
+// i18n.activate("en");
 
 export default function App() {
   return (
-    <I18nProvider i18n={i18n}>
+    // <I18nProvider i18n={i18n}>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -79,6 +79,6 @@ export default function App() {
           <Route path="/test/lingui" element={<Lingui />} />
         </Routes>
       </Router>
-    </I18nProvider>
+    // </I18nProvider>
   );
 }
