@@ -48,7 +48,7 @@ export default function App() {
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
-            {/* <Route path="/kanban" element={<Kanban />} /> */}
+            <Route path="/kanban" element={<Kanban />} />
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />

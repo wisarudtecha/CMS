@@ -1,143 +1,388 @@
-import  { useState } from 'react';
-import ComponentCard from "../../components/common/ComponentCard";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import PageMeta from "../../components/common/PageMeta";
-import TaskData from './exampleJsonTaskData.json';
+"use client"
 
+import { useState } from "react"
+import {
+    Calendar,
+    MessageCircle,
+    Plus,
+    Filter,
+    MoreHorizontal,
+    List,
+    LayoutGrid,
+} from "lucide-react"
+import Button from "@/components/ui/button/Button"
+import Badge from "@/components/ui/badge/Badge"
 
-interface TaskDataEntry {
-  _id: string;
-  tenant_id: string;
-  form_id: string;
-  created_by: string;
-  assigned_to: string;
-  current_status: string; 
-  current_step: string;
-  workflow_id: string;
-  data: {
-    customer_name?: string;
-    customer_email?: string;
-    inquiry_type?: string;
-    product_SKU?: string;
-    message?: string;
-    issue_type?: string;
-    device_model?: string;
-    operating_system?: string;
-    problem_description?: string;
-    screenshots_attached?: boolean;
-    new_hire_name?: string;
-    position?: string;
-    location?: string;
-    issue_description?: string;
-    user_id?: string;
-    reason_for_reset?: string;
-    [key: string]: any; 
-  };
-  history: Array<any>; 
-  SLA_info: {
-    priority: string;
-    due_by: string;
-    breach_status: string;
-  };
-  timestamps: {
-    created: string;
-    updated: string;
-    closed: string | null;
-  };
+import PageMeta from "@/components/common/PageMeta"
+import PageBreadcrumb from "@/components/common/PageBreadCrumb"
+
+interface Case {
+    id: string
+    title: string
+    description?: string
+    status: "new" | "in-progress" | "pending" | "resolved"
+    priority: number
+    assignee: { name: string; avatar: string }
+    dueDate: string
+    comments: number
+    category: string
+    customer: string
 }
 
-const typedTaskData: TaskDataEntry[] = TaskData as TaskDataEntry[];
-const TaskType = ["Open", "In Progress", "Completed", "Approval"];
-const baseButtonCSS = "px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-200";
+const sampleCases: Case[] = [
+  {
+    "id": "1",
+    "title": "Customer login issues with mobile app",
+    "description": "Multiple customers reporting authentication failures on iOS devices",
+    "status": "new",
+    "priority": 2,  
+    "assignee": { "name": "Sarah Chen", "avatar": "SC" },
+    "dueDate": "Tomorrow",
+    "comments": 3,
+    "category": "Technical",
+    "customer": "Mobile Users"
+  },
+  {
+    "id": "2",
+    "title": "Billing discrepancy for enterprise account",
+    "status": "new",
+    "priority": 5, 
+    "assignee": { "name": "Mike Johnson", "avatar": "MJ" },
+    "dueDate": "Jan 15, 2024",
+    "comments": 1,
+    "category": "Billing",
+    "customer": "Acme Corp"
+  },
+  {
+    "id": "3",
+    "title": "Feature request: Dark mode support",
+    "description": "Customer requesting dark theme option for better accessibility",
+    "status": "new",
+    "priority": 8, 
+    "assignee": { "name": "Alex Rivera", "avatar": "AR" },
+    "dueDate": "Jan 20, 2024",
+    "comments": 5,
+    "category": "Feature",
+    "customer": "Design Team"
+  },
+  {
+    "id": "4",
+    "title": "Integration setup for Salesforce",
+    "status": "in-progress",
+    "priority": 1, 
+    "assignee": { "name": "Emma Davis", "avatar": "ED" },
+    "dueDate": "Today",
+    "comments": 8,
+    "category": "Integration",
+    "customer": "Enterprise Client"
+  },
+  {
+    "id": "5",
+    "title": "Performance optimization for dashboard",
+    "status": "in-progress",
+    "priority": 4, 
+    "assignee": { "name": "Tom Wilson", "avatar": "TW" },
+    "dueDate": "Feb 1, 2024",
+    "comments": 12,
+    "category": "Performance",
+    "customer": "Internal"
+  },
+  {
+    "id": "6",
+    "title": "Email notification system upgrade",
+    "status": "pending",
+    "priority": 6, 
+    "assignee": { "name": "Lisa Park", "avatar": "LP" },
+    "dueDate": "Jan 25, 2024",
+    "comments": 4,
+    "category": "System",
+    "customer": "All Users"
+  },
+  {
+    "id": "7",
+    "title": "Security audit compliance review",
+    "status": "pending",
+    "priority": 3, 
+    "assignee": { "name": "David Kim", "avatar": "DK" },
+    "dueDate": "Tomorrow",
+    "comments": 2,
+    "category": "Security",
+    "customer": "Compliance Team"
+  },
+  {
+    "id": "8",
+    "title": "Customer onboarding flow improvement",
+    "status": "resolved",
+    "priority": 7, 
+    "assignee": { "name": "Rachel Green", "avatar": "RG" },
+    "dueDate": "Jan 10, 2024",
+    "comments": 15,
+    "category": "UX",
+    "customer": "New Users"
+  },
+  {
+    "id": "9",
+    "title": "API rate limiting implementation",
+    "status": "resolved",
+    "priority": 2, 
+    "assignee": { "name": "Chris Brown", "avatar": "CB" },
+    "dueDate": "Jan 8, 2024",
+    "comments": 6,
+    "category": "API",
+    "customer": "Developers"
+  }
+]
 
-export default function Kanban() {
-  const [activeFilterStatus, setActiveFilterStatus] = useState<string>('All');
-  const getButtonBgColor = (status: string) => {
+const statusColumns = [
+    { id: "new", title: "New"},
+    { id: "in-progress", title: "In Progress"},
+    { id: "pending", title: "Pending Review" },
+    { id: "resolved", title: "Resolved"},
+]
 
-    if (activeFilterStatus === status) {
-      return "bg-blue-700 text-white";
-    }
-    return "bg-blue-500 text-white hover:bg-blue-600"; 
-  };
+const getPriorityColorClass = (priority: number): string => {
+    if (priority <= 3) return "bg-red-600"
+    if (priority <= 6) return "bg-yellow-600"
+    return "bg-green-600"
+}
 
-  return (
-    <div>
-      <PageMeta
-        title="Kanban Board | TailAdmin - React.js Admin Dashboard Template"
-        description="This is a Kanban board page example for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
-      />
-      <PageBreadcrumb pageTitle="Kanban Board" />
+export default function CasesPage() {
+    const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-1"> 
-        <ComponentCard title="Task Overview">
-          <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 relative dark:border-gray-700 dark:bg-black dark:text-white/90">
-            <div className="flex flex-wrap gap-2 mb-4 border-b pb-4 dark:border-gray-500">
+    // This function now returns cases based on the selectedStatus
+    // if no specific status is selected, it returns all cases for the given column ID.
+    const getCasesForColumn = (columnId: string) => {
+        return sampleCases.filter((case_) => case_.status === columnId);
+    };
 
-              <button
-                className={`${baseButtonCSS} ${getButtonBgColor('All')}`}
-                onClick={() => setActiveFilterStatus('All')}
-              >
-                All
-              </button>
-              {TaskType.map((status) => (
-                <button
-                  key={status}
-                  className={`${baseButtonCSS} ${getButtonBgColor(status)}`}
-                  onClick={() => setActiveFilterStatus(status)}
-                >
-                  {status}
-                </button>
-              ))}
+    const getFilteredCases = () => {
+        if (selectedStatus === null) {
+            return sampleCases;
+        }
+        return sampleCases.filter((case_) => case_.status === selectedStatus);
+    };
+
+    const CaseCard = ({ case_: caseItem }: { case_: Case }) => (
+        <div className="rounded-lg p-4 mb-3 border border-gray-200 hover:border-gray-300 shadow-sm
+                    dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 transition-colors">
+            <div className="flex items-start justify-between mb-2">
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 line-clamp-2">
+                    {caseItem.title}
+                </h4>
+                <div className="flex items-center space-x-1">
+                    <div
+                        className={`w-2 h-2 rounded-full ${getPriorityColorClass(
+                            caseItem.priority
+                        )}`}
+                    ></div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-6 h-6 p-0 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
+                    >
+                        <MoreHorizontal className="w-3 h-3" />
+                    </Button>
+                </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-2">
-              {TaskType.map((status) => (
-                (activeFilterStatus === 'All' || activeFilterStatus === status) && (
-                  <div
-                    key={status}
-                    className="bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md p-4 min-h-[300px] flex flex-col"
-                  >
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b pb-2 border-gray-300 dark:border-gray-600">
-                      {status} ({typedTaskData.filter(task => task.current_status === status).length})
-                    </h3>
-                    <div className="space-y-3 flex-grow overflow-y-auto pr-1"> {/* Added overflow for scrollable cards */}
-                      {typedTaskData
-                        .filter((task) => task.current_status === status)
-                        .map((task) => (
-                          <div
-                            key={task._id}
-                            className="bg-white dark:bg-gray-700 rounded-md shadow p-3 cursor-grab active:cursor-grabbing hover:shadow-lg transition-shadow duration-200"
-                          >
-                            <h4 className="font-bold text-md mb-1 text-gray-900 dark:text-white line-clamp-1">
-                              {task.data.customer_name || task.data.new_hire_name || task.data.user_id || `Task ID: ${task._id.substring(0, 8)}`}
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-                              {task.data.message || task.data.problem_description || task.data.issue_description || 'No description provided.'}
-                            </p>
-                            <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              <span>
-                                ID: <span className="font-mono">{task._id.substring(0, 6)}</span>
-                              </span>
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                task.SLA_info.priority === 'High' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                task.SLA_info.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              }`}>
-                                {task.SLA_info.priority}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      {typedTaskData.filter((task) => task.current_status === status).length === 0 && (
-                        <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-4">No tasks in this column.</p>
-                      )}
+
+            {caseItem.description && (
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    {caseItem.description}
+                </p>
+            )}
+
+            <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center space-x-2">
+                    <Calendar className="w-3 h-3" />
+                    <span>{caseItem.dueDate}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <MessageCircle className="w-3 h-3" />
+                    <span>{caseItem.comments}</span>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+                <Badge color="primary">{caseItem.category}</Badge>
+                <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {caseItem.customer}
+                    </span>
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
+                        <span className="text-white text-xs">{caseItem.assignee.avatar}</span>
                     </div>
-                  </div>
-                )
-              ))}
+                </div>
             </div>
-          </div>
-        </ComponentCard>
-      </div>
-    </div>
-  );
+        </div>
+    )
+
+    const KanbanView = () => (
+        <div className="flex space-x-6 overflow-x-auto pb-6">
+            {statusColumns.map((column) => (
+                // Conditionally render the column based on selectedStatus
+                (selectedStatus === null || selectedStatus === column.id) && (
+                    <div key={column.id} className="flex-shrink-0 w-80">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
+                            <Badge color="primary">{getCasesForColumn(column.id).length}</Badge>
+                        </div>
+                        <div className="space-y-3 px-2">
+                            {getCasesForColumn(column.id).map((caseItem) => (
+                                <CaseCard key={caseItem.id} case_={caseItem} />
+                            ))}
+                        </div>
+                    </div>
+                )
+            ))}
+        </div>
+    )
+
+    const ListView = () => (
+        <div className="space-y-2">
+            <div className="grid grid-cols-12 gap-4 p-3 text-xs font-medium text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                <div className="col-span-4">Case</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-2">Priority</div>
+                <div className="col-span-2">Assignee</div>
+                <div className="col-span-1">Due Date</div>
+                <div className="col-span-1">Comments</div>
+            </div>
+
+            {getFilteredCases().map((caseItem) => (
+                <div
+                    key={caseItem.id}
+                    className="grid grid-cols-12 gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors
+                     dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600"
+                >
+                    <div className="col-span-4">
+                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                            {caseItem.title}
+                        </h4>
+                        <div className="flex items-center space-x-2">
+                            <Badge color="primary">{caseItem.category}</Badge>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {caseItem.customer}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="col-span-2">
+                        <Badge color="primary">
+                            {caseItem.status.replace("-", " ")}
+                        </Badge>
+                    </div>
+                    <div className="col-span-2 flex items-center space-x-2">
+                        <div
+                            className={`w-2 h-2 rounded-full ${getPriorityColorClass(
+                                caseItem.priority
+                            )}`}
+                        ></div>
+                        <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.priority}</span>
+                    </div>
+                    <div className="col-span-2 flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
+                            <span className="text-white text-xs">{caseItem.assignee.avatar}</span>
+                        </div>
+                        <span className="text-sm text-gray-800 dark:text-gray-100">
+                            {caseItem.assignee.name}
+                        </span>
+                    </div>
+                    <div className="col-span-1">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.dueDate}</span>
+                    </div>
+                    <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                        <MessageCircle className="w-3 h-3" />
+                        <span>{caseItem.comments}</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <PageMeta
+                title="Cases – TailAdmin Dashboard"
+                description="Manage your support cases"
+            />
+            <PageBreadcrumb pageTitle="Cases" />
+
+            <div className="p-6">
+                <div className="flex flex-col gap-y-4 mb-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 ">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setViewMode("kanban")}
+                                    className={
+                                        viewMode === "kanban"
+                                            ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                                            : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                    }
+                                >
+                                    <LayoutGrid className="w-4 h-4 mr-2" />
+                                    Kanban
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setViewMode("list")}
+                                    className={
+                                        viewMode === "list"
+                                            ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                                            : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                    }
+                                >
+                                    <List className="w-4 h-4 mr-2" />
+                                    List
+                                </Button>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                className="flex items-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                            >
+                                <Filter className="w-4 h-4 mr-2" />
+                                Filter & Sort
+                            </Button>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600"
+                            onClick={() => { }}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add New Case
+                        </Button>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === null ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                onClick={() => setSelectedStatus(null)}
+                            >
+                                <span className="text-sm">All Cases</span>
+                                <Badge color="primary">{sampleCases.length}</Badge>
+                            </div>
+                            {statusColumns.map((col) => (
+                                <div
+                                    key={col.id}
+                                    className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === col.id ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                    onClick={() => setSelectedStatus(col.id)}
+                                >
+                                    <span className="text-sm">{col.title}</span>
+                                    <Badge color="primary">
+                                        {sampleCases.filter((case_) => case_.status === col.id).length}
+                                    </Badge>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {viewMode === "kanban" ? <KanbanView /> : <ListView />}
+            </div>
+        </div>
+    )
 }
