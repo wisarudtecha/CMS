@@ -42,13 +42,13 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
-  {
-    name: "Tasks",
-    icon: <TaskIcon />,
-    subItems: [
-      { name: "Kanban", path: "/kanban", pro: false },
-    ],
-  },
+  // {
+  //   name: "Tasks",
+  //   icon: <TaskIcon />,
+  //   subItems: [
+  //     { name: "Kanban", path: "/kanban", pro: false },
+  //   ],
+  // },
   {
     name: "Forms",
     icon: <ListIcon />,
