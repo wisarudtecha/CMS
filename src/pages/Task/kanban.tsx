@@ -12,9 +12,10 @@ import {
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
-
+import DynamicForm from "../Forms/DynamicForm"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
+import { FormField } from "@/components/interface/FormField"
 
 interface Case {
     id: string
@@ -29,115 +30,179 @@ interface Case {
     customer: string
 }
 
+const createCase = [
+    {
+        "id": "field_1749655796764_1lddawz",
+        "label": "Case Title",
+        "type": "textInput",
+        "value": ""
+    },
+    {
+        "id": "field_1749655797759_ju7abop",
+        "label": "Description",
+        "type": "textAreaInput",
+        "value": ""
+    },
+    {
+        "id": "field_1749655802312_7a1j29f",
+        "label": "Priority",
+        "type": "select",
+        "value": "",
+        "options": [
+            "9",
+            "8",
+            "7",
+            "6",
+            "5",
+            "4",
+            "3",
+            "2",
+            "1"
+        ],
+        "newOptionText": ""
+    },
+    {
+        "id": "field_1749655804616_er08xxt",
+        "label": "Status",
+        "type": "select",
+        "value": "",
+        "options": [
+            "New",
+            "In Progress",
+            "Pending Review",
+            "Resolved"
+        ],
+        "newOptionText": ""
+    },
+    {
+        "id": "field_1749655809299_jdvio3e",
+        "label": "Customer",
+        "type": "textInput",
+        "value": ""
+    },
+    {
+        "id": "field_1749655810998_ez2fh8v",
+        "label": "Assignee",
+        "type": "textInput",
+        "value": ""
+    },
+    {
+        "id": "field_1749655811844_hxz5d3s",
+        "label": "Due Date",
+        "type": "dateInput",
+        "value": ""
+    }
+]
+
 const sampleCases: Case[] = [
-  {
-    "id": "1",
-    "title": "Customer login issues with mobile app",
-    "description": "Multiple customers reporting authentication failures on iOS devices",
-    "status": "new",
-    "priority": 2,  
-    "assignee": { "name": "Sarah Chen", "avatar": "SC" },
-    "dueDate": "Tomorrow",
-    "comments": 3,
-    "category": "Technical",
-    "customer": "Mobile Users"
-  },
-  {
-    "id": "2",
-    "title": "Billing discrepancy for enterprise account",
-    "status": "new",
-    "priority": 5, 
-    "assignee": { "name": "Mike Johnson", "avatar": "MJ" },
-    "dueDate": "Jan 15, 2024",
-    "comments": 1,
-    "category": "Billing",
-    "customer": "Acme Corp"
-  },
-  {
-    "id": "3",
-    "title": "Feature request: Dark mode support",
-    "description": "Customer requesting dark theme option for better accessibility",
-    "status": "new",
-    "priority": 8, 
-    "assignee": { "name": "Alex Rivera", "avatar": "AR" },
-    "dueDate": "Jan 20, 2024",
-    "comments": 5,
-    "category": "Feature",
-    "customer": "Design Team"
-  },
-  {
-    "id": "4",
-    "title": "Integration setup for Salesforce",
-    "status": "in-progress",
-    "priority": 1, 
-    "assignee": { "name": "Emma Davis", "avatar": "ED" },
-    "dueDate": "Today",
-    "comments": 8,
-    "category": "Integration",
-    "customer": "Enterprise Client"
-  },
-  {
-    "id": "5",
-    "title": "Performance optimization for dashboard",
-    "status": "in-progress",
-    "priority": 4, 
-    "assignee": { "name": "Tom Wilson", "avatar": "TW" },
-    "dueDate": "Feb 1, 2024",
-    "comments": 12,
-    "category": "Performance",
-    "customer": "Internal"
-  },
-  {
-    "id": "6",
-    "title": "Email notification system upgrade",
-    "status": "pending",
-    "priority": 6, 
-    "assignee": { "name": "Lisa Park", "avatar": "LP" },
-    "dueDate": "Jan 25, 2024",
-    "comments": 4,
-    "category": "System",
-    "customer": "All Users"
-  },
-  {
-    "id": "7",
-    "title": "Security audit compliance review",
-    "status": "pending",
-    "priority": 3, 
-    "assignee": { "name": "David Kim", "avatar": "DK" },
-    "dueDate": "Tomorrow",
-    "comments": 2,
-    "category": "Security",
-    "customer": "Compliance Team"
-  },
-  {
-    "id": "8",
-    "title": "Customer onboarding flow improvement",
-    "status": "resolved",
-    "priority": 7, 
-    "assignee": { "name": "Rachel Green", "avatar": "RG" },
-    "dueDate": "Jan 10, 2024",
-    "comments": 15,
-    "category": "UX",
-    "customer": "New Users"
-  },
-  {
-    "id": "9",
-    "title": "API rate limiting implementation",
-    "status": "resolved",
-    "priority": 2, 
-    "assignee": { "name": "Chris Brown", "avatar": "CB" },
-    "dueDate": "Jan 8, 2024",
-    "comments": 6,
-    "category": "API",
-    "customer": "Developers"
-  }
+    {
+        "id": "1",
+        "title": "Customer login issues with mobile app",
+        "description": "Multiple customers reporting authentication failures on iOS devices",
+        "status": "new",
+        "priority": 2,
+        "assignee": { "name": "Sarah Chen", "avatar": "SC" },
+        "dueDate": "Tomorrow",
+        "comments": 3,
+        "category": "Technical",
+        "customer": "Mobile Users"
+    },
+    {
+        "id": "2",
+        "title": "Billing discrepancy for enterprise account",
+        "status": "new",
+        "priority": 5,
+        "assignee": { "name": "Mike Johnson", "avatar": "MJ" },
+        "dueDate": "Jan 15, 2024",
+        "comments": 1,
+        "category": "Billing",
+        "customer": "Acme Corp"
+    },
+    {
+        "id": "3",
+        "title": "Feature request: Dark mode support",
+        "description": "Customer requesting dark theme option for better accessibility",
+        "status": "new",
+        "priority": 8,
+        "assignee": { "name": "Alex Rivera", "avatar": "AR" },
+        "dueDate": "Jan 20, 2024",
+        "comments": 5,
+        "category": "Feature",
+        "customer": "Design Team"
+    },
+    {
+        "id": "4",
+        "title": "Integration setup for Salesforce",
+        "status": "in-progress",
+        "priority": 1,
+        "assignee": { "name": "Emma Davis", "avatar": "ED" },
+        "dueDate": "Today",
+        "comments": 8,
+        "category": "Integration",
+        "customer": "Enterprise Client"
+    },
+    {
+        "id": "5",
+        "title": "Performance optimization for dashboard",
+        "status": "in-progress",
+        "priority": 4,
+        "assignee": { "name": "Tom Wilson", "avatar": "TW" },
+        "dueDate": "Feb 1, 2024",
+        "comments": 12,
+        "category": "Performance",
+        "customer": "Internal"
+    },
+    {
+        "id": "6",
+        "title": "Email notification system upgrade",
+        "status": "pending",
+        "priority": 6,
+        "assignee": { "name": "Lisa Park", "avatar": "LP" },
+        "dueDate": "Jan 25, 2024",
+        "comments": 4,
+        "category": "System",
+        "customer": "All Users"
+    },
+    {
+        "id": "7",
+        "title": "Security audit compliance review",
+        "status": "pending",
+        "priority": 3,
+        "assignee": { "name": "David Kim", "avatar": "DK" },
+        "dueDate": "Tomorrow",
+        "comments": 2,
+        "category": "Security",
+        "customer": "Compliance Team"
+    },
+    {
+        "id": "8",
+        "title": "Customer onboarding flow improvement",
+        "status": "resolved",
+        "priority": 7,
+        "assignee": { "name": "Rachel Green", "avatar": "RG" },
+        "dueDate": "Jan 10, 2024",
+        "comments": 15,
+        "category": "UX",
+        "customer": "New Users"
+    },
+    {
+        "id": "9",
+        "title": "API rate limiting implementation",
+        "status": "resolved",
+        "priority": 2,
+        "assignee": { "name": "Chris Brown", "avatar": "CB" },
+        "dueDate": "Jan 8, 2024",
+        "comments": 6,
+        "category": "API",
+        "customer": "Developers"
+    }
 ]
 
 const statusColumns = [
-    { id: "new", title: "New"},
-    { id: "in-progress", title: "In Progress"},
+    { id: "new", title: "New" },
+    { id: "in-progress", title: "In Progress" },
     { id: "pending", title: "Pending Review" },
-    { id: "resolved", title: "Resolved"},
+    { id: "resolved", title: "Resolved" },
 ]
 
 const getPriorityColorClass = (priority: number): string => {
@@ -149,9 +214,7 @@ const getPriorityColorClass = (priority: number): string => {
 export default function CasesPage() {
     const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
-
-    // This function now returns cases based on the selectedStatus
-    // if no specific status is selected, it returns all cases for the given column ID.
+    const [showDynamicForm, setShowDynamicForm] = useState(false);
     const getCasesForColumn = (columnId: string) => {
         return sampleCases.filter((case_) => case_.status === columnId);
     };
@@ -161,6 +224,11 @@ export default function CasesPage() {
             return sampleCases;
         }
         return sampleCases.filter((case_) => case_.status === selectedStatus);
+    };
+
+    const handleFormSubmission = (data: FormField[]) => {
+        console.log("Data received from DynamicForm:", data);
+        setShowDynamicForm(false); 
     };
 
     const CaseCard = ({ case_: caseItem }: { case_: Case }) => (
@@ -350,11 +418,15 @@ export default function CasesPage() {
                         <Button
                             variant="ghost"
                             className="flex items-center bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600"
-                            onClick={() => { }}
+                            onClick={() => {
+                                setShowDynamicForm(true);
+
+                            }}
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Add New Case
                         </Button>
+
                     </div>
                     <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-6">
@@ -380,8 +452,22 @@ export default function CasesPage() {
                         </div>
                     </div>
                 </div>
-
                 {viewMode === "kanban" ? <KanbanView /> : <ListView />}
+                {showDynamicForm && (
+
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Case</h3>
+                            <DynamicForm
+                                form={createCase}
+                                edit={false}
+                                showDynamicForm={setShowDynamicForm}
+                                onFormSubmit={handleFormSubmission}
+                            />
+
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

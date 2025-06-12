@@ -1,209 +1,565 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-// import DefaultInputs from "../../components/form/form-elements/DefaultInputs";
-// import InputGroup from "../../components/form/form-elements/InputGroup";
-// import DropzoneComponent from "../../components/form/form-elements/DropZone";
-// import CheckboxComponents from "../../components/form/form-elements/CheckboxComponents";
-// import RadioButtons from "../../components/form/form-elements/RadioButtons";
-// import ToggleSwitch from "../../components/form/form-elements/ToggleSwitch";
-// import FileInputExample from "../../components/form/form-elements/FileInputExample";
-// import SelectInputs from "../../components/form/form-elements/SelectInputs";
-// import TextAreaInput from "../../components/form/form-elements/TextAreaInput";
-// import InputStates from "../../components/form/form-elements/InputStates";
 import PageMeta from "../../components/common/PageMeta";
 import ComponentCard from "../../components/common/ComponentCard";
 import Button from "../../components/ui/button/Button";
-import { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { FormField } from "@/components/interface/FormField";
+
+// --- Interface Definitions ---
 interface FormConfigItem {
-  formType: string; 
-  title: string;    
-  options?: string[]; 
+  formType: string;
+  title: string;
+  options?: string[];
 }
 
 
-interface FormField {
-  id: string;         
-  label: string;     
-  editableLabel: string; 
-  type: string;       
-  value: any;         
-  options?: string[]; 
-  newOptionText?: string; 
+interface DynamicFormProps {
+  form?: FormField[];
+  edit?: boolean;
+  showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
+  onFormSubmit?: (data: FormField[]) => void;
 }
 
+
+// --- Form Configurations ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text Form" },
   { formType: "textAreaInput", title: "Text Area Form" },
   { formType: "emailInput", title: "Email Form" },
-  { formType: "option", title: "Multiple Select Form", options: [] },
-  { formType: "select", title: "Single Select Form", options: [] },
+  { formType: "option", title: "Multiple Select Form", options: [] }, // Checkboxes
+  { formType: "select", title: "Single Select Form", options: [] }, // Dropdown
   { formType: "image", title: "Image Upload Form" },
   { formType: "multiImage", title: "Multi-Image Upload Form" },
   { formType: "passwordInput", title: "Password Form" },
+  { formType: "dateInput", title: "Date Form" }, // Added Date Form
 ];
 
-
+// --- Helper Function to Create New Fields ---
 function createDynamicFormField(
   config: FormConfigItem[],
   typeToInsert: string
 ): FormField | undefined {
-  const configItem = config.find(item => item.formType === typeToInsert);
+  const configItem = config.find((item) => item.formType === typeToInsert);
 
   if (!configItem) {
     console.warn(`Form type "${typeToInsert}" not found in configuration.`);
     return undefined;
   }
+  // Generate a unique ID for the new field
   const id = `field_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
   let defaultValue: any;
   let fieldOptions: string[] | undefined;
-  let newOptionText: string | undefined; 
+  let newOptionText: string | undefined;
+
   switch (configItem.formType) {
     case "textInput":
     case "textAreaInput":
     case "emailInput":
     case "passwordInput":
-      defaultValue = ""; 
+    case "dateInput": // Handle date input
+      defaultValue = "";
       break;
-    case "option": // For multi-select (e.g., checkboxes)
-      defaultValue = []; // An array to hold selected values
-      fieldOptions = configItem.options || []; // Use options from config
-      newOptionText = ""; // Initialize for option inputs
-      break;
-    case "select": // For single-select dropdowns
-      defaultValue = ""; // Default to an empty string or the first option
+    case "option":
+      defaultValue = []; // For checkboxes
       fieldOptions = configItem.options || [];
-      newOptionText = ""; // Initialize for option inputs
+      newOptionText = "";
+      break;
+    case "select":
+      defaultValue = ""; // For select dropdown
+      fieldOptions = configItem.options || [];
+      newOptionText = "";
       break;
     case "image":
-      defaultValue = null; // Represents a single file or URL
+      defaultValue = null; // Single file (File object or null)
       break;
     case "multiImage":
-      defaultValue = []; // An array to hold multiple files/URLs
+      defaultValue = []; // Array of File objects
       break;
     default:
-      defaultValue = null; // Generic default for unknown types
+      defaultValue = null;
       break;
   }
 
-  // Return the newly constructed FormField object
   return {
     id: id,
-    label: configItem.title, // Initial static label
-    editableLabel: configItem.title, // Initial editable label
-    type: configItem.formType, // Using the formType as the field's type
+    label: configItem.title,
+    type: configItem.formType,
     value: defaultValue,
-    ...(fieldOptions && { options: fieldOptions }), // Conditionally add options if they exist
-    ...(newOptionText !== undefined && { newOptionText: newOptionText }) // Conditionally add newOptionText
+    ...(fieldOptions && { options: fieldOptions }),
+    ...(newOptionText !== undefined && { newOptionText: newOptionText }),
   };
 }
 
-
-export default function DynamicForm() {
-  const [isEdit, setIsEdit] = useState(false);
-  const [dynamicFormFields, setDynamicFormFields] = useState<FormField[]>([]);
-
-  // Function to add a new form field
-  const addField = (formType: string) => {
+export default function DynamicForm({ form = [], edit = true, showDynamicForm, onFormSubmit }: DynamicFormProps) {
+  const [isPreview, setIsPreview] = useState(false);
+  const [dynamicFormFields, setDynamicFormFields] = useState<FormField[]>(form);
+  const addField = useCallback((formType: string) => {
     const newField = createDynamicFormField(formConfigurations, formType);
     if (newField) {
-      setDynamicFormFields(prevFields => [...prevFields, newField]);
+      setDynamicFormFields((prevFields) => [...prevFields, newField]);
     }
-  };
+  }, []);
 
-  // Function to handle changes in form field values (used in edit mode for form values)
-  const handleFieldChange = (id: string, newValue: any) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field =>
-        field.id === id ? { ...field, value: newValue } : field
+  const handleFieldChange = useCallback((id: string, newValue: any) => {
+    setDynamicFormFields((prevFields) =>
+      prevFields.map((field) => {
+        if (field.id === id) {
+          if (field.type === "image" || field.type === "multiImage") {
+            // Correctly handle FileList: convert to array for multiImage, single file for image
+            const valueToStore =
+              field.type === "multiImage" && newValue instanceof FileList
+                ? Array.from(newValue)
+                : newValue instanceof FileList
+                  ? newValue[0] || null
+                  : newValue;
+            return { ...field, value: valueToStore };
+          }
+          return { ...field, value: newValue };
+        }
+        return field;
+      })
+    );
+  }, []);
+
+  const handleLabelChange = useCallback((id: string, newLabel: string) => {
+    setDynamicFormFields((prevFields) =>
+      prevFields.map((field) =>
+        field.id === id ? { ...field, label: newLabel } : field
       )
     );
-  };
+  }, []);
 
-  // Function to handle changes in field labels (used in display mode for editing titles)
-  const handleLabelChange = (id: string, newLabel: string) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field =>
-        field.id === id ? { ...field, editableLabel: newLabel } : field
-      )
-    );
-  };
-
-  // Function to update the temporary newOptionText for a field
-  const handleNewOptionTextChange = (id: string, text: string) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field =>
-        field.id === id ? { ...field, newOptionText: text } : field
-      )
-    );
-  };
-
-  // Function to add a new option to a select/option field
-  const handleAddOption = (id: string) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field => {
-        if (field.id === id && field.newOptionText && field.newOptionText.trim() !== '') {
-          const newOption = field.newOptionText.trim();
+  const handleAddOption = useCallback((id: string, newOptionTextValue: string) => {
+    setDynamicFormFields((prevFields) =>
+      prevFields.map((field) => {
+        if (field.id === id && newOptionTextValue.trim() !== "") {
+          const newOption = newOptionTextValue.trim();
           if (field.options && !field.options.includes(newOption)) {
             return {
               ...field,
               options: [...field.options, newOption],
-              newOptionText: ''
             };
           } else if (!field.options) {
             return {
               ...field,
               options: [newOption],
-              newOptionText: ''
             };
           }
         }
         return field;
       })
     );
-  };
+  }, []);
 
-  // Function to remove a form field
-  const removeField = (id: string) => {
-    setDynamicFormFields(prevFields => prevFields.filter(field => field.id !== id));
-  };
+  const removeField = useCallback((id: string) => {
+    setDynamicFormFields((prevFields) => prevFields.filter((field) => field.id !== id));
+  }, []);
 
-  // Function to handle "Send" button click
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     console.log("Current Dynamic Form Data:", dynamicFormFields);
-    alert("Form data logged to console!");
-  };
+  }, [dynamicFormFields]);
 
-  const handleRemoveOption = (fieldId: string, optionIndexToRemove: number) => {
-        setDynamicFormFields(prevFields =>
-            prevFields.map(field => {
-                if (field.id === fieldId && field.options) {
-                    const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
-                    let newValue = field.value;
-                    if (field.type === "select" && field.value === field.options[optionIndexToRemove]) {
-                        newValue = "";
-                    } else if (field.type === "option" && Array.isArray(field.value)) {
-                        newValue = field.value.filter((val: string) => val !== field.options?.[optionIndexToRemove]);
+  const updateFieldId = useCallback((oldId: string, newId: string) => {
+    const trimmedNewId = newId.trim();
+    if (!trimmedNewId) {
+      alert("Field ID cannot be empty!");
+      return;
+    }
+    const idExists = dynamicFormFields.some(
+      (field) => field.id === trimmedNewId && field.id !== oldId
+    );
+    if (idExists) {
+      alert(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
+      return;
+    }
+
+    setDynamicFormFields((prevFields) =>
+      prevFields.map((field) =>
+        field.id === oldId ? { ...field, id: trimmedNewId } : field
+      )
+    );
+  }, [dynamicFormFields]);
+
+  const handleRemoveOption = useCallback((fieldId: string, optionIndexToRemove: number) => {
+    setDynamicFormFields(prevFields =>
+      prevFields.map(field => {
+        if (field.id === fieldId && field.options) {
+          const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
+          let newValue = field.value;
+          if (field.type === "select" && field.value === field.options[optionIndexToRemove]) {
+            newValue = "";
+          } else if (field.type === "option" && Array.isArray(field.value)) {
+            newValue = field.value.filter(
+              (val: string) => val !== field.options?.[optionIndexToRemove]
+            );
+          }
+          return {
+            ...field,
+            options: updatedOptions,
+            value: newValue,
+          };
+        }
+        return field;
+      })
+    );
+  }, []);
+
+  // handleRemoveFile is for preview mode interaction
+  const handleRemoveFile = useCallback((fieldId: string, fileNameToRemove?: string) => {
+    setDynamicFormFields(prevFields =>
+      prevFields.map(field => {
+        if (field.id === fieldId) {
+          if (field.type === "image") {
+            // For single image, simply clear the value
+            return { ...field, value: null };
+          } else if (field.type === "multiImage" && Array.isArray(field.value)) {
+            // For multi-image, filter out the file by name
+            const updatedFiles = field.value.filter((file: File) => file.name !== fileNameToRemove);
+            return { ...field, value: updatedFiles };
+          }
+        }
+        return field;
+      })
+    );
+  }, []);
+
+  // --- FieldEditItem Component (Internal to DynamicForm) ---
+  interface FieldEditItemProps {
+    field: FormField;
+    handleLabelChange: (id: string, newLabel: string) => void;
+    updateFieldId: (oldId: string, newId: string) => void;
+    handleAddOption: (id: string, newOptionText: string) => void;
+    handleRemoveOption: (fieldId: string, optionIndexToRemove: number) => void;
+    removeField: (id: string) => void;
+  }
+
+  const FieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
+    field,
+    handleLabelChange,
+    updateFieldId,
+    handleAddOption,
+    handleRemoveOption,
+    removeField,
+  }) => {
+    const [localIdValue, setLocalIdValue] = useState(field.id);
+    const [localLabelValue, setLocalLabelValue] = useState(field.label);
+    const [localNewOptionText, setLocalNewOptionText] = useState("");
+
+    const idInputRef = useRef<HTMLInputElement>(null);
+    const labelInputRef = useRef<HTMLInputElement>(null);
+
+
+
+
+    useEffect(() => {
+      setLocalIdValue(field.id);
+    }, [field.id]);
+
+    useEffect(() => {
+      setLocalLabelValue(field.label);
+    }, [field.label]);
+
+    const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalIdValue(e.target.value);
+    }, []);
+
+    const handleIdBlur = useCallback(() => {
+      if (localIdValue !== field.id) {
+        updateFieldId(field.id, localIdValue);
+      }
+    }, [localIdValue, field.id, updateFieldId]);
+
+    const handleIdKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (localIdValue !== field.id) {
+          updateFieldId(field.id, localIdValue);
+        }
+        idInputRef.current?.blur();
+      }
+    }, [localIdValue, field.id, updateFieldId]);
+
+    const handleLocalLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalLabelValue(e.target.value);
+    }, []);
+
+    const handleLabelBlur = useCallback(() => {
+      if (localLabelValue !== field.label) {
+        handleLabelChange(field.id, localLabelValue);
+      }
+    }, [localLabelValue, field.id, handleLabelChange]);
+
+    const handleLabelKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (localLabelValue !== field.label) {
+          handleLabelChange(field.id, localLabelValue);
+        }
+        labelInputRef.current?.blur();
+      }
+    }, [localLabelValue, field.id, handleLabelChange]);
+
+    const handleAddOptionClick = useCallback(() => {
+      const trimmedOption = localNewOptionText.trim();
+      if (trimmedOption !== "") {
+        handleAddOption(field.id, trimmedOption);
+        setLocalNewOptionText("");
+      }
+    }, [localNewOptionText, field.id, handleAddOption]);
+
+    const handleNewOptionKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddOptionClick();
+      }
+    }, [handleAddOptionClick]);
+    return (
+      <div
+        key={field.id}
+        className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90"
+      >
+        <h1 className="my-px">({field.type}) </h1>
+        <input
+          ref={labelInputRef}
+          type="text"
+          value={localLabelValue}
+          onChange={handleLocalLabelChange}
+          onBlur={handleLabelBlur}
+          onKeyDown={handleLabelKeyDown}
+          className="mx-1 text-gray-700 text-sm font-bold mb-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+          aria-label="Preview field title"
+        />
+        <input
+          ref={idInputRef}
+          type="text"
+          value={localIdValue}
+          onChange={handleLocalIdChange}
+          onBlur={handleIdBlur}
+          onKeyDown={handleIdKeyDown}
+          className="mx-1 text-gray-700 text-sm font-bold mb-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+          aria-label="Edit field id"
+          title="Edit Field ID"
+        />
+        {(field.type === "select" || field.type === "option") && field.options ? (
+          <div>
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="text"
+                placeholder="New option"
+                value={localNewOptionText}
+                onChange={(e) => setLocalNewOptionText(e.target.value)}
+                onKeyDown={handleNewOptionKeyDown}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
+              />
+              <Button
+                onClick={handleAddOptionClick}
+                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
+              >
+                +
+              </Button>
+            </div>
+
+            {field.options.map((option, index) => (
+              <div key={option} className="flex justify-between gap-2 mt-2">
+                <p className="text-gray-700 dark:text-white ">- {option}</p>
+                <Button
+                  onClick={() => handleRemoveOption(field.id, index)}
+                  className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
+                >
+                  -
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <></>
+        )}
+        {/* Only display value for non-image types in edit mode */}
+        {!(field.type === "image" || field.type === "multiImage") && (
+          <p className="text-gray-900 break-words mt-2">
+            {Array.isArray(field.value) ? field.value.join(", ") : String(field.value)}
+          </p>
+        )}
+        <button
+          onClick={() => removeField(field.id)}
+          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300"
+          title="Remove field"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  });
+
+  const FormEdit = useCallback(() => {
+    return (
+      <>
+        {dynamicFormFields.length === 0 ? (
+          <p className="text-center text-gray-500 italic">
+            No fields added yet. Use the "Add Form" section to add new fields.
+          </p>
+        ) : (
+          dynamicFormFields.map((field) => (
+            <FieldEditItem
+              key={field.id}
+              field={field}
+              handleLabelChange={handleLabelChange}
+              updateFieldId={updateFieldId}
+              handleAddOption={handleAddOption}
+              handleRemoveOption={handleRemoveOption}
+              removeField={removeField}
+            />
+          ))
+        )}
+      </>
+    );
+  }, [dynamicFormFields, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField]);
+  const FormPreview = useCallback(() => {
+    return (
+      <>
+        {dynamicFormFields.length === 0 ? (
+          <p className="text-center text-gray-500 italic mb-4">
+            No fields added yet. Click "Edit" to start adding.
+          </p>
+        ) : (
+          dynamicFormFields.map((field) => (
+            <div
+              key={field.id}
+              className="mb-2 p-4  relative  dark:text-white/90"
+            >
+              <label
+                htmlFor={field.id}
+                className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90"
+              >
+                {field.label} ({field.type})
+              </label>
+              {field.type === "textInput" ||
+                field.type === "emailInput" ||
+                field.type === "passwordInput"
+                ? (
+                  <input
+                    id={field.id}
+                    type={
+                      field.type === "textInput"
+                        ? "text"
+                        : field.type === "emailInput"
+                          ? "email"
+                          : field.type === "passwordInput"
+                            ? "password"
+                            : ""
                     }
-                    return {
-                        ...field,
-                        options: updatedOptions,
-                        value: newValue
-                    };
-                }
-                return field;
-            })
-        );
-    };
+                    value={field.value}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                  />
+                ) : field.type === "dateInput" ? (
+                  <input
+                    id={field.id}
+                    type="date"
+                    value={field.value}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                  />
 
-  return (
+                ) : field.type === "textAreaInput" ? (
+                  <textarea
+                    id={field.id}
+                    value={field.value}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent h-24 dark:text-white/90"
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                  ></textarea>
+                ) : field.type === "select" && field.options ? (
+                  <select
+                    id={field.id}
+                    value={field.value}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:text-white/90 dark:bg-white/[0.03]"
+                  >
+                    <option value="" className="dark:bg-gray-800">
+                      Select an option
+                    </option>
+                    {field.options.map((option) => (
+                      <option
+                        className="text-gray-700 dark:text-white dark:bg-gray-800 "
+                        key={option}
+                        value={option}
+                      >
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : field.type === "option" && field.options ? (
+                  <div className="flex flex-col gap-2 ">
+                    {field.options.map((option) => (
+                      <label key={option} className="inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          value={option}
+                          checked={Array.isArray(field.value) && field.value.includes(option)}
+                          onChange={(e) => {
+                            const currentValues = Array.isArray(field.value) ? [...field.value] : [];
+                            if (e.target.checked) {
+                              handleFieldChange(field.id, [...currentValues, option]);
+                            } else {
+                              handleFieldChange(
+                                field.id,
+                                currentValues.filter((val: string) => val !== option)
+                              );
+                            }
+                          }}
+                          className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                        />
+                        <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : field.type === "image" || field.type === "multiImage" ? (
+                  <div>
+                    <input
+                      id={field.id}
+                      type="file"
+                      multiple={field.type === "multiImage"}
+                      onChange={(e) => handleFieldChange(field.id, e.target.files)}
+                      className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {field.type === "image" && field.value instanceof File && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="text-gray-700 dark:text-white text-sm">
+                          Selected: {field.value.name}
+                        </p>
+                        <Button
+                          onClick={() => handleRemoveFile(field.id)}
+                          className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-xs"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-red-500">Unsupported field type: {field.type}</p>
+                )}
+            </div>
+          ))
+        )}
+      </>
+    );
+  }, [dynamicFormFields, handleFieldChange, handleRemoveFile]);
+
+
+  return edit ? (
     <div>
       <PageMeta
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements  Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="From Elements" />
-      <div className={!isEdit ? "grid grid-cols-1" : "grid grid-cols-[25%_75%] gap-6 xl:grid-cols-2"}>
-        <div hidden={!isEdit}>
+      <div className={isPreview ? "grid grid-cols-1" : "grid grid-cols-[25%_75%] gap-6 xl:grid-cols-2"}>
+        <div hidden={isPreview}>
           <ComponentCard title="Add Form" >
             <div>
               {formConfigurations.map((item) => (
@@ -219,164 +575,44 @@ export default function DynamicForm() {
           </ComponentCard></div>
         <div className="space-y-6">
           <ComponentCard title="Dynamic Form">
-            <div hidden={!isEdit}>
-
-              {dynamicFormFields.length === 0 ? (
-                <p className="text-center text-gray-500 italic">No fields added yet. Click "Edit Form" to start adding.</p>
-              ) : (
-                dynamicFormFields.map((field) => (
-                  <div key={field.id} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
-                    <h1 className="my-px">({field.type}) </h1>
-                    <input
-                      type="text"
-                      value={field.editableLabel}
-                      onChange={(e) => handleLabelChange(field.id, e.target.value)}
-                      className="block w-full text-gray-700 text-sm font-bold mb-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-                      aria-label="Edit field title"
-                    />
-                    {(field.type === "select" || field.type === "option") && field.options ? (
-                      <div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <input
-                          type="text"
-                          placeholder="New option"
-                          value={field.newOptionText || ''}
-                          onChange={(e) => handleNewOptionTextChange(field.id, e.target.value)}
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
-                        />
-
-                        <Button
-                          onClick={() => handleAddOption(field.id)}
-                          className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
-                        >
-                          +
-                        </Button>
-                        </div>
-                        
-                        {field.options.map((option,index) => (
-                          <div className="flex justify-between gap-2 mt-2">
-                          <p className="text-gray-700 dark:text-white "
-                            key={option} >- {option}</p>
-                          <Button
-                            onClick={() => handleRemoveOption(field.id,index)}
-                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
-                          >
-                            -
-                          </Button>
-                        </div>
-                        ))}
-                      </div>
-                      
-
-                    ) : (<></>)}
-                    <p className="text-gray-900 break-words mt-2">
-                      {field.type === "image" || field.type === "multiImage" ?
-                        (field.value ? (field.type === "multiImage" ? `${field.value.length} files selected` : field.value.name || '1 file selected') : 'No file selected') :
-                        (Array.isArray(field.value) ? field.value.join(', ') : String(field.value))
-                      }
-                    </p>
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300"
-                      title="Remove field"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                ))
-              )}
+            <div hidden={isPreview}>
+              {FormEdit()}
               <div className="flex justify-end p-4">
-
-                <Button onClick={() => setIsEdit(false)}>Done</Button>
+                <Button onClick={() => setIsPreview(true)}>Preview</Button>
               </div>
             </div>
-            <div hidden={isEdit}>
-              {dynamicFormFields.length === 0 ? (
-                <p className="text-center text-gray-500 italic mb-4">No fields added yet. Use the "Add Form" section to add new fields.</p>
-              ) : (
-                dynamicFormFields.map((field) => (
-                  <div key={field.id} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
-                    <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90">
-                      {field.editableLabel} ({field.type})
-                    </label>
-                    {field.type === "textInput" || field.type === "emailInput" || field.type === "passwordInput" ? (
-                      <input
-                        id={field.id}
-                        type={field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"}
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
-                        placeholder={`Enter ${field.editableLabel.toLowerCase()}`}
-                      />
-                    ) : field.type === "textAreaInput" ? (
-                      <textarea
-                        id={field.id}
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent h-24 dark:text-white/90"
-                        placeholder={`Enter ${field.editableLabel.toLowerCase()}`}
-                      ></textarea>
-                    ) : field.type === "select" && field.options ? (
-                      <select
-                        id={field.id}
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:text-white/90 dark:bg-white/[0.03]"
-                      >
-                        <option value="" className="dark:bg-gray-800">Select an option</option>
-                        {field.options.map((option) => (
-                          <option className="text-gray-700 dark:text-white dark:bg-gray-800 "
-                            key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    ) : field.type === "option" && field.options ? (
-                      <div className="flex flex-col gap-2 ">
-                        {field.options.map((option) => (
-                          <label key={option} className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              value={option}
-                              checked={field.value.includes(option)}
-                              onChange={(e) => {
-                                const currentValues = Array.isArray(field.value) ? [...field.value] : [];
-                                if (e.target.checked) {
-                                  handleFieldChange(field.id, [...currentValues, option]);
-                                } else {
-                                  handleFieldChange(field.id, currentValues.filter((val: string) => val !== option));
-                                }
-                              }}
-                              className="form-checkbox h-5 w-5 text-blue-600 rounded  "
-                            />
-                            <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : field.type === "image" || field.type === "multiImage" ? (
-                      <input
-                        id={field.id}
-                        type="file"
-                        multiple={field.type === "multiImage"}
-                        onChange={(e) => {
-                          handleFieldChange(field.id, field.type === "multiImage" ? e.target.files : e.target.files?.[0]);
-                        }}
-                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      />
-                    ) : (
-                      <p className="text-red-500">Unsupported field type: {field.type}</p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-2">Current Value: {JSON.stringify(field.value)}</p>
-                  </div>
-                ))
-              )}
+            <div hidden={!isPreview}>
+
+              {FormPreview()}
+
               <div className="flex justify-end p-4 gap-2">
+                <Button onClick={() => setIsPreview(false)}>Edit</Button>
                 <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
-                <Button onClick={() => setIsEdit(true)}>Edit</Button>
               </div>
+
+
             </div>
           </ComponentCard>
         </div>
       </div>
     </div>
-  );
+  ) : (<div>
+    {FormPreview()}
+    <div className="flex justify-between w-full"> {/* Add this div */}
+      <Button
+        variant="ghost"
+        className="m-4 flex mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+        onClick={() => showDynamicForm && showDynamicForm(false)}
+      >
+        Close
+      </Button>
+      <Button
+        variant="ghost"
+        className="m-4 flex mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+        onClick={() => onFormSubmit && onFormSubmit(dynamicFormFields)}
+      >
+        Summit
+      </Button>
+    </div>
+  </div>);
 }
