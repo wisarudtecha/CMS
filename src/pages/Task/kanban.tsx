@@ -279,7 +279,7 @@ export default function CasesPage() {
     const [showDynamicForm, setShowDynamicForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [editData, setEditData] = useState(defaultCase);
-    
+
     const getCasesForColumn = (columnId: string) => {
         return sampleCases.filter((case_) => case_.status === columnId);
     };
@@ -480,7 +480,7 @@ export default function CasesPage() {
             />
             <PageBreadcrumb pageTitle="Cases" />
 
-            <div className="p-6">
+            <div className="relative p-6">
                 <div className="flex flex-col gap-y-4 mb-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -558,9 +558,8 @@ export default function CasesPage() {
                 </div>
                 {viewMode === "kanban" ? <KanbanView /> : <ListView />}
                 {showDynamicForm && (
-
-                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                        <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Case</h3>
                             <DynamicForm
                                 form={createCase}
@@ -568,18 +567,17 @@ export default function CasesPage() {
                                 showDynamicForm={setShowDynamicForm}
                                 onFormSubmit={handleFormSubmission}
                             />
-
                         </div>
                     </div>
                 )}
                 {showEditForm && (
 
-                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
                         <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Case</h3> {/* Changed title to "Edit Case" */}
                             <DynamicForm
                                 form={mapCaseToForm(editData)}
-                                edit={false} 
+                                edit={false}
                                 showDynamicForm={setShowEditForm}
                                 onFormSubmit={handleFormSubmissionEdit}
                             />
