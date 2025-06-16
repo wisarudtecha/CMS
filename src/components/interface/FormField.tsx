@@ -5,4 +5,5 @@ export interface FormField {
   value: any; 
   options?: string[];
   newOptionText?: string;
+  required:boolean;
 }

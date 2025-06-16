@@ -24,14 +24,15 @@ interface DynamicFormProps {
 // --- Form Configurations ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text Form" },
+  { formType:"Integer",title:"Number Form"}, // Added Integer type
   { formType: "textAreaInput", title: "Text Area Form" },
   { formType: "emailInput", title: "Email Form" },
-  { formType: "option", title: "Multiple Select Form", options: [] }, // Checkboxes
-  { formType: "select", title: "Single Select Form", options: [] }, // Dropdown
+  { formType: "option", title: "Multiple Select Form", options: [] },
+  { formType: "select", title: "Single Select Form", options: [] },
   { formType: "image", title: "Image Upload Form" },
   { formType: "multiImage", title: "Multi-Image Upload Form" },
   { formType: "passwordInput", title: "Password Form" },
-  { formType: "dateInput", title: "Date Form" }, // Added Date Form
+  { formType: "dateInput", title: "Date Form" },
 ];
 
 // --- Helper Function to Create New Fields ---
@@ -59,6 +60,9 @@ function createDynamicFormField(
     case "passwordInput":
     case "dateInput": // Handle date input
       defaultValue = "";
+      break;
+    case "Integer": // Handle Integer input
+      defaultValue = null; // Initialize with null or 0, depending on preference
       break;
     case "option":
       defaultValue = []; // For checkboxes
@@ -88,6 +92,7 @@ function createDynamicFormField(
     value: defaultValue,
     ...(fieldOptions && { options: fieldOptions }),
     ...(newOptionText !== undefined && { newOptionText: newOptionText }),
+    required: false,
   };
 }
 
@@ -100,6 +105,13 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       setDynamicFormFields((prevFields) => [...prevFields, newField]);
     }
   }, []);
+
+  const saveSchema =()=>{
+    console.log("Saved Form")
+    // In a real application, you'd send `dynamicFormFields` to a backend
+    // or store it locally (e.g., localStorage) to persist the form schema.
+    // Example: localStorage.setItem('dynamicFormSchema', JSON.stringify(dynamicFormFields));
+  }
 
   const handleFieldChange = useCallback((id: string, newValue: any) => {
     setDynamicFormFields((prevFields) =>
@@ -114,6 +126,10 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                   ? newValue[0] || null
                   : newValue;
             return { ...field, value: valueToStore };
+          }
+          if (field.type === "Integer") {
+            const numValue = parseInt(newValue, 10);
+            return { ...field, value: isNaN(numValue) ? null : numValue }; // Store null for empty or invalid number
           }
           return { ...field, value: newValue };
         }
@@ -157,8 +173,30 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
   }, []);
 
   const handleSend = useCallback(() => {
-    console.log("Current Dynamic Form Data:", dynamicFormFields);
-  }, [dynamicFormFields]);
+    const allFieldsValid = dynamicFormFields.every(field => {
+      if (field.required) {
+        if (Array.isArray(field.value)) {
+          return field.value.length > 0;
+        } else if (typeof field.value === 'string') {
+          return field.value.trim() !== '';
+        } else if (field.type === 'Integer') { // Specific validation for Integer type
+          return typeof field.value === 'number' && !isNaN(field.value) && field.value !== null;
+        } else if (field.value === null || field.value === undefined) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (allFieldsValid) {
+      console.log("Current Dynamic Form Data:", dynamicFormFields);
+      if (onFormSubmit) {
+        onFormSubmit(dynamicFormFields);
+      }
+    } else {
+      alert("Please fill in all required fields.");
+    }
+  }, [dynamicFormFields, onFormSubmit]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
@@ -224,6 +262,14 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     );
   }, []);
 
+  const handleToggleRequired = useCallback((id: string) => {
+    setDynamicFormFields(prevFields =>
+      prevFields.map(field =>
+        field.id === id ? { ...field, required: !field.required } : field
+      )
+    );
+  }, []);
+
   // --- FieldEditItem Component (Internal to DynamicForm) ---
   interface FieldEditItemProps {
     field: FormField;
@@ -232,6 +278,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     handleAddOption: (id: string, newOptionText: string) => void;
     handleRemoveOption: (fieldId: string, optionIndexToRemove: number) => void;
     removeField: (id: string) => void;
+    handleToggleRequired: (id: string) => void; // Add this prop
   }
 
   const FieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -241,6 +288,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     handleAddOption,
     handleRemoveOption,
     removeField,
+    handleToggleRequired,
   }) => {
     const [localIdValue, setLocalIdValue] = useState(field.id);
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
@@ -248,8 +296,6 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
 
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
-
-
 
 
     useEffect(() => {
@@ -341,6 +387,18 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           aria-label="Edit field id"
           title="Edit Field ID"
         />
+        <div className="flex items-center mt-2">
+          <input
+            type="checkbox"
+            id={`required-${field.id}`}
+            checked={field.required}
+            onChange={() => handleToggleRequired(field.id)}
+            className="form-checkbox h-4 w-4 text-blue-600 rounded"
+          />
+          <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
+            Required
+          </label>
+        </div>
         {(field.type === "select" || field.type === "option") && field.options ? (
           <div>
             <div className="flex items-center gap-2 mt-2">
@@ -375,12 +433,11 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
         ) : (
           <></>
         )}
-        {/* Only display value for non-image types in edit mode */}
-        {!(field.type === "image" || field.type === "multiImage") && (
+        {/* {!(field.type === "image" || field.type === "multiImage") && (
           <p className="text-gray-900 break-words mt-2">
             {Array.isArray(field.value) ? field.value.join(", ") : String(field.value)}
           </p>
-        )}
+        )} */}
         <button
           onClick={() => removeField(field.id)}
           className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300"
@@ -409,12 +466,13 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
               handleAddOption={handleAddOption}
               handleRemoveOption={handleRemoveOption}
               removeField={removeField}
+              handleToggleRequired={handleToggleRequired} // Pass the new prop
             />
           ))
         )}
       </>
     );
-  }, [dynamicFormFields, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField]);
+  }, [dynamicFormFields, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired]);
   const FormPreview = useCallback(() => {
     return (
       <>
@@ -432,7 +490,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                 htmlFor={field.id}
                 className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90"
               >
-                {field.label} ({field.type})
+                {field.label} ({field.type}) {field.required && <span className="text-red-500">*</span>}
               </label>
               {field.type === "textInput" ||
                 field.type === "emailInput" ||
@@ -453,6 +511,17 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
                     placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
+                  />
+                ) : field.type === "Integer" ? ( // Render for Integer type
+                  <input
+                    id={field.id}
+                    type="number" // Use type="number" for integer input
+                    value={field.value !== null ? field.value : ''} // Display empty string for null
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
                   />
                 ) : field.type === "dateInput" ? (
                   <input
@@ -462,6 +531,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
                     placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
                   />
 
                 ) : field.type === "textAreaInput" ? (
@@ -471,6 +541,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent h-24 dark:text-white/90"
                     placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
                   ></textarea>
                 ) : field.type === "select" && field.options ? (
                   <select
@@ -478,6 +549,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     value={field.value}
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:text-white/90 dark:bg-white/[0.03]"
+                    required={field.required}
                   >
                     <option value="" className="dark:bg-gray-800">
                       Select an option
@@ -512,6 +584,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                             }
                           }}
                           className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                          required={field.required && Array.isArray(field.value) && field.value.length === 0}
                         />
                         <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                       </label>
@@ -525,6 +598,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                       multiple={field.type === "multiImage"}
                       onChange={(e) => handleFieldChange(field.id, e.target.files)}
                       className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
                     />
                     {field.type === "image" && field.value instanceof File && (
                       <div className="flex items-center gap-2 mt-2">
@@ -537,6 +611,24 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                         >
                           Remove
                         </Button>
+                      </div>
+                    )}
+                     {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {field.value.map((file: File) => (
+                            <div key={file.name} className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-xs">
+                              <span className="text-gray-800 dark:text-gray-200">{file.name}</span>
+                              <Button
+                                onClick={() => handleRemoveFile(field.id, file.name)}
+                                className="ml-1 px-1 py-0 bg-red-400 text-white rounded-full hover:bg-red-500 disabled:opacity-50 text-xs leading-none"
+                              >
+                                ✕
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -581,15 +673,18 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                 <Button onClick={() => setIsPreview(true)}>Preview</Button>
               </div>
             </div>
-            <div hidden={!isPreview}>
+            <div hidden={!isPreview} >
 
               {FormPreview()}
-
-              <div className="flex justify-end p-4 gap-2">
+              <div className="flex justify-between">
+                <div className="flex">
+                <Button onClick={saveSchema}>Save schema</Button>
+                </div>
+              <div className="flex gap-2 ">
                 <Button onClick={() => setIsPreview(false)}>Edit</Button>
                 <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
               </div>
-
+            </div>
 
             </div>
           </ComponentCard>
@@ -600,15 +695,13 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     {FormPreview()}
     <div className="flex justify-between w-full"> {/* Add this div */}
       <Button
-        variant="ghost"
-        className="m-4 flex mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
         onClick={() => showDynamicForm && showDynamicForm(false)}
       >
         Close
       </Button>
       <Button
-        variant="ghost"
-        className="m-4 flex mt-4 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
         onClick={() => onFormSubmit && onFormSubmit(dynamicFormFields)}
       >
         Summit

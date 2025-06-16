@@ -37,13 +37,15 @@ const createCase = [
         "id": "field_1749655796764_1lddawz",
         "label": "Case Title",
         "type": "textInput",
-        "value": ""
+        "value": "",
+        "required": false
     },
     {
         "id": "field_1749655797759_ju7abop",
         "label": "Description",
         "type": "textAreaInput",
-        "value": ""
+        "value": "",
+        "required": false
     },
     {
         "id": "field_1749655802312_7a1j29f",
@@ -61,7 +63,8 @@ const createCase = [
             "2",
             "1"
         ],
-        "newOptionText": ""
+        "newOptionText": "",
+        "required": false
     },
     {
         "id": "field_1749655804616_er08xxt",
@@ -74,25 +77,29 @@ const createCase = [
             "Pending Review",
             "Resolved"
         ],
-        "newOptionText": ""
+        "newOptionText": "",
+        "required": false
     },
     {
         "id": "field_1749655809299_jdvio3e",
         "label": "Customer",
         "type": "textInput",
-        "value": ""
+        "value": "",
+        "required": false
     },
     {
         "id": "field_1749655810998_ez2fh8v",
         "label": "Assignee",
         "type": "textInput",
-        "value": ""
+        "value": "",
+        "required": false
     },
     {
         "id": "field_1749655811844_hxz5d3s",
         "label": "Due Date",
         "type": "dateInput",
-        "value": ""
+        "value": "",
+        "required": false
     }
 ]
 
@@ -393,7 +400,6 @@ export default function CasesPage() {
     const KanbanView = () => (
         <div className="flex space-x-6 overflow-x-auto pb-6">
             {statusColumns.map((column) => (
-                // Conditionally render the column based on selectedStatus
                 (selectedStatus === null || selectedStatus === column.id) && (
                     <div key={column.id} className="flex-shrink-0 w-80">
                         <div className="flex items-center justify-between mb-4 px-2">
@@ -556,10 +562,13 @@ export default function CasesPage() {
                         </div>
                     </div>
                 </div>
+                <div className="relative">
                 {viewMode === "kanban" ? <KanbanView /> : <ListView />}
+      
+                
                 {showDynamicForm && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
+                    <div className=" fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Case</h3>
                             <DynamicForm
                                 form={createCase}
@@ -572,8 +581,8 @@ export default function CasesPage() {
                 )}
                 {showEditForm && (
 
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
-                        <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[90vh]">
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Case</h3> {/* Changed title to "Edit Case" */}
                             <DynamicForm
                                 form={mapCaseToForm(editData)}
@@ -585,6 +594,7 @@ export default function CasesPage() {
                         </div>
                     </div>
                 )}
+  </div>
             </div>
         </div>
     )
