@@ -33,14 +33,14 @@ export default defineConfig({
       '@': '/src',
     },
   },
-  assetsInclude: [
-    '**/*.json'
-  ],
-  // Configure Lingui plugin for i18n
-  json: {
-    // Enable JSON support for Lingui
-    namedExports: false,
-    // Do not stringify JSON files
-    stringify: false,
-  },
+  // assetsInclude: [
+  //   '**/*.json'
+  // ],
+  // // Configure Lingui plugin for i18n
+  // json: {
+  //   // Enable JSON support for Lingui
+  //   namedExports: false,
+  //   // Do not stringify JSON files
+  //   stringify: false,
+  // },
 });
