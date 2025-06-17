@@ -9,6 +9,7 @@ import Alerts from "./pages/UiElements/Alerts";
 import Badges from "./pages/UiElements/Badges";
 import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
+import ButtonsCustomize from "./pages/UiElements/ButtonsCustomize";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
@@ -21,13 +22,15 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import LoadDynamicFrom from "./pages/Forms/LoadDynamicForm"
+import WorkflowListPage from "./pages/Workflow/Workflows";
+import WorkflowVisualEditor from "./components/builder/FlowEditor";
+
+// Lingui
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
 // import { messages as enMessages } from "./locales/en/messages";
 // import { messages as thMessages } from "./locales/th/messages";
-
-import Lingui from "./pages/Test/Lingui";
-
+// import Lingui from "./pages/Test/Lingui";
 // i18n.load({
 //   en: enMessages,
 //   th: thMessages,
@@ -61,12 +64,17 @@ export default function App() {
             <Route path="/avatars" element={<Avatars />} />
             <Route path="/badge" element={<Badges />} />
             <Route path="/buttons" element={<Buttons />} />
+            <Route path="/buttons-customize" element={<ButtonsCustomize />} />
             <Route path="/images" element={<Images />} />
             <Route path="/videos" element={<Videos />} />
 
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
+
+            {/* Workflow Builder */}
+            <Route path="/workflows" element={<WorkflowListPage />} />
+            <Route path="/workflow-builder" element={<WorkflowVisualEditor />} />
           </Route>
 
           {/* Auth Layout */}
@@ -77,7 +85,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
 
           {/* Test Page */}
-          <Route path="/test/lingui" element={<Lingui />} />
+          {/* <Route path="/test/lingui" element={<Lingui />} /> */}
         </Routes>
       </Router>
     // </I18nProvider>

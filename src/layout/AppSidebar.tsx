@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo
+} from "react";
 import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
@@ -17,7 +23,9 @@ import {
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
+// import SidebarWidget from "./SidebarWidget";
+
+import { useTranslation } from "../hooks/useTranslation";
 
 type NavItem = {
   name: string;
@@ -26,85 +34,155 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    name: "Tasks",
-    icon: <TaskIcon />,
-    subItems: [
-      { name: "Kanban", path: "/kanban", pro: false },
-    ],
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [
-      { name: "Form Elements", path: "/form-elements", pro: false },
-      { name: "Dynamic Form", path: "/dynamic-form", pro: false },
-      { name: "Load Dynamic Form",path:"/load-dynamic-form",pro:false}
-    ],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
-    ],
-  },
-];
+// const navItems: NavItem[] = [
+//   {
+//     icon: <GridIcon />,
+//     name: "Dashboard",
+//     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+//   },
+//   {
+//     icon: <CalenderIcon />,
+//     name: "Calendar",
+//     path: "/calendar",
+//   },
+//   {
+//     icon: <UserCircleIcon />,
+//     name: "User Profile",
+//     path: "/profile",
+//   },
+//   {
+//     name: "Forms",
+//     icon: <ListIcon />,
+//     subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+//   },
+//   {
+//     name: "Tables",
+//     icon: <TableIcon />,
+//     subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+//   },
+//   {
+//     name: "Pages",
+//     icon: <PageIcon />,
+//     subItems: [
+//       { name: "Blank Page", path: "/blank", pro: false },
+//       { name: "404 Error", path: "/error-404", pro: false },
+//     ],
+//   },
+// ];
 
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
-  },
-];
+// const othersItems: NavItem[] = [
+//   {
+//     icon: <PieChartIcon />,
+//     name: "Charts",
+//     subItems: [
+//       { name: "Line Chart", path: "/line-chart", pro: false },
+//       { name: "Bar Chart", path: "/bar-chart", pro: false },
+//     ],
+//   },
+//   {
+//     icon: <BoxCubeIcon />,
+//     name: "UI Elements",
+//     subItems: [
+//       { name: "Alerts", path: "/alerts", pro: false },
+//       { name: "Avatar", path: "/avatars", pro: false },
+//       { name: "Badge", path: "/badge", pro: false },
+//       { name: "Buttons", path: "/buttons", pro: false },
+//       { name: "Images", path: "/images", pro: false },
+//       { name: "Videos", path: "/videos", pro: false },
+//     ],
+//   },
+//   {
+//     icon: <PlugInIcon />,
+//     name: "Authentication",
+//     subItems: [
+//       { name: "Sign In", path: "/signin", pro: false },
+//       { name: "Sign Up", path: "/signup", pro: false },
+//     ],
+//   },
+// ];
 
 const AppSidebar: React.FC = () => {
+  const { t } = useTranslation();
+
+  const navItems: NavItem[] = useMemo(() => [
+    {
+      icon: <GridIcon />,
+      name: t("navigation.sidebar.menu.dashboard.title"),
+      subItems: [{ name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", pro: false }],
+    },
+    {
+      icon: <CalenderIcon />,
+      name: t("navigation.sidebar.menu.calendar"),
+      path: "/calendar",
+    },
+    {
+      icon: <UserCircleIcon />,
+      name: t("navigation.sidebar.menu.user_profile"),
+      path: "/profile",
+    },
+    {
+      name: "Tasks",
+      icon: <TaskIcon />,
+      subItems: [
+        { name: "Kanban", path: "/kanban", pro: false },
+      ],
+    },
+    {
+      name: t("navigation.sidebar.menu.forms.title"),
+      icon: <ListIcon />,
+      subItems: [
+        { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false },
+        { name: "Dynamic Form", path: "/dynamic-form", pro: false },
+        { name: "Load Dynamic Form", path:"/load-dynamic-form", pro:false }
+      ],
+    },
+    {
+      name: t("navigation.sidebar.menu.tables.title"),
+      icon: <TableIcon />,
+      subItems: [{ name: t("navigation.sidebar.menu.tables.nested.basic_tables"), path: "/basic-tables", pro: false }],
+    },
+    {
+      name: t("navigation.sidebar.menu.pages.title"),
+      icon: <PageIcon />,
+      subItems: [
+        { name: t("navigation.sidebar.menu.pages.nested.blank_page"), path: "/blank", pro: false },
+        { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", pro: false },
+      ],
+    },
+  ], [t]);
+
+  const othersItems: NavItem[] = useMemo(() => [
+    {
+      icon: <PieChartIcon />,
+      name: t("navigation.sidebar.other.charts.title"),
+      subItems: [
+        { name: t("navigation.sidebar.other.charts.nested.line_chart"), path: "/line-chart", pro: false },
+        { name: t("navigation.sidebar.other.charts.nested.bar_chart"), path: "/bar-chart", pro: false },
+      ],
+    },
+    {
+      icon: <BoxCubeIcon />,
+      name: t("navigation.sidebar.other.ui_elements.title"),
+      subItems: [
+        { name: t("navigation.sidebar.other.ui_elements.nested.alerts"), path: "/alerts", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.avatar"), path: "/avatars", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.badge"), path: "/badge", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.buttons"), path: "/buttons", pro: false },
+        { name: "Buttons Customize", path: "/buttons-customize", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.images"), path: "/images", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.videos"), path: "/videos", pro: false },
+      ],
+    },
+    {
+      icon: <PlugInIcon />,
+      name: t("navigation.sidebar.other.authentication.title"),
+      subItems: [
+        { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", pro: false },
+        { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", pro: false },
+      ],
+    },
+  ], [t]);
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
 
@@ -145,6 +223,7 @@ const AppSidebar: React.FC = () => {
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, isActive]);
 
   useEffect(() => {
@@ -355,7 +434,8 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
+                  // "Menu"
+                  t("navigation.sidebar.menu.title")
                 ) : (
                   <HorizontaLDots className="size-6" />
                 )}
@@ -371,7 +451,8 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  // "Others"
+                  t("navigation.sidebar.other.title")
                 ) : (
                   <HorizontaLDots />
                 )}
@@ -380,7 +461,7 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );
