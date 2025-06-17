@@ -20,7 +20,7 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-
+import LoadDynamicFrom from "./pages/Forms/LoadDynamicForm"
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
 // import { messages as enMessages } from "./locales/en/messages";
@@ -52,6 +52,7 @@ export default function App() {
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
+            <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
 

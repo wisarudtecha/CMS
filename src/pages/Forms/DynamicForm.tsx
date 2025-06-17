@@ -24,7 +24,7 @@ interface DynamicFormProps {
 // --- Form Configurations ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text Form" },
-  { formType:"Integer",title:"Number Form"}, // Added Integer type
+  { formType: "Integer", title: "Number Form" }, // Added Integer type
   { formType: "textAreaInput", title: "Text Area Form" },
   { formType: "emailInput", title: "Email Form" },
   { formType: "option", title: "Multiple Select Form", options: [] },
@@ -105,13 +105,13 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       setDynamicFormFields((prevFields) => [...prevFields, newField]);
     }
   }, []);
-
-  const saveSchema =()=>{
+  const saveSchema = () => {
     console.log("Saved Form")
-    // In a real application, you'd send `dynamicFormFields` to a backend
-    // or store it locally (e.g., localStorage) to persist the form schema.
-    // Example: localStorage.setItem('dynamicFormSchema', JSON.stringify(dynamicFormFields));
   }
+
+  useEffect(() => {
+      setDynamicFormFields(form);
+  }, [form !== dynamicFormFields]);
 
   const handleFieldChange = useCallback((id: string, newValue: any) => {
     setDynamicFormFields((prevFields) =>
@@ -196,6 +196,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     } else {
       alert("Please fill in all required fields.");
     }
+    onFormSubmit && onFormSubmit(dynamicFormFields)
   }, [dynamicFormFields, onFormSubmit]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
@@ -360,6 +361,8 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
         handleAddOptionClick();
       }
     }, [handleAddOptionClick]);
+
+    
     return (
       <div
         key={field.id}
@@ -613,7 +616,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                         </Button>
                       </div>
                     )}
-                     {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
+                    {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
                       <div className="mt-2">
                         <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
                         <div className="flex flex-wrap gap-2">
@@ -678,13 +681,13 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
               {FormPreview()}
               <div className="flex justify-between">
                 <div className="flex">
-                <Button onClick={saveSchema}>Save schema</Button>
+                  <Button onClick={saveSchema}>Save schema</Button>
                 </div>
-              <div className="flex gap-2 ">
-                <Button onClick={() => setIsPreview(false)}>Edit</Button>
-                <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
+                <div className="flex gap-2 ">
+                  <Button onClick={() => setIsPreview(false)}>Edit</Button>
+                  <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
+                </div>
               </div>
-            </div>
 
             </div>
           </ComponentCard>
@@ -694,18 +697,22 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
   ) : (<div>
     {FormPreview()}
     <div className="flex justify-between w-full"> {/* Add this div */}
-      <Button
+      {showDynamicForm && <Button
         className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
         onClick={() => showDynamicForm && showDynamicForm(false)}
       >
         Close
-      </Button>
-      <Button
-        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
-        onClick={() => onFormSubmit && onFormSubmit(dynamicFormFields)}
-      >
-        Summit
-      </Button>
+      </Button>}
+      {dynamicFormFields.length != 0 && (<div>
+
+        <Button
+          className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
+          onClick={handleSend}
+        >
+          Summit
+        </Button>
+      </div>)}
+
     </div>
   </div>);
 }
