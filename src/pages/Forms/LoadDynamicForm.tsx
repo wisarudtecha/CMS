@@ -12,8 +12,8 @@ export default function LoadDynamicForm() {
 
     return (
         <div>
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <div className="relative flex justify-end w-full">
+    
+                <div className="relative flex justify-end my-2">
                     <Button size="sm" onClick={() => {
                         setShowLoadFormPages(true);
                     }}>Load Form</Button>
@@ -48,7 +48,7 @@ export default function LoadDynamicForm() {
                         </div>
                     </div>
                 )}
-            </div>
+           
         </div>
     );
 }
