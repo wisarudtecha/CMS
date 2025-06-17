@@ -3,7 +3,9 @@ import { Link } from "react-router";
 interface AlertProps {
   variant: "success" | "error" | "warning" | "info"; // Alert type
   title: string; // Title of the alert
-  message: string; // Message of the alert
+  // message: string; // Message of the alert
+  message?: string; // Message of the alert
+  messages?: string[]; // List message of the alert
   showLink?: boolean; // Whether to show the "Learn More" link
   linkHref?: string; // Link URL
   linkText?: string; // Link text
@@ -12,7 +14,9 @@ interface AlertProps {
 const Alert: React.FC<AlertProps> = ({
   variant,
   title,
-  message,
+  // message,
+  message = "",
+  messages = [],
   showLink = false,
   linkHref = "#",
   linkText = "Learn more",
@@ -125,7 +129,16 @@ const Alert: React.FC<AlertProps> = ({
             {title}
           </h4>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
+          {/* <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p> */}
+          {message && (<p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>)}
+
+          {messages && (
+            <ul className="text-sm text-gray-500 dark:text-gray-400">
+              {messages.map((msg, index) => (
+                <li key={index}>• {msg}</li>
+              ))}
+            </ul>
+          )}
 
           {showLink && (
             <Link
