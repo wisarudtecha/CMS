@@ -1,0 +1,103 @@
+[
+    {
+        "id": "1",
+        "title": "Customer login issues with mobile app",
+        "description": "Multiple customers reporting authentication failures on iOS devices",
+        "status": "new",
+        "priority": 2,
+        "assignee": "Sarah Chen",
+        "dueDate": "2000-03-08",
+        "comments": 3,
+        "category": "Technical",
+        "customer": "Mobile Users"
+    },
+    {
+        "id": "2",
+        "title": "Billing discrepancy for enterprise account",
+        "status": "new",
+        "priority": 5,
+        "assignee": "Mike Johnson",
+        "dueDate": "2000-03-08",
+        "comments": 1,
+        "category": "Billing",
+        "customer": "Acme Corp"
+    },
+    {
+        "id": "3",
+        "title": "Feature request: Dark mode support",
+        "description": "Customer requesting dark theme option for better accessibility",
+        "status": "new",
+        "priority": 8,
+        "assignee": "Alex Rivera",
+        "dueDate": "2000-03-08",
+        "comments": 5,
+        "category": "Feature",
+        "customer": "Design Team"
+    },
+    {
+        "id": "4",
+        "title": "Integration setup for Salesforce",
+        "status": "in-progress",
+        "priority": 1,
+        "assignee": "Emma Davis",
+        "dueDate": "2000-03-08",
+        "comments": 8,
+        "category": "Integration",
+        "customer": "Enterprise Client"
+    },
+    {
+        "id": "5",
+        "title": "Performance optimization for dashboard",
+        "status": "in-progress",
+        "priority": 4,
+        "assignee": "Tom Wilson",
+        "dueDate": "2000-03-08",
+        "comments": 12,
+        "category": "Performance",
+        "customer": "Internal"
+    },
+    {
+        "id": "6",
+        "title": "Email notification system upgrade",
+        "status": "pending",
+        "priority": 6,
+        "assignee": "Lisa Park",
+        "dueDate": "2000-03-08",
+        "comments": 4,
+        "category": "System",
+        "customer": "All Users"
+    },
+    {
+        "id": "7",
+        "title": "Security audit compliance review",
+        "status": "pending",
+        "priority": 3,
+        "assignee": "David Kim",
+        "dueDate": "2000-03-08",
+        "comments": 2,
+        "category": "Security",
+        "customer": "Compliance Team"
+    },
+    {
+        "id": "8",
+        "title": "Customer onboarding flow improvement",
+        "status": "resolved",
+        "priority": 7,
+        "assignee": "Rachel Green",
+        "dueDate": "2000-03-08",
+        "comments": 15,
+        "category": "UX",
+        "customer": "New Users"
+    },
+    {
+        "id": "9",
+        "title": "API rate limiting implementation",
+        "status": "resolved",
+        "priority": 2,
+        "assignee": "Chris Brown",
+        "dueDate": "2000-03-08",
+        "comments": 6,
+        "category": "API",
+        "customer": "Developers"
+    }
+]

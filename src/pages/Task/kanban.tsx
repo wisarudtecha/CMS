@@ -18,6 +18,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import { FormField } from "@/components/interface/FormField"
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem"
 import { Dropdown } from "@/components/ui/dropdown/Dropdown"
+import createCase from "../../utils/json/createCase.json"
+import sampleCases from "../../utils/json/sampleCases.json"
 
 interface Case {
     id: string
@@ -32,180 +34,8 @@ interface Case {
     customer: string
 }
 
-const createCase = [
-    {
-        "id": "field_1749655796764_1lddawz",
-        "label": "Case Title",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655797759_ju7abop",
-        "label": "Description",
-        "type": "textAreaInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655802312_7a1j29f",
-        "label": "Priority",
-        "type": "select",
-        "value": "",
-        "options": [
-            "9",
-            "8",
-            "7",
-            "6",
-            "5",
-            "4",
-            "3",
-            "2",
-            "1"
-        ],
-        "newOptionText": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655804616_er08xxt",
-        "label": "Status",
-        "type": "select",
-        "value": "",
-        "options": [
-            "New",
-            "In-Progress",
-            "Pending Review",
-            "Resolved"
-        ],
-        "newOptionText": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655809299_jdvio3e",
-        "label": "Customer",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655810998_ez2fh8v",
-        "label": "Assignee",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655811844_hxz5d3s",
-        "label": "Due Date",
-        "type": "dateInput",
-        "value": "",
-        "required": false
-    }
-]
 
-const sampleCases: Case[] = [
-    {
-        "id": "1",
-        "title": "Customer login issues with mobile app",
-        "description": "Multiple customers reporting authentication failures on iOS devices",
-        "status": "new",
-        "priority": 2,
-        "assignee": "Sarah Chen",
-        "dueDate": "2000-03-08",
-        "comments": 3,
-        "category": "Technical",
-        "customer": "Mobile Users"
-    },
-    {
-        "id": "2",
-        "title": "Billing discrepancy for enterprise account",
-        "status": "new",
-        "priority": 5,
-        "assignee": "Mike Johnson",
-        "dueDate": "2000-03-08",
-        "comments": 1,
-        "category": "Billing",
-        "customer": "Acme Corp"
-    },
-    {
-        "id": "3",
-        "title": "Feature request: Dark mode support",
-        "description": "Customer requesting dark theme option for better accessibility",
-        "status": "new",
-        "priority": 8,
-        "assignee": "Alex Rivera",
-        "dueDate": "2000-03-08",
-        "comments": 5,
-        "category": "Feature",
-        "customer": "Design Team"
-    },
-    {
-        "id": "4",
-        "title": "Integration setup for Salesforce",
-        "status": "in-progress",
-        "priority": 1,
-        "assignee": "Emma Davis",
-        "dueDate": "2000-03-08",
-        "comments": 8,
-        "category": "Integration",
-        "customer": "Enterprise Client"
-    },
-    {
-        "id": "5",
-        "title": "Performance optimization for dashboard",
-        "status": "in-progress",
-        "priority": 4,
-        "assignee": "Tom Wilson",
-        "dueDate": "2000-03-08",
-        "comments": 12,
-        "category": "Performance",
-        "customer": "Internal"
-    },
-    {
-        "id": "6",
-        "title": "Email notification system upgrade",
-        "status": "pending",
-        "priority": 6,
-        "assignee": "Lisa Park",
-        "dueDate": "2000-03-08",
-        "comments": 4,
-        "category": "System",
-        "customer": "All Users"
-    },
-    {
-        "id": "7",
-        "title": "Security audit compliance review",
-        "status": "pending",
-        "priority": 3,
-        "assignee": "David Kim",
-        "dueDate": "2000-03-08",
-        "comments": 2,
-        "category": "Security",
-        "customer": "Compliance Team"
-    },
-    {
-        "id": "8",
-        "title": "Customer onboarding flow improvement",
-        "status": "resolved",
-        "priority": 7,
-        "assignee": "Rachel Green",
-        "dueDate": "2000-03-08",
-        "comments": 15,
-        "category": "UX",
-        "customer": "New Users"
-    },
-    {
-        "id": "9",
-        "title": "API rate limiting implementation",
-        "status": "resolved",
-        "priority": 2,
-        "assignee": "Chris Brown",
-        "dueDate": "2000-03-08",
-        "comments": 6,
-        "category": "API",
-        "customer": "Developers"
-    }
-]
+
 
 const defaultCase: Case = {
     "id": "",
@@ -314,7 +144,7 @@ export default function CasesPage() {
 
 
     const CaseCard = ({ case_: caseItem }: { case_: Case }) => {
-        const [isOpen, setIsOpen] = useState(false); // Local state for each card's dropdown
+        const [isOpen, setIsOpen] = useState(false); 
 
         function toggleDropdown() {
             setIsOpen(!isOpen);
@@ -342,13 +172,13 @@ export default function CasesPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="w-6 h-6 p-0 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 dropdown-toggle"
-                                onClick={toggleDropdown} // Use local toggleDropdown
+                                onClick={toggleDropdown} 
                             >
                                 <MoreHorizontal className="w-3 h-3" />
                             </Button>
                             <Dropdown
-                                isOpen={isOpen} // Use local isOpen state
-                                onClose={closeDropdown} // Use local closeDropdown
+                                isOpen={isOpen} 
+                                onClose={closeDropdown} 
                                 className="w-40 p-2"
                             >
                                 <DropdownItem
@@ -527,7 +357,7 @@ export default function CasesPage() {
                             </Button>
                         </div>
                         <Button
-                            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                            className="flex items-center  hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                             onClick={() => {
                                 setShowDynamicForm(true);
 

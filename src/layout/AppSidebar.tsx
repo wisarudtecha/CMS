@@ -55,6 +55,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Form Elements", path: "/form-elements", pro: false },
       { name: "Dynamic Form", path: "/dynamic-form", pro: false },
+      { name: "Load Dynamic Form",path:"/load-dynamic-form",pro:false}
     ],
   },
   {
