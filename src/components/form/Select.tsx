@@ -1,4 +1,9 @@
-import { useState } from "react";
+import
+  {
+    useEffect,
+    useState
+  }
+from "react";
 
 interface Option {
   value: string;
@@ -9,8 +14,10 @@ interface SelectProps {
   options: Option[];
   placeholder?: string;
   onChange: (value: string) => void;
+  // onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Changed: now passes the event
   className?: string;
-  defaultValue?: string;
+  // defaultValue?: string;
+  value?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -18,15 +25,28 @@ const Select: React.FC<SelectProps> = ({
   placeholder = "Select an option",
   onChange,
   className = "",
-  defaultValue = "",
+  // defaultValue = "",
+  value = "",
 }) => {
   // Manage the selected value
-  const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+  // const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+
+   // Use controlled component pattern - sync with external value
+  const [selectedValue, setSelectedValue] = useState<string>(value);
+
+  // Update internal state when external value changes
+  useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedValue(value);
-    onChange(value); // Trigger parent handler
+    // const value = e.target.value;
+    const newValue = e.target.value;
+    // setSelectedValue(value);
+    setSelectedValue(newValue);
+    // onChange(value); // Trigger parent handler
+    // onChange(e); // Changed: pass the entire event object instead of just value
+    onChange(newValue); // Pass the value directly to parent
   };
 
   return (
@@ -38,6 +58,7 @@ const Select: React.FC<SelectProps> = ({
       } ${className}`}
       value={selectedValue}
       onChange={handleChange}
+      // defaultValue={defaultValue}
     >
       {/* Placeholder option */}
       <option
