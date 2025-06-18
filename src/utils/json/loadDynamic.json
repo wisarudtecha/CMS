@@ -163,5 +163,129 @@
                 "required": false
             }
         ]
+    },
+    {
+        "name": "CaseForm",
+        "json": [
+            {
+                "id": "field_1750216007340_7lqjzq4",
+                "label": "1.Service Type",
+                "type": "select",
+                "value": "",
+                "options": [
+                    "Maintenance",
+                    "Repair",
+                    "Installation"
+                ],
+                "newOptionText": "",
+                "required": true
+            },
+            {
+                "id": "field_1750216013948_p669nbm",
+                "label": "2.Request Service Date",
+                "type": "dateInput",
+                "value": "",
+                "required": true
+            },
+            {
+                "id": "field_1750216136453_r0ta1j5",
+                "label": "Priority Level",
+                "type": "select",
+                "value": "",
+                "options": [
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "newOptionText": "",
+                "required": false
+            },
+            {
+                "id": "field_1750216186492_qg9oiq0",
+                "label": "Contact Method",
+                "type": "select",
+                "value": "",
+                "options": [
+                    "Phone Number",
+                    "Email",
+                    "Live Chat"
+                ],
+                "newOptionText": "",
+                "required": true
+            },
+            {
+                "id": "field_1750216296253_eajgjdv",
+                "label": "3.Service Location",
+                "type": "option",
+                "value": [],
+                "options": [
+                    "Service Location",
+                    "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false
+            },
+            {
+                "id": "field_1750216387940_qz88nc7",
+                "label": "",
+                "type": "textAreaInput",
+                "value": "",
+                "required": false
+            },
+            {
+                "id": "field_1750216407454_3mzke39",
+                "label": "4.Service Center",
+                "type": "select",
+                "value": "",
+                "options": [
+                    "Service Center 1",
+                    "Service Center 2"
+                ],
+                "newOptionText": "",
+                "required": false
+            },
+            {
+                "id": "field_1750216914790_5jbs0mp",
+                "label": "5. Customer Name:",
+                "type": "textInput",
+                "value": "",
+                "required": true
+            },
+            {
+                "id": "field_1750216919190_0rl06uj",
+                "label": "6. Customer Phone",
+                "type": "textInput",
+                "value": "",
+                "required": true
+            },
+            {
+                "id": "field_1750217029160_ehst6mz",
+                "label": "7.Service Details:",
+                "type": "textAreaInput",
+                "value": "",
+                "required": true
+            },
+            {
+                "id": "field_1750217045206_bz1aat8",
+                "label": "8. Vehicle Information:",
+                "type": "textInput",
+                "value": "",
+                "required": false
+            },
+            {
+                "id": "field_1750217045582_u250z47",
+                "label": "9. Assembly Information:",
+                "type": "textInput",
+                "value": "",
+                "required": false
+            },
+            {
+                "id": "field_1750217116735_gof8ncc",
+                "label": "10. Assembly Procedure",
+                "type": "textAreaInput",
+                "value": "",
+                "required": false
+            }
+        ]
     }
 ]

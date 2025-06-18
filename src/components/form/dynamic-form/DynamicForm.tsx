@@ -29,6 +29,7 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "multiImage", title: "Multi-Image Upload Form" },
   { formType: "passwordInput", title: "Password Form" },
   { formType: "dateInput", title: "Date Form" },
+  { formType: "dateLocal", title: "DateLocal Form" },
 ];
 
 function createDynamicFormField(
@@ -53,6 +54,9 @@ function createDynamicFormField(
     case "passwordInput":
     case "dateInput":
       defaultValue = "";
+      break;
+    case "dateLocal":
+      defaultValue="";
       break;
     case "Integer":
       defaultValue = null;
@@ -176,9 +180,8 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       }
       return true;
     });
-
+    console.log("Current Dynamic Form Data:", dynamicFormFields);
     if (allFieldsValid) {
-      console.log("Current Dynamic Form Data:", dynamicFormFields);
       if (onFormSubmit) {
         onFormSubmit(dynamicFormFields);
       }
@@ -515,7 +518,18 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     required={field.required}
                   />
 
-                ) : field.type === "textAreaInput" ? (
+                ) : field.type === "dateLocal" ? (
+                  <input
+                    id={field.id}
+                    type="datetime-local"
+                    value={field.value}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                    required={field.required}
+                  />
+
+                ): field.type === "textAreaInput" ? (
                   <textarea
                     id={field.id}
                     value={field.value}
