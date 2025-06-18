@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
-import DynamicForm from "../Forms/DynamicForm"
+import DynamicForm from "../../components/form/dynamic-form/DynamicForm"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import { FormField } from "@/components/interface/FormField"

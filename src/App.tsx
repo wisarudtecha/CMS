@@ -15,13 +15,13 @@ import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
-import DynamicForm from "./pages/Forms/DynamicForm";
+import DynamicForm from "./components/form/dynamic-form/DynamicForm";
 import Kanban from "./pages/Task/kanban";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import LoadDynamicFrom from "./pages/Forms/LoadDynamicForm"
+import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
 import WorkflowListPage from "./pages/Workflow/Workflows";
 import WorkflowVisualEditor from "./components/builder/FlowEditor";
 

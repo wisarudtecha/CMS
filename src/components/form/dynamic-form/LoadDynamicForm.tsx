@@ -2,7 +2,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import DynamicForm from "./DynamicForm";
 import Button from "@/components/ui/button/Button";
 import { useState } from "react";
-import formlist from "../../utils/json/loadDynamic.json";
+import formlist from "../../../utils/json/loadDynamic.json";
 import { FormField } from "@/components/interface/FormField";
 
 export default function LoadDynamicForm() {

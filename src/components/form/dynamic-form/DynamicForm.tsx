@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import PageMeta from "../../components/common/PageMeta";
-import ComponentCard from "../../components/common/ComponentCard";
-import Button from "../../components/ui/button/Button";
+import PageBreadcrumb from "../../common/PageBreadCrumb";
+import PageMeta from "../../common/PageMeta";
+import ComponentCard from "../../common/ComponentCard";
+import Button from "../../ui/button/Button";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FormField } from "@/components/interface/FormField";
 
