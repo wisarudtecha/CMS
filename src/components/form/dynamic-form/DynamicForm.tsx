@@ -56,7 +56,7 @@ function createDynamicFormField(
       defaultValue = "";
       break;
     case "dateLocal":
-      defaultValue="";
+      defaultValue = "";
       break;
     case "Integer":
       defaultValue = null;
@@ -111,14 +111,22 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     setDynamicFormFields((prevFields) =>
       prevFields.map((field) => {
         if (field.id === id) {
-          if (field.type === "image" || field.type === "multiImage") {
-            const valueToStore =
-              field.type === "multiImage" && newValue instanceof FileList
-                ? Array.from(newValue)
-                : newValue instanceof FileList
-                  ? newValue[0] || null
-                  : newValue;
+          if (field.type === "image") { 
+            const valueToStore = newValue instanceof FileList
+                                 ? newValue[0] || null
+                                 : newValue;
             return { ...field, value: valueToStore };
+          }
+          if (field.type === "multiImage") { 
+            if (newValue instanceof FileList) {
+              const currentFiles = Array.isArray(field.value) ? field.value : [];
+              const newFiles = Array.from(newValue);
+              const uniqueNewFiles = newFiles.filter(
+                (newFile) => !currentFiles.some((existingFile: File) => existingFile.name === newFile.name && existingFile.size === newFile.size)
+              );
+              return { ...field, value: [...currentFiles, ...uniqueNewFiles] };
+            }
+            return { ...field, value: newValue }; 
           }
           if (field.type === "Integer") {
             const numValue = parseInt(newValue, 10);
@@ -348,7 +356,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
         handleAddOptionClick();
       }
     }, [handleAddOptionClick]);
-    
+
     return (
       <div
         key={field.id}
@@ -457,6 +465,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       </>
     );
   }, [dynamicFormFields, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired]);
+
   const FormPreview = useCallback(() => {
     return (
       <>
@@ -529,7 +538,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     required={field.required}
                   />
 
-                ): field.type === "textAreaInput" ? (
+                ) : field.type === "textAreaInput" ? (
                   <textarea
                     id={field.id}
                     value={field.value}
@@ -590,37 +599,44 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                     <input
                       id={field.id}
                       type="file"
+                      accept="image/*"
                       multiple={field.type === "multiImage"}
                       onChange={(e) => handleFieldChange(field.id, e.target.files)}
                       className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
                     />
                     {field.type === "image" && field.value instanceof File && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <p className="text-gray-700 dark:text-white text-sm">
-                          Selected: {field.value.name}
-                        </p>
-                        <Button
+                      <div className="relative group mt-2 w-20 h-20"> 
+                        <img
+                          src={URL.createObjectURL(field.value)}
+                          alt="Selected"
+                          className="w-full h-full object-cover rounded border border-gray-600" 
+                        />
+                        <button
                           onClick={() => handleRemoveFile(field.id)}
-                          className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-xs"
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          Remove
-                        </Button>
+                          ×
+                        </button>
                       </div>
                     )}
                     {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
                       <div className="mt-2">
                         <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {field.value.map((file: File) => (
-                            <div key={file.name} className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-xs">
-                              <span className="text-gray-800 dark:text-gray-200">{file.name}</span>
-                              <Button
+                        <div className="grid grid-cols-3 gap-2">
+                          {field.value.map((file: File, index: number) => (
+                            <div key={file.name + index} className="relative group">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Upload ${index + 1}`}
+                                className="w-full h-20 object-cover rounded border border-gray-600"
+                              />
+                              <button
                                 onClick={() => handleRemoveFile(field.id, file.name)}
-                                className="ml-1 px-1 py-0 bg-red-400 text-white rounded-full hover:bg-red-500 disabled:opacity-50 text-xs leading-none"
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                               >
-                                ✕
-                              </Button>
+                                ×
+                              </button>
                             </div>
                           ))}
                         </div>
