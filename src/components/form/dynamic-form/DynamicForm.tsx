@@ -30,6 +30,7 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "passwordInput", title: "Password Form" },
   { formType: "dateInput", title: "Date Form" },
   { formType: "dateLocal", title: "DateLocal Form" },
+  { formType: "radio", title: "Radio Button Form", options: [] } 
 ];
 
 function createDynamicFormField(
@@ -67,6 +68,7 @@ function createDynamicFormField(
       newOptionText = "";
       break;
     case "select":
+    case "radio":
       defaultValue = "";
       fieldOptions = configItem.options || [];
       newOptionText = "";
@@ -226,7 +228,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
         if (field.id === fieldId && field.options) {
           const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
           let newValue = field.value;
-          if (field.type === "select" && field.value === field.options[optionIndexToRemove]) {
+          if ((field.type === "select" || field.type === "radio") && field.value === field.options[optionIndexToRemove]) {
             newValue = "";
           } else if (field.type === "option" && Array.isArray(field.value)) {
             newValue = field.value.filter(
@@ -396,7 +398,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
             Required
           </label>
         </div>
-        {(field.type === "select" || field.type === "option") && field.options ? (
+        {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
           <div>
             <div className="flex items-center gap-2 mt-2">
               <input
@@ -589,6 +591,23 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
                           }}
                           className="form-checkbox h-5 w-5 text-blue-600 rounded"
                           required={field.required && Array.isArray(field.value) && field.value.length === 0}
+                        />
+                        <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : field.type === "radio" && field.options ? (
+                  <div className="flex flex-col gap-2">
+                    {field.options.map((option) => (
+                      <label key={option} className="inline-flex items-center">
+                        <input
+                          type="radio"
+                          name={field.id}
+                          value={option}
+                          checked={field.value === option}
+                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                          className="form-radio h-5 w-5 text-blue-600"
+                          required={field.required}
                         />
                         <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                       </label>
