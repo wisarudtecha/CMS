@@ -18,20 +18,9 @@ import { FormField } from "@/components/interface/FormField"
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem"
 import createCase from "../../utils/json/createCase.json"
 import sampleCases from "../../utils/json/sampleCases.json"
-import KanbanCard from "@/components/ui/case/CasePage"
-
-interface Case {
-    id: string
-    title: string
-    description?: string
-    status?: string
-    priority: number
-    assignee: string;
-    dueDate: string
-    comments: number
-    category: string
-    customer: string
-}
+import KanbanCard from "@/components/ui/card/Casecard"
+// import KanbanView from "@/components/view/kanbanView"
+import Case from "@/components/interface/Case"
 
 
 
@@ -50,10 +39,10 @@ const defaultCase: Case = {
 }
 
 const statusColumns = [
-    { id: "new", title: "New" },
-    { id: "in-progress", title: "In Progress" },
-    { id: "pending", title: "Pending Review" },
-    { id: "resolved", title: "Resolved" },
+    { title: "new" },
+    { title: "in-progress" },
+    { title: "pending" },
+    { title: "resolved" },
 ]
 
 const getPriorityColorClass = (priority: number): string => {
@@ -200,8 +189,8 @@ export default function CasesPage() {
                 title={caseItem.title}
                 priority_color={getPriorityColorClass(caseItem.priority)}
                 cardChild={cardChilder()}
-                dropdownChild={dropdownChild()} 
-                />
+                dropdownChild={dropdownChild()}
+            />
         );
     };
 
@@ -209,14 +198,14 @@ export default function CasesPage() {
     const KanbanView = () => (
         <div className="flex space-x-6 overflow-x-auto pb-6">
             {statusColumns.map((column) => (
-                (selectedStatus === null || selectedStatus === column.id) && (
-                    <div key={column.id} className="flex-shrink-0 w-80">
+                (selectedStatus === null || selectedStatus === column.title) && (
+                    <div key={column.title} className="flex-shrink-0 w-80">
                         <div className="flex items-center justify-between mb-4 px-2">
                             <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
-                            <Badge color="primary">{getCasesForColumn(column.id).length}</Badge>
+                            <Badge color="primary">{getCasesForColumn(column.title).length}</Badge>
                         </div>
                         <div className="space-y-3 px-2">
-                            {getCasesForColumn(column.id).map((caseItem) => (
+                            {getCasesForColumn(column.title).map((caseItem) => (
                                 <CaseCard key={caseItem.id} case_={caseItem} />
                             ))}
                         </div>
@@ -225,6 +214,7 @@ export default function CasesPage() {
             ))}
         </div>
     )
+
 
     const ListView = () => (
         <div className="space-y-2">
@@ -358,13 +348,13 @@ export default function CasesPage() {
                             </div>
                             {statusColumns.map((col) => (
                                 <div
-                                    key={col.id}
-                                    className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === col.id ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                                    onClick={() => setSelectedStatus(col.id)}
+                                    key={col.title}
+                                    className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === col.title ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                    onClick={() => setSelectedStatus(col.title)}
                                 >
                                     <span className="text-sm">{col.title}</span>
                                     <Badge color="primary">
-                                        {sampleCases.filter((case_) => case_.status === col.id).length}
+                                        {sampleCases.filter((case_) => case_.status === col.title).length}
                                     </Badge>
                                 </div>
                             ))}
