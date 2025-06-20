@@ -9,7 +9,7 @@
  * @metadata
  * Author: [Wisarud Techa]
  * First Created: [11-06-2025] v0.1.0
- * Last Updated: [16-06-2025] v0.1.3
+ * Last Updated: [20-06-2025] v0.1.7
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -28,6 +28,7 @@ import
 from 'react';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
+// import FileInput from "../../components/form/input/FileInput";
 import Input from "../../components/form/input/InputField";
 import Select from "../../components/form/Select";
 import TextArea from "../../components/form/input/TextArea";
@@ -35,13 +36,22 @@ import Alert from "../../components/ui/alert/Alert";
 import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
 import {
+  AngleLeftIcon,
+  AngleRightIcon,
+  BoxCubeIcon,
   CheckLineIcon,
+  CloseIcon,
   CopyIcon,
   DownloadIcon,
   FileIcon,
   PencilIcon,
   TrashBinIcon
 } from "../../icons";
+
+// Updated: [19-06-2025] v0.1.6
+import workflowData from '../../mocks/workflowData.json';
+import workflowForm from '../../mocks/workflowForm.json';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 
 // TypeScript interfaces
 interface Position {
@@ -66,6 +76,7 @@ interface Connection {
   target: string;
   sourceHandle?: string;
   targetHandle?: string;
+
   // Updated: [16-06-2025] v0.1.3
   label?: string; // For Yes/No labels
 }
@@ -73,6 +84,7 @@ interface Connection {
 interface WorkflowData {
   nodes: WorkflowNode[];
   connections: Connection[];
+
   // Updated: [12-06-2025] v0.1.2
   metadata: {
     title: string;
@@ -85,10 +97,32 @@ interface WorkflowData {
 
 interface WorkflowEditorProps {
   initialData?: WorkflowData;
+
   // Updated: [16-06-2025] v0.1.3
   workflowId?: string; // For loading from URL
+
   onSave?: (data: WorkflowData) => void;
 }
+
+// Updated: [19-06-2025] v0.1.6
+type NodeType = {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: {
+    label: string;
+    description: string;
+    config?: Record<string, unknown>;
+  };
+};
+
+// Updated: [19-06-2025] v0.1.6
+type ConnectionType = {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+};
 
 // Updated: [12-06-2025] v0.1.1
 // Grid configuration
@@ -107,11 +141,51 @@ const workflowStatuses = [
 
 // Node type configurations
 const nodeTypes = {
-  start: { color: 'bg-green-500 dark:bg-green-400', label: 'Start' },
-  process: { color: 'bg-blue-500 dark:bg-blue-400', label: 'Process' },
-  decision: { color: 'bg-yellow-500 dark:bg-yellow-400', label: 'Decision' },
-  end: { color: 'bg-red-500 dark:bg-red-400', label: 'End' }
+  start: { button: 'bg-success-500 text-white dark:text-white hover:bg-success-600', color: 'bg-success-500 dark:bg-success-400', label: 'Start' },
+  process: { button: 'bg-brand-500 text-white dark:text-white hover:bg-brand-600', color: 'bg-brand-500 dark:bg-brand-400', label: 'Process' },
+  decision: { button: 'bg-warning-500 text-white dark:text-white hover:bg-warning-600', color: 'bg-warning-500 dark:bg-warning-400', label: 'Decision' },
+  end: { button: 'bg-error-500 text-white dark:text-white hover:bg-error-600', color: 'bg-error-500 dark:bg-error-400', label: 'End' }
 };
+
+const threeLayerBreadcrumb = [
+  { label: "Home", href: "/" },
+  { label: "Workflows", href: "/workflows" },
+  { label: "Workflow Builder" },
+];
+
+const actionOptions = [
+  { value: "new", label: "New" },
+  { value: "disp", label: "Dispatching" },
+  { value: "accept", label: "Accept" },
+  { value: "arrival", label: "Arrival" },
+  { value: "resolve", label: "Resolve" },
+  { value: "complete", label: "Complete" },
+  { value: "alert", label: "Email" },
+  { value: "assign", label: "Assign Vender" },
+  { value: "fix", label: "Fix" }
+];
+
+// Updated: [16-06-2025] v0.1.3
+const formOptions = [
+  { value: "new", label: "Form - New" },
+  { value: "disp", label: "Form - Dispatching" },
+  { value: "accept", label: "Button - Accept" },
+  { value: "arrival", label: "Button - Arrival" },
+  { value: "resolve", label: "Button - Resolve" },
+  { value: "complete", label: "Button - Complete" },
+  { value: "alert", label: "Toast - Email" },
+  { value: "assign", label: "Select - Assign Vender" },
+  { value: "fix", label: "Form - Fix" }
+];
+
+// Updated: [16-06-2025] v0.1.3
+const PICOptions = [
+  { value: "admin", label: "Administrator" },
+  { value: "agent", label: "Agent" },
+  { value: "dispatcher", label: "Dispatcher" },
+  { value: "responder", label: "Responder" },
+  { value: "supervisor", label: "Supervisor" },
+];
 
 const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({ 
   initialData = {
@@ -135,57 +209,38 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
   const [tempConnection, setTempConnection] = useState<Position | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Updated: [12-06-2025] v0.1.1
   const [showJsonPreview, setShowJsonPreview] = useState<boolean>(false);
+
   // Updated: [12-06-2025] v0.1.2
   const [workflowMetadata, setWorkflowMetadata] = useState(initialData.metadata);
+
   // Updated: [16-06-2025] v0.1.3
   const [connectingFrom, setConnectingFrom] = useState<'yes' | 'no' | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
 
-  const threeLayerBreadcrumb = [
-    { label: "Home", href: "/" },
-    { label: "Workflows", href: "/workflows" },
-    { label: "Workflow Builder" },
-  ];
+  // Updated: [17-06-2025] v0.1.4
+  const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
+  const [showComponentsPreview, setShowComponentsPreview] = useState<boolean>(false);
+  const [importJsonText, setImportJsonText] = useState<string>('');
 
-  const actionOptions = [
-    { value: "new", label: "New" },
-    { value: "disp", label: "Dispatching" },
-    { value: "accept", label: "Accept" },
-    { value: "arrival", label: "Arrival" },
-    { value: "resolve", label: "Resolve" },
-    { value: "complete", label: "Complete" },
-    { value: "alert", label: "Email" },
-    { value: "assign", label: "Assign Vender" },
-    { value: "fix", label: "Fix" }
-  ];
+  // Updated: [18-06-2025] v0.1.5
+  // const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [draggedNodeType, setDraggedNodeType] = useState<WorkflowNode['type'] | null>(null);
+  // const [dragPreview, setDragPreview] = useState<Position | null>(null);
 
-  // Updated: [16-06-2025] v0.1.3
-  const formOptions = [
-    { value: "new", label: "Form - New" },
-    { value: "disp", label: "Form - Dispatching" },
-    { value: "accept", label: "Button - Accept" },
-    { value: "arrival", label: "Button - Arrival" },
-    { value: "resolve", label: "Button - Resolve" },
-    { value: "complete", label: "Button - Complete" },
-    { value: "alert", label: "Toast - Email" },
-    { value: "assign", label: "Select - Assign Vender" },
-    { value: "fix", label: "Form - Fix" }
-  ];
+  // Updated: [19-06-2025] v0.1.6
+  // Enhanced state for Components Preview
+  const [decisionSelections, setDecisionSelections] = useState<Record<string, 'yes' | 'no'>>({});
+  // const [currentPath, setCurrentPath] = useState<string[]>([]);
+  
+  const svgRef = useRef<SVGSVGElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Updated: [16-06-2025] v0.1.3
-  const PICOptions = [
-    { value: "admin", label: "Administrator" },
-    { value: "agent", label: "Agent" },
-    { value: "dispatcher", label: "Dispatcher" },
-    { value: "responder", label: "Responder" },
-    { value: "supervisor", label: "Supervisor" },
-  ];
+  // Updated: [17-06-2025] v0.1.4
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Updated: [12-06-2025] v0.1.2
   // Prepare workflow status options for Select component
@@ -202,66 +257,96 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
       const loadWorkflowFromUrl = async () => {
         try {
           // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 100));
           
           // Mock workflow data - replace with actual API call
-          const mockWorkflowData = {
-            nodes: [
-              {
-                id: 'start-1',
-                type: 'start' as const,
-                position: { x: 100, y: 200 },
-                data: { label: 'Start Process', description: 'Workflow entry point' }
-              },
-              {
-                id: 'process-1',
-                type: 'process' as const,
-                position: { x: 300, y: 200 },
-                data: { 
-                  label: 'Review Application',
-                  description: 'Review submitted application',
-                  config: {
-                    action: 'review_application',
-                    form: 'application_form',
-                    sla: '24',
-                    pic: 'john_doe'
-                  }
-                }
-              },
-              {
-                id: 'decision-1',
-                type: 'decision' as const,
-                position: { x: 500, y: 200 },
-                data: { 
-                  label: 'Approve?',
-                  description: 'Decision to approve or reject',
-                  config: { condition: 'application.score > 70' }
-                }
-              },
-              {
-                id: 'end-1',
-                type: 'end' as const,
-                position: { x: 700, y: 200 },
-                data: { label: 'End Process', description: 'Workflow completion' }
-              }
-            ],
-            connections: [
-              { id: 'conn-1', source: 'start-1', target: 'process-1' },
-              { id: 'conn-2', source: 'process-1', target: 'decision-1' },
-              { id: 'conn-3', source: 'decision-1', target: 'end-1', label: 'yes' }
-            ],
+          // const mockWorkflowData = {
+          //   nodes: [
+          //     {
+          //       id: 'start-1',
+          //       type: 'start' as const,
+          //       position: { x: 100, y: 200 },
+          //       data: { label: 'Start Process', description: 'Workflow entry point' }
+          //     },
+          //     {
+          //       id: 'process-1',
+          //       type: 'process' as const,
+          //       position: { x: 300, y: 200 },
+          //       data: { 
+          //         label: 'Review Application',
+          //         description: 'Review submitted application',
+          //         config: {
+          //           action: 'review_application',
+          //           form: 'application_form',
+          //           sla: '24',
+          //           pic: 'john_doe'
+          //         }
+          //       }
+          //     },
+          //     {
+          //       id: 'decision-1',
+          //       type: 'decision' as const,
+          //       position: { x: 500, y: 200 },
+          //       data: { 
+          //         label: 'Approve?',
+          //         description: 'Decision to approve or reject',
+          //         config: { condition: 'application.score > 70' }
+          //       }
+          //     },
+          //     {
+          //       id: 'end-1',
+          //       type: 'end' as const,
+          //       position: { x: 700, y: 200 },
+          //       data: { label: 'End Process', description: 'Workflow completion' }
+          //     }
+          //   ],
+          //   connections: [
+          //     { id: 'conn-1', source: 'start-1', target: 'process-1' },
+          //     { id: 'conn-2', source: 'process-1', target: 'decision-1' },
+          //     { id: 'conn-3', source: 'decision-1', target: 'end-1', label: 'yes' }
+          //   ],
+          //   metadata: {
+          //     title: `Workflow ${workflowId}`,
+          //     description: 'Loaded from URL',
+          //     status: 'active' as const,
+          //     createdAt: '2025-06-01T10:00:00Z'
+          //   }
+          // };
+          // setNodes(mockWorkflowData.nodes);
+          // setConnections(mockWorkflowData.connections);
+          // setWorkflowMetadata(mockWorkflowData.metadata);
+
+          // Updated: [19-06-2025] v0.1.6
+          const { nodes, connections, metadata } = workflowData as {
+            nodes: NodeType[];
+            connections: ConnectionType[];
             metadata: {
-              title: `Workflow ${workflowId}`,
-              description: 'Loaded from URL',
-              status: 'active' as const,
-              createdAt: '2025-06-01T10:00:00Z'
-            }
+              title: string;
+              description: string;
+              status: string;
+              createdAt: string;
+            };
           };
           
-          setNodes(mockWorkflowData.nodes);
-          setConnections(mockWorkflowData.connections);
-          setWorkflowMetadata(mockWorkflowData.metadata);
-        } catch (error) {
+          // Updated: [19-06-2025] v0.1.6
+          setNodes(
+            nodes.map((n) => ({
+              ...n,
+              type: n.type as WorkflowNode['type'],
+            }))
+          );
+
+          // Updated: [19-06-2025] v0.1.6
+          setConnections(connections);
+
+          // Updated: [19-06-2025] v0.1.6
+          setWorkflowMetadata({
+            ...metadata,
+            status: metadata.status as WorkflowData['metadata']['status'],
+          });
+        }
+        catch (error) {
           console.error('Failed to load workflow:', error);
         }
       };
@@ -331,14 +416,11 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
     // Calculate direction vector
     // const dx = otherCenter.x - nodeCenter.x;
     // const dy = otherCenter.y - nodeCenter.y;
-    
     // Calculate intersection with node border (rectangle)
     // const absAngle = Math.atan2(Math.abs(dy), Math.abs(dx));
     // const nodeHalfWidth = NODE_WIDTH / 2;
     // const nodeHalfHeight = NODE_HEIGHT / 2;
-    
     // let borderX, borderY;
-    
     // Determine which edge of the rectangle the line intersects
     // if (absAngle < Math.atan2(nodeHalfHeight, nodeHalfWidth)) {
       // Intersects left or right edge
@@ -350,7 +432,6 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
       // borderX = nodeCenter.x + (dx * nodeHalfHeight) / Math.abs(dy);
       // borderY = nodeCenter.y + (dy > 0 ? nodeHalfHeight : -nodeHalfHeight);
     // }
-
     // return snapToGrid({ x: borderX, y: borderY });
 
     // Updated: [16-06-2025] v0.1.3
@@ -380,29 +461,537 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
     // snapToGrid
   ]);
 
+  // Updated: [19-06-2025] v0.1.6
+  // Enhanced path traversal for Components Preview
+  const getWorkflowPath = useCallback((startNodeId: string, decisions: Record<string, 'yes' | 'no'>): string[] => {
+    const path: string[] = [];
+    const visited = new Set<string>();
+    
+    const traverse = (nodeId: string) => {
+      if (visited.has(nodeId)) {
+        return;
+      }
+      visited.add(nodeId);
+      
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node) {
+        return;
+      }
+      
+      path.push(nodeId);
+      
+      if (node.type === 'end') {
+        return;
+      }
+      
+      const outgoingConnections = connections.filter(c => c.source === nodeId);
+      
+      if (node.type === 'decision') {
+        const selectedPath = decisions[nodeId] || 'yes'; // Default to yes
+        const connection = outgoingConnections.find(c => c.label === selectedPath);
+        if (connection) {
+          traverse(connection.target);
+        }
+      } else {
+        // For non-decision nodes, follow the first connection
+        if (outgoingConnections.length > 0) {
+          traverse(outgoingConnections[0].target);
+        }
+      }
+    };
+    
+    traverse(startNodeId);
+    return path;
+  }, [nodes, connections]);
+
+  // Updated: [17-06-2025] v0.1.4
+  // Get form component configuration
+  const getFormComponentConfig = useCallback((formType: string) => {
+    interface FormFieldConfig {
+      name: string;
+      type: string;
+      label: string;
+      required?: boolean;
+      options?: string[];
+    }
+
+    interface FormConfig {
+      fields: FormFieldConfig[];
+    }
+
+    // const formConfigs: Record<string, FormConfig> = {
+    //   new: {
+    //     fields: [
+    //       { name: 'applicant_name', type: 'text', label: 'Applicant Name', required: true },
+    //       { name: 'email', type: 'email', label: 'Email Address', required: true },
+    //       { name: 'phone', type: 'tel', label: 'Phone Number', required: true },
+    //       { name: 'application_type', type: 'select', label: 'Application Type', 
+    //         options: ['Personal', 'Business', 'Non-profit'], required: true },
+    //       { name: 'description', type: 'textarea', label: 'Description', required: false }
+    //     ]
+    //   },
+    //   disp: {
+    //     fields: [
+    //       { name: 'approval_status', type: 'radio', label: 'Approval Status', 
+    //         options: ['Approved', 'Rejected', 'Pending'], required: true },
+    //       { name: 'comments', type: 'textarea', label: 'Comments', required: false },
+    //       { name: 'approver_signature', type: 'text', label: 'Approver Signature', required: true }
+    //     ]
+    //   },
+    //   accept: {
+    //     fields: [
+    //       { name: 'review_score', type: 'number', label: 'Review Score (1-10)', required: true },
+    //       { name: 'review_comments', type: 'textarea', label: 'Review Comments', required: true },
+    //       { name: 'recommendations', type: 'checkbox', label: 'Recommendations', 
+    //         options: ['Approve', 'Request Changes', 'Schedule Follow-up'], required: false }
+    //     ]
+    //   },
+    //   arrival: {
+    //     fields: [
+    //       { name: 'rating', type: 'number', label: 'Rating (1-5)', required: true },
+    //       { name: 'feedback_text', type: 'textarea', label: 'Feedback', required: true },
+    //       { name: 'improvement_areas', type: 'checkbox', label: 'Areas for Improvement', 
+    //         options: ['Speed', 'Quality', 'Communication', 'Documentation'], required: false }
+    //     ]
+    //   },
+    //   resolve: {
+    //     fields: [
+    //       { name: 'request_type', type: 'select', label: 'Request Type', 
+    //         options: ['Information', 'Service', 'Support', 'Change'], required: true },
+    //       { name: 'priority', type: 'radio', label: 'Priority', 
+    //         options: ['Low', 'Medium', 'High', 'Critical'], required: true },
+    //       { name: 'details', type: 'textarea', label: 'Request Details', required: true }
+    //     ]
+    //   },
+    //   complete: {
+    //     fields: [
+    //       { name: 'applicant_name', type: 'text', label: 'Applicant Name', required: true },
+    //       { name: 'email', type: 'email', label: 'Email Address', required: true },
+    //       { name: 'phone', type: 'tel', label: 'Phone Number', required: true },
+    //       { name: 'application_type', type: 'select', label: 'Application Type', 
+    //         options: ['Personal', 'Business', 'Non-profit'], required: true },
+    //       { name: 'description', type: 'textarea', label: 'Description', required: false }
+    //     ]
+    //   },
+    //   alert: {
+    //     fields: [
+    //       { name: 'approval_status', type: 'radio', label: 'Approval Status', 
+    //         options: ['Approved', 'Rejected', 'Pending'], required: true },
+    //       { name: 'comments', type: 'textarea', label: 'Comments', required: false },
+    //       { name: 'approver_signature', type: 'text', label: 'Approver Signature', required: true }
+    //     ]
+    //   },
+    //   assign: {
+    //     fields: [
+    //       { name: 'review_score', type: 'number', label: 'Review Score (1-10)', required: true },
+    //       { name: 'review_comments', type: 'textarea', label: 'Review Comments', required: true },
+    //       { name: 'recommendations', type: 'checkbox', label: 'Recommendations', 
+    //         options: ['Approve', 'Request Changes', 'Schedule Follow-up'], required: false }
+    //     ]
+    //   },
+    //   fix: {
+    //     fields: [
+    //       { name: 'rating', type: 'number', label: 'Rating (1-5)', required: true },
+    //       { name: 'feedback_text', type: 'textarea', label: 'Feedback', required: true },
+    //       { name: 'improvement_areas', type: 'checkbox', label: 'Areas for Improvement', 
+    //         options: ['Speed', 'Quality', 'Communication', 'Documentation'], required: false }
+    //     ]
+    //   }
+    // };
+
+    // Updated: [19-06-2025] v0.1.6
+    const formConfigs: Record<string, FormConfig> = workflowForm;
+    
+    return formConfigs[formType] || { fields: [] };
+  }, []);
+
+  // Updated: [17-06-2025] v0.1.4
+  // Generate components preview based on workflow path
+  const generateComponentsPreview = useCallback(() => {
+    const startNodes = nodes.filter(n => n.type === 'start');
+    if (startNodes.length === 0) {
+      return [];
+    }
+
+    // Updated: [19-06-2025] v0.1.6
+    const pathNodes = getWorkflowPath(startNodes[0].id, decisionSelections);
+
+    // const components: any[] = [];
+    type PreviewComponent =
+      // Updated: [19-06-2025] v0.1.6
+      | {
+          id: string;
+          type: 'start';
+          label: string;
+          description?: string;
+
+          // Updated: [20-06-2025] v0.1.7
+          continueFromWorkflow?: boolean;
+          sourceWorkflowId?: string;
+        }
+
+      | {
+          id: string;
+          type: 'form';
+          label: string;
+          form: string;
+          formConfig: ReturnType<typeof getFormComponentConfig>;
+          sla?: string | number;
+          pic?: string;
+        }
+      | {
+          id: string;
+          type: 'decision';
+          label: string;
+          condition?: string;
+        }
+
+      // Updated: [19-06-2025] v0.1.6
+      | {
+          id: string;
+          type: 'end';
+          label: string;
+          description?: string;
+
+          // Updated: [20-06-2025] v0.1.7
+          allowContinuation?: boolean;
+          nextWorkflowId?: string;
+        };
+    const components: PreviewComponent[] = [];
+    
+    // const visited = new Set<string>();
+    // const traverseWorkflow = (nodeId: string) => {
+    //   if (visited.has(nodeId)) {
+    //     return;
+    //   }
+    //   visited.add(nodeId);
+    //   const node = nodes.find(n => n.id === nodeId);
+    //   if (!node) {
+    //     return;
+    //   }
+    //   // Add component for process nodes with forms
+    //   if (node.type === 'process' && node.data.config?.form) {
+    //     // const formConfig = getFormComponentConfig(node.data.config.form);
+    //     const formConfig = getFormComponentConfig(
+    //       typeof node.data.config?.form === 'string' ? node.data.config.form : ''
+    //     );
+    //     components.push({
+    //       id: node.id,
+    //       type: 'form',
+    //       label: node.data.label,
+    //       // form: node.data.config.form,
+    //       form: typeof node.data.config?.form === 'string' ? node.data.config.form : '',
+    //       formConfig,
+    //       // sla: node.data.config?.sla,
+    //       sla: typeof node.data.config?.sla === 'string' || typeof node.data.config?.sla === 'number' ? node.data.config.sla : undefined,
+    //       // pic: node.data.config?.pic
+    //       pic: typeof node.data.config?.pic === 'string' ? node.data.config.pic : undefined
+    //     });
+    //   }
+    //   // Add component for decision nodes
+    //   if (node.type === 'decision') {
+    //     components.push({
+    //       id: node.id,
+    //       type: 'decision',
+    //       label: node.data.label,
+    //       // condition: node.data.config?.condition
+    //       condition: typeof node.data.config?.condition === 'string' ? node.data.config.condition : undefined
+    //     });
+    //   }
+    //   // Follow connections
+    //   const outgoingConnections = connections.filter(c => c.source === nodeId);
+    //   outgoingConnections.forEach(conn => {
+    //     traverseWorkflow(conn.target);
+    //   });
+    // };
+    // startNodes.forEach(startNode => {
+    //   traverseWorkflow(startNode.id);
+    // });
+
+    // Updated: [19-06-2025] v0.1.6
+    pathNodes.forEach(nodeId => {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node) {
+        return;
+      }
+
+      if (node.type === 'start') {
+        components.push({
+          id: node.id,
+          type: 'start',
+          label: node.data.label,
+          description: node.data.description,
+
+          // Updated: [20-06-2025] v0.1.7
+          continueFromWorkflow: node.data.config?.continueFromWorkflow === true,
+          sourceWorkflowId: typeof node.data.config?.sourceWorkflowId === 'string' ? node.data.config.sourceWorkflowId : undefined
+        });
+      }
+      else if (node.type === 'process' && node.data.config?.form) {
+        const formConfig = getFormComponentConfig(
+          typeof node.data.config?.form === 'string' ? node.data.config.form : ''
+        );
+        components.push({
+          id: node.id,
+          type: 'form',
+          label: node.data.label,
+          form: typeof node.data.config?.form === 'string' ? node.data.config.form : '',
+          formConfig,
+          sla: typeof node.data.config?.sla === 'string' || typeof node.data.config?.sla === 'number' ? node.data.config.sla : undefined,
+          pic: typeof node.data.config?.pic === 'string' ? node.data.config.pic : undefined
+        });
+      }
+      else if (node.type === 'decision') {
+        components.push({
+          id: node.id,
+          type: 'decision',
+          label: node.data.label,
+          condition: typeof node.data.config?.condition === 'string' ? node.data.config.condition : undefined
+        });
+      }
+      else if (node.type === 'end') {
+        components.push({
+          id: node.id,
+          type: 'end',
+          label: node.data.label,
+          description: node.data.description,
+
+          // Updated: [20-06-2025] v0.1.7
+          allowContinuation: node.data.config?.allowContinuation === true,
+          nextWorkflowId: typeof node.data.config?.nextWorkflowId === 'string' ? node.data.config.nextWorkflowId : undefined
+        });
+      }
+    });
+    
+    return components;
+  }, [
+    nodes,
+    // connections,
+
+    // Updated: [19-06-2025] v0.1.6
+    decisionSelections,
+    getWorkflowPath,
+
+    getFormComponentConfig
+  ]);
+
+  // Updated: [19-06-2025] v0.1.6
+  // Handle decision toggle in Components Preview
+  const handleDecisionToggle = useCallback((nodeId: string, decision: 'yes' | 'no') => {
+    setDecisionSelections(prev => ({
+      ...prev,
+      [nodeId]: decision
+    }));
+  }, []);
+
   // Add new node
-  const addNode = useCallback((type: WorkflowNode['type']) => {
+  // const addNode = useCallback((type: WorkflowNode['type']) => {
+  //   const newNode: WorkflowNode = {
+  //     id: `node-${Date.now()}`,
+  //     type,
+  //     // position: { x: 200, y: 200 },
+  //     // Updated: [16-06-2025] v0.1.3
+  //     position: snapToGrid({ x: 200, y: 200 }),
+  //     data: {
+  //       label: `${nodeTypes[type].label} ${nodes.length + 1}`,
+  //       description: '',
+  //       config: {}
+  //     }
+  //   };
+  //   setNodes(prev => [...prev, newNode]);
+  // }, [
+  //   nodes.length,
+  //   // Updated: [16-06-2025] v0.1.3
+  //   snapToGrid
+  // ]);
+
+  // Updated: [18-06-2025] v0.1.5
+  // Add new node with dynamic grid positioning
+  const addNode = useCallback((type: WorkflowNode['type'], position?: Position) => {
+    // Calculate dynamic grid position if not provided
+    let nodePosition = position;
+    if (!nodePosition) {
+      // Updated: [20-06-2025] v0.1.7
+      // Get the current scroll position of the canvas
+      const canvasElement = canvasRef.current;
+      const scrollLeft = canvasElement?.scrollLeft || 0;
+      const scrollTop = canvasElement?.scrollTop || 0;
+      
+      // Updated: [20-06-2025] v0.1.7
+      // Position new nodes at top-left of visible canvas area with some padding
+      const baseX = scrollLeft + GRID_SIZE * 2; // 2 grid units from left edge
+      const baseY = scrollTop + GRID_SIZE * 4;  // 4 grid units from top edge
+
+      // Find next available grid position
+      const existingPositions = nodes.map(n => n.position);
+      
+      // const gridCols = Math.floor(2000 / (NODE_WIDTH + GRID_SIZE));
+      // for (let row = 0; row < 20; row++) {
+      //   for (let col = 0; col < gridCols; col++) {
+      //     const testPosition = {
+      //       x: col * (NODE_WIDTH + GRID_SIZE) + GRID_SIZE,
+      //       y: row * (NODE_HEIGHT + GRID_SIZE) + GRID_SIZE + 100
+      //     };
+      //     // Check if position is occupied
+      //     const isOccupied = existingPositions.some(pos => 
+      //       Math.abs(pos.x - testPosition.x) < NODE_WIDTH && 
+      //       Math.abs(pos.y - testPosition.y) < NODE_HEIGHT
+      //     );
+      //     if (!isOccupied) {
+      //       nodePosition = snapToGrid(testPosition);
+      //       break;
+      //     }
+      //   }
+      //   if (nodePosition) {
+      //     break;
+      //   }
+      // }
+
+      // Updated: [20-06-2025] v0.1.7
+      for (let row = 0; row < 10; row++) {
+        for (let col = 0; col < 8; col++) {
+          const testPosition = {
+            x: baseX + col * (NODE_WIDTH + GRID_SIZE),
+            y: baseY + row * (NODE_HEIGHT + GRID_SIZE)
+          };
+          
+          const isOccupied = existingPositions.some(pos => 
+            Math.abs(pos.x - testPosition.x) < NODE_WIDTH && 
+            Math.abs(pos.y - testPosition.y) < NODE_HEIGHT
+          );
+          
+          if (!isOccupied) {
+            nodePosition = snapToGrid(testPosition);
+            break;
+          }
+        }
+        if (nodePosition) break;
+      }
+      
+      // Fallback position if no free spot found
+      if (!nodePosition) {
+        // nodePosition = snapToGrid({ x: 200 + nodes.length * 150, y: 200 });
+
+        // Updated: [20-06-2025] v0.1.7
+        nodePosition = snapToGrid({ x: baseX, y: baseY });
+      }
+    }
+
+    // Updated: [20-06-2025] v0.1.7
+    // Initialize config based on node type
+    let initialConfig = {};
+    if (type === 'start') {
+      initialConfig = {
+        continueFromWorkflow: false,
+        sourceWorkflowId: ''
+      };
+    }
+    else if (type === 'end') {
+      initialConfig = {
+        allowContinuation: false,
+        nextWorkflowId: ''
+      };
+    }
+
     const newNode: WorkflowNode = {
       id: `node-${Date.now()}`,
       type,
-      // position: { x: 200, y: 200 },
-
-      // Updated: [16-06-2025] v0.1.3
-      position: snapToGrid({ x: 200, y: 200 }),
-
+      position: nodePosition,
       data: {
-        label: `${nodeTypes[type].label} ${nodes.length + 1}`,
+        label: `${nodeTypes[type].label} ${nodes.filter(n => n.type === type).length + 1}`,
         description: '',
-        config: {}
+        // config: {}
+
+        // Updated: [20-06-2025] v0.1.7
+        config: initialConfig
       }
     };
+    
     setNodes(prev => [...prev, newNode]);
-  }, [
-    nodes.length,
+    
+    // Automatically select the newly added node
+    setSelectedNode(newNode);
+    
+    return newNode;
+  }, [nodes, snapToGrid]);
 
-    // Updated: [16-06-2025] v0.1.3
-    snapToGrid
+  // Updated: [18-06-2025] v0.1.5
+  // Handle drag start from node palette
+  const handleDragStart = useCallback((e: React.DragEvent, nodeType: WorkflowNode['type']) => {
+    setDraggedNodeType(nodeType);
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', nodeType);
+  }, []);
+
+  // Updated: [18-06-2025] v0.1.5
+  // Handle drag over canvas
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    
+    // if (draggedNodeType) {
+    //   const rect = canvasRef.current?.getBoundingClientRect();
+    //   if (rect) {
+    //     // const position = snapToGrid({
+    //     //   x: e.clientX - rect.left - NODE_WIDTH / 2,
+    //     //   y: e.clientY - rect.top - NODE_HEIGHT / 2
+    //     // });
+    //     // setDragPreview(position);
+    //   }
+    // }
+  }, [
+    // draggedNodeType,
+    // snapToGrid
   ]);
+
+  // Updated: [18-06-2025] v0.1.5
+  // Handle drop on canvas
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    
+    if (draggedNodeType) {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (rect) {
+        const position = snapToGrid({
+          x: e.clientX - rect.left - NODE_WIDTH / 2,
+          y: e.clientY - rect.top - NODE_HEIGHT / 2
+        });
+        
+        const newNode = addNode(draggedNodeType, position);
+        
+        // Automatically handle mouse down for the newly added node
+        setTimeout(() => {
+          if (newNode) {
+            setSelectedNode(newNode);
+          }
+        }, 50);
+      }
+    }
+    
+    setDraggedNodeType(null);
+    // setDragPreview(null);
+  }, [draggedNodeType, addNode, snapToGrid]);
+
+  // Updated: [18-06-2025] v0.1.5
+  // Handle drag leave
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Only clear preview if actually leaving the canvas area
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        // setDragPreview(null);
+      }
+    }
+  }, []);
+
+  // Updated: [18-06-2025] v0.1.5
+  // Toggle fullscreen mode
+  // const toggleFullscreen = useCallback(() => {
+  //   setIsFullscreen(prev => !prev);
+  // }, []);
 
   // Handle mouse down on node
   const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
@@ -598,6 +1187,70 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
     }
   }, [selectedNode]);
 
+  // Updated: [17-06-2025] v0.1.4
+  // Import JSON workflow
+  const importJsonWorkflow = useCallback(() => {
+    try {
+      const workflowData = JSON.parse(importJsonText);
+      
+      // Validate imported data structure
+      if (!workflowData.nodes || !workflowData.connections || !workflowData.metadata) {
+        throw new Error('Invalid workflow format');
+      }
+      
+      setNodes(workflowData.nodes);
+      setConnections(workflowData.connections);
+      setWorkflowMetadata(workflowData.metadata);
+      setImportJsonText('');
+      setShowImportDialog(false);
+      
+      console.log('Workflow imported successfully');
+    }
+    catch (error) {
+      alert('Invalid JSON format. Please check your input.');
+      console.error('Import error:', error);
+    }
+  }, [importJsonText]);
+
+  // Updated: [17-06-2025] v0.1.4
+  // Import from file
+  const handleFileImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setImportJsonText(content);
+      };
+      reader.readAsText(file);
+    }
+  }, []);
+
+  // Updated: [17-06-2025] v0.1.4
+  // Download JSON workflow
+  const downloadJsonWorkflow = useCallback(() => {
+    const workflowData = {
+      nodes,
+      connections,
+      metadata: {
+        ...workflowMetadata,
+        updatedAt: new Date().toISOString()
+      }
+    };
+    
+    const jsonString = JSON.stringify(workflowData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${workflowMetadata.title.replace(/\s+/g, '_').toLowerCase()}_workflow.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [nodes, connections, workflowMetadata]);
+
   // Updated: [16-06-2025] v0.1.3
   // Copy JSON to clipboard
   const copyJsonToClipboard = useCallback(async () => {
@@ -633,6 +1286,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
     const workflowData: WorkflowData = {
       nodes,
       connections,
+
       // Updated: [12-06-2025] v0.1.2
       metadata: {
         ...workflowMetadata,
@@ -699,17 +1353,34 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
 
       <PageBreadcrumb items={threeLayerBreadcrumb} />
 
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700">
+      <div
+        className="flex bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700"
+        // className={`flex bg-gray-50 dark:bg-gray-700 rounded-2xl ${isFullscreen ? '' : 'border'} border-gray-200 dark:border-gray-700`}
+      >
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileImport}
+          className="hidden"
+        />
+
         {/* Toolbar */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl">
+        <div
+          className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl"
+          // className={`${isFullscreen ? 'hidden' : 'w-80'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl`}
+        >
           {/* Updated: [12-06-2025] v0.1.2 */}
           {/* Workflow Metadata */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Workflow Details</h3>
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              Workflow Details
+            </h3>
             
             {/* Title Input */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Title
               </label>
               <Input
@@ -721,8 +1392,8 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
             </div>
 
             {/* Description Input */}
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Description
               </label>
               <TextArea
@@ -735,7 +1406,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
             </div>
 
             {/* Status Selector */}
-            <div className="mb-3">
+            <div className="mb-2">
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Status
               </label>
@@ -762,25 +1433,70 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
           </div>
 
           {/* Node Types */}
-          <div className="mb-6">
+          <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Add Nodes</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(nodeTypes).map(([type, config]) => {
                 return (
-                  <Button
+                  // <Button
+                  //   key={type}
+                  //   onClick={() => addNode(type as WorkflowNode['type'])}
+                  //   variant="outline"
+                  // >
+                  //   <span className="text-gray-700 dark:text-gray-200">{config.label}</span>
+                  // </Button>
+
+                  // Updated: [18-06-2025] v0.1.5
+                  <div
                     key={type}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, type as WorkflowNode['type'])}
                     onClick={() => addNode(type as WorkflowNode['type'])}
-                    variant="outline"
+                    // className="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-grab active:cursor-grabbing select-none"
+                    className={`flex items-center gap-2 p-2 border rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
+                    title={`Click to add or drag to canvas: ${config.label}`}
                   >
-                    <span className="text-gray-700 dark:text-gray-200">{config.label}</span>
-                  </Button>
+                    <span className="text-xs text-center w-100">{config.label}</span>
+                  </div>
                 );
               })}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="mb-6">
+          <div className="mb-2">
+            {/* Updated: [17-06-2025] v0.1.4 */}
+            <Button
+              onClick={() => setShowImportDialog(true)}
+              className="w-full mb-2"
+              variant="success"
+            >
+              <FileIcon className="w-4 h-4" />
+              Import JSON
+            </Button>
+
+            {/* Updated: [17-06-2025] v0.1.4 */}
+            <Button
+              onClick={() => setShowComponentsPreview(true)}
+              className="w-full mb-2"
+              variant="info"
+            >
+              <BoxCubeIcon className="w-4 h-4" />
+              Components Preview
+            </Button>
+
+            {/* Updated: [12-06-2025] v0.1.1 */}
+            {/*
+            <Button
+              onClick={() => setShowJsonPreview(true)}
+              className="w-full mb-2"
+              variant="dark"
+            >
+              <FileIcon className="w-4 h-4" />
+              Preview Data
+            </Button>
+            */}
+
             <Button
               onClick={handleSaveClick}
               className="w-full mb-2"
@@ -789,46 +1505,79 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
               <DownloadIcon className="w-4 h-4" />
               Save Workflow
             </Button>
-
-            {/* Updated: [12-06-2025] v0.1.1 */}
-            <Button
-              onClick={() => setShowJsonPreview(true)}
-              className="w-full"
-              variant="outline"
-            >
-              <FileIcon className="w-4 h-4" />
-              Preview Data
-            </Button>
           </div>
 
           {/* Instructions */}
-          <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            <p>• Click nodes to add at top-left of visible canvas</p>
+            <p>• Drag nodes from palette to canvas</p>
             <p>• Click to select nodes</p>
-            <p>• Drag to move nodes</p>
+            <p>• Drag to move nodes (snaps to grid)</p>
             <p>• Shift+click to connect nodes</p>
-            {/* <p>• Configure selected node below</p> */}
-
-            {/* Updated: [16-06-2025] v0.1.3 */}
             <p>• Decision nodes have Yes/No connectors</p>
+            <p>• Start nodes can continue from other workflows</p>
+            <p>• End nodes can allow workflow continuation</p>
+            <p>• Visual indicators: ⬅ (continues from), ➡ (allows continuation)</p>
             <p>• Start/End nodes required for save</p>
             <p>• Max connections: 1 (normal), 2 (decision)</p>
-            <p>• Preview JSON before saving</p>
+            <p>• Import/Export JSON workflows</p>
+            <p>• Preview form components</p>
+            <p>• Scroll for large workflows</p>
           </div>
         </div>
 
         {/* Canvas */}
-        <div className="flex-1 relative">
+        <div
+          // className="flex-1 relative"
+
+          // Updated: [17-06-2025] v0.1.4
+          // className="flex-1 relative overflow-x-auto overflow-y-hidden"
+          className="flex-1 relative overflow-x-auto overflow-y-auto"
+          // className={`${isFullscreen ? 'h-screen rounded-2xl border' : ''} flex-1 relative overflow-x-auto overflow-y-auto`}
+        >
           <div
             ref={canvasRef}
-            className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
+            // className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
+
+            // Updated: [17-06-2025] v0.1.4
+            // className="min-w-full h-full relative cursor-grab active:cursor-grabbing"
+            className="min-w-full min-h-full relative cursor-grab active:cursor-grabbing"
+            // style={{
+            //   minWidth: '2000px',
+            //   height: '100vh'
+            // }}
+
+            // Updated: [18-06-2025] v0.1.5
+            // style={{ 
+            //   minWidth: isFullscreen ? '3000px' : '2000px', 
+            //   height: isFullscreen ? '100vh' : '100vh' 
+            // }}
+
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+
+            // Updated: [18-06-2025] v0.1.5
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragLeave={handleDragLeave}
           >
             <svg
               ref={svgRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              style={{ zIndex: 1 }}
+              // className="absolute inset-0 w-full h-full pointer-events-none"
+              // style={{ zIndex: 1 }}
+
+              // Updated: [17-06-2025] v0.1.4
+              className="absolute inset-0 pointer-events-none"
+              // style={{ width: '2000px', height: '100vh', zIndex: 1 }}
+              style={{ width: '2000px', height: '2000px', zIndex: 1 }}
+
+              // Updated: [18-06-2025] v0.1.5
+              // style={{ 
+              //   width: isFullscreen ? '3000px' : '2000px', 
+              //   height: '100vh', 
+              //   zIndex: 1 
+              // }}
             >
               {/* Grid Pattern */}
               <defs>
@@ -837,18 +1586,29 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                   <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
                 </pattern>
                 */}
+
                 {/* Updated: [12-06-2025] v0.1.1 */}
                 <pattern id="grid" width={GRID_SIZE} height={GRID_SIZE} patternUnits="userSpaceOnUse">
                   <path d={`M ${GRID_SIZE} 0 L 0 0 0 ${GRID_SIZE}`} fill="none" stroke="#e5e7eb" strokeWidth="1"/>
                 </pattern>
+
+                {/* Updated: [18-06-2025] v0.1.5 */}
+                <pattern id="major-grid" width={GRID_SIZE * 5} height={GRID_SIZE * 5} patternUnits="userSpaceOnUse">
+                  <path d={`M ${GRID_SIZE * 5} 0 L 0 0 0 ${GRID_SIZE * 5}`} fill="none" stroke="#d1d5db" strokeWidth="1"/>
+                </pattern>
               </defs>
+
               <rect width="100%" height="100%" fill="url(#grid)" />
+
+              {/* Updated: [18-06-2025] v0.1.5 */}
+              <rect width="100%" height="100%" fill="url(#major-grid)" />
 
               {/* Connections */}
               {connections.map(connection => {
                 // const sourcePos = getNodeCenter(connection.source);
                 // const targetPos = getNodeCenter(connection.target);
                 // const midX = (sourcePos.x + targetPos.x) / 2;
+
                 // Updated: [12-06-2025] v0.1.1
                 const sourcePos = getNodePosition(connection.source);
                 const targetPos = getNodePosition(connection.target);
@@ -864,7 +1624,8 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                 if (isVertical) {
                   // Straight line for vertical connections
                   pathD = `M ${sourcePoint.x},${sourcePoint.y} L ${targetPoint.x},${targetPoint.y}`;
-                } else {
+                }
+                else {
                   // Curved line for horizontal connections
                   const midX = (sourcePoint.x + targetPoint.x) / 2;
                   pathD = `M ${sourcePoint.x},${sourcePoint.y} C ${midX},${sourcePoint.y} ${midX},${targetPoint.y} ${targetPoint.x},${targetPoint.y}`;
@@ -903,6 +1664,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                           stroke="#6b7280"
                           strokeWidth="1"
                         />
+
                         <text
                           x={labelX}
                           y={labelY}
@@ -924,10 +1686,8 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
               {isConnecting && tempConnection && (
                 // <path
                 //   // d={`M ${getNodeCenter(isConnecting).x},${getNodeCenter(isConnecting).y} L ${tempConnection.x},${tempConnection.y}`}
-
                 //   // Updated: [12-06-2025] v0.1.1
                 //   d={`M ${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true).x},${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true).y} L ${tempConnection.x},${tempConnection.y}`}
-                  
                 //   stroke="#3b82f6"
                 //   strokeWidth="2"
                 //   strokeDasharray="5,5"
@@ -943,6 +1703,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                     strokeDasharray="5,5"
                     fill="none"
                   />
+
                   {connectingFrom && (
                     <text
                       x={tempConnection.x + 10}
@@ -975,10 +1736,52 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
               </defs>
             </svg>
 
+            {/* Updated: [18-06-2025] v0.1.5 */}
+            {/* Drag Preview */}
+            {/*
+            {dragPreview && draggedNodeType && (
+              <div
+                className="absolute pointer-events-none z-10"
+                style={{
+                  left: dragPreview.x,
+                  top: dragPreview.y,
+                  opacity: 0.7
+                }}
+              >
+                {draggedNodeType === 'decision' ? (
+                  <div className="relative w-24 h-16 flex items-center justify-center">
+                    <svg width="96" height="64" className="absolute inset-0">
+                      <polygon
+                        points="48,4 88,32 48,60 8,32"
+                        fill="rgb(234 179 8)"
+                        stroke="white"
+                        strokeWidth="2"
+                        className="drop-shadow-lg"
+                      />
+                    </svg>
+                    <div className="relative z-10 flex flex-col items-center justify-center text-white dark:text-gray-900">
+                      <span className="text-xs font-medium truncate px-1 max-w-16 text-center">
+                        {nodeTypes[draggedNodeType].label}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`w-24 h-16 rounded-lg border-2 border-white dark:border-gray-900 shadow-lg flex flex-col items-center justify-center text-white dark:text-gray-900 ${nodeTypes[draggedNodeType].color}`}>
+                    <span className="text-xs font-medium truncate px-1">
+                      {nodeTypes[draggedNodeType].label}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            */}
+
             {/* Nodes */}
             {nodes.map(node => {
               const nodeConfig = nodeTypes[node.type];
               const isSelected = selectedNode?.id === node.id;
+              const isContinueFromWorkflow = node.type === 'start' && node.data.config?.continueFromWorkflow;
+              const isAllowContinuation = node.type === 'end' && node.data.config?.allowContinuation;
               
               return (
                 <div
@@ -994,9 +1797,11 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                   }}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                 >
-                  {/* <div className={`w-24 h-16 rounded-lg border-2 border-white shadow-lg flex flex-col items-center justify-center text-white ${nodeConfig.color}`}>
+                  {/*
+                  <div className={`w-24 h-16 rounded-lg border-2 border-white shadow-lg flex flex-col items-center justify-center text-white ${nodeConfig.color}`}>
                     <span className="text-xs font-medium truncate px-1">{node.data.label}</span>
-                  </div> */}
+                  </div>
+                  */}
 
                   {/* Updated: [16-06-2025] v0.1.3 */}
                   {node.type === 'decision' ? (
@@ -1011,6 +1816,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                           className="drop-shadow-lg"
                         />
                       </svg>
+
                       <div className="relative z-10 flex flex-col items-center justify-center text-white dark:text-gray-900">
                         <span className="text-xs font-medium truncate px-1 max-w-16 text-center">{node.data.label}</span>
                       </div>
@@ -1019,6 +1825,26 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                     // Rectangle shape for other nodes
                     <div className={`w-24 h-16 rounded-lg border-2 border-white dark:border-gray-900 shadow-lg flex flex-col items-center justify-center text-white dark:text-gray-900 ${nodeConfig.color}`}>
                       <span className="text-xs font-medium truncate px-1">{node.data.label}</span>
+
+                      {/* Updated: [20-06-2025] v0.1.7 */}
+                      {/* Visual indicators for workflow continuation */}
+                      {isContinueFromWorkflow ? (
+                        <div className="absolute -top-1 -left-1 w-3 h-3 bg-blue-500 dark:bg-blue-400 rounded-full flex items-center justify-center">
+                          <span className="text-white dark:text-gray-900 text-xs">
+                            <AngleLeftIcon className="w-3 h-3" />
+                          </span>
+                        </div>
+                      ) : ""}
+                      
+                      {/* Updated: [20-06-2025] v0.1.7 */}
+                      {/* Visual indicators for workflow continuation */}
+                      {isAllowContinuation ? (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full flex items-center justify-center">
+                          <span className="text-white dark:text-gray-900 text-xs">
+                            <AngleRightIcon className="w-3 h-3" />
+                          </span>
+                        </div>
+                      ) : ""}
                     </div>
                   )}
                   
@@ -1040,10 +1866,27 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
         </div>
 
         {/* Configuration Panel */}
-        <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl">
+        <div
+          className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl"
+          // className={`${isFullscreen ? 'hidden' : 'w-80'} bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl`}
+        >
           <div className="flex items-center gap-2 mb-2">
             <PencilIcon className="w-5 h-5 text-lg font-semibold text-gray-700 dark:text-gray-200" />
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Node Configuration</h3>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+              Node Configuration
+
+              {/* Updated: [18-06-2025] v0.1.5 */}
+              {/*
+              <Button
+                onClick={toggleFullscreen}
+                variant="outline-warning"
+                className="ml-1"
+                size="xs"
+              >
+                Fullscreen
+              </Button>
+              */}
+            </h3>
           </div>
 
           {/* Updated: [16-06-2025] v0.1.3 */}
@@ -1124,6 +1967,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white bg-white dark:bg-gray-900"
                     />
                     */}
+
                     {/* Updated: [12-06-2025] v0.1.1 */}
                     <Input
                       type="number"
@@ -1144,6 +1988,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       step={GRID_SIZE}
                     />
                   </div>
+
                   <div>
                     <label className="block text-xs text-gray-500 dark:text-gray-400">Y</label>
                     {/*
@@ -1162,6 +2007,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white bg-white dark:bg-gray-900"
                     />
                     */}
+
                     {/* Updated: [12-06-2025] v0.1.1 */}
                     <Input
                       type="number"
@@ -1184,6 +2030,91 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* Updated: [20-06-2025] v0.1.7 */}
+              {/* Type-specific configuration */}
+              {selectedNode.type === 'start' && (
+                <>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedNode.data.config?.continueFromWorkflow === true}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { 
+                            ...selectedNode.data.config, 
+                            continueFromWorkflow: e.target.checked,
+                            sourceWorkflowId: e.target.checked ? (selectedNode.data.config?.sourceWorkflowId || '') : ''
+                          }
+                        })}
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-300 focus:ring-blue-500 dark:focus:ring-blue-400"
+                      />
+                      Continue from another workflow
+                    </label>
+                  </div>
+                  
+                  {selectedNode.data.config?.continueFromWorkflow && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                        Source Workflow ID
+                      </label>
+                      <Input
+                        type="text"
+                        value={typeof selectedNode.data.config?.sourceWorkflowId === 'string' ? selectedNode.data.config.sourceWorkflowId : ''}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, sourceWorkflowId: e.target.value }
+                        })}
+                        placeholder="Enter source workflow ID..."
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        ID of the workflow that this workflow continues from
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Updated: [20-06-2025] v0.1.7 */}
+              {selectedNode.type === 'end' && (
+                <>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedNode.data.config?.allowContinuation === true}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { 
+                            ...selectedNode.data.config, 
+                            allowContinuation: e.target.checked,
+                            nextWorkflowId: e.target.checked ? (selectedNode.data.config?.nextWorkflowId || '') : ''
+                          }
+                        })}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      Allow other workflows to continue
+                    </label>
+                  </div>
+                  
+                  {selectedNode.data.config?.allowContinuation && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                        Next Workflow ID
+                      </label>
+                      <Input
+                        type="text"
+                        value={typeof selectedNode.data.config?.nextWorkflowId === 'string' ? selectedNode.data.config.nextWorkflowId : ''}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, nextWorkflowId: e.target.value }
+                        })}
+                        placeholder="Enter next workflow ID..."
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        ID of the workflow that should continue after this one
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Type-specific configuration */}
               {selectedNode.type === 'decision' && (
@@ -1228,17 +2159,17 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       Action
                     </label>
                     <Select
-                      options={actionOptions}
-                      placeholder="Select Action"
+                      // defaultValue={typeof selectedNode.data.config?.action === 'string' ? selectedNode.data.config.action : ''}
+                      value={typeof selectedNode.data.config?.action === 'string' ? selectedNode.data.config.action : ''}
                       // onChange={(e) => updateNodeData(selectedNode.id, {
                       //   config: { ...selectedNode.data.config, action: e.target.value }
                       // })}
                       onChange={(value) => updateNodeData(selectedNode.id, {
                         config: { ...selectedNode.data.config, action: value }
                       })}
+                      options={actionOptions}
+                      placeholder="Select Action"
                       className="bg-white dark:bg-gray-900"
-                      // defaultValue={typeof selectedNode.data.config?.action === 'string' ? selectedNode.data.config.action : ''}
-                      value={typeof selectedNode.data.config?.action === 'string' ? selectedNode.data.config.action : ''}
                     />
                   </div>
 
@@ -1247,22 +2178,22 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       Form
                     </label>
                     <Select
-                      options={formOptions}
-                      placeholder="Select Form"
+                      // defaultValue={typeof selectedNode.data.config?.form === 'string' ? selectedNode.data.config.form : ''}
+                      value={typeof selectedNode.data.config?.form === 'string' ? selectedNode.data.config.form : ''}
                       // onChange={(e) => updateNodeData(selectedNode.id, { 
                       //   config: { ...selectedNode.data.config, form: e.target.value }
                       // })}
                       onChange={(value) => updateNodeData(selectedNode.id, { 
                         config: { ...selectedNode.data.config, form: value }
                       })}
+                      options={formOptions}
+                      placeholder="Select Form"
                       className="bg-white dark:bg-gray-900"
-                      // defaultValue={typeof selectedNode.data.config?.form === 'string' ? selectedNode.data.config.form : ''}
-                      value={typeof selectedNode.data.config?.form === 'string' ? selectedNode.data.config.form : ''}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       SLA (Hours)
                     </label>
                     <Input
@@ -1278,21 +2209,21 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       PIC (Person in Charge)
                     </label>
                     <Select
-                      options={PICOptions}
-                      placeholder="Select PIC"
+                      // defaultValue={typeof selectedNode.data.config?.pic === 'string' ? selectedNode.data.config.pic : ''}
+                      value={typeof selectedNode.data.config?.pic === 'string' ? selectedNode.data.config.pic : ''}
                       // onChange={(e) => updateNodeData(selectedNode.id, { 
                       //   config: { ...selectedNode.data.config, pic: e.target.value }
                       // })}
                       onChange={(value) => updateNodeData(selectedNode.id, { 
                         config: { ...selectedNode.data.config, pic: value }
                       })}
+                      options={PICOptions}
+                      placeholder="Select PIC"
                       className="bg-white dark:bg-gray-900"
-                      // defaultValue={typeof selectedNode.data.config?.pic === 'string' ? selectedNode.data.config.pic : ''}
-                      value={typeof selectedNode.data.config?.pic === 'string' ? selectedNode.data.config.pic : ''}
                     />
                   </div>
                 </>
@@ -1345,7 +2276,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
         {/* JSON Preview Dialog */}
         {showJsonPreview && (
           <Modal isOpen={showJsonPreview} onClose={() => setShowJsonPreview(false)} className="max-w-4xl p-6">
-            <div className="flex items-center justify-between p-4">
+            <div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Workflow JSON Preview</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">{workflowMetadata.title}</p>
             </div>
@@ -1353,6 +2284,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
             <div className="p-4 overflow-auto max-h-[60vh]">
               <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto text-gray-800 dark:text-gray-100">
                 {/* {JSON.stringify({ nodes, connections }, null, 2)} */}
+
                 {/* Updated: [12-06-2025] v0.1.2 */}
                 {JSON.stringify({ 
                   nodes, 
@@ -1366,25 +2298,35 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
             </div>
             
             <div className="flex items-center justify-end gap-2 p-4">
+              <Button
+                onClick={() => setShowJsonPreview(false)}
+                variant="error"
+              >
+                Cancel
+              </Button>
+
               {/* Updated: [16-06-2025] v0.1.3 */}
               <Button
                 onClick={copyJsonToClipboard}
                 variant={`${
                   copiedJson 
-                    ? 'success' 
+                    ? 'success'
                     : 'outline'
                 }`}
               >
                 {copiedJson ? <CheckLineIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                {copiedJson ? 'Copied!' : 'Copy JSON'}
+                {copiedJson ? 'Copied!' : 'Copy'}
               </Button>
 
+              {/* Updated: [17-06-2025] v0.1.4 */}
               <Button
-                onClick={() => setShowJsonPreview(false)}
+                onClick={downloadJsonWorkflow}
                 variant="outline"
               >
-                Cancel
+                <DownloadIcon className="w-4 h-4" />
+                Download
               </Button>
+
               <Button
                 onClick={saveWorkflow}
                 disabled={validationErrors.length > 0}
@@ -1395,7 +2337,367 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                 }`}
               >
                 <DownloadIcon className="w-4 h-4" />
-                Save Workflow
+                Save
+              </Button>
+            </div>
+          </Modal>
+        )}
+
+        {/* Updated: [17-06-2025] v0.1.4 */}
+        {/* Import Dialog */}
+        {showImportDialog && (
+          <Modal isOpen={showImportDialog} onClose={() => setShowImportDialog(false)} className="max-w-4xl p-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Import Workflow JSON</h3>
+            </div>
+            
+            <div className="p-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Upload JSON File
+                </label>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileImport}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white"
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Or Paste JSON Content
+                </label>
+                <TextArea
+                  value={importJsonText}
+                  // onChange={(e) => setImportJsonText(e.target.value)}
+                  onChange={(value) => setImportJsonText(value)}
+                  className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent font-mono text-sm"
+                  placeholder="Paste your workflow JSON here..."
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-end gap-2 p-4">
+              <Button
+                onClick={() => setShowImportDialog(false)}
+                variant="error"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={importJsonWorkflow}
+                disabled={!importJsonText.trim()}
+                variant={`${
+                  !importJsonText.trim()
+                    ? 'outline'
+                    : 'success'
+                }`}
+              >
+                <FileIcon className="w-4 h-4" />
+                Import Workflow
+              </Button>
+            </div>
+          </Modal>
+        )}
+
+        {/* Updated: [17-06-2025] v0.1.4 */}
+        {showComponentsPreview && (
+          <Modal
+            isOpen={showComponentsPreview}
+            onClose={() => setShowComponentsPreview(false)}
+            isFullscreen={true}
+          >
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Components Preview</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Generated form components based on workflow path</p>
+            </div>
+            
+            <div className="py-4 overflow-auto">
+              {generateComponentsPreview().length > 0 ? (
+                <div className="space-y-6">
+                  {generateComponentsPreview().map((component, index) => (
+                    <div key={component.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-medium px-2 py-1 rounded-full">
+                          Step {index + 1}
+                        </span>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{component.label}</h4>
+
+                        {/* Component Type Badge */}
+                        {/* Updated: [19-06-2025] v0.1.6 */}
+                        {component.type === 'start' && (
+                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
+                            Start
+                          </span>
+                        )}
+
+                        {component.type === 'form' && (
+                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
+                            Form: {component.form}
+                          </span>
+                        )}
+                        {component.type === 'decision' && (
+                          <span className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs font-medium px-2 py-1 rounded-full">
+                            Decision
+                          </span>
+                        )}
+
+                        {/* Updated: [19-06-2025] v0.1.6 */}
+                        {component.type === 'end' && (
+                          <span className="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 text-xs font-medium px-2 py-1 rounded-full">
+                            End
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Updated: [19-06-2025] v0.1.6 */}
+                      {/* Start Component */}
+                      {component.type === 'start' && (
+                        <div className="bg-green-100 dark:bg-green-800 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-medium text-green-800 dark:text-green-100">Workflow Start</span>
+
+                            {/* Updated: [20-06-2025] v0.1.7 */}
+                            {component.continueFromWorkflow && (
+                              <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-medium px-2 py-1 rounded-full">
+                                <ArrowLeftIcon className="w-4 h-4" />
+                                Continues from workflow
+                              </span>
+                            )}
+                          </div>
+                          {component.description && (
+                            <p className="text-sm text-green-700 dark:text-green-200">{component.description}</p>
+                          )}
+
+                          {/* Updated: [20-06-2025] v0.1.7 */}
+                          {component.continueFromWorkflow && component.sourceWorkflowId && (
+                            <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded border border-blue-200 dark:border-blue-700">
+                              <p className="text-xs text-blue-700 dark:text-blue-200">
+                                <strong>Source Workflow:</strong> {component.sourceWorkflowId}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Form Component */}
+                      {component.type === 'form' && (
+                        <div>
+                          {component.sla && (
+                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                              <strong>SLA:</strong> {component.sla} hours
+                            </div>
+                          )}
+                          {component.pic && (
+                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                              <strong>PIC:</strong> {component.pic.replace('_', ' ').toUpperCase()}
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {component.formConfig.fields.map((
+                              // field: any,
+
+                              // field: {
+                              //   name: string;
+                              //   type: string;
+                              //   label: string;
+                              //   required?: boolean;
+                              //   options?: string[];
+                              // },
+
+                              // Updated: [20-06-2025] v0.1.6
+                              // fieldIndex: number
+                              field, fieldIndex
+                            ) => (
+                              <div
+                                key={fieldIndex}
+                                // className="border border-gray-100 dark:border-gray-800 rounded p-3 bg-gray-100 dark:bg-gray-800"
+                                className="border border-gray-100 dark:border-gray-800 rounded p-3"
+                              >
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                  {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
+                                </label>
+                                {field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number' ? (
+                                  <Input
+                                    type={field.type}
+                                    // className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                                    // disabled
+                                  />
+                                ) : field.type === 'textarea' ? (
+                                  <TextArea
+                                    // className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                    rows={2}
+                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                                    // disabled
+                                  />
+                                ) : field.type === 'select' ? (
+                                  // <select
+                                  //   className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                  //   // disabled
+                                  // >
+                                  //   <option>Select {field.label.toLowerCase()}...</option>
+                                  //   {field.options?.map((option: string, optIndex: number) => (
+                                  //     <option key={optIndex} value={option}>{option}</option>
+                                  //   ))}
+                                  // </select>
+
+                                  <Select
+                                    options={
+                                      (field.options ?? []).map((option: string) => ({
+                                        value: option,
+                                        label: option
+                                      }))
+                                    }
+                                    placeholder={`Select ${field.label.toLowerCase()}...`}
+                                    onChange={() => {}}
+                                  />
+                                ) : field.type === 'radio' ? (
+                                  <div className="space-y-1">
+                                    {field.options?.map((option: string, optIndex: number) => (
+                                      <label key={optIndex} className="flex items-center gap-2">
+                                        <Input
+                                          type="radio"
+                                          name={field.name}
+                                          value={option}
+                                          // disabled
+                                        />
+                                        <span className="text-sm text-gray-900 dark:text-white">{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                ) : field.type === 'checkbox' ? (
+                                  <div className="space-y-1">
+                                    {field.options?.map((option: string, optIndex: number) => (
+                                      <label key={optIndex} className="flex items-center gap-2">
+                                        <Input
+                                          type="checkbox"
+                                          value={option}
+                                          // disabled
+                                        />
+                                        <span className="text-sm text-gray-900 dark:text-white">{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Decision Component */}
+                      {component.type === 'decision' && (
+                        <div className="bg-yellow-100 dark:bg-yellow-800 p-3 rounded border">
+                          <div className="text-sm text-gray-700 dark:text-gray-200">
+                            <strong>Condition:</strong> {component.condition || 'No condition specified'}
+                          </div>
+
+                          {/*
+                          <div className="mt-2 flex gap-2">
+                            <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs px-2 py-1 rounded">YES Path</span>
+                            <span className="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 text-xs px-2 py-1 rounded">NO Path</span>
+                          </div>
+                          */}
+
+                          {/* Updated: [20-06-2025] v0.1.6 */}
+                          {/* Interactive Toggle Buttons */}
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                              Choose Decision Path:
+                            </label>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleDecisionToggle(component.id, 'yes')}
+                                variant={decisionSelections[component.id] === 'yes' ? 'success' : 'outline-success'}
+                                size="xs"
+                              >
+                                <CheckLineIcon className="w-4 h-4" />
+                                YES
+                              </Button>
+                              <Button
+                                onClick={() => handleDecisionToggle(component.id, 'no')}
+                                variant={decisionSelections[component.id] === 'no' ? 'error' : 'outline-error'}
+                                size="xs"
+                              >
+                                <CloseIcon className="w-4 h-4" />
+                                NO
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Current Selection Display */}
+                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                            Current path: <strong>{decisionSelections[component.id] || 'yes'}</strong>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Updated: [20-06-2025] v0.1.6 */}
+                      {/* End Component */}
+                      {component.type === 'end' && (
+                        <div className="bg-red-100 dark:bg-red-800 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-medium text-red-800 dark:text-red-100">Workflow End</span>
+
+                            {/* Updated: [20-06-2025] v0.1.7 */}
+                            {component.allowContinuation && (
+                              <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
+                                <ArrowRightIcon className="w-4 h-4" />
+                                Allows continuation
+                              </span>
+                            )}
+                          </div>
+                          {component.description && (
+                            <p className="text-sm text-red-700 dark:text-red-200">{component.description}</p>
+                          )}
+
+                          {/* Updated: [20-06-2025] v0.1.7 */}
+                          {component.allowContinuation && component.nextWorkflowId && (
+                            <div className="bg-green-100 dark:bg-green-800 p-2 rounded border border-green-200 dark:border-green-700">
+                              <p className="text-xs text-green-700 dark:text-green-200">
+                                <strong>Next Workflow:</strong> {component.nextWorkflowId}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <FileIcon className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No Components to Preview</div>
+
+                  <p className="text-gray-400 dark:text-gray-500">
+                    Add process nodes with forms to generate component previews
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div
+              className="flex items-center justify-end gap-2 p-4"
+            >
+              {/* Updated: [20-06-2025] v0.1.6 */}
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                {Object.keys(decisionSelections).length > 0 && (
+                  <span>
+                    Decisions: {Object.entries(decisionSelections).map(([id, decision]) => {
+                      const node = nodes.find(n => n.id === id);
+                      return `${node?.data.label}: ${decision.toUpperCase()}`;
+                    }).join(', ')}
+                  </span>
+                )}
+              </div>
+
+              <Button
+                onClick={() => setShowComponentsPreview(false)}
+                variant="outline"
+              >
+                Close
               </Button>
             </div>
           </Modal>
@@ -1448,5 +2750,36 @@ export default WorkflowVisualEditor;
  * 
  * @version 0.1.3
  * @date    16-06-2025
+ * ----------------------------------------------------------------------------
+ * - Import JSON Workflow.
+ * - Export/Download JSON Preview.
+ * - Components Creation Preview.
+ * - Horizontal Scrollbar Layout.
+ * 
+ * @version 0.1.4
+ * @date    17-06-2025
+ * ----------------------------------------------------------------------------
+ * - Dynamic Grid Positioning.
+ * - Drag & Drop Node Creation.
+ * - Automatic Node Selection After Adding.
+ * - Fullscreen Canvas Viewer Mode.
+ * 
+ * @version 0.1.5
+ * @date    18-06-2025
+ * ----------------------------------------------------------------------------
+ * - Start/End Step Display.
+ * - Interactive Decision Toggle Buttons.
+ * - Dynamic Path Filtering.
+ * - Enhanced User Experience.
+ * 
+ * @version 0.1.6
+ * @date    19-06-2025
+ * ----------------------------------------------------------------------------
+ * - Top-Left Node Positioning.
+ * - Start Node Workflow Continuation.
+ * - End Node Workflow Continuation.
+ * 
+ * @version 0.1.7
+ * @date    20-06-2025
  * ----------------------------------------------------------------------------
  */

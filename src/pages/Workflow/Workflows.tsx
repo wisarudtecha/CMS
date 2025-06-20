@@ -61,8 +61,10 @@ interface Workflow {
   name: string;
   description: string;
   // status: "active" | "inactive" | "draft";
+
   // Updated: [13-06-2025] v0.1.1
   status: "active" | "inactive" | "draft" | "testing";
+
   createdAt: string;
   lastRun?: string;
   runCount: number;
@@ -603,7 +605,6 @@ const WorkflowListPage: React.FC = () => {
             //             </div>
             //           </div>
             //         </div>
-
             //         {[...Array(5)].map((_, index) => (
             //           <div key={index} className="bg-white dark:bg-white/[0.03] p-6 rounded-lg shadow-sm border">
             //             <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
@@ -773,8 +774,8 @@ const WorkflowListPage: React.FC = () => {
                       <Input
                         type="text"
                         value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
                         // onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        onChange={(e) => setSearchInput(e.target.value)}
                         placeholder="Search workflows..."
                       />
                     </div>
