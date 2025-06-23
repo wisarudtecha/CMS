@@ -149,6 +149,14 @@ const AppSidebar: React.FC = () => {
         { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", pro: false },
       ],
     },
+    {
+      name: "Workflow",
+      icon: <ListIcon />,
+      subItems: [
+        { name: "Workflows", path: "/workflows", pro: false },
+        { name: "Workflow Builder", path: "/workflow-builder", pro: false },
+      ],
+    },
   ], [t]);
 
   const othersItems: NavItem[] = useMemo(() => [
