@@ -1,9 +1,20 @@
-export interface FormField {
+
+export interface IndividualFormField {
   id: string;
   label: string;
   type: string;
-  value: any; 
+  value: any;
   options?: string[];
   newOptionText?: string;
-  required:boolean;
+  placeholder?: string;
+  required: boolean;
+  colSpan?: number; 
+}
+
+
+export interface FormField {
+  formId: string;
+  formName: string;
+  formColSpan: number; 
+  formFieldJson: IndividualFormField[]; 
 }

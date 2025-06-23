@@ -3,7 +3,7 @@ import PageMeta from "../../common/PageMeta";
 import ComponentCard from "../../common/ComponentCard";
 import Button from "../../ui/button/Button";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FormField } from "@/components/interface/FormField";
+import { FormField, IndividualFormField } from "@/components/interface/FormField"; 
 
 interface FormConfigItem {
   formType: string;
@@ -12,10 +12,10 @@ interface FormConfigItem {
 }
 
 interface DynamicFormProps {
-  form?: FormField[];
+  initialForm?: FormField; 
   edit?: boolean;
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
-  onFormSubmit?: (data: FormField[]) => void;
+  onFormSubmit?: (data: FormField) => void; 
 }
 
 const formConfigurations: FormConfigItem[] = [
@@ -30,13 +30,14 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "passwordInput", title: "Password Form" },
   { formType: "dateInput", title: "Date Form" },
   { formType: "dateLocal", title: "DateLocal Form" },
-  { formType: "radio", title: "Radio Button Form", options: [] } 
+  { formType: "radio", title: "Radio Button Form", options: [] }
 ];
+
 
 function createDynamicFormField(
   config: FormConfigItem[],
   typeToInsert: string
-): FormField | undefined {
+): IndividualFormField | undefined {
   const configItem = config.find((item) => item.formType === typeToInsert);
 
   if (!configItem) {
@@ -47,6 +48,7 @@ function createDynamicFormField(
   let defaultValue: any;
   let fieldOptions: string[] | undefined;
   let newOptionText: string | undefined;
+  let placeholder: string | undefined;
 
   switch (configItem.formType) {
     case "textInput":
@@ -91,35 +93,77 @@ function createDynamicFormField(
     value: defaultValue,
     ...(fieldOptions && { options: fieldOptions }),
     ...(newOptionText !== undefined && { newOptionText: newOptionText }),
+    ...(placeholder && { placeholder: placeholder }),
     required: false,
+    colSpan: 1,
   };
 }
 
-export default function DynamicForm({ form = [], edit = true, showDynamicForm, onFormSubmit }: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
-  const [dynamicFormFields, setDynamicFormFields] = useState<FormField[]>(form);
+  const [currentForm, setCurrentForm] = useState<FormField>(
+    initialForm || {
+      formId: `form_${Date.now()}`,
+      formName: "New Dynamic Form",
+      formColSpan: 1,
+      formFieldJson: [],
+    }
+  );
+
+  const handleFormIdChange = useCallback((newId: string) => {
+    setCurrentForm(prevForm => ({ ...prevForm, formId: newId }));
+  }, []);
+
+  const handleFormNameChange = useCallback((newName: string) => {
+    setCurrentForm(prevForm => ({ ...prevForm, formName: newName }));
+  }, []);
+
+  const handleOverallFormColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    let newColSpan = parseInt(e.target.value, 10);
+    if (isNaN(newColSpan) || newColSpan < 1) {
+      newColSpan = 1;
+    } else if (newColSpan > 12) {
+      newColSpan = 12;
+    }
+
+    setCurrentForm(prevForm => {
+      const updatedFieldJson = prevForm.formFieldJson.map(field => {
+        if (field.colSpan && field.colSpan > newColSpan) {
+          return { ...field, colSpan: newColSpan as number };
+        }
+        return field;
+      });
+      return { ...prevForm, formColSpan: newColSpan, formFieldJson: updatedFieldJson };
+    });
+  }, []);
+
 
   const addField = useCallback((formType: string) => {
     const newField = createDynamicFormField(formConfigurations, formType);
     if (newField) {
-      setDynamicFormFields((prevFields) => [...prevFields, newField]);
+      setCurrentForm(prevForm => ({
+        ...prevForm,
+        formFieldJson: [...prevForm.formFieldJson, newField]
+      }));
     }
   }, []);
+
   const saveSchema = () => {
-    console.log("Saved Form")
+    console.log("Saved Form Schema:", currentForm);
   }
 
   const handleFieldChange = useCallback((id: string, newValue: any) => {
-    setDynamicFormFields((prevFields) =>
-      prevFields.map((field) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map((field) => {
         if (field.id === id) {
-          if (field.type === "image") { 
+          if (field.type === "image") {
             const valueToStore = newValue instanceof FileList
-                                 ? newValue[0] || null
-                                 : newValue;
+              ? newValue[0] || null
+              : newValue;
             return { ...field, value: valueToStore };
           }
-          if (field.type === "multiImage") { 
+          if (field.type === "multiImage") {
             if (newValue instanceof FileList) {
               const currentFiles = Array.isArray(field.value) ? field.value : [];
               const newFiles = Array.from(newValue);
@@ -128,7 +172,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
               );
               return { ...field, value: [...currentFiles, ...uniqueNewFiles] };
             }
-            return { ...field, value: newValue }; 
+            return { ...field, value: newValue };
           }
           if (field.type === "Integer") {
             const numValue = parseInt(newValue, 10);
@@ -137,21 +181,32 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           return { ...field, value: newValue };
         }
         return field;
-      })
-    );
+      }),
+    }));
   }, []);
 
   const handleLabelChange = useCallback((id: string, newLabel: string) => {
-    setDynamicFormFields((prevFields) =>
-      prevFields.map((field) =>
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map((field) =>
         field.id === id ? { ...field, label: newLabel } : field
-      )
-    );
+      ),
+    }));
+  }, []);
+
+  const handlePlaceholderChange = useCallback((id: string, newPlaceholder: string) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map((field) =>
+        field.id === id ? { ...field, placeholder: newPlaceholder } : field
+      ),
+    }));
   }, []);
 
   const handleAddOption = useCallback((id: string, newOptionTextValue: string) => {
-    setDynamicFormFields((prevFields) =>
-      prevFields.map((field) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map((field) => {
         if (field.id === id && newOptionTextValue.trim() !== "") {
           const newOption = newOptionTextValue.trim();
           if (field.options && !field.options.includes(newOption)) {
@@ -167,16 +222,19 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           }
         }
         return field;
-      })
-    );
+      }),
+    }));
   }, []);
 
   const removeField = useCallback((id: string) => {
-    setDynamicFormFields((prevFields) => prevFields.filter((field) => field.id !== id));
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.filter((field) => field.id !== id),
+    }));
   }, []);
 
   const handleSend = useCallback(() => {
-    const allFieldsValid = dynamicFormFields.every(field => {
+    const allFieldsValid = currentForm.formFieldJson.every(field => {
       if (field.required) {
         if (Array.isArray(field.value)) {
           return field.value.length > 0;
@@ -190,16 +248,15 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       }
       return true;
     });
-    console.log("Current Dynamic Form Data:", dynamicFormFields);
+    console.log("Current Dynamic Form Data:", currentForm);
     if (allFieldsValid) {
       if (onFormSubmit) {
-        onFormSubmit(dynamicFormFields);
+        onFormSubmit(currentForm); 
       }
     } else {
       alert("Please fill in all required fields.");
     }
-    onFormSubmit && onFormSubmit(dynamicFormFields)
-  }, [dynamicFormFields, onFormSubmit]);
+  }, [currentForm, onFormSubmit]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
@@ -207,7 +264,7 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       alert("Field ID cannot be empty!");
       return;
     }
-    const idExists = dynamicFormFields.some(
+    const idExists = currentForm.formFieldJson.some(
       (field) => field.id === trimmedNewId && field.id !== oldId
     );
     if (idExists) {
@@ -215,16 +272,18 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       return;
     }
 
-    setDynamicFormFields((prevFields) =>
-      prevFields.map((field) =>
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map((field) =>
         field.id === oldId ? { ...field, id: trimmedNewId } : field
-      )
-    );
-  }, [dynamicFormFields]);
+      ),
+    }));
+  }, [currentForm.formFieldJson]);
 
   const handleRemoveOption = useCallback((fieldId: string, optionIndexToRemove: number) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map(field => {
         if (field.id === fieldId && field.options) {
           const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
           let newValue = field.value;
@@ -242,13 +301,14 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           };
         }
         return field;
-      })
-    );
+      }),
+    }));
   }, []);
 
   const handleRemoveFile = useCallback((fieldId: string, fileNameToRemove?: string) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map(field => {
         if (field.id === fieldId) {
           if (field.type === "image") {
             return { ...field, value: null };
@@ -258,26 +318,40 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           }
         }
         return field;
-      })
-    );
+      }),
+    }));
   }, []);
 
   const handleToggleRequired = useCallback((id: string) => {
-    setDynamicFormFields(prevFields =>
-      prevFields.map(field =>
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map(field =>
         field.id === id ? { ...field, required: !field.required } : field
-      )
-    );
+      ),
+    }));
+  }, []);
+
+
+  const handleColSpanChange = useCallback((id: string, newColSpan: number) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: prevForm.formFieldJson.map(field =>
+        field.id === id ? { ...field, colSpan: newColSpan } : field
+      ),
+    }));
   }, []);
 
   interface FieldEditItemProps {
-    field: FormField;
+    field: IndividualFormField; 
     handleLabelChange: (id: string, newLabel: string) => void;
     updateFieldId: (oldId: string, newId: string) => void;
     handleAddOption: (id: string, newOptionText: string) => void;
     handleRemoveOption: (fieldId: string, optionIndexToRemove: number) => void;
     removeField: (id: string) => void;
     handleToggleRequired: (id: string) => void;
+    handlePlaceholderChange: (id: string, newPlaceholder: string) => void;
+    handleColSpanChange: (id: string, newColSpan: number) => void;
+    overallFormColSpan: number; 
   }
 
   const FieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -288,13 +362,18 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     handleRemoveOption,
     removeField,
     handleToggleRequired,
+    handlePlaceholderChange,
+    handleColSpanChange,
+    overallFormColSpan, 
   }) => {
     const [localIdValue, setLocalIdValue] = useState(field.id);
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
+    const [localPlaceholderValue, setLocalPlaceholderValue] = useState(field.placeholder || "");
     const [localNewOptionText, setLocalNewOptionText] = useState("");
 
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
+    const placeholderInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
       setLocalIdValue(field.id);
@@ -303,6 +382,10 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
     useEffect(() => {
       setLocalLabelValue(field.label);
     }, [field.label]);
+
+    useEffect(() => {
+      setLocalPlaceholderValue(field.placeholder || "");
+    }, [field.placeholder]);
 
     const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalIdValue(e.target.value);
@@ -344,6 +427,26 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       }
     }, [localLabelValue, field.id, handleLabelChange]);
 
+    const handleLocalPlaceholderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalPlaceholderValue(e.target.value);
+    }, []);
+
+    const handlePlaceholderBlur = useCallback(() => {
+      if (localPlaceholderValue !== field.placeholder) {
+        handlePlaceholderChange(field.id, localPlaceholderValue);
+      }
+    }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
+
+    const handlePlaceholderKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (localPlaceholderValue !== field.placeholder) {
+          handlePlaceholderChange(field.id, localPlaceholderValue);
+        }
+        placeholderInputRef.current?.blur();
+      }
+    }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
+
     const handleAddOptionClick = useCallback(() => {
       const trimmedOption = localNewOptionText.trim();
       if (trimmedOption !== "") {
@@ -359,33 +462,65 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       }
     }, [handleAddOptionClick]);
 
+    const showPlaceholderInput =
+      field.type === "textInput" ||
+      field.type === "Integer" ||
+      field.type === "textAreaInput" ||
+      field.type === "emailInput" ||
+      field.type === "passwordInput";
+
+
+    const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
+
     return (
       <div
         key={field.id}
         className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90"
       >
         <h1 className="my-px">({field.type}) </h1>
-        <input
-          ref={labelInputRef}
-          type="text"
-          value={localLabelValue}
-          onChange={handleLocalLabelChange}
-          onBlur={handleLabelBlur}
-          onKeyDown={handleLabelKeyDown}
-          className="mx-1 text-gray-700 text-sm font-bold mb-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-          aria-label="Preview field title"
-        />
-        <input
-          ref={idInputRef}
-          type="text"
-          value={localIdValue}
-          onChange={handleLocalIdChange}
-          onBlur={handleIdBlur}
-          onKeyDown={handleIdKeyDown}
-          className="mx-1 text-gray-700 text-sm font-bold mb-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-          aria-label="Edit field id"
-          title="Edit Field ID"
-        />
+        <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
+          Label:
+          <input
+            ref={labelInputRef}
+            type="text"
+            value={localLabelValue}
+            onChange={handleLocalLabelChange}
+            onBlur={handleLabelBlur}
+            onKeyDown={handleLabelKeyDown}
+            className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+            aria-label="Preview field title"
+          />
+        </label>
+        <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+          ID:
+          <input
+            ref={idInputRef}
+            type="text"
+            value={localIdValue}
+            onChange={handleLocalIdChange}
+            onBlur={handleIdBlur}
+            onKeyDown={handleIdKeyDown}
+            className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+            aria-label="Edit field id"
+            title="Edit Field ID"
+          />
+        </label>
+        {showPlaceholderInput && (
+          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+            Placeholder:
+            <input
+              ref={placeholderInputRef}
+              type="text"
+              value={localPlaceholderValue}
+              onChange={handleLocalPlaceholderChange}
+              onBlur={handlePlaceholderBlur}
+              onKeyDown={handlePlaceholderKeyDown}
+              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+              aria-label="Edit field placeholder"
+              title="Edit Field Placeholder"
+            />
+          </label>
+        )}
         <div className="flex items-center mt-2">
           <input
             type="checkbox"
@@ -397,6 +532,23 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
           <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
             Required
           </label>
+        </div>
+        <div className="flex items-center mt-2">
+          <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+            Column Span (Field):
+          </label>
+          <select
+            id={`colSpan-select-${field.id}`}
+            value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}  
+            onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+            className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+          >
+            {colSpanOptions.map((span) => (
+              <option key={span} value={span}>
+                {span} Column{span > 1 ? 's' : ''}
+              </option>
+            ))}
+          </select>
         </div>
         {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
           <div>
@@ -446,12 +598,51 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
   const FormEdit = useCallback(() => {
     return (
       <>
-        {dynamicFormFields.length === 0 ? (
+        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
+          <h2 className="text-lg font-bold mb-4">Form Settings</h2>
+          <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
+            Form Name:
+            <input
+              type="text"
+              value={currentForm.formName}
+              onChange={(e) => handleFormNameChange(e.target.value)}
+              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+              placeholder="Enter form name"
+            />
+          </label>
+          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+            Form ID:
+            <input
+              type="text"
+              value={currentForm.formId}
+              onChange={(e) => handleFormIdChange(e.target.value)}
+              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+              placeholder="Enter unique form ID"
+            />
+          </label>
+          <div className="flex items-center mt-2">
+            <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-white/90">
+              Overall Form Column Span:
+            </label>
+            <input
+              id={`overallColSpan-input`}
+              type="number"
+              min="1"
+              max="12"
+              value={currentForm.formColSpan}
+              onChange={handleOverallFormColSpanChange}
+              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+            />
+          </div>
+        </div>
+
+        {/* Individual Form Fields */}
+        {currentForm.formFieldJson.length === 0 ? (
           <p className="text-center text-gray-500 italic">
             No fields added yet. Use the "Add Form" section to add new fields.
           </p>
         ) : (
-          dynamicFormFields.map((field) => (
+          currentForm.formFieldJson.map((field) => (
             <FieldEditItem
               key={field.id}
               field={field}
@@ -461,216 +652,233 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
               handleRemoveOption={handleRemoveOption}
               removeField={removeField}
               handleToggleRequired={handleToggleRequired}
+              handlePlaceholderChange={handlePlaceholderChange}
+              handleColSpanChange={handleColSpanChange}
+              overallFormColSpan={currentForm.formColSpan}
             />
           ))
         )}
       </>
     );
-  }, [dynamicFormFields, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange]);
 
   const FormPreview = useCallback(() => {
+    const gridColsMap: Record<number, string> = {
+      1: "md:grid-cols-1",
+      2: "md:grid-cols-2",
+      3: "md:grid-cols-3",
+      4: "md:grid-cols-4",
+      5: "md:grid-cols-5",
+      6: "md:grid-cols-6",
+      12: "md:grid-cols-12",
+    };
+    const gridColsClass = gridColsMap[currentForm.formColSpan] || "md:grid-cols-1";
     return (
       <>
-        {dynamicFormFields.length === 0 ? (
+        {currentForm.formFieldJson.length === 0 ? (
           <p className="text-center text-gray-500 italic mb-4">
             No fields added yet. Click "Edit" to start adding.
           </p>
         ) : (
-          dynamicFormFields.map((field) => (
-            <div
-              key={field.id}
-              className="mb-2 p-4  relative  dark:text-white/90"
-            >
-              <label
-                htmlFor={field.id}
-                className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90"
+
+          <div className={`grid grid-cols-1 ${gridColsClass} gap-4`}>
+            {currentForm.formFieldJson.map((field) => (
+              <div
+                key={field.id}
+                className={`mb-2 p-4 relative dark:text-white/90 ${field.colSpan ? `col-span-${field.colSpan}` : 'col-span-1'
+                  }`}
               >
-                {field.label} ({field.type}) {field.required && <span className="text-red-500">*</span>}
-              </label>
-              {field.type === "textInput" ||
-                field.type === "emailInput" ||
-                field.type === "passwordInput"
-                ? (
-                  <input
-                    id={field.id}
-                    type={
-                      field.type === "textInput"
-                        ? "text"
-                        : field.type === "emailInput"
-                          ? "email"
-                          : field.type === "passwordInput"
-                            ? "password"
-                            : ""
-                    }
-                    value={field.value}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                    required={field.required}
-                  />
-                ) : field.type === "Integer" ? (
-                  <input
-                    id={field.id}
-                    type="number"
-                    value={field.value !== null ? field.value : ''}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                    required={field.required}
-                  />
-                ) : field.type === "dateInput" ? (
-                  <input
-                    id={field.id}
-                    type="date"
-                    value={field.value}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                    required={field.required}
-                  />
-
-                ) : field.type === "dateLocal" ? (
-                  <input
-                    id={field.id}
-                    type="datetime-local"
-                    value={field.value}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                    required={field.required}
-                  />
-
-                ) : field.type === "textAreaInput" ? (
-                  <textarea
-                    id={field.id}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent h-24 dark:text-white/90"
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                    required={field.required}
-                  ></textarea>
-                ) : field.type === "select" && field.options ? (
-                  <select
-                    id={field.id}
-                    value={field.value}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:text-white/90 dark:bg-white/[0.03]"
-                    required={field.required}
-                  >
-                    <option value="" className="dark:bg-gray-800">
-                      Select an option
-                    </option>
-                    {field.options.map((option) => (
-                      <option
-                        className="text-gray-700 dark:text-white dark:bg-gray-800 "
-                        key={option}
-                        value={option}
-                      >
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                ) : field.type === "option" && field.options ? (
-                  <div className="flex flex-col gap-2 ">
-                    {field.options.map((option) => (
-                      <label key={option} className="inline-flex items-center">
-                        <input
-                          type="checkbox"
-                          value={option}
-                          checked={Array.isArray(field.value) && field.value.includes(option)}
-                          onChange={(e) => {
-                            const currentValues = Array.isArray(field.value) ? [...field.value] : [];
-                            if (e.target.checked) {
-                              handleFieldChange(field.id, [...currentValues, option]);
-                            } else {
-                              handleFieldChange(
-                                field.id,
-                                currentValues.filter((val: string) => val !== option)
-                              );
-                            }
-                          }}
-                          className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                          required={field.required && Array.isArray(field.value) && field.value.length === 0}
-                        />
-                        <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                ) : field.type === "radio" && field.options ? (
-                  <div className="flex flex-col gap-2">
-                    {field.options.map((option) => (
-                      <label key={option} className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          name={field.id}
-                          value={option}
-                          checked={field.value === option}
-                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                          className="form-radio h-5 w-5 text-blue-600"
-                          required={field.required}
-                        />
-                        <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                ) : field.type === "image" || field.type === "multiImage" ? (
-                  <div>
+                <label
+                  htmlFor={field.id}
+                  className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90"
+                >
+                  {field.label} {field.required && <span className="text-red-500">*</span>}
+                </label>
+                {field.type === "textInput" ||
+                  field.type === "emailInput" ||
+                  field.type === "passwordInput"
+                  ? (
                     <input
                       id={field.id}
-                      type="file"
-                      accept="image/*"
-                      multiple={field.type === "multiImage"}
-                      onChange={(e) => handleFieldChange(field.id, e.target.files)}
-                      className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
+                      type={
+                        field.type === "textInput"
+                          ? "text"
+                          : field.type === "emailInput"
+                            ? "email"
+                            : field.type === "passwordInput"
+                              ? "password"
+                              : ""
+                      }
+                      value={field.value}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      required={field.required}
                     />
-                    {field.type === "image" && field.value instanceof File && (
-                      <div className="relative group mt-2 w-20 h-20"> 
-                        <img
-                          src={URL.createObjectURL(field.value)}
-                          alt="Selected"
-                          className="w-full h-full object-cover rounded border border-gray-600" 
-                        />
-                        <button
-                          onClick={() => handleRemoveFile(field.id)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  ) : field.type === "Integer" ? (
+                    <input
+                      id={field.id}
+                      type="number"
+                      value={field.value !== null ? field.value : ''}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      required={field.required}
+                    />
+                  ) : field.type === "dateInput" ? (
+                    <input
+                      id={field.id}
+                      type="date"
+                      value={field.value}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      required={field.required}
+                    />
+
+                  ) : field.type === "dateLocal" ? (
+                    <input
+                      id={field.id}
+                      type="datetime-local"
+                      value={field.value}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90"
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      required={field.required}
+                    />
+
+                  ) : field.type === "textAreaInput" ? (
+                    <textarea
+                      id={field.id}
+                      value={field.value}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent h-24 dark:text-white/90"
+                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                      required={field.required}
+                    ></textarea>
+                  ) : field.type === "select" && field.options ? (
+                    <select
+                      id={field.id}
+                      value={field.value}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:text-white/90 dark:bg-white/[0.03]"
+                      required={field.required}
+                    >
+                      <option value="" className="dark:bg-gray-800">
+                        Select an option
+                      </option>
+                      {field.options.map((option) => (
+                        <option
+                          className="text-gray-700 dark:text-white dark:bg-gray-800 "
+                          key={option}
+                          value={option}
                         >
-                          ×
-                        </button>
-                      </div>
-                    )}
-                    {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {field.value.map((file: File, index: number) => (
-                            <div key={file.name + index} className="relative group">
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Upload ${index + 1}`}
-                                className="w-full h-20 object-cover rounded border border-gray-600"
-                              />
-                              <button
-                                onClick={() => handleRemoveFile(field.id, file.name)}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : field.type === "option" && field.options ? (
+                    <div className="flex flex-col gap-2 ">
+                      {field.options.map((option) => (
+                        <label key={option} className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            value={option}
+                            checked={Array.isArray(field.value) && field.value.includes(option)}
+                            onChange={(e) => {
+                              const currentValues = Array.isArray(field.value) ? [...field.value] : [];
+                              if (e.target.checked) {
+                                handleFieldChange(field.id, [...currentValues, option]);
+                              } else {
+                                handleFieldChange(
+                                  field.id,
+                                  currentValues.filter((val: string) => val !== option)
+                                );
+                              }
+                            }}
+                            className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                            required={field.required && Array.isArray(field.value) && field.value.length === 0}
+                          />
+                          <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : field.type === "radio" && field.options ? (
+                    <div className="flex flex-col gap-2">
+                      {field.options.map((option) => (
+                        <label key={option} className="inline-flex items-center">
+                          <input
+                            type="radio"
+                            name={field.id}
+                            value={option}
+                            checked={field.value === option}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            className="form-radio h-5 w-5 text-blue-600"
+                            required={field.required}
+                          />
+                          <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : field.type === "image" || field.type === "multiImage" ? (
+                    <div>
+                      <input
+                        id={field.id}
+                        type="file"
+                        accept="image/*"
+                        multiple={field.type === "multiImage"}
+                        onChange={(e) => handleFieldChange(field.id, e.target.files)}
+                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
+                      />
+                      {field.type === "image" && field.value instanceof File && (
+                        <div className="relative group mt-2 w-20 h-20">
+                          <img
+                            src={URL.createObjectURL(field.value)}
+                            alt="Selected"
+                            className="w-full h-full object-cover rounded border border-gray-600"
+                          />
+                          <button
+                            onClick={() => handleRemoveFile(field.id)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-red-500">Unsupported field type: {field.type}</p>
-                )}
-            </div>
-          ))
+                      )}
+                      {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {field.value.map((file: File, index: number) => (
+                              <div key={file.name + index} className="relative group">
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`Upload ${index + 1}`}
+                                  className="w-full h-20 object-cover rounded border border-gray-600"
+                                />
+                                <button
+                                  onClick={() => handleRemoveFile(field.id, file.name)}
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-red-500">Unsupported field type: {field.type}</p>
+                  )}
+              </div>
+            ))}
+          </div>
         )}
       </>
     );
-  }, [dynamicFormFields, handleFieldChange, handleRemoveFile]);
+  }, [currentForm.formFieldJson, currentForm.formColSpan, handleFieldChange, handleRemoveFile]);
 
   return edit ? (
     <div>
@@ -727,12 +935,12 @@ export default function DynamicForm({ form = [], edit = true, showDynamicForm, o
       >
         Close
       </Button>}
-      {(dynamicFormFields.length !== 0 && onFormSubmit) && (<div>
+      {(currentForm.formFieldJson.length !== 0 && onFormSubmit) && (<div>
         <Button
           className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
           onClick={handleSend}
         >
-          Summit
+          Submit
         </Button>
       </div>)}
     </div>

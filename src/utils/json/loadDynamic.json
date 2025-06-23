@@ -1,290 +1,87 @@
 [
     {
-        "name": "createCase",
-        "json": [
+        "formId": "form_1750396516314",
+        "formName": "Login",
+        "formColSpan": 3,
+        "formFieldJson": [
             {
-                "id": "field_1749655796764_1lddawz",
-                "label": "Case Title",
-                "type": "textInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655797759_ju7abop",
-                "label": "Description",
-                "type": "textAreaInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655802312_7a1j29f",
-                "label": "Priority",
+                "id": "field_1750400021891_48nn2ks",
+                "label": "Single Select Form",
                 "type": "select",
                 "value": "",
-                "options": [
-                    "9",
-                    "8",
-                    "7",
-                    "6",
-                    "5",
-                    "4",
-                    "3",
-                    "2",
-                    "1"
-                ],
-                "newOptionText": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655804616_er08xxt",
-                "label": "Status",
-                "type": "select",
-                "value": "",
-                "options": [
-                    "New",
-                    "In-Progress",
-                    "Pending Review",
-                    "Resolved"
-                ],
-                "newOptionText": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655809299_jdvio3e",
-                "label": "Customer",
-                "type": "textInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655810998_ez2fh8v",
-                "label": "Assignee",
-                "type": "textInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1749655811844_hxz5d3s",
-                "label": "Due Date",
-                "type": "dateInput",
-                "value": "",
-                "required": false
-            }
-        ]
-    },
-    {
-        "name": "enter personal data",
-        "json": [
-            {
-                "id": "field_1750134313862_u9reu0q",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1750134314413_83z2wb3",
-                "label": "Multiple Select Form",
-                "type": "option",
-                "value": [],
                 "options": [
                     "test1",
                     "test2",
                     "test3"
                 ],
                 "newOptionText": "",
-                "required": false
+                "required": false,
+                "colSpan": 2
             },
             {
-                "id": "field_1750134315837_qzq5v3o",
-                "label": "Image Upload Form",
-                "type": "image",
-                "value": null,
-                "required": true
-            },
-            {
-                "id": "field_1750134318820_9iyf29x",
-                "label": "Date Form",
-                "type": "dateInput",
-                "value": "",
-                "required": false
-            }
-        ]
-    },
-    {
-        "name": "enter email data",
-        "json": [
-            {
-                "id": "field_1750134410430_ux2yqg6",
-                "label": "Email Form",
-                "type": "emailInput",
-                "value": "",
-                "required": true
-            },
-            {
-                "id": "field_1750134413157_px9gtw2",
-                "label": "Multiple Select Form",
-                "type": "option",
-                "value": [],
-                "options": [
-                    "gmail",
-                    "hotmail",
-                    "outlook"
-                ],
-                "newOptionText": "",
-                "required": false
-            },
-            {
-                "id": "field_1750134418124_yrrpnw5",
-                "label": "Date Form",
-                "type": "dateInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1750134418765_39t9vod",
-                "label": "Password Form",
-                "type": "passwordInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1750134420485_5pcx4vs",
+                "id": "field_1750400028514_btbjeqj",
                 "label": "Text Form",
                 "type": "textInput",
                 "value": "",
-                "required": false
+                "required": false,
+                "colSpan": 1
             },
             {
-                "id": "field_1750134420917_7piwh1e",
-                "label": "Number Form",
-                "type": "Integer",
-                "value": null,
-                "required": false
+                "id": "field_1750400048010_8210ms0",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "",
+                "required": false,
+                "colSpan": 1
             }
         ]
     },
     {
-        "name": "CaseForm",
-        "json": [
+        "formId": "form_1750400443114",
+        "formName": "New Dynamic Form",
+        "formColSpan": 2,
+        "formFieldJson": [
             {
-                "id": "field_1750216007340_7lqjzq4",
-                "label": "1.Service Type",
-                "type": "select",
-                "value": "",
-                "options": [
-                    "Maintenance",
-                    "Repair",
-                    "Installation"
-                ],
-                "newOptionText": "",
-                "required": true
-            },
-            {
-                "id": "field_1750216013948_p669nbm",
-                "label": "2.Request Service Date",
-                "type": "dateInput",
-                "value": "",
-                "required": true
-            },
-            {
-                "id": "field_1750216136453_r0ta1j5",
-                "label": "Priority Level",
-                "type": "select",
-                "value": "",
-                "options": [
-                    "1",
-                    "2",
-                    "3"
-                ],
-                "newOptionText": "",
-                "required": false
-            },
-            {
-                "id": "field_1750216186492_qg9oiq0",
-                "label": "Contact Method",
-                "type": "select",
-                "value": "",
-                "options": [
-                    "Phone Number",
-                    "Email",
-                    "Live Chat"
-                ],
-                "newOptionText": "",
-                "required": true
-            },
-            {
-                "id": "field_1750216296253_eajgjdv",
-                "label": "3.Service Location",
+                "id": "field_1750400444029_y2r6h2t",
+                "label": "Multiple Select Form",
                 "type": "option",
                 "value": [],
-                "options": [
-                    "Service Location",
-                    "Destination Point"
-                ],
+                "options": [],
                 "newOptionText": "",
-                "required": false
+                "required": false,
+                "colSpan": 1
             },
             {
-                "id": "field_1750216387940_qz88nc7",
-                "label": "",
-                "type": "textAreaInput",
-                "value": "",
-                "required": false
+                "id": "field_1750400444277_mf5ppgz",
+                "label": "Image Upload Form",
+                "type": "image",
+                "value": null,
+                "required": false,
+                "colSpan": 1
             },
             {
-                "id": "field_1750216407454_3mzke39",
-                "label": "4.Service Center",
-                "type": "select",
-                "value": "",
-                "options": [
-                    "Service Center 1",
-                    "Service Center 2"
-                ],
-                "newOptionText": "",
-                "required": false
+                "id": "field_1750400444459_xeh5ztl",
+                "label": "Multi-Image Upload Form",
+                "type": "multiImage",
+                "value": [],
+                "required": false,
+                "colSpan": 1
             },
             {
-                "id": "field_1750216914790_5jbs0mp",
-                "label": "5. Customer Name:",
-                "type": "textInput",
+                "id": "field_1750400444782_2kvr8s7",
+                "label": "Email Form",
+                "type": "emailInput",
                 "value": "",
-                "required": true
+                "required": false,
+                "colSpan": 1
             },
             {
-                "id": "field_1750216919190_0rl06uj",
-                "label": "6. Customer Phone",
-                "type": "textInput",
+                "id": "field_1750400445374_ujrtssj",
+                "label": "Password Form",
+                "type": "passwordInput",
                 "value": "",
-                "required": true
-            },
-            {
-                "id": "field_1750217029160_ehst6mz",
-                "label": "7.Service Details:",
-                "type": "textAreaInput",
-                "value": "",
-                "required": true
-            },
-            {
-                "id": "field_1750217045206_bz1aat8",
-                "label": "8. Vehicle Information:",
-                "type": "textInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1750217045582_u250z47",
-                "label": "9. Assembly Information:",
-                "type": "textInput",
-                "value": "",
-                "required": false
-            },
-            {
-                "id": "field_1750217116735_gof8ncc",
-                "label": "10. Assembly Procedure",
-                "type": "textAreaInput",
-                "value": "",
-                "required": false
+                "required": false,
+                "colSpan": 1
             }
         ]
     }

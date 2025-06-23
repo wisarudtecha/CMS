@@ -7,7 +7,7 @@ import { FormField } from "@/components/interface/FormField";
 
 export default function LoadDynamicForm() {
     const [showLoadFormPages, setShowLoadFormPages] = useState(false);
-    const [formSelect, setFormSelect] = useState<FormField[]>([]);
+    const [formSelect, setFormSelect] = useState<FormField>();
     const [selectedFormName, setSelectedFormName] = useState<string | null>(null);
 
     return (
@@ -21,7 +21,7 @@ export default function LoadDynamicForm() {
                 <ComponentCard title="Form" >
                     <DynamicForm
                         key={selectedFormName || "default-form"}
-                        form={formSelect}
+                        initialForm={formSelect}
                         edit={false}
                        
                        
@@ -36,12 +36,12 @@ export default function LoadDynamicForm() {
                                     key={index}
                                     className="my-2 flex items-center space-x-2 cursor-pointer hover:text-blue-400 text-gray-500 dark:text-gray-400 dark:hover:text-blue-400"
                                     onClick={() => {
-                                        setFormSelect(formItem.json);
-                                        setSelectedFormName(formItem.name);
+                                        setFormSelect(formItem);
+                                        setSelectedFormName(formItem.formName);
                                         setShowLoadFormPages(false);
                                     }}
                                 >
-                                    {formItem.name}
+                                    {formItem.formName}
                                 </button>
                             ))}
                             <Button className="my-3" size="sm" onClick={() => { setShowLoadFormPages(false) }}>Close</Button>

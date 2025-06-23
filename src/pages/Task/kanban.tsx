@@ -14,7 +14,7 @@ import Badge from "@/components/ui/badge/Badge"
 import DynamicForm from "../../components/form/dynamic-form/DynamicForm"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import { FormField } from "@/components/interface/FormField"
+import  {FormField, IndividualFormField}  from "@/components/interface/FormField"
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem"
 import createCase from "../../utils/json/createCase.json"
 import sampleCases from "../../utils/json/sampleCases.json"
@@ -51,40 +51,44 @@ const getPriorityColorClass = (priority: number): string => {
     return "bg-green-600"
 }
 
-function mapCaseToForm(cases: Case): FormField[] {
-    const singleCase: Case = cases;
-    const formFields: FormField[] = JSON.parse(JSON.stringify(createCase));
-    const mappedFields = formFields.map(field => {
-        let newValue: string = field.value;
+function mapCaseToForm(singleCase: Case, initialFormSchema: FormField): FormField {
+    const newFormSchema: FormField = JSON.parse(JSON.stringify(initialFormSchema));
+
+    const mappedFields: IndividualFormField[] = newFormSchema.formFieldJson.map(field => {
+        let updatedValue: any = field.value; 
+
         switch (field.label) {
             case "Case Title":
-                newValue = singleCase.title;
+                updatedValue = singleCase.title;
                 break;
             case "Description":
-                newValue = singleCase.description || "";
+                updatedValue = singleCase.description || ""; // Handles optional description
                 break;
             case "Priority":
-                newValue = singleCase.priority.toString();
+                updatedValue = singleCase.priority.toString();
                 break;
             case "Status":
-                if (singleCase.status === "new") newValue = "New";
-                else if (singleCase.status === "in-progress") newValue = "In-Progress";
-                else if (singleCase.status === "pending") newValue = "Pending Review";
-                else if (singleCase.status === "resolved") newValue = "Resolved";
+                if (singleCase.status === "new") updatedValue = "New";
+                else if (singleCase.status === "in-progress") updatedValue = "In-Progress";
+                else if (singleCase.status === "pending") updatedValue = "Pending Review";
+                else if (singleCase.status === "resolved") updatedValue = "Resolved";
                 break;
             case "Customer":
-                newValue = singleCase.customer;
+                updatedValue = singleCase.customer;
                 break;
             case "Assignee":
-                newValue = singleCase.assignee;
+                updatedValue = singleCase.assignee;
                 break;
             case "Due Date":
-                newValue = singleCase.dueDate;
+                updatedValue = singleCase.dueDate;
                 break;
         }
-        return { ...field, value: newValue };
+
+
+        return { ...field, value: updatedValue };
     });
-    return mappedFields;
+    newFormSchema.formFieldJson = mappedFields;
+    return newFormSchema;
 }
 
 function createAvatarFromString(name: string): string {
@@ -116,12 +120,12 @@ export default function CasesPage() {
         return sampleCases.filter((case_) => case_.status === selectedStatus);
     };
 
-    const handleFormSubmission = (data: FormField[]) => {
+    const handleFormSubmission = (data: FormField) => {
         console.log("Data received from DynamicForm:", data);
         setShowDynamicForm(false);
     };
 
-    const handleFormSubmissionEdit = (data: FormField[]) => {
+    const handleFormSubmissionEdit = (data: FormField) => {
         console.log("Data received from Edit DynamicForm:", data);
         setShowEditForm(false);
     };
@@ -168,7 +172,6 @@ export default function CasesPage() {
             );
         };
 
-        // Define dropdownChild as a const arrow function
         const dropdownChild = (): ReactNode => {
             return (
                 <>
@@ -370,7 +373,7 @@ export default function CasesPage() {
                             <div className="bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Case</h3>
                                 <DynamicForm
-                                    form={createCase}
+                                    initialForm={createCase}
                                     edit={false}
                                     showDynamicForm={setShowDynamicForm}
                                     onFormSubmit={handleFormSubmission}
@@ -384,10 +387,11 @@ export default function CasesPage() {
                             <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Case</h3> {/* Changed title to "Edit Case" */}
                                 <DynamicForm
-                                    form={mapCaseToForm(editData)}
+                                    initialForm={mapCaseToForm(editData,createCase)}
                                     edit={false}
                                     showDynamicForm={setShowEditForm}
                                     onFormSubmit={handleFormSubmissionEdit}
+                                    
                                 />
                             </div>
                         </div>

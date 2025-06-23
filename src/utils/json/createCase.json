@@ -1,70 +1,82 @@
-[
-    {
-        "id": "field_1749655796764_1lddawz",
-        "label": "Case Title",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655797759_ju7abop",
-        "label": "Description",
-        "type": "textAreaInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655802312_7a1j29f",
-        "label": "Priority",
-        "type": "select",
-        "value": "",
-        "options": [
-            "9",
-            "8",
-            "7",
-            "6",
-            "5",
-            "4",
-            "3",
-            "2",
-            "1"
-        ],
-        "newOptionText": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655804616_er08xxt",
-        "label": "Status",
-        "type": "select",
-        "value": "",
-        "options": [
-            "New",
-            "In-Progress",
-            "Pending Review",
-            "Resolved"
-        ],
-        "newOptionText": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655809299_jdvio3e",
-        "label": "Customer",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655810998_ez2fh8v",
-        "label": "Assignee",
-        "type": "textInput",
-        "value": "",
-        "required": false
-    },
-    {
-        "id": "field_1749655811844_hxz5d3s",
-        "label": "Due Date",
-        "type": "dateInput",
-        "value": "",
-        "required": false
-    }
-]
+{
+    "formId": "form_1750400443114",
+    "formName": "Case Management Form",
+    "formColSpan": 1,
+    "formFieldJson": [
+        {
+            "id": "field_1749655796764_1lddawz",
+            "label": "Case Title",
+            "type": "textInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655797759_ju7abop",
+            "label": "Description",
+            "type": "textAreaInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655802312_7a1j29f",
+            "label": "Priority",
+            "type": "select",
+            "value": "",
+            "options": [
+                "9",
+                "8",
+                "7",
+                "6",
+                "5",
+                "4",
+                "3",
+                "2",
+                "1"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655804616_er08xxt",
+            "label": "Status",
+            "type": "select",
+            "value": "",
+            "options": [
+                "New",
+                "In-Progress",
+                "Pending Review",
+                "Resolved"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655809299_jdvio3e",
+            "label": "Customer",
+            "type": "textInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655810998_ez2fh8v",
+            "label": "Assignee",
+            "type": "textInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1
+        },
+        {
+            "id": "field_1749655811844_hxz5d3s",
+            "label": "Due Date",
+            "type": "dateInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1
+        }
+    ]
+}
