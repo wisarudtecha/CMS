@@ -51,7 +51,6 @@ import {
 // Updated: [19-06-2025] v0.1.6
 import workflowData from '../../mocks/workflowData.json';
 import workflowForm from '../../mocks/workflowForm.json';
-import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 
 // TypeScript interfaces
 interface Position {
@@ -1517,7 +1516,10 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
             <p>• Decision nodes have Yes/No connectors</p>
             <p>• Start nodes can continue from other workflows</p>
             <p>• End nodes can allow workflow continuation</p>
-            <p>• Visual indicators: ⬅ (continues from), ➡ (allows continuation)</p>
+            <p>• Visual indicators:
+              <AngleLeftIcon className="mx-1 inline w-3 h-3 bg-blue-400 border border-blue-600 rounded-full items-center justify-center" /> (continues from),
+              <AngleRightIcon className="mx-1 inline w-3 h-3 bg-green-400 border border-green-600 rounded-full items-center justify-center" /> (allows continuation)
+            </p>
             <p>• Start/End nodes required for save</p>
             <p>• Max connections: 1 (normal), 2 (decision)</p>
             <p>• Import/Export JSON workflows</p>
@@ -1829,8 +1831,8 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       {/* Updated: [20-06-2025] v0.1.7 */}
                       {/* Visual indicators for workflow continuation */}
                       {isContinueFromWorkflow ? (
-                        <div className="absolute -top-1 -left-1 w-3 h-3 bg-blue-500 dark:bg-blue-400 rounded-full flex items-center justify-center">
-                          <span className="text-white dark:text-gray-900 text-xs">
+                        <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-400 border border-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-xs">
                             <AngleLeftIcon className="w-3 h-3" />
                           </span>
                         </div>
@@ -1839,8 +1841,8 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                       {/* Updated: [20-06-2025] v0.1.7 */}
                       {/* Visual indicators for workflow continuation */}
                       {isAllowContinuation ? (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full flex items-center justify-center">
-                          <span className="text-white dark:text-gray-900 text-xs">
+                        <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-400 border border-green-600 rounded-full flex items-center justify-center">
+                          <span className="text-xs">
                             <AngleRightIcon className="w-3 h-3" />
                           </span>
                         </div>
@@ -1854,7 +1856,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                         e.stopPropagation();
                         deleteNode(node.id);
                       }}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-400 border border-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
                       <TrashBinIcon className="w-3 h-3" />
                     </button>
@@ -2461,7 +2463,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                             {/* Updated: [20-06-2025] v0.1.7 */}
                             {component.continueFromWorkflow && (
                               <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-medium px-2 py-1 rounded-full">
-                                <ArrowLeftIcon className="w-4 h-4" />
+                                <AngleLeftIcon className="w-4 h-4 inline" />
                                 Continues from workflow
                               </span>
                             )}
@@ -2644,7 +2646,7 @@ const WorkflowVisualEditor: React.FC<WorkflowEditorProps> = ({
                             {/* Updated: [20-06-2025] v0.1.7 */}
                             {component.allowContinuation && (
                               <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                                <ArrowRightIcon className="w-4 h-4" />
+                                <AngleLeftIcon className="w-4 h-4" />
                                 Allows continuation
                               </span>
                             )}
