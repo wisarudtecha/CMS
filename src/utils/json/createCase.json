@@ -1,82 +1,176 @@
 {
-    "formId": "form_1750400443114",
-    "formName": "Case Management Form",
-    "formColSpan": 1,
+    "formId": "form_1750652352497",
+    "formName": "Create Cese",
+    "formColSpan": 2,
     "formFieldJson": [
         {
-            "id": "field_1749655796764_1lddawz",
-            "label": "Case Title",
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "",
+            "options": [
+                "Maintenance",
+                "Repair",
+                "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "",
+            "options": [
+                "Phone number",
+                "Email",
+                "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+                {
+                    "id": "field_1750652791262_wx4b337",
+                    "label": "Radio Button Form",
+                    "type": "radio",
+                    "value": "",
+                    "options": [
+                        "Service Location",
+                        "Destination Point"
+                    ],
+                    "newOptionText": "",
+                    "required": false,
+                    "colSpan": 2,
+                    "isChild": true
+                },
+                {
+                    "id": "field_1750652794413_1xuasx4",
+                    "label": "Text Area Form",
+                    "type": "textAreaInput",
+                    "value": "",
+                    "required": false,
+                    "colSpan": 2,
+                    "isChild": true,
+                    "placeholder": "Address"
+                }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "",
+            "options": [
+                "Low",
+                "Normal",
+                "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "",
+            "options": [
+                "Service Center1",
+                "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+        },
+        {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+        },
+        {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+        },
+        {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
             "type": "textInput",
             "value": "",
             "required": false,
-            "colSpan": 1
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
         },
         {
-            "id": "field_1749655797759_ju7abop",
-            "label": "Description",
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+        },
+        {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+        },
+        {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
             "type": "textAreaInput",
             "value": "",
             "required": false,
-            "colSpan": 1
+            "colSpan": 2,
+            "isChild": false
         },
         {
-            "id": "field_1749655802312_7a1j29f",
-            "label": "Priority",
-            "type": "select",
-            "value": "",
-            "options": [
-                "9",
-                "8",
-                "7",
-                "6",
-                "5",
-                "4",
-                "3",
-                "2",
-                "1"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1
-        },
-        {
-            "id": "field_1749655804616_er08xxt",
-            "label": "Status",
-            "type": "select",
-            "value": "",
-            "options": [
-                "New",
-                "In-Progress",
-                "Pending Review",
-                "Resolved"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1
-        },
-        {
-            "id": "field_1749655809299_jdvio3e",
-            "label": "Customer",
-            "type": "textInput",
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
             "value": "",
             "required": false,
-            "colSpan": 1
-        },
-        {
-            "id": "field_1749655810998_ez2fh8v",
-            "label": "Assignee",
-            "type": "textInput",
-            "value": "",
-            "required": false,
-            "colSpan": 1
-        },
-        {
-            "id": "field_1749655811844_hxz5d3s",
-            "label": "Due Date",
-            "type": "dateInput",
-            "value": "",
-            "required": false,
-            "colSpan": 1
+            "colSpan": 2,
+            "isChild": false
         }
     ]
 }
