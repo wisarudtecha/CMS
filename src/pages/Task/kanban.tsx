@@ -21,7 +21,7 @@ import sampleCases from "../../utils/json/sampleCases.json"
 import KanbanCard from "@/components/ui/card/Casecard"
 // import KanbanView from "@/components/view/kanbanView"
 import Case from "@/components/interface/Case"
-
+import CreateCasePages from "../Forms/CreateCase"
 
 
 
@@ -133,6 +133,9 @@ export default function CasesPage() {
         setEditData(case_)
         setShowEditForm(true)
     }
+    if (showDynamicForm) {
+    return <CreateCasePages onBack={() => setShowDynamicForm(false)} />
+  }
 
 
     const CaseCard = ({ case_: caseItem }: { case_: Case }) => {
@@ -326,7 +329,7 @@ export default function CasesPage() {
                             >
                                 <Filter className="w-4 h-4 mr-2" />
                                 Filter & Sort
-                            </Button>
+                            </Button>   
                         </div>
                         <Button
                             className="flex items-center  hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
@@ -364,11 +367,11 @@ export default function CasesPage() {
                         </div>
                     </div>
                 </div>
-                <div className="relative">
+                <div className="relative grid h-full">
                     {viewMode === "kanban" ? <KanbanView /> : <ListView />}
 
 
-                    {showDynamicForm && (
+                    {/* {showDynamicForm && (
                         <div className=" fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                             <div className="bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Case</h3>
@@ -380,12 +383,12 @@ export default function CasesPage() {
                                 />
                             </div>
                         </div>
-                    )}
+                    )} */}
                     {showEditForm && (
 
                         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                             <div className="relative bg-white rounded-lg shadow-xl p-4 w-full sm:max-w-lg mx-auto dark:bg-gray-800 overflow-y-auto max-h-[70vh]">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Case</h3> {/* Changed title to "Edit Case" */}
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Case</h3> 
                                 <DynamicForm
                                     initialForm={mapCaseToForm(editData,createCase)}
                                     edit={false}

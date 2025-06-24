@@ -66,17 +66,17 @@ const Button: React.FC<ButtonProps> = ({
       "bg-white text-blue-light-700 ring-1 ring-inset ring-blue-light-300 hover:bg-blue-light-50 dark:bg-gray-800 dark:text-blue-light-400 dark:ring-blue-light-700 dark:hover:bg-white/[0.03] dark:hover:text-blue-light-300",
     ghost:
       // "hover:bg-transparent bg-transparent",
-      "hover:bg-transparent bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-500",
+      "hover:bg-transparent bg-transparent text-gray-400  dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-500",
     "ghost-primary":
       "hover:bg-transparent bg-transparent text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-500",
     "ghost-success":
       "hover:bg-transparent bg-transparent text-green-500 dark:text-green-400 hover:text-green-600 dark:hover:text-green-500",
     "ghost-error":
-      "hover:bg-transparent bg-transparent text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-500",
+      "hover:bg-transparent bg-transparent text-red-500  dark:text-red-400 hover:text-red-600 dark:hover:text-red-500",
     "ghost-warning":
       "hover:bg-transparent bg-transparent text-yellow-500 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-500",
     "ghost-info":
-      "hover:bg-transparent bg-transparent text-blue-light-500 dark:text-blue-light-400 hover:text-blue-light-600 dark:hover:text-blue-light-500"
+      "hover:bg-transparent bg-transparent text-blue-light-500  dark:text-blue-light-400 hover:text-blue-light-600 dark:hover:text-blue-light-500"
   };
 
   return (
