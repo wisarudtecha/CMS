@@ -416,7 +416,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
           let newValue = field.value;
           if ((field.type === "select" || field.type === "radio") && field.value === field.options[optionIndexToRemove]) {
-            newValue = ""; 
+            newValue = "";
           } else if (field.type === "option" && Array.isArray(field.value)) {
             newValue = field.value.filter(
               (val: string) => val !== field.options?.[optionIndexToRemove]
@@ -616,7 +616,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         if (localIdValue !== field.id) {
           updateFieldId(field.id, localIdValue);
         }
-        idInputRef.current?.blur(); 
+        idInputRef.current?.blur();
       }
     }, [localIdValue, field.id, updateFieldId]);
 
@@ -636,7 +636,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         if (localLabelValue !== field.label) {
           handleLabelChange(field.id, localLabelValue);
         }
-        labelInputRef.current?.blur(); 
+        labelInputRef.current?.blur();
       }
     }, [localLabelValue, field.id, handleLabelChange]);
 
@@ -656,7 +656,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         if (localPlaceholderValue !== field.placeholder) {
           handlePlaceholderChange(field.id, localPlaceholderValue);
         }
-        placeholderInputRef.current?.blur(); 
+        placeholderInputRef.current?.blur();
       }
     }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
 
@@ -664,7 +664,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       const trimmedOption = localNewOptionText.trim();
       if (trimmedOption !== "") {
         handleAddOption(field.id, trimmedOption);
-        setLocalNewOptionText(""); 
+        setLocalNewOptionText("");
       }
     }, [localNewOptionText, field.id, handleAddOption]);
 
@@ -686,7 +686,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
 
     const isInputGroup = field.type === "InputGroup";
-    const showLabelInput = !field.isChild; 
+    const showLabelInput = !field.isChild;
 
     return (
       <div
@@ -807,7 +807,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <h3 className="text-md font-semibold mb-3 dark:text-white/90">Grouped Fields</h3>
             <div className="flex flex-wrap gap-2 mb-4">
               {formConfigurations
-                .filter(config => config.canBeChild) 
+                .filter(config => config.canBeChild)
                 .map((item) => (
                   <Button
                     key={`add-child-${field.id}-${item.formType}`}
@@ -824,9 +824,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="space-y-4" 
+                    className="space-y-4"
                   >
-                  
+
                     {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren, childIndex: number) => (
                       <Draggable key={childField.id} draggableId={childField.id} index={childIndex}>
                         {(childProvided) => (
@@ -928,7 +928,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="space-y-4" 
+                  className="space-y-4"
                 >
                   {currentForm.formFieldJson.map((field, index) => (
                     <Draggable key={field.id} draggableId={field.id} index={index}>
@@ -983,6 +983,21 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       </label>
     );
 
+    const colSpanMap: Record<number, string> = {
+      1: "col-span-1",
+      2: "col-span-2",
+      3: "col-span-3",
+      4: "col-span-4",
+      5: "col-span-5",
+      6: "col-span-6",
+      7: "col-span-7",
+      8: "col-span-8",
+      9: "col-span-9",
+      10: "col-span-10",
+      11: "col-span-11",
+      12: "col-span-12",
+    };
+
     switch (field.type) {
       case "textInput":
       case "emailInput":
@@ -998,8 +1013,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     ? "email"
                     : "password"
               }
-              value={field.value as string} 
-              onChange={(e) => handleFieldChange(field.id, e.target.value)} 
+              value={field.value as string}
+              onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
             />
           </>
@@ -1010,7 +1025,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             {labelComponent}
             <input
               type="number"
-              value={field.value !== null ? field.value : ''} 
+              value={field.value !== null ? field.value : ''}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
             />
@@ -1077,7 +1092,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             </select>
           </>
         );
-      case "option": 
+      case "option":
         return (
           <>
             {labelComponent}
@@ -1117,7 +1132,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <label key={option} className="inline-flex items-center">
                   <input
                     type="radio"
-                    name={field.id} 
+                    name={field.id}
                     value={option}
                     checked={field.value === option}
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -1188,16 +1203,16 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       case "InputGroup":
         return (
           <div>
-            {!field.isChild && ( 
+            {!field.isChild && (
               <h3 className="text-lg font-semibold mb-3 dark:text-white/90">
                 {field.label} {field.required && <span className="text-red-500">*</span>}
               </h3>
             )}
-            <div className={`grid grid-cols-1 ${currentForm.formColSpan ? `md:grid-cols-${currentForm.formColSpan}` : 'md:grid-cols-1'} gap-4`}>
+            <div className={`grid grid-cols-1 ${currentForm.formColSpan ? `md:grid-cols-${gridColsMap[currentForm.formColSpan]}` : 'md:grid-cols-1'} gap-4`}>
               {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
                 <div
                   key={childField.id}
-                  className={`${childField.colSpan ? `col-span-${childField.colSpan}` : 'col-span-1'}`}
+                  className={`${childField.colSpan ? `col-span-${colSpanMap[childField.colSpan]}` : 'col-span-1'}`}
                 >
                   {renderFormField(childField)}
                 </div>
@@ -1214,18 +1229,23 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
   }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan]);
-
+  const gridColsMap: Record<number, string> = {
+    1: "md:grid-cols-1",
+    2: "md:grid-cols-2",
+    3: "md:grid-cols-3",
+    4: "md:grid-cols-4",
+    5: "md:grid-cols-5",
+    6: "md:grid-cols-6",
+    7: "md:grid-cols-7",
+    8: "md:grid-cols-8",
+    9: "md:grid-cols-9",
+    10: "md:grid-cols-10",
+    11: "md:grid-cols-11",
+    12: "md:grid-cols-12",
+  };
 
   const FormPreview = useCallback(() => {
-    const gridColsMap: Record<number, string> = {
-      1: "md:grid-cols-1",
-      2: "md:grid-cols-2",
-      3: "md:grid-cols-3",
-      4: "md:grid-cols-4",
-      5: "md:grid-cols-5",
-      6: "md:grid-cols-6",
-      12: "md:grid-cols-12",
-    };
+
     const gridColsClass = gridColsMap[currentForm.formColSpan] || "md:grid-cols-1";
     return (
       <>
@@ -1258,7 +1278,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="From Elements" />
-      <div className={isPreview ? "grid grid-cols-1" : "grid grid-cols-[25%_75%] gap-6 xl:grid-cols-2"}>
+      <div className={isPreview ? "grid grid-cols-1" : "grid grid-cols-[25%_75%] gap-6 "}>
         <div hidden={isPreview}>
           <ComponentCard title="Add Form" >
             <div>
