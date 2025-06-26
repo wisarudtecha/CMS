@@ -11,6 +11,13 @@ export interface IndividualFormField {
   colSpan?: number; 
 }
 
+export interface IndividualFormFieldWithChildren extends IndividualFormField {
+  isChild?: boolean;
+}
+
+export interface FormFieldWithChildren extends FormField {
+  formFieldJson: IndividualFormFieldWithChildren[];
+}
 
 export interface FormField {
   formId: string;

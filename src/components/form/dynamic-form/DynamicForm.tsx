@@ -3,17 +3,11 @@ import PageMeta from "../../common/PageMeta";
 import ComponentCard from "../../common/ComponentCard";
 import Button from "../../ui/button/Button";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FormField, IndividualFormField } from "@/components/interface/FormField";
+import { FormField, FormFieldWithChildren, IndividualFormField, IndividualFormFieldWithChildren } from "@/components/interface/FormField";
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 
-interface IndividualFormFieldWithChildren extends IndividualFormField {
-  isChild?: boolean;
-}
 
-interface FormFieldWithChildren extends FormField {
-  formFieldJson: IndividualFormFieldWithChildren[];
-}
 
 interface FormConfigItem {
   formType: string;
@@ -25,6 +19,7 @@ interface FormConfigItem {
 interface DynamicFormProps {
   initialForm?: FormField;
   edit?: boolean;
+  editFormData?:boolean; // Added editFormData prop
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
 }
@@ -104,7 +99,7 @@ function createDynamicFormField(
   };
 }
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit }: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit,editFormData=true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
@@ -564,6 +559,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleColSpanChange: (id: string, newColSpan: number) => void;
     overallFormColSpan: number;
     addField: (formType: string, parentId?: string) => void;
+    editFormData: boolean; // Added editFormData prop
   }
 
   const FieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -578,6 +574,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleColSpanChange,
     overallFormColSpan,
     addField,
+    editFormData // Destructure editFormData
   }) => {
     const [localIdValue, setLocalIdValue] = useState(field.id);
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
@@ -705,6 +702,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onKeyDown={handleLabelKeyDown}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               aria-label="Preview field title"
+              disabled={!editFormData} // Disable based on editFormData
             />
           </label>
         )}
@@ -720,6 +718,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
             aria-label="Edit field id"
             title="Edit Field ID"
+            disabled={!editFormData} // Disable based on editFormData
           />
         </label>
         {showPlaceholderInput && (
@@ -735,6 +734,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               aria-label="Edit field placeholder"
               title="Edit Field Placeholder"
+              disabled={!editFormData} // Disable based on editFormData
             />
           </label>
         )}
@@ -745,6 +745,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             checked={field.required}
             onChange={() => handleToggleRequired(field.id)}
             className="form-checkbox h-4 w-4 text-blue-600 rounded"
+            disabled={!editFormData} // Disable based on editFormData
           />
           <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
             Required
@@ -759,6 +760,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
             onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
             className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+            disabled={!editFormData} // Disable based on editFormData
           >
             {colSpanOptions.map((span) => (
               <option key={span} value={span}>
@@ -777,10 +779,12 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 onChange={(e) => setLocalNewOptionText(e.target.value)}
                 onKeyDown={handleNewOptionKeyDown}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
+                disabled={!editFormData} // Disable based on editFormData
               />
               <Button
                 onClick={handleAddOptionClick}
                 className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
+                disabled={!editFormData} // Disable based on editFormData
               >
                 +
               </Button>
@@ -792,6 +796,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <Button
                   onClick={() => handleRemoveOption(field.id, index)}
                   className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
+                  disabled={!editFormData} // Disable based on editFormData
                 >
                   -
                 </Button>
@@ -813,6 +818,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     key={`add-child-${field.id}-${item.formType}`}
                     onClick={() => addField(item.formType, field.id)}
                     className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 text-sm"
+                    disabled={!editFormData} // Disable based on editFormData
                   >
                     Add {item.title.replace(" Form", "")}
                   </Button>
@@ -847,6 +853,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                               handleColSpanChange={handleColSpanChange}
                               overallFormColSpan={overallFormColSpan}
                               addField={addField}
+                              editFormData={editFormData} // Pass editFormData to child FieldEditItem
                             />
                           </div>
                         )}
@@ -869,6 +876,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           onClick={() => removeField(field.id)}
           className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300"
           title="Remove field"
+          disabled={!editFormData} // Disable based on editFormData
         >
           ✕
         </button>
@@ -889,6 +897,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onChange={(e) => handleFormNameChange(e.target.value)}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               placeholder="Enter form name"
+              disabled={!editFormData} // Disable based on editFormData
             />
           </label>
           <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
@@ -899,6 +908,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onChange={(e) => handleFormIdChange(e.target.value)}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               placeholder="Enter unique form ID"
+              disabled={!editFormData} // Disable based on editFormData
             />
           </label>
           <div className="flex items-center mt-2">
@@ -913,6 +923,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               value={currentForm.formColSpan}
               onChange={handleOverallFormColSpanChange}
               className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+              disabled={!editFormData} // Disable based on editFormData
             />
           </div>
         </div>
@@ -950,6 +961,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                             handleColSpanChange={handleColSpanChange}
                             overallFormColSpan={currentForm.formColSpan}
                             addField={addField}
+                            editFormData={editFormData} // Pass editFormData to FieldEditItem
                           />
                         </div>
                       )}
@@ -963,7 +975,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         )}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, onDragEnd, addField]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, onDragEnd, addField, editFormData]); // Add editFormData to dependency array
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -972,6 +984,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
+      disabled: !editFormData, // Disable based on editFormData
     };
 
     const labelComponent = !field.isChild && (
@@ -1116,6 +1129,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     }}
                     className="form-checkbox h-5 w-5 text-blue-600 rounded"
                     required={field.required && Array.isArray(field.value) && field.value.length === 0}
+                    disabled={!editFormData} // Disable based on editFormData
                   />
                   <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                 </label>
@@ -1138,6 +1152,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="form-radio h-5 w-5 text-blue-600"
                     required={field.required}
+                    disabled={!editFormData} // Disable based on editFormData
                   />
                   <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                 </label>
@@ -1159,6 +1174,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 onChange={(e) => handleFieldChange(field.id, e.target.files)}
                 className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
+                disabled={!editFormData} // Disable based on editFormData
               />
               {field.type === "image" && field.value instanceof File && (
                 <div className="relative group mt-2 w-20 h-20">
@@ -1170,6 +1186,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   <button
                     onClick={() => handleRemoveFile(field.id)}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    disabled={!editFormData} // Disable based on editFormData
                   >
                     ×
                   </button>
@@ -1189,6 +1206,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                         <button
                           onClick={() => handleRemoveFile(field.id, file.name)}
                           className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={!editFormData} // Disable based on editFormData
                         >
                           ×
                         </button>
@@ -1228,7 +1246,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       default:
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
-  }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan]);
+  }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan, editFormData]); // Add editFormData to dependency array
   const gridColsMap: Record<number, string> = {
     1: "md:grid-cols-1",
     2: "md:grid-cols-2",
@@ -1287,6 +1305,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   key={item.formType}
                   className="text-gray-700 hover:text-sky-700 w-full text-left dark:text-white/90 dark:hover:text-sky-400"
                   onClick={() => addField(item.formType)}
+                  disabled={!editFormData} // Disable add field buttons
                 >
                   {item.title.replace(" Form", "")}
                 </button>
@@ -1298,17 +1317,17 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <div hidden={isPreview}>
               {FormEdit()}
               <div className="flex justify-end p-4">
-                <Button onClick={() => setIsPreview(true)}>Preview</Button>
+                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button> {/* Disable preview button */}
               </div>
             </div>
             <div hidden={!isPreview} >
               {FormPreview()}
               <div className="flex justify-between">
                 <div className="flex">
-                  <Button onClick={saveSchema}>Save schema</Button>
+                  <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button> {/* Disable save schema button */}
                 </div>
                 <div className="flex gap-2 \t">
-                  <Button onClick={() => setIsPreview(false)}>Edit</Button>
+                  <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button> {/* Disable edit button */}
                   <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
                 </div>
               </div>

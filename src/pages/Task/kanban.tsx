@@ -20,7 +20,7 @@ import createCase from "../../utils/json/createCase.json"
 import sampleCases from "../../utils/json/sampleCases.json"
 import KanbanCard from "@/components/ui/card/Casecard"
 // import KanbanView from "@/components/view/kanbanView"
-import Case from "@/components/interface/Case"
+import {Case} from "@/components/interface/Case"
 import CreateCasePages from "../Forms/CreateCase"
 
 

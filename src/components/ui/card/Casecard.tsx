@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react"; // Import ReactNode for children types
+import { useState, ReactNode, ReactEventHandler } from "react"; // Import ReactNode for children types
 import { MoreHorizontal } from "lucide-react";
 import Button from "../button/Button";
 import { Dropdown } from "../dropdown/Dropdown";
@@ -11,9 +11,10 @@ interface CaseCardProps {
     dropdownChild: ReactNode; 
     cardChild: ReactNode;
     title : string;
+    onChick?:ReactEventHandler;
 }
 
-export default function Card({ priority_color, dropdownChild, cardChild, title }: CaseCardProps) {
+export default function Card({ priority_color, dropdownChild, cardChild, title ,onChick}: CaseCardProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     function toggleDropdown() {
@@ -26,7 +27,7 @@ export default function Card({ priority_color, dropdownChild, cardChild, title }
 
     return (
         <div className="rounded-lg p-4 mb-3 border border-gray-200 hover:border-gray-300 shadow-sm
-                       dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 transition-colors">
+                       dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 transition-colors" onClick={onChick}>
             <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 line-clamp-2">
                     {/* Access caseItem.title with certainty due to typing */}
