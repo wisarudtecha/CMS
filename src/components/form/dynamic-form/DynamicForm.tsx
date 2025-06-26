@@ -19,7 +19,7 @@ interface FormConfigItem {
 interface DynamicFormProps {
   initialForm?: FormField;
   edit?: boolean;
-  editFormData?:boolean; // Added editFormData prop
+  editFormData?: boolean; // Added editFormData prop
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
 }
@@ -31,9 +31,9 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "emailInput", title: "Email Form", canBeChild: true },
   { formType: "option", title: "Multiple Select Form", options: [], canBeChild: true },
   { formType: "select", title: "Single Select Form", options: [], canBeChild: true },
-  { formType: "image", title: "Image Upload Form", canBeChild: true },
-  { formType: "multiImage", title: "Multi-Image Upload Form", canBeChild: true },
-  { formType: "passwordInput", title: "Password Form", canBeChild: true },
+  { formType: "image", title: "Image", canBeChild: true },
+  { formType: "multiImage", title: "MultiImage", canBeChild: true },
+  { formType: "passwordInput", title: "Password", canBeChild: true },
   { formType: "dateInput", title: "Date Form", canBeChild: true },
   { formType: "dateLocal", title: "DateLocal Form", canBeChild: true },
   { formType: "radio", title: "Radio Button Form", options: [], canBeChild: true },
@@ -99,7 +99,7 @@ function createDynamicFormField(
   };
 }
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit,editFormData=true }: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
@@ -356,7 +356,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     };
 
     const allFieldsValid = validateFields(currentForm.formFieldJson);
-    console.log(currentForm)
+    console.log("Current Form Data:", currentForm); // Log current form data for debugging
+
     if (allFieldsValid) {
       if (onFormSubmit) {
         const submitData: FormField = {
@@ -681,10 +682,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
 
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
-
     const isInputGroup = field.type === "InputGroup";
     const showLabelInput = !field.isChild;
-
     return (
       <div
         className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90`}
@@ -769,6 +768,36 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             ))}
           </select>
         </div>
+
+        {/* Visual representation of colSpan */}
+        <div className="mt-4 border border-dashed border-gray-400 p-2 rounded-md">
+          <p className="text-gray-600 text-xs mb-1 dark:text-gray-400">Field Layout (visual aid):</p>
+          <div
+            className={`grid gap-1`}
+            style={{ gridTemplateColumns: `repeat(${overallFormColSpan}, minmax(0, 1fr))` }}
+          >
+            {Array.from({ length: overallFormColSpan }).map((_, i) => (
+              <div
+                key={`col-${i}`}
+                className={`h-6 flex items-center justify-center text-xs border border-gray-300 rounded ${i >= (field.colSpan || 1)
+                  ? 'bg-gray-200 dark:bg-gray-700'
+                  : 'bg-blue-200 dark:bg-blue-700'
+                  }`}
+              >
+                {i + 1}
+              </div>
+            ))}
+            <div
+              className={`h-6 flex items-center justify-center text-xs bg-blue-500 text-white rounded`}
+              style={{ gridColumn: `span ${field.colSpan || 1}` }}
+            >
+              Content
+            </div>
+          </div>
+        </div>
+        {/* End Visual representation of colSpan */}
+
+
         {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
           <div>
             <div className="flex items-center gap-2 mt-2">
@@ -811,7 +840,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
             <h3 className="text-md font-semibold mb-3 dark:text-white/90">Grouped Fields</h3>
             <div className="flex flex-wrap gap-2 mb-4">
-              {formConfigurations
+              {/* {formConfigurations
                 .filter(config => config.canBeChild)
                 .map((item) => (
                   <Button
@@ -822,7 +851,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   >
                     Add {item.title.replace(" Form", "")}
                   </Button>
-                ))}
+                ))} */}
             </div>
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId={field.id}>
@@ -885,6 +914,25 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   });
 
   const FormEdit = useCallback(() => {
+    // Helper object for Tailwind CSS grid classes
+    const gridColsMapClass: Record<number, string> = {
+      1: "grid-cols-1",
+      2: "grid-cols-2",
+      3: "grid-cols-3",
+      4: "grid-cols-4",
+      5: "grid-cols-5",
+      6: "grid-cols-6",
+      7: "grid-cols-7",
+      8: "grid-cols-8",
+      9: "grid-cols-9",
+      10: "grid-cols-10",
+      11: "grid-cols-11",
+      12: "grid-cols-12",
+    };
+
+    const overallGridClass = gridColsMapClass[currentForm.formColSpan] || "grid-cols-1";
+
+
     return (
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
@@ -923,7 +971,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               value={currentForm.formColSpan}
               onChange={handleOverallFormColSpanChange}
               className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
-              disabled={!editFormData} // Disable based on editFormData
+              disabled={!editFormData}
             />
           </div>
         </div>
@@ -933,45 +981,55 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             No fields added yet. Use the "Add Form" section to add new fields.
           </p>
         ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="form-fields">
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="space-y-4"
-                >
-                  {currentForm.formFieldJson.map((field, index) => (
-                    <Draggable key={field.id} draggableId={field.id} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <FieldEditItem
-                            field={field}
-                            handleLabelChange={handleLabelChange}
-                            updateFieldId={updateFieldId}
-                            handleAddOption={handleAddOption}
-                            handleRemoveOption={handleRemoveOption}
-                            removeField={removeField}
-                            handleToggleRequired={handleToggleRequired}
-                            handlePlaceholderChange={handlePlaceholderChange}
-                            handleColSpanChange={handleColSpanChange}
-                            overallFormColSpan={currentForm.formColSpan}
-                            addField={addField}
-                            editFormData={editFormData} // Pass editFormData to FieldEditItem
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+
+          <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20`}>
+            <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-blue-300">
+              Form Layout Preview (Overall {currentForm.formColSpan} Columns)
+            </p>
+
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="form-fields">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className={`grid w-full ${overallGridClass} gap-4`}
+                  >
+                    {currentForm.formFieldJson.map((field, index) => (
+                      <Draggable key={field.id} draggableId={field.id} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            // Apply col-span directly to the draggable item's container
+                            className={`col-span-${field.colSpan ?? 1}`}
+                          >
+                            <FieldEditItem
+                              field={field}
+                              handleLabelChange={handleLabelChange}
+                              updateFieldId={updateFieldId}
+                              handleAddOption={handleAddOption}
+                              handleRemoveOption={handleRemoveOption}
+                              removeField={removeField}
+                              handleToggleRequired={handleToggleRequired}
+                              handlePlaceholderChange={handlePlaceholderChange}
+                              handleColSpanChange={handleColSpanChange}
+                              overallFormColSpan={currentForm.formColSpan}
+                              addField={addField}
+                              editFormData={editFormData}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+
         )}
       </>
     );
@@ -1290,51 +1348,62 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   }, [currentForm.formFieldJson, currentForm.formColSpan, renderFormField]);
 
   return edit ? (
-    <div>
+    <div >
       <PageMeta
         title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="From Elements" />
-      <div className={isPreview ? "grid grid-cols-1" : "grid grid-cols-[25%_75%] gap-6 "}>
-        <div hidden={isPreview}>
-          <ComponentCard title="Add Form" >
-            <div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        {!isPreview && (
+
+          <div className="sticky top-[100px]  z-9999 bg-white dark:bg-gray-700 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
+            <div className="grid grid-cols-9 gap-1 mb-2">
               {formConfigurations.map((item) => (
                 <button
                   key={item.formType}
                   className="text-gray-700 hover:text-sky-700 w-full text-left dark:text-white/90 dark:hover:text-sky-400"
                   onClick={() => addField(item.formType)}
-                  disabled={!editFormData} // Disable add field buttons
+                  disabled={!editFormData}
                 >
                   {item.title.replace(" Form", "")}
                 </button>
               ))}
             </div>
-          </ComponentCard></div>
-        <div className="space-y-6">
-          <ComponentCard title="Dynamic Form">
-            <div hidden={isPreview}>
-              {FormEdit()}
-              <div className="flex justify-end p-4">
-                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button> {/* Disable preview button */}
-              </div>
-            </div>
-            <div hidden={!isPreview} >
-              {FormPreview()}
-              <div className="flex justify-between">
-                <div className="flex">
-                  <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button> {/* Disable save schema button */}
-                </div>
-                <div className="flex gap-2 \t">
-                  <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button> {/* Disable edit button */}
-                  <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
+
+          </div>
+        )}
+
+        <div className={isPreview ? "grid grid-cols-1" : "grid  gap-6 "}>
+
+          <div className="space-y-6">
+            <ComponentCard title="Dynamic Form">
+              <div hidden={isPreview}>
+                {FormEdit()}
+                <div className="flex justify-end sticky bottom-2 ">
+                  <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>
+                    Preview
+                  </Button>
                 </div>
               </div>
-            </div>
-          </ComponentCard>
+              <div hidden={!isPreview} >
+                {FormPreview()}
+                <div className="flex justify-between">
+                  <div className="flex">
+                    <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button> {/* Disable save schema button */}
+                  </div>
+                  <div className="flex gap-2 \t">
+                    <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button> {/* Disable edit button */}
+                    <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
+                  </div>
+                </div>
+              </div>
+            </ComponentCard>
+
+          </div>
+
         </div>
-      </div>
+      </DragDropContext>
     </div>
   ) : (<div>
     {FormPreview()}
