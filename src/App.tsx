@@ -24,6 +24,7 @@ import Home from "./pages/Dashboard/Home";
 import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
 import WorkflowListPage from "./pages/Workflow/Workflows";
 import WorkflowVisualEditor from "./components/builder/FlowEditor";
+import WorkflowVisualEditorV02 from "./components/builder/v02/FlowEditor";
 
 // Lingui
 // import { i18n } from "@lingui/core";
@@ -75,6 +76,7 @@ export default function App() {
             {/* Workflow Builder */}
             <Route path="/workflows" element={<WorkflowListPage />} />
             <Route path="/workflow-builder" element={<WorkflowVisualEditor />} />
+            <Route path="/workflow-builder/v02" element={<WorkflowVisualEditorV02 />} />
           </Route>
 
           {/* Auth Layout */}

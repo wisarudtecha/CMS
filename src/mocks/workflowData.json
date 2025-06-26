@@ -80,6 +80,9 @@
     "title": "Workflow",
     "description": "Loaded from URL",
     "status": "active",
-    "createdAt": "2025-06-01T10:00:00Z"
+    "createdAt": "2025-06-01T10:00:00Z",
+    "casePriority": "high",
+    "caseCategory": "incident",
+    "targetCaseStatus": "resolved"
   }
 }
