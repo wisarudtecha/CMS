@@ -4,10 +4,24 @@ import ComponentCard from "../../common/ComponentCard";
 import Button from "../../ui/button/Button";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FormField, FormFieldWithChildren, IndividualFormField, IndividualFormFieldWithChildren } from "@/components/interface/FormField";
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-
-
-
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  UniqueIdentifier,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface FormConfigItem {
   formType: string;
@@ -19,7 +33,7 @@ interface FormConfigItem {
 interface DynamicFormProps {
   initialForm?: FormField;
   edit?: boolean;
-  editFormData?: boolean; // Added editFormData prop
+  editFormData?: boolean;
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
 }
@@ -39,7 +53,6 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "radio", title: "Radio Button Form", options: [], canBeChild: true },
   { formType: "InputGroup", title: "Group of Input", canBeChild: false }
 ];
-
 
 function createDynamicFormField(
   config: FormConfigItem[],
@@ -63,7 +76,6 @@ function createDynamicFormField(
   let newOptionText: string | undefined;
   let placeholder: string | undefined;
 
-
   if (configItem.formType === "InputGroup") {
     defaultValue = [];
   } else if (configItem.formType === "option") {
@@ -78,12 +90,10 @@ function createDynamicFormField(
     defaultValue = "";
   }
 
-
   if (configItem.formType === "option" || configItem.formType === "select" || configItem.formType === "radio") {
     fieldOptions = configItem.options || [];
     newOptionText = "";
   }
-
 
   return {
     id: id,
@@ -121,6 +131,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         formColSpan: 1,
         formFieldJson: [],
       }
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
   const handleFormIdChange = useCallback((newId: string) => {
@@ -356,7 +373,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     };
 
     const allFieldsValid = validateFields(currentForm.formFieldJson);
-    console.log("Current Form Data:", currentForm); // Log current form data for debugging
+    console.log("Current Form Data:", currentForm);
 
     if (allFieldsValid) {
       if (onFormSubmit) {
@@ -466,86 +483,145 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   }, [updateFieldRecursively]);
 
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    const { source, destination, draggableId } = result;
+  const getParentAndCurrentArray = useCallback((
+    fields: IndividualFormFieldWithChildren[],
+    id: UniqueIdentifier,
+    parentPath: UniqueIdentifier[] = []
+  ): { arr: IndividualFormFieldWithChildren[]; index: number; parentId: UniqueIdentifier | null; path: UniqueIdentifier[] } | null => {
+    for (let i = 0; i < fields.length; i++) {
+      if (fields[i].id === id) {
+        return { arr: fields, index: i, parentId: parentPath.length > 0 ? parentPath[parentPath.length - 1] : null, path: parentPath };
+      }
+      if (fields[i].type === "InputGroup" && Array.isArray(fields[i].value)) {
+        const found = getParentAndCurrentArray(fields[i].value, id, [...parentPath, fields[i].id]);
+        if (found) return found;
+      }
+    }
+    return null;
+  }, []);
 
-    if (!destination) {
+  const updateNestedFormFields = useCallback((
+    fields: IndividualFormFieldWithChildren[],
+    path: UniqueIdentifier[],
+    updatedArray: IndividualFormFieldWithChildren[]
+  ): IndividualFormFieldWithChildren[] => {
+    if (path.length === 0) {
+      return updatedArray;
+    }
+
+    const currentId = path[0];
+    return fields.map(field => {
+      if (field.id === currentId && field.type === "InputGroup") {
+        return {
+          ...field,
+          value: updateNestedFormFields(Array.isArray(field.value) ? field.value : [], path.slice(1), updatedArray),
+        };
+      }
+      return field;
+    });
+  }, []);
+
+  const onDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
       return;
     }
 
-    const findTargetArrayAndInfo = (
-      fields: IndividualFormFieldWithChildren[],
-      targetId: string,
-      path: string[] = []
-    ): { arr: IndividualFormFieldWithChildren[], index: number, path: string[], isDroppableContainer: boolean } | null => {
-      if (targetId === "form-fields") {
-        return { arr: fields, index: -1, path: [], isDroppableContainer: true };
+    setCurrentForm(prevForm => {
+      // Custom deep copy for formFieldJson to handle nested arrays and avoid mutating state directly.
+      // This is a shallow copy for File objects, assuming actual File objects are not in 'value'
+      // during schema manipulation, or they are correctly handled downstream.
+      const deepCopyFields = (fields: IndividualFormFieldWithChildren[]): IndividualFormFieldWithChildren[] => {
+        return fields.map(field => {
+          const newField: IndividualFormFieldWithChildren = { ...field };
+          if (newField.type === "InputGroup" && Array.isArray(newField.value)) {
+            newField.value = deepCopyFields(newField.value);
+          }
+          return newField;
+        });
+      };
+
+      const newFormFieldJson = deepCopyFields(prevForm.formFieldJson);
+
+      const activeInfo = getParentAndCurrentArray(newFormFieldJson, active.id);
+      const overInfo = getParentAndCurrentArray(newFormFieldJson, over.id);
+
+      if (!activeInfo || !overInfo) {
+        console.warn("Drag end: Active or over info not found.");
+        return prevForm;
       }
 
-      for (let i = 0; i < fields.length; i++) {
-        const field = fields[i];
-        if (field.id === targetId) {
-          return { arr: fields, index: i, path: path, isDroppableContainer: false };
+      const { arr: activeArr, index: activeIndex, path: activePath } = activeInfo;
+      const { arr: overArr, index: overIndex, path: overPath } = overInfo;
+
+      const overField = overArr[overIndex];
+
+      let targetContainerArr: IndividualFormFieldWithChildren[];
+      let targetContainerPath: UniqueIdentifier[];
+      let insertionIndex: number;
+
+      // Identify if the 'over' element is the InputGroup container itself
+      const isOverInputGroupContainer = overField.type === "InputGroup" && overField.id === over.id;
+      // Check if the active item is already a child of the specific InputGroup that's 'over'
+      const activeItemIsChildOfOverInputGroup = activePath.length > 0 && activePath[activePath.length - 1] === overField.id;
+
+      const originalParentPathStr = activePath.join('-');
+      const overParentPathStr = overPath.join('-'); // Path to the array containing the 'over' item
+
+      // Determine the final destination array and index based on drag action
+      if (isOverInputGroupContainer && !activeItemIsChildOfOverInputGroup) {
+          // Case A: Dropping an item *from outside* into an InputGroup container.
+          // The target is the InputGroup's `value` array.
+          targetContainerArr = Array.isArray(overField.value) ? overField.value : [];
+          targetContainerPath = [...overPath, overField.id]; // Path to the children of this InputGroup
+          insertionIndex = targetContainerArr.length; // Append to the end of the group
+      } else if (originalParentPathStr === overParentPathStr || (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup)) {
+          targetContainerArr = activeArr; 
+          targetContainerPath = activePath;
+          if (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup) {
+              insertionIndex = activeArr.length;
+          } else {
+              insertionIndex = overIndex;
+          }
+      } else {
+          // Case C: Moving between different logical lists (e.g., top-level to top-level, or group A to group B's child)
+          targetContainerArr = overArr;
+          targetContainerPath = overPath;
+          insertionIndex = overIndex;
+      }
+
+      // Perform the move/reorder:
+      let finalFormJson: IndividualFormFieldWithChildren[];
+
+      if (activeArr === targetContainerArr && activePath.join('-') === targetContainerPath.join('-')) {
+        // This confirms it's a reorder within the exact same array reference (Case B).
+        const reorderedArr = arrayMove(activeArr, activeIndex, insertionIndex);
+        finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, reorderedArr);
+      } else {
+        // This is a move between different arrays (Case A or C).
+        const [movedItem] = activeArr.splice(activeIndex, 1); // Remove from source
+
+        // Prevent moving an InputGroup into another InputGroup
+        if (movedItem.type === "InputGroup" && targetContainerPath.length > 0) {
+          activeArr.splice(activeIndex, 0, movedItem); // Put it back
+          console.warn("Cannot move an InputGroup into another InputGroup.");
+          return prevForm;
         }
-        if (field.type === "InputGroup" && field.id === targetId) {
-          return { arr: Array.isArray(field.value) ? field.value : [], index: -1, path: [...path, field.id], isDroppableContainer: true };
-        }
-        if (field.type === "InputGroup" && Array.isArray(field.value)) {
-          const foundInChild = findTargetArrayAndInfo(field.value, targetId, [...path, field.id]);
-          if (foundInChild) return foundInChild;
+
+        const updatedMovedItem = { ...movedItem, isChild: targetContainerPath.length > 0 };
+        targetContainerArr.splice(insertionIndex, 0, updatedMovedItem); // Insert into destination
+
+        // Update the main formJson by reflecting changes in source and destination paths
+        finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, activeArr);
+        // Only update target path if it's different from active path, to avoid redundant updates for "reorder in place".
+        if (activePath.join('-') !== targetContainerPath.join('-')) {
+            finalFormJson = updateNestedFormFields(finalFormJson, targetContainerPath, targetContainerArr);
         }
       }
-      return null;
-    };
-
-    const sourceInfo = findTargetArrayAndInfo(currentForm.formFieldJson, draggableId);
-    const destinationInfo = findTargetArrayAndInfo(currentForm.formFieldJson, destination.droppableId);
-
-    if (!sourceInfo || !destinationInfo) {
-      console.error("Could not find source or destination info for drag and drop.");
-      return;
-    }
-
-    const currentSourceArr = sourceInfo.arr;
-    const isSameList = sourceInfo.path.length === destinationInfo.path.length &&
-      sourceInfo.path.every((val, idx) => val === destinationInfo.path[idx]);
-
-    if (isSameList) {
-      const newArr = Array.from(currentSourceArr);
-      const [movedItem] = newArr.splice(source.index, 1);
-      newArr.splice(destination.index, 0, movedItem);
-
-      setCurrentForm(prevForm => {
-        if (sourceInfo.path.length === 0) {
-          return { ...prevForm, formFieldJson: newArr };
-        } else {
-          const updateNestedArray = (fields: IndividualFormFieldWithChildren[], path: string[]): IndividualFormFieldWithChildren[] => {
-            const currentId = path[0];
-            return fields.map(field => {
-              if (field.id === currentId && field.type === "InputGroup") {
-                if (path.length === 1) {
-
-                  return { ...field, value: newArr };
-                } else {
-                  return { ...field, value: updateNestedArray(Array.isArray(field.value) ? field.value : [], path.slice(1)) };
-                }
-              }
-              return field;
-            });
-          };
-          return { ...prevForm, formFieldJson: updateNestedArray(prevForm.formFieldJson, sourceInfo.path) };
-        }
-      });
-    } else {
-      console.warn("Cross-list drag and drop is not fully supported for this component yet.", {
-        draggableId,
-        source: result.source,
-        destination: result.destination,
-        sourcePath: sourceInfo.path,
-        destinationPath: destinationInfo.path,
-      });
-    }
-  }, [currentForm.formFieldJson]);
+      return { ...prevForm, formFieldJson: finalFormJson };
+    });
+  }, [getParentAndCurrentArray, updateNestedFormFields]);
 
 
   interface FieldEditItemProps {
@@ -560,10 +636,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleColSpanChange: (id: string, newColSpan: number) => void;
     overallFormColSpan: number;
     addField: (formType: string, parentId?: string) => void;
-    editFormData: boolean; // Added editFormData prop
+    editFormData: boolean;
+    items: UniqueIdentifier[]; // Pass items for SortableContext
   }
 
-  const FieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
+  const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
     field,
     handleLabelChange,
     updateFieldId,
@@ -575,8 +652,21 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleColSpanChange,
     overallFormColSpan,
     addField,
-    editFormData // Destructure editFormData
+    editFormData,
   }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id: field.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
     const [localIdValue, setLocalIdValue] = useState(field.id);
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
     const [localPlaceholderValue, setLocalPlaceholderValue] = useState(field.placeholder || "");
@@ -686,8 +776,21 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const showLabelInput = !field.isChild;
     return (
       <div
+        ref={setNodeRef} style={style} {...attributes} 
         className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90`}
       >
+        <div
+          className="flex top-2 left-2 p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 z-10"
+          title="Drag to reorder"
+          {...listeners} // APPLY listeners ONLY to this drag handle
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </div>
+    
         <h1 className="my-px">({field.type}) </h1>
         {showLabelInput && (
           <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
@@ -701,7 +804,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onKeyDown={handleLabelKeyDown}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               aria-label="Preview field title"
-              disabled={!editFormData} // Disable based on editFormData
+              disabled={!editFormData}
             />
           </label>
         )}
@@ -717,7 +820,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
             aria-label="Edit field id"
             title="Edit Field ID"
-            disabled={!editFormData} // Disable based on editFormData
+            disabled={true}
           />
         </label>
         {showPlaceholderInput && (
@@ -733,7 +836,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               aria-label="Edit field placeholder"
               title="Edit Field Placeholder"
-              disabled={!editFormData} // Disable based on editFormData
+              disabled={!editFormData}
             />
           </label>
         )}
@@ -744,7 +847,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             checked={field.required}
             onChange={() => handleToggleRequired(field.id)}
             className="form-checkbox h-4 w-4 text-blue-600 rounded"
-            disabled={!editFormData} // Disable based on editFormData
+            disabled={!editFormData}
           />
           <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
             Required
@@ -759,44 +862,15 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
             onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
             className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
-            disabled={!editFormData} // Disable based on editFormData
+            disabled={!editFormData}
           >
             {colSpanOptions.map((span) => (
               <option key={span} value={span}>
-                {span} Column{span > 1 ? 's' : ''}
+                {Math.trunc(span / overallFormColSpan * 100)} %
               </option>
             ))}
           </select>
         </div>
-
-        {/* Visual representation of colSpan */}
-        {/* <div className="mt-4 border border-dashed border-gray-400 p-2 rounded-md">
-          <p className="text-gray-600 text-xs mb-1 dark:text-gray-400">Field Layout (visual aid):</p>
-          <div
-            className={`grid gap-1`}
-            style={{ gridTemplateColumns: `repeat(${overallFormColSpan}, minmax(0, 1fr))` }}
-          >
-            {Array.from({ length: overallFormColSpan }).map((_, i) => (
-              <div
-                key={`col-${i}`}
-                className={`h-6 flex items-center justify-center text-xs border border-gray-300 rounded ${i >= (field.colSpan || 1)
-                  ? 'bg-gray-200 dark:bg-gray-700'
-                  : 'bg-blue-200 dark:bg-blue-700'
-                  }`}
-              >
-                {i + 1}
-              </div>
-            ))}
-            <div
-              className={`h-6 flex items-center justify-center text-xs bg-blue-500 text-white rounded`}
-              style={{ gridColumn: `span ${field.colSpan || 1}` }}
-            >
-              Content
-            </div>
-          </div>
-        </div> */}
-        {/* End Visual representation of colSpan */}
-
 
         {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
           <div>
@@ -808,12 +882,12 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 onChange={(e) => setLocalNewOptionText(e.target.value)}
                 onKeyDown={handleNewOptionKeyDown}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
-                disabled={!editFormData} // Disable based on editFormData
+                disabled={!editFormData}
               />
               <Button
                 onClick={handleAddOptionClick}
                 className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
-                disabled={!editFormData} // Disable based on editFormData
+                disabled={!editFormData}
               >
                 +
               </Button>
@@ -825,7 +899,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <Button
                   onClick={() => handleRemoveOption(field.id, index)}
                   className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
-                  disabled={!editFormData} // Disable based on editFormData
+                  disabled={!editFormData}
                 >
                   -
                 </Button>
@@ -839,73 +913,41 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         {isInputGroup && (
           <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
             <h3 className="text-md font-semibold mb-3 dark:text-white/90">Grouped Fields</h3>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {/* {formConfigurations
-                .filter(config => config.canBeChild)
-                .map((item) => (
-                  <Button
-                    key={`add-child-${field.id}-${item.formType}`}
-                    onClick={() => addField(item.formType, field.id)}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 text-sm"
-                    disabled={!editFormData} // Disable based on editFormData
-                  >
-                    Add {item.title.replace(" Form", "")}
-                  </Button>
-                ))} */}
-            </div>
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId={field.id}>
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-4"
-                  >
-
-                    {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren, childIndex: number) => (
-                      <Draggable key={childField.id} draggableId={childField.id} index={childIndex}>
-                        {(childProvided) => (
-                          <div
-                            ref={childProvided.innerRef}
-                            {...childProvided.draggableProps}
-                            {...childProvided.dragHandleProps}
-                          >
-                            <FieldEditItem
-                              field={childField}
-                              handleLabelChange={handleLabelChange}
-                              updateFieldId={updateFieldId}
-                              handleAddOption={handleAddOption}
-                              handleRemoveOption={handleRemoveOption}
-                              removeField={removeField}
-                              handleToggleRequired={handleToggleRequired}
-                              handlePlaceholderChange={handlePlaceholderChange}
-                              handleColSpanChange={handleColSpanChange}
-                              overallFormColSpan={overallFormColSpan}
-                              addField={addField}
-                              editFormData={editFormData} // Pass editFormData to child FieldEditItem
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
-            {isInputGroup && Array.isArray(field.value) && field.value.length === 0 && (
-              <p className="text-center text-gray-500 italic text-sm mt-2">
-                No fields in this group yet.
-              </p>
-            )}
+            <SortableContext
+              items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
+              strategy={rectSortingStrategy}
+            >
+              <div
+                className="-space-y-6 "
+              >
+                {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
+                  <SortableFieldEditItem
+                    key={childField.id}
+                    field={childField}
+                    handleLabelChange={handleLabelChange}
+                    updateFieldId={updateFieldId}
+                    handleAddOption={handleAddOption}
+                    handleRemoveOption={handleRemoveOption}
+                    removeField={removeField}
+                    handleToggleRequired={handleToggleRequired}
+                    handlePlaceholderChange={handlePlaceholderChange}
+                    handleColSpanChange={handleColSpanChange}
+                    overallFormColSpan={overallFormColSpan}
+                    addField={addField}
+                    editFormData={editFormData}
+                    items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
+                  />
+                ))}
+              </div>
+            </SortableContext>
           </div>
         )}
 
         <button
           onClick={() => removeField(field.id)}
-          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300"
+          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10" // Added z-10 for clickability
           title="Remove field"
-          disabled={!editFormData} // Disable based on editFormData
+          disabled={!editFormData}
         >
           ✕
         </button>
@@ -913,8 +955,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     );
   });
 
+
   const FormEdit = useCallback(() => {
-    // Helper object for Tailwind CSS grid classes
     const gridColsMapClass: Record<number, string> = {
       1: "grid-cols-1",
       2: "grid-cols-2",
@@ -932,7 +974,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     const overallGridClass = gridColsMapClass[currentForm.formColSpan] || "grid-cols-1";
 
-
     return (
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
@@ -945,7 +986,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onChange={(e) => handleFormNameChange(e.target.value)}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               placeholder="Enter form name"
-              disabled={!editFormData} // Disable based on editFormData
+              disabled={!editFormData}
             />
           </label>
           <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
@@ -956,7 +997,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               onChange={(e) => handleFormIdChange(e.target.value)}
               className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
               placeholder="Enter unique form ID"
-              disabled={!editFormData} // Disable based on editFormData
+              disabled={true}
             />
           </label>
           <div className="flex items-center mt-2">
@@ -981,59 +1022,44 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             No fields added yet. Use the "Add Form" section to add new fields.
           </p>
         ) : (
-
           <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20`}>
             <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-blue-300">
               Form Layout Preview (Overall {currentForm.formColSpan} Columns)
             </p>
-
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="form-fields">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className={`grid w-full ${overallGridClass} gap-4`}
-                  >
-                    {currentForm.formFieldJson.map((field, index) => (
-                      <Draggable key={field.id} draggableId={field.id} index={index}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            // Apply col-span directly to the draggable item's container
-                            className={`col-span-${field.colSpan ?? 1}`}
-                          >
-                            <FieldEditItem
-                              field={field}
-                              handleLabelChange={handleLabelChange}
-                              updateFieldId={updateFieldId}
-                              handleAddOption={handleAddOption}
-                              handleRemoveOption={handleRemoveOption}
-                              removeField={removeField}
-                              handleToggleRequired={handleToggleRequired}
-                              handlePlaceholderChange={handlePlaceholderChange}
-                              handleColSpanChange={handleColSpanChange}
-                              overallFormColSpan={currentForm.formColSpan}
-                              addField={addField}
-                              editFormData={editFormData}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
+            <SortableContext
+              items={currentForm.formFieldJson.map(field => field.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div
+                className={`grid w-full ${overallGridClass} gap-4`}
+              >
+                {currentForm.formFieldJson.map((field) => (
+                  <div className={`col-span-${field.colSpan}`}>
+                  <SortableFieldEditItem
+                    key={field.id}
+                    field={field}
+                    handleLabelChange={handleLabelChange}
+                    updateFieldId={updateFieldId}
+                    handleAddOption={handleAddOption}
+                    handleRemoveOption={handleRemoveOption}
+                    removeField={removeField}
+                    handleToggleRequired={handleToggleRequired}
+                    handlePlaceholderChange={handlePlaceholderChange}
+                    handleColSpanChange={handleColSpanChange}
+                    overallFormColSpan={currentForm.formColSpan}
+                    addField={addField}
+                    editFormData={editFormData}
+                    items={currentForm.formFieldJson.map(f => f.id)}
+                  />
                   </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                ))}
+              </div>
+            </SortableContext>
           </div>
-
         )}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, onDragEnd, addField, editFormData]); // Add editFormData to dependency array
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, editFormData]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -1042,7 +1068,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
-      disabled: !editFormData, // Disable based on editFormData
+      disabled: !editFormData,
     };
 
     const labelComponent = !field.isChild && (
@@ -1187,7 +1213,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     }}
                     className="form-checkbox h-5 w-5 text-blue-600 rounded"
                     required={field.required && Array.isArray(field.value) && field.value.length === 0}
-                    disabled={!editFormData} // Disable based on editFormData
+                    disabled={!editFormData}
                   />
                   <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                 </label>
@@ -1210,7 +1236,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     className="form-radio h-5 w-5 text-blue-600"
                     required={field.required}
-                    disabled={!editFormData} // Disable based on editFormData
+                    disabled={!editFormData}
                   />
                   <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
                 </label>
@@ -1232,7 +1258,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 onChange={(e) => handleFieldChange(field.id, e.target.files)}
                 className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
-                disabled={!editFormData} // Disable based on editFormData
+                disabled={!editFormData}
               />
               {field.type === "image" && field.value instanceof File && (
                 <div className="relative group mt-2 w-20 h-20">
@@ -1244,7 +1270,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   <button
                     onClick={() => handleRemoveFile(field.id)}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    disabled={!editFormData} // Disable based on editFormData
+                    disabled={!editFormData}
                   >
                     ×
                   </button>
@@ -1264,7 +1290,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                         <button
                           onClick={() => handleRemoveFile(field.id, file.name)}
                           className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={!editFormData} // Disable based on editFormData
+                          disabled={!editFormData}
                         >
                           ×
                         </button>
@@ -1304,7 +1330,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       default:
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
-  }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan, editFormData]); // Add editFormData to dependency array
+  }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan, editFormData]);
   const gridColsMap: Record<number, string> = {
     1: "md:grid-cols-1",
     2: "md:grid-cols-2",
@@ -1354,7 +1380,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="From Elements" />
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onDragEnd}
+      >
         {!isPreview && (
 
           <div className="sticky top-[100px]  z-9999 bg-white dark:bg-gray-700 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
@@ -1390,10 +1420,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 {FormPreview()}
                 <div className="flex justify-between">
                   <div className="flex">
-                    <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button> {/* Disable save schema button */}
+                    <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button>
                   </div>
                   <div className="flex gap-2 \t">
-                    <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button> {/* Disable edit button */}
+                    <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
                     <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
                   </div>
                 </div>
@@ -1403,7 +1433,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </div>
 
         </div>
-      </DragDropContext>
+      </DndContext>
     </div>
   ) : (<div>
     {FormPreview()}
