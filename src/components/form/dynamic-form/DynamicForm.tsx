@@ -529,9 +529,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     }
 
     setCurrentForm(prevForm => {
-      // Custom deep copy for formFieldJson to handle nested arrays and avoid mutating state directly.
-      // This is a shallow copy for File objects, assuming actual File objects are not in 'value'
-      // during schema manipulation, or they are correctly handled downstream.
       const deepCopyFields = (fields: IndividualFormFieldWithChildren[]): IndividualFormFieldWithChildren[] => {
         return fields.map(field => {
           const newField: IndividualFormFieldWithChildren = { ...field };
@@ -561,62 +558,50 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       let targetContainerPath: UniqueIdentifier[];
       let insertionIndex: number;
 
-      // Identify if the 'over' element is the InputGroup container itself
       const isOverInputGroupContainer = overField.type === "InputGroup" && overField.id === over.id;
-      // Check if the active item is already a child of the specific InputGroup that's 'over'
       const activeItemIsChildOfOverInputGroup = activePath.length > 0 && activePath[activePath.length - 1] === overField.id;
 
       const originalParentPathStr = activePath.join('-');
-      const overParentPathStr = overPath.join('-'); // Path to the array containing the 'over' item
+      const overParentPathStr = overPath.join('-');
 
-      // Determine the final destination array and index based on drag action
       if (isOverInputGroupContainer && !activeItemIsChildOfOverInputGroup) {
-          // Case A: Dropping an item *from outside* into an InputGroup container.
-          // The target is the InputGroup's `value` array.
-          targetContainerArr = Array.isArray(overField.value) ? overField.value : [];
-          targetContainerPath = [...overPath, overField.id]; // Path to the children of this InputGroup
-          insertionIndex = targetContainerArr.length; // Append to the end of the group
+        targetContainerArr = Array.isArray(overField.value) ? overField.value : [];
+        targetContainerPath = [...overPath, overField.id];
+        insertionIndex = targetContainerArr.length;
       } else if (originalParentPathStr === overParentPathStr || (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup)) {
-          targetContainerArr = activeArr; 
-          targetContainerPath = activePath;
-          if (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup) {
-              insertionIndex = activeArr.length;
-          } else {
-              insertionIndex = overIndex;
-          }
-      } else {
-          // Case C: Moving between different logical lists (e.g., top-level to top-level, or group A to group B's child)
-          targetContainerArr = overArr;
-          targetContainerPath = overPath;
+        targetContainerArr = activeArr;
+        targetContainerPath = activePath;
+        if (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup) {
+          insertionIndex = activeArr.length;
+        } else {
           insertionIndex = overIndex;
+        }
+      } else {
+        targetContainerArr = overArr;
+        targetContainerPath = overPath;
+        insertionIndex = overIndex;
       }
 
-      // Perform the move/reorder:
       let finalFormJson: IndividualFormFieldWithChildren[];
 
       if (activeArr === targetContainerArr && activePath.join('-') === targetContainerPath.join('-')) {
-        // This confirms it's a reorder within the exact same array reference (Case B).
         const reorderedArr = arrayMove(activeArr, activeIndex, insertionIndex);
         finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, reorderedArr);
       } else {
-        // This is a move between different arrays (Case A or C).
-        const [movedItem] = activeArr.splice(activeIndex, 1); // Remove from source
+        const [movedItem] = activeArr.splice(activeIndex, 1);
 
-        // Prevent moving an InputGroup into another InputGroup
         if (movedItem.type === "InputGroup" && targetContainerPath.length > 0) {
-          activeArr.splice(activeIndex, 0, movedItem); // Put it back
+          activeArr.splice(activeIndex, 0, movedItem);
           console.warn("Cannot move an InputGroup into another InputGroup.");
           return prevForm;
         }
 
         const updatedMovedItem = { ...movedItem, isChild: targetContainerPath.length > 0 };
-        targetContainerArr.splice(insertionIndex, 0, updatedMovedItem); // Insert into destination
+        targetContainerArr.splice(insertionIndex, 0, updatedMovedItem);
 
-        // Update the main formJson by reflecting changes in source and destination paths
         finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, activeArr);
-        // Only update target path if it's different from active path, to avoid redundant updates for "reorder in place".
         if (activePath.join('-') !== targetContainerPath.join('-')) {
-            finalFormJson = updateNestedFormFields(finalFormJson, targetContainerPath, targetContainerArr);
+          finalFormJson = updateNestedFormFields(finalFormJson, targetContainerPath, targetContainerArr);
         }
       }
       return { ...prevForm, formFieldJson: finalFormJson };
@@ -637,7 +622,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     overallFormColSpan: number;
     addField: (formType: string, parentId?: string) => void;
     editFormData: boolean;
-    items: UniqueIdentifier[]; // Pass items for SortableContext
+    items: UniqueIdentifier[];
   }
 
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -776,13 +761,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const showLabelInput = !field.isChild;
     return (
       <div
-        ref={setNodeRef} style={style} {...attributes} 
+        ref={setNodeRef} style={style} {...attributes}
         className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90`}
       >
         <div
           className="flex top-2 left-2 p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 z-10"
           title="Drag to reorder"
-          {...listeners} // APPLY listeners ONLY to this drag handle
+          {...listeners}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -790,7 +775,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </div>
-    
+
         <h1 className="my-px">({field.type}) </h1>
         {showLabelInput && (
           <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
@@ -853,24 +838,26 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             Required
           </label>
         </div>
-        <div className="flex items-center mt-2">
-          <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
-            Column Span (Field):
-          </label>
-          <select
-            id={`colSpan-select-${field.id}`}
-            value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-            onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-            className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
-            disabled={!editFormData}
-          >
-            {colSpanOptions.map((span) => (
-              <option key={span} value={span}>
-                {Math.trunc(span / overallFormColSpan * 100)} %
-              </option>
-            ))}
-          </select>
-        </div>
+        {field.isChild ? <></> :
+          <div className="flex items-center mt-2">
+            <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+              Column Span (Field):
+            </label>
+            <select
+              id={`colSpan-select-${field.id}`}
+              value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
+              onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+              disabled={!editFormData}
+            >
+              {colSpanOptions.map((span) => (
+                <option key={span} value={span}>
+                  {Math.trunc(span / overallFormColSpan * 100)} %
+                </option>
+              ))}
+            </select>
+          </div>}
+
 
         {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
           <div>
@@ -945,7 +932,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
         <button
           onClick={() => removeField(field.id)}
-          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10" // Added z-10 for clickability
+          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
           title="Remove field"
           disabled={!editFormData}
         >
@@ -1035,22 +1022,22 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               >
                 {currentForm.formFieldJson.map((field) => (
                   <div className={`col-span-${field.colSpan}`}>
-                  <SortableFieldEditItem
-                    key={field.id}
-                    field={field}
-                    handleLabelChange={handleLabelChange}
-                    updateFieldId={updateFieldId}
-                    handleAddOption={handleAddOption}
-                    handleRemoveOption={handleRemoveOption}
-                    removeField={removeField}
-                    handleToggleRequired={handleToggleRequired}
-                    handlePlaceholderChange={handlePlaceholderChange}
-                    handleColSpanChange={handleColSpanChange}
-                    overallFormColSpan={currentForm.formColSpan}
-                    addField={addField}
-                    editFormData={editFormData}
-                    items={currentForm.formFieldJson.map(f => f.id)}
-                  />
+                    <SortableFieldEditItem
+                      key={field.id}
+                      field={field}
+                      handleLabelChange={handleLabelChange}
+                      updateFieldId={updateFieldId}
+                      handleAddOption={handleAddOption}
+                      handleRemoveOption={handleRemoveOption}
+                      removeField={removeField}
+                      handleToggleRequired={handleToggleRequired}
+                      handlePlaceholderChange={handlePlaceholderChange}
+                      handleColSpanChange={handleColSpanChange}
+                      overallFormColSpan={currentForm.formColSpan}
+                      addField={addField}
+                      editFormData={editFormData}
+                      items={currentForm.formFieldJson.map(f => f.id)}
+                    />
                   </div>
                 ))}
               </div>
