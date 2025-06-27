@@ -13,7 +13,7 @@ const onFormSubmit = ()=>{
 
 }
 
-export default function CreateCasePages({ onBack ,data}: CaseEditPagesProps) {
+export default function CreateCasePages({ onBack }: CaseEditPagesProps) {
     return (
         <div>
             <PageMeta

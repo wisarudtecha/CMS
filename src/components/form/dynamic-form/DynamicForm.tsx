@@ -770,7 +770,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         </div>
 
         {/* Visual representation of colSpan */}
-        <div className="mt-4 border border-dashed border-gray-400 p-2 rounded-md">
+        {/* <div className="mt-4 border border-dashed border-gray-400 p-2 rounded-md">
           <p className="text-gray-600 text-xs mb-1 dark:text-gray-400">Field Layout (visual aid):</p>
           <div
             className={`grid gap-1`}
@@ -794,7 +794,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               Content
             </div>
           </div>
-        </div>
+        </div> */}
         {/* End Visual representation of colSpan */}
 
 

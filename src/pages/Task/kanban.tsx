@@ -120,10 +120,10 @@ export default function CasesPage() {
         return sampleCases.filter((case_) => case_.status === selectedStatus);
     };
 
-    const handleFormSubmission = (data: FormField) => {
-        console.log("Data received from DynamicForm:", data);
-        setShowDynamicForm(false);
-    };
+    // const handleFormSubmission = (data: FormField) => {
+    //     console.log("Data received from DynamicForm:", data);
+    //     setShowDynamicForm(false);
+    // };
 
     const handleFormSubmissionEdit = (data: FormField) => {
         console.log("Data received from Edit DynamicForm:", data);
