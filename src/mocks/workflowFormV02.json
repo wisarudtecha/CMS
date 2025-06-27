@@ -1,0 +1,112 @@
+{
+  "case_intake": {
+    "fields": [
+      { "name": "case_title", "type": "text", "label": "Case Title", "required": true },
+      { "name": "case_description", "type": "textarea", "label": "Case Description", "required": true },
+      { "name": "case_category", "type": "select", "label": "Case Category", 
+        "options": ["Complaint", "Investigation", "Compliance", "Legal"], "required": true },
+      { "name": "priority", "type": "select", "label": "Priority Level", 
+        "options": ["Low", "Medium", "High", "Critical"], "required": true },
+      { "name": "reporter_name", "type": "text", "label": "Reporter Name", "required": true },
+      { "name": "reporter_contact", "type": "email", "label": "Reporter Contact", "required": true }
+    ]
+  },
+  "case_assignment": {
+    "fields": [
+      { "name": "assigned_to", "type": "select", "label": "Assign To", 
+        "options": ["Case Manager", "Investigator", "Legal Advisor"], "required": true },
+      { "name": "assignment_reason", "type": "textarea", "label": "Assignment Reason", "required": true },
+      { "name": "expected_completion", "type": "text", "label": "Expected Completion Date", "required": true },
+      { "name": "special_instructions", "type": "textarea", "label": "Special Instructions", "required": false }
+    ]
+  },
+  "investigation_report": {
+    "fields": [
+      { "name": "investigation_summary", "type": "textarea", "label": "Investigation Summary", "required": true },
+      { "name": "findings", "type": "textarea", "label": "Key Findings", "required": true },
+      { "name": "evidence_collected", "type": "checkbox", "label": "Evidence Types", 
+        "options": ["Documents", "Interviews", "Digital Evidence", "Physical Evidence"], "required": false },
+      { "name": "recommendations", "type": "textarea", "label": "Recommendations", "required": true },
+      { "name": "investigation_status", "type": "radio", "label": "Investigation Status", 
+        "options": ["Complete", "Partial", "Ongoing"], "required": true }
+    ]
+  },
+  "evidence_collection": {
+    "fields": [
+      { "name": "evidence_type", "type": "select", "label": "Evidence Type", 
+        "options": ["Document", "Interview", "Digital", "Physical", "Testimony"], "required": true },
+      { "name": "evidence_description", "type": "textarea", "label": "Evidence Description", "required": true },
+      { "name": "collection_date", "type": "text", "label": "Collection Date", "required": true },
+      { "name": "collected_by", "type": "text", "label": "Collected By", "required": true },
+      { "name": "chain_of_custody", "type": "text", "label": "Chain of Custody ID", "required": true }
+    ]
+  },
+  "case_review": {
+    "fields": [
+      { "name": "review_type", "type": "radio", "label": "Review Type", 
+        "options": ["Initial Review", "Progress Review", "Final Review"], "required": true },
+      { "name": "review_findings", "type": "textarea", "label": "Review Findings", "required": true },
+      { "name": "compliance_status", "type": "radio", "label": "Compliance Status", 
+        "options": ["Compliant", "Non-Compliant", "Partially Compliant"], "required": true },
+      { "name": "next_steps", "type": "textarea", "label": "Recommended Next Steps", "required": true }
+    ]
+  },
+  "escalation_request": {
+    "fields": [
+      { "name": "escalation_reason", "type": "textarea", "label": "Escalation Reason", "required": true },
+      { "name": "escalate_to", "type": "select", "label": "Escalate To", 
+        "options": ["Supervisor", "Senior Manager", "Director", "External Authority"], "required": true },
+      { "name": "urgency_level", "type": "radio", "label": "Urgency Level", 
+        "options": ["Normal", "High", "Critical"], "required": true },
+      { "name": "supporting_documents", "type": "text", "label": "Supporting Documents", "required": false }
+    ]
+  },
+  "approval_decision": {
+    "fields": [
+      { "name": "decision", "type": "radio", "label": "Decision", 
+        "options": ["Approved", "Rejected", "Conditional Approval"], "required": true },
+      { "name": "decision_rationale", "type": "textarea", "label": "Decision Rationale", "required": true },
+      { "name": "conditions", "type": "textarea", "label": "Conditions (if applicable)", "required": false },
+      { "name": "approver_signature", "type": "text", "label": "Approver Signature", "required": true }
+    ]
+  },
+  "case_resolution": {
+    "fields": [
+      { "name": "resolution_summary", "type": "textarea", "label": "Resolution Summary", "required": true },
+      { "name": "resolution_type", "type": "select", "label": "Resolution Type", 
+        "options": ["Substantiated", "Unsubstantiated", "Inconclusive", "Withdrawn"], "required": true },
+      { "name": "corrective_actions", "type": "textarea", "label": "Corrective Actions Taken", "required": false },
+      { "name": "lessons_learned", "type": "textarea", "label": "Lessons Learned", "required": false }
+    ]
+  },
+  "case_closure": {
+    "fields": [
+      { "name": "closure_reason", "type": "select", "label": "Closure Reason", 
+        "options": ["Resolved", "Withdrawn", "Duplicate", "No Jurisdiction"], "required": true },
+      { "name": "final_outcome", "type": "textarea", "label": "Final Outcome", "required": true },
+      { "name": "follow_up_required", "type": "radio", "label": "Follow-up Required", 
+        "options": ["Yes", "No"], "required": true },
+      { "name": "closure_notes", "type": "textarea", "label": "Closure Notes", "required": false }
+    ]
+  },
+  "communication_log": {
+    "fields": [
+      { "name": "communication_type", "type": "select", "label": "Communication Type", 
+        "options": ["Email", "Phone", "Meeting", "Letter", "SMS"], "required": true },
+      { "name": "participants", "type": "text", "label": "Participants", "required": true },
+      { "name": "communication_summary", "type": "textarea", "label": "Communication Summary", "required": true },
+      { "name": "follow_up_required", "type": "radio", "label": "Follow-up Required", 
+        "options": ["Yes", "No"], "required": true }
+    ]
+  },
+  "hearing_schedule": {
+    "fields": [
+      { "name": "hearing_type", "type": "select", "label": "Hearing Type", 
+        "options": ["Initial Hearing", "Evidence Hearing", "Final Hearing"], "required": true },
+      { "name": "hearing_date", "type": "text", "label": "Hearing Date", "required": true },
+      { "name": "hearing_time", "type": "text", "label": "Hearing Time", "required": true },
+      { "name": "location", "type": "text", "label": "Location/Venue", "required": true },
+      { "name": "attendees", "type": "textarea", "label": "Required Attendees", "required": true }
+    ]
+  }
+}

@@ -154,7 +154,8 @@ const AppSidebar: React.FC = () => {
       icon: <ListIcon />,
       subItems: [
         { name: "Workflows", path: "/workflows", pro: false },
-        { name: "Workflow Builder", path: "/workflow-builder", pro: false },
+        { name: "Workflow Builder v0.1.7", path: "/workflow-builder", pro: false },
+        { name: "Workflow Builder v0.2.0", path: "/workflow-builder/v02", pro: false },
       ],
     },
   ], [t]);
