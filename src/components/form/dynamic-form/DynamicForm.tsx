@@ -51,7 +51,8 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "dateInput", title: "Date Form", canBeChild: true },
   { formType: "dateLocal", title: "DateLocal Form", canBeChild: true },
   { formType: "radio", title: "Radio Button Form", options: [], canBeChild: true },
-  { formType: "InputGroup", title: "Group of Input", canBeChild: false }
+  { formType: "InputGroup", title: "Group of Input", canBeChild: false },
+  { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
 ];
 
 function createDynamicFormField(
@@ -188,6 +189,35 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       return field;
     });
   }, []);
+
+  const handleOverallGroupColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, groupId: string) => {
+    let newColSpan = parseInt(e.target.value, 10);
+    if (isNaN(newColSpan) || newColSpan < 1) {
+      newColSpan = 1;
+    } else if (newColSpan > 12) {
+      newColSpan = 12;
+    }
+
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, groupId, (field) => {
+        if (field.type === "InputGroup") {
+          const updatedChildren = Array.isArray(field.value)
+            ? field.value.map(childField => {
+              if (childField.colSpan && childField.colSpan > newColSpan) {
+                return { ...childField, colSpan: newColSpan };
+              }
+              return childField;
+            })
+            : [];
+          return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
+        }
+        return field;
+      }),
+    }));
+  }, [updateFieldRecursively]);
+
+
 
 
   const removeFieldRecursively = useCallback((
@@ -619,7 +649,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleToggleRequired: (id: string) => void;
     handlePlaceholderChange: (id: string, newPlaceholder: string) => void;
     handleColSpanChange: (id: string, newColSpan: number) => void;
-    overallFormColSpan: number;
+    overallFormColSpan: number; // This is the overall form col span
+    handleOverallGroupColSpanChange: (e: React.ChangeEvent<HTMLInputElement>, groupId: string) => void; // Added for group
     addField: (formType: string, parentId?: string) => void;
     editFormData: boolean;
     items: UniqueIdentifier[];
@@ -635,7 +666,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleToggleRequired,
     handlePlaceholderChange,
     handleColSpanChange,
-    overallFormColSpan,
+    overallFormColSpan, // This is the overall form col span
+    handleOverallGroupColSpanChange, // Added for group
     addField,
     editFormData,
   }) => {
@@ -656,6 +688,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
     const [localPlaceholderValue, setLocalPlaceholderValue] = useState(field.placeholder || "");
     const [localNewOptionText, setLocalNewOptionText] = useState("");
+    const [localGroupColSpan, setLocalGroupColSpan] = useState(field.GroupColSpan || 1); // State for group col span
 
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
@@ -672,6 +705,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     useEffect(() => {
       setLocalPlaceholderValue(field.placeholder || "");
     }, [field.placeholder]);
+
+    useEffect(() => {
+      setLocalGroupColSpan(field.GroupColSpan || 1);
+    }, [field.GroupColSpan]);
+
 
     const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalIdValue(e.target.value);
@@ -748,6 +786,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       }
     }, [handleAddOptionClick]);
 
+    const handleLocalGroupColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalGroupColSpan(parseInt(e.target.value, 10));
+      handleOverallGroupColSpanChange(e, field.id);
+    }, [field.id, handleOverallGroupColSpanChange]);
+
     const showPlaceholderInput =
       field.type === "textInput" ||
       field.type === "Integer" ||
@@ -757,6 +800,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
 
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
+
     const isInputGroup = field.type === "InputGroup";
     const showLabelInput = !field.isChild;
     return (
@@ -838,8 +882,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             Required
           </label>
         </div>
-        {field.isChild ? <></> :
-          <div className="flex items-center mt-2">
+        {field.isChild ?
+          <div className={`flex items-center mt-2`}>
             <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
               Column Span (Field):
             </label>
@@ -856,7 +900,60 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 </option>
               ))}
             </select>
-          </div>}
+          </div> : field.type == "InputGroup" ?
+            <div>
+              <div className="flex items-center mt-2">
+                <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-white/90">
+                  Overall Group Column Span:
+                </label>
+                <input
+                  id={`overallColSpan-input`}
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={localGroupColSpan} // Use local state for group col span
+                  onChange={handleLocalGroupColSpanChange} // Call new handler
+                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+                  disabled={!editFormData}
+                />
+              </div>
+              <div className={`flex items-center mt-2`}>
+
+                <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                  Column Span (Field):
+                </label>
+                <select
+                  id={`colSpan-select-${field.id}`}
+                  value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
+                  onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                  disabled={!editFormData}
+                >
+                  {colSpanOptions.map((span) => (
+                    <option key={span} value={span}>
+                      {Math.trunc(span / overallFormColSpan * 100)} %
+                    </option>
+                  ))}
+                </select>
+              </div> </div> :
+            <div className="flex items-center mt-2">
+              <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                Column Span (Field):
+              </label>
+              <select
+                id={`colSpan-select-${field.id}`}
+                value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
+                onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+                className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                disabled={!editFormData}
+              >
+                {colSpanOptions.map((span) => (
+                  <option key={span} value={span}>
+                    {Math.trunc(span / overallFormColSpan * 100)} %
+                  </option>
+                ))}
+              </select>
+            </div>}
 
 
         {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
@@ -905,25 +1002,28 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               strategy={rectSortingStrategy}
             >
               <div
-                className="-space-y-6 "
+                className={`-space-y-6 grid grid-cols-${localGroupColSpan} gap-4`} // Use localGroupColSpan here
               >
                 {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
-                  <SortableFieldEditItem
-                    key={childField.id}
-                    field={childField}
-                    handleLabelChange={handleLabelChange}
-                    updateFieldId={updateFieldId}
-                    handleAddOption={handleAddOption}
-                    handleRemoveOption={handleRemoveOption}
-                    removeField={removeField}
-                    handleToggleRequired={handleToggleRequired}
-                    handlePlaceholderChange={handlePlaceholderChange}
-                    handleColSpanChange={handleColSpanChange}
-                    overallFormColSpan={overallFormColSpan}
-                    addField={addField}
-                    editFormData={editFormData}
-                    items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
-                  />
+                  <div className={`col-span-${childField.colSpan || 1}`} key={childField.id}>
+                    <SortableFieldEditItem
+                      key={childField.id}
+                      field={childField}
+                      handleLabelChange={handleLabelChange}
+                      updateFieldId={updateFieldId}
+                      handleAddOption={handleAddOption}
+                      handleRemoveOption={handleRemoveOption}
+                      removeField={removeField}
+                      handleToggleRequired={handleToggleRequired}
+                      handlePlaceholderChange={handlePlaceholderChange}
+                      handleColSpanChange={handleColSpanChange}
+                      overallFormColSpan={localGroupColSpan}
+                      addField={addField}
+                      editFormData={editFormData}
+                      items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
+                      handleOverallGroupColSpanChange={handleOverallGroupColSpanChange}
+                    />
+                  </div>
                 ))}
               </div>
             </SortableContext>
@@ -1016,12 +1116,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <SortableContext
               items={currentForm.formFieldJson.map(field => field.id)}
               strategy={rectSortingStrategy}
+              key={currentForm.formId}
             >
               <div
                 className={`grid w-full ${overallGridClass} gap-4`}
               >
                 {currentForm.formFieldJson.map((field) => (
-                  <div className={`col-span-${field.colSpan}`}>
+                  <div className={`col-span-${field.colSpan}`} key={field.id}>
                     <SortableFieldEditItem
                       key={field.id}
                       field={field}
@@ -1037,6 +1138,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                       addField={addField}
                       editFormData={editFormData}
                       items={currentForm.formFieldJson.map(f => f.id)}
+                      handleOverallGroupColSpanChange={handleOverallGroupColSpanChange} // Pass to children
                     />
                   </div>
                 ))}
@@ -1046,7 +1148,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         )}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, editFormData]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, editFormData, handleOverallGroupColSpanChange]); // Added handleOverallGroupColSpanChange to dependencies
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -1067,20 +1169,36 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       </label>
     );
 
-    const colSpanMap: Record<number, string> = {
-      1: "col-span-1",
-      2: "col-span-2",
-      3: "col-span-3",
-      4: "col-span-4",
-      5: "col-span-5",
-      6: "col-span-6",
-      7: "col-span-7",
-      8: "col-span-8",
-      9: "col-span-9",
-      10: "col-span-10",
-      11: "col-span-11",
-      12: "col-span-12",
+    // const colSpanMap: Record<number, string> = {
+    //   1: "col-span-1",
+    //   2: "col-span-2",
+    //   3: "col-span-3",
+    //   4: "col-span-4",
+    //   5: "col-span-5",
+    //   6: "col-span-6",
+    //   7: "col-span-7",
+    //   8: "col-span-8",
+    //   9: "col-span-9",
+    //   10: "col-span-10",
+    //   11: "col-span-11",
+    //   12: "col-span-12",
+    // };
+
+    const groupGridColsMap: Record<number, string> = {
+      1: "grid-cols-1",
+      2: "grid-cols-2",
+      3: "grid-cols-3",
+      4: "grid-cols-4",
+      5: "grid-cols-5",
+      6: "grid-cols-6",
+      7: "grid-cols-7",
+      8: "grid-cols-8",
+      9: "grid-cols-9",
+      10: "grid-cols-10",
+      11: "grid-cols-11",
+      12: "grid-cols-12",
     };
+
 
     switch (field.type) {
       case "textInput":
@@ -1290,6 +1408,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </>
         );
       case "InputGroup":
+        const groupColSpanClass = groupGridColsMap[field.GroupColSpan || 1] || "grid-cols-1";
+
         return (
           <div>
             {!field.isChild && (
@@ -1297,11 +1417,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 {field.label} {field.required && <span className="text-red-500">*</span>}
               </h3>
             )}
-            <div className={`grid grid-cols-1 ${currentForm.formColSpan ? `md:grid-cols-${gridColsMap[currentForm.formColSpan]}` : 'md:grid-cols-1'} gap-4`}>
+            <div className={`grid ${groupColSpanClass} gap-4`}>
               {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
                 <div
                   key={childField.id}
-                  className={`${childField.colSpan ? `col-span-${colSpanMap[childField.colSpan]}` : 'col-span-1'}`}
+                  className={`${childField.colSpan ? `col-span-${childField.colSpan}` : 'col-span-1'}`}
                 >
                   {renderFormField(childField)}
                 </div>
@@ -1317,25 +1437,25 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       default:
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
-  }, [handleFieldChange, handleRemoveFile, currentForm.formColSpan, editFormData]);
+  }, [handleFieldChange, handleRemoveFile, editFormData]);
   const gridColsMap: Record<number, string> = {
-    1: "md:grid-cols-1",
-    2: "md:grid-cols-2",
-    3: "md:grid-cols-3",
-    4: "md:grid-cols-4",
-    5: "md:grid-cols-5",
-    6: "md:grid-cols-6",
-    7: "md:grid-cols-7",
-    8: "md:grid-cols-8",
-    9: "md:grid-cols-9",
-    10: "md:grid-cols-10",
-    11: "md:grid-cols-11",
-    12: "md:grid-cols-12",
+    1: "grid-cols-1",
+    2: "grid-cols-2",
+    3: "grid-cols-3",
+    4: "grid-cols-4",
+    5: "grid-cols-5",
+    6: "grid-cols-6",
+    7: "grid-cols-7",
+    8: "grid-cols-8",
+    9: "grid-cols-9",
+    10: "grid-cols-10",
+    11: "grid-cols-11",
+    12: "grid-cols-12",
   };
 
   const FormPreview = useCallback(() => {
 
-    const gridColsClass = gridColsMap[currentForm.formColSpan] || "md:grid-cols-1";
+    const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
     return (
       <>
         {currentForm.formFieldJson.length === 0 ? (
@@ -1344,7 +1464,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </p>
         ) : (
 
-          <div className={`grid grid-cols-1 ${gridColsClass} gap-4`}>
+          <div className={`grid ${gridColsClass} gap-4`}>
             {currentForm.formFieldJson.map((field) => (
               <div
                 key={field.id}
@@ -1374,7 +1494,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       >
         {!isPreview && (
 
-          <div className="sticky top-[100px]  z-9999 bg-white dark:bg-gray-700 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
+          <div className="sticky top-[100px]  z-30 bg-white dark:bg-gray-700 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
             <div className="grid grid-cols-9 gap-1 mb-2">
               {formConfigurations.map((item) => (
                 <button
@@ -1397,7 +1517,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <ComponentCard title="Dynamic Form">
               <div hidden={isPreview}>
                 {FormEdit()}
-                <div className="flex justify-end sticky bottom-2 ">
+                <div className="flex justify-end sticky bottom-2 z-30">
                   <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>
                     Preview
                   </Button>

@@ -13,6 +13,7 @@ export interface IndividualFormField {
 
 export interface IndividualFormFieldWithChildren extends IndividualFormField {
   isChild?: boolean;
+  GroupColSpan?:number
 }
 
 export interface FormFieldWithChildren extends FormField {
