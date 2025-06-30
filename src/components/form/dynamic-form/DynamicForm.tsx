@@ -620,13 +620,18 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       } else {
         const [movedItem] = activeArr.splice(activeIndex, 1);
 
-        if (movedItem.type === "InputGroup" && targetContainerPath.length > 0) {
+        // New logic to prevent dropping elements into a group if canBeChild is false
+        const movedItemConfig = formConfigurations.find(config => config.formType === movedItem.type);
+        const isBeingMovedIntoGroup = targetContainerPath.length > 0;
+
+        if (movedItemConfig && !movedItemConfig.canBeChild && isBeingMovedIntoGroup) {
+          // Revert the splice as the move is not allowed
           activeArr.splice(activeIndex, 0, movedItem);
-          console.warn("Cannot move an InputGroup into another InputGroup.");
+          console.warn(`Cannot move a "${movedItem.type}" into a group as it cannot be a child.`);
           return prevForm;
         }
 
-        const updatedMovedItem = { ...movedItem, isChild: targetContainerPath.length > 0 };
+        const updatedMovedItem = { ...movedItem, isChild: isBeingMovedIntoGroup };
         targetContainerArr.splice(insertionIndex, 0, updatedMovedItem);
 
         finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, activeArr);
@@ -637,7 +642,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       return { ...prevForm, formFieldJson: finalFormJson };
     });
   }, [getParentAndCurrentArray, updateNestedFormFields]);
-
 
   interface FieldEditItemProps {
     field: IndividualFormFieldWithChildren;
