@@ -1517,7 +1517,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         </div>
 
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 ">
             <h2 className="text-lg font-bold">Form Layout Preview</h2>
             {/* EDIT: Hide/Show All buttons */}
             <div className="flex gap-2">
@@ -1541,7 +1541,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               No fields added yet. Use the "Add Form" section to add new fields.
             </p>
           ) : (
-            <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50  dark:bg-blue-900/20`}>
+            <div className={`p-4 border   dark:border-gray-500 rounded-lg  dark:bg-white/[0.03]`}>
               <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
                 Form Layout Preview (Overall {currentForm.formColSpan} Columns)
               </p>
