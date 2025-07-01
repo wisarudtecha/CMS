@@ -141,11 +141,11 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ onClick, children, classNam
   );
 };
 
-const ComponentCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
+const ComponentCard: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6 xl:p-9">
       <h4 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-        {title}
+        {title?title:""}
       </h4>
       {children}
     </div>
@@ -1891,7 +1891,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
     return (
-      <>
+
+      <><h2 className="px-4 pb-2  dark:text-white">{currentForm.formName}</h2>
         {currentForm.formFieldJson.length === 0 ? (
           <p className="text-center text-gray-500 italic mb-4">
             No fields added yet. Click "Edit" to start adding.
@@ -1948,7 +1949,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         <div className={isPreview ? "grid grid-cols-1" : "grid  gap-6 "}>
 
           <div className="space-y-6 ">
-            <ComponentCard title="Dynamic Form">
+            <ComponentCard >
               <div hidden={isPreview}>
                 {FormEdit()}
                 <div className="flex justify-end sticky bottom-2 z-30">
