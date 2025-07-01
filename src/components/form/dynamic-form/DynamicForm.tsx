@@ -1,9 +1,4 @@
-import PageBreadcrumb from "../../common/PageBreadCrumb";
-import PageMeta from "../../common/PageMeta";
-import ComponentCard from "../../common/ComponentCard";
-import Button from "../../ui/button/Button";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FormField, FormFieldWithChildren, IndividualFormField, IndividualFormFieldWithChildren } from "@/components/interface/FormField";
 import {
   DndContext,
   closestCenter,
@@ -23,10 +18,49 @@ import {
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// Re-adding original imports for common UI components to preserve theme
+import PageBreadcrumb from "../../common/PageBreadCrumb";
+import PageMeta from "../../common/PageMeta";
+import ComponentCard from "../../common/ComponentCard";
+import Button from "../../ui/button/Button";
+import { Dropdown } from "@/components/ui/dropdown/Dropdown";
+import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+
+// --- Interface Definitions (Kept inline as they were not the source of import issues) ---
+interface IndividualFormField {
+  id: string;
+  label: string;
+  type: string;
+  value: any;
+  options?: any[];
+  placeholder?: string;
+  required: boolean;
+  colSpan: number;
+  isChild?: boolean;
+  GroupColSpan?: number;
+  DynamicFieldColSpan?: number;
+}
+
+interface IndividualFormFieldWithChildren extends IndividualFormField {
+  value: any | IndividualFormFieldWithChildren[];
+  options?: Array<any | { value: string; form: IndividualFormFieldWithChildren[] }>;
+}
+
+interface FormField {
+  formId: string;
+  formName: string;
+  formColSpan: number;
+  formFieldJson: IndividualFormField[];
+}
+
+interface FormFieldWithChildren extends FormField {
+  formFieldJson: IndividualFormFieldWithChildren[];
+}
+
 interface FormConfigItem {
   formType: string;
   title: string;
-  options?: string[];
+  options?: any[];
   canBeChild?: boolean;
 }
 
@@ -38,6 +72,7 @@ interface DynamicFormProps {
   onFormSubmit?: (data: FormField) => void;
 }
 
+// --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text Form", canBeChild: true },
   { formType: "Integer", title: "Number Form", canBeChild: true },
@@ -65,20 +100,26 @@ function createDynamicFormField(
   if (!configItem) {
     return undefined;
   }
-  if (isChild && configItem.formType === "InputGroup") {
-    console.warn("Cannot add an InputGroup inside another InputGroup.");
+  if (isChild && !configItem.canBeChild) {
+    console.warn(`Cannot add a "${configItem.title}" inside a group.`);
     return undefined;
   }
 
   const id = `field_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
   let defaultValue: any;
-  let fieldOptions: string[] | undefined;
+  let fieldOptions: any[] | undefined;
   let newOptionText: string | undefined;
   let placeholder: string | undefined;
+  let GroupColSpan: number | undefined;
+  let DynamicFieldColSpan: number | undefined;
 
   if (configItem.formType === "InputGroup") {
     defaultValue = [];
+    GroupColSpan = 1; // Default for InputGroup
+  } else if (configItem.formType === "dynamicField") {
+    defaultValue = ""; // Dynamic field value is the selected option (string)
+    DynamicFieldColSpan = 1; // Default for DynamicField's internal form
   } else if (configItem.formType === "option") {
     defaultValue = [];
   } else if (configItem.formType === "Integer") {
@@ -91,7 +132,7 @@ function createDynamicFormField(
     defaultValue = "";
   }
 
-  if (configItem.formType === "option" || configItem.formType === "select" || configItem.formType === "radio") {
+  if (configItem.formType === "option" || configItem.formType === "select" || configItem.formType === "radio" || configItem.formType === "dynamicField") {
     fieldOptions = configItem.options || [];
     newOptionText = "";
   }
@@ -107,8 +148,11 @@ function createDynamicFormField(
     required: false,
     colSpan: 1,
     isChild: isChild,
+    ...(GroupColSpan !== undefined && { GroupColSpan: GroupColSpan }),
+    ...(DynamicFieldColSpan !== undefined && { DynamicFieldColSpan: DynamicFieldColSpan }),
   };
 }
+
 
 export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
@@ -116,15 +160,32 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     initialForm ?
       {
         ...initialForm,
-        formFieldJson: initialForm.formFieldJson.map(field => ({
-          ...field,
-          value: field.type === "InputGroup" && Array.isArray(field.value)
-            ? field.value as IndividualFormFieldWithChildren[]
-            : field.value,
-          ...(field.type === "InputGroup" && (field as any).children && !Array.isArray(field.value)
-            ? { value: (field as any).children as IndividualFormFieldWithChildren[] }
-            : {}),
-        })) as IndividualFormFieldWithChildren[]
+        formFieldJson: initialForm.formFieldJson.map(field => {
+          let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
+
+          // Ensure value is correctly typed for InputGroup and DynamicField
+          if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
+            updatedField.value = updatedField.value as IndividualFormFieldWithChildren[];
+          } else if (updatedField.type === "dynamicField") {
+            // Ensure dynamicField value is a string, default to "" if not
+            updatedField.value = typeof updatedField.value === 'string' ? updatedField.value : "";
+            // Ensure options for dynamicField have the 'form' property correctly typed
+            updatedField.options = updatedField.options?.map(option => ({
+              ...option,
+              form: Array.isArray(option.form) ? option.form as IndividualFormFieldWithChildren[] : []
+            }));
+          }
+
+          // Handle GroupColSpan/DynamicFieldColSpan if not present in initialForm
+          if (updatedField.type === "InputGroup" && updatedField.GroupColSpan === undefined) {
+            updatedField.GroupColSpan = 1;
+          }
+          if (updatedField.type === "dynamicField" && updatedField.DynamicFieldColSpan === undefined) {
+            updatedField.DynamicFieldColSpan = 1;
+          }
+
+          return updatedField;
+        })
       } :
       {
         formId: `form_${Date.now()}`,
@@ -133,6 +194,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         formFieldJson: [],
       }
   );
+  const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -168,6 +230,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     });
   }, []);
 
+
   const updateFieldRecursively = useCallback((
     fields: IndividualFormFieldWithChildren[],
     idToUpdate: string,
@@ -178,19 +241,22 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return callback(field);
       }
       if (field.type === "InputGroup" && Array.isArray(field.value)) {
-        const updatedChildren = updateFieldRecursively(field.value, idToUpdate, callback);
-        if (updatedChildren !== field.value) {
-          return {
-            ...field,
-            value: updatedChildren
-          };
-        }
+        return { ...field, value: updateFieldRecursively(field.value, idToUpdate, callback) };
+      }
+      if (field.type === "dynamicField" && Array.isArray(field.options)) {
+        return {
+          ...field,
+          options: field.options.map(option => ({
+            ...option,
+            form: Array.isArray(option.form) ? updateFieldRecursively(option.form, idToUpdate, callback) : []
+          }))
+        };
       }
       return field;
     });
   }, []);
 
-  const handleOverallGroupColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, groupId: string) => {
+  const handleChildContainerColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, containerId: string, containerType: "InputGroup" | "dynamicField") => {
     let newColSpan = parseInt(e.target.value, 10);
     if (isNaN(newColSpan) || newColSpan < 1) {
       newColSpan = 1;
@@ -200,24 +266,42 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     setCurrentForm(prevForm => ({
       ...prevForm,
-      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, groupId, (field) => {
-        if (field.type === "InputGroup") {
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, containerId, (field) => {
+        if (field.type === containerType) {
           const updatedChildren = Array.isArray(field.value)
-            ? field.value.map(childField => {
+            ? field.value.map((childField: IndividualFormFieldWithChildren) => { // Explicitly type childField here
+              // Adjust child's colSpan if it exceeds the new container colSpan
               if (childField.colSpan && childField.colSpan > newColSpan) {
                 return { ...childField, colSpan: newColSpan };
               }
               return childField;
             })
             : [];
-          return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
+
+          if (containerType === "InputGroup") {
+            return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
+          } else if (containerType === "dynamicField") {
+            // For dynamicField, the children are nested within options.form
+            // We need to update the DynamicFieldColSpan and also adjust children within selected option's form
+            const updatedOptions = field.options?.map(option => {
+              if (Array.isArray(option.form)) {
+                const updatedOptionForm = option.form.map((childField: IndividualFormFieldWithChildren) => { // Explicitly type childField here
+                  if (childField.colSpan && childField.colSpan > newColSpan) {
+                    return { ...childField, colSpan: newColSpan };
+                  }
+                  return childField;
+                });
+                return { ...option, form: updatedOptionForm };
+              }
+              return option;
+            });
+            return { ...field, DynamicFieldColSpan: newColSpan, options: updatedOptions };
+          }
         }
         return field;
       }),
     }));
   }, [updateFieldRecursively]);
-
-
 
 
   const removeFieldRecursively = useCallback((
@@ -228,32 +312,16 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     return filteredFields.map(field => {
       if (field.type === "InputGroup" && Array.isArray(field.value)) {
-        const updatedChildren = removeFieldRecursively(field.value, idToRemove);
-        if (updatedChildren !== field.value) {
-          return { ...field, value: updatedChildren };
-        }
+        return { ...field, value: removeFieldRecursively(field.value, idToRemove) };
       }
-      return field;
-    });
-  }, []);
-
-  const addChildFieldRecursively = useCallback((
-    fields: IndividualFormFieldWithChildren[],
-    parentId: string,
-    newField: IndividualFormFieldWithChildren
-  ): IndividualFormFieldWithChildren[] => {
-    return fields.map(field => {
-      if (field.id === parentId && field.type === "InputGroup") {
+      if (field.type === "dynamicField" && Array.isArray(field.options)) {
         return {
           ...field,
-          value: Array.isArray(field.value) ? [...field.value, newField] : [newField]
+          options: field.options.map(option => ({
+            ...option,
+            form: Array.isArray(option.form) ? removeFieldRecursively(option.form, idToRemove) : []
+          }))
         };
-      }
-      if (field.type === "InputGroup" && Array.isArray(field.value)) {
-        const updatedChildren = addChildFieldRecursively(field.value, parentId, newField);
-        if (updatedChildren !== field.value) {
-          return { ...field, value: updatedChildren };
-        }
       }
       return field;
     });
@@ -262,23 +330,66 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
   const addField = useCallback((formType: string, parentId?: string) => {
     const newField = createDynamicFormField(formConfigurations, formType, !!parentId);
-    if (newField) {
-      setCurrentForm(prevForm => {
-        if (parentId) {
-          const updatedFieldJson = addChildFieldRecursively(prevForm.formFieldJson, parentId, newField);
-          return {
-            ...prevForm,
-            formFieldJson: updatedFieldJson
-          };
-        } else {
-          return {
-            ...prevForm,
-            formFieldJson: [...prevForm.formFieldJson, newField]
-          };
-        }
-      });
-    }
-  }, [addChildFieldRecursively]);
+    if (!newField) return;
+
+    setCurrentForm(prevForm => {
+      if (!parentId) {
+        return {
+          ...prevForm,
+          formFieldJson: [...prevForm.formFieldJson, newField]
+        };
+      }
+
+      const addRecursively = (fields: IndividualFormFieldWithChildren[]): IndividualFormFieldWithChildren[] => {
+        return fields.map(field => {
+          if (field.id === parentId && field.type === "InputGroup") {
+            const newValue = Array.isArray(field.value) ? [...field.value, newField] : [newField];
+            return { ...field, value: newValue };
+          }
+          if (field.type === "InputGroup" && Array.isArray(field.value)) {
+            return { ...field, value: addRecursively(field.value) };
+          }
+          if (field.type === "dynamicField" && Array.isArray(field.options)) {
+            const updatedOptions = field.options.map(option => ({
+              ...option,
+              form: Array.isArray(option.form) ? addRecursively(option.form) : []
+            }));
+            return { ...field, options: updatedOptions };
+          }
+          return field;
+        });
+      };
+
+      return {
+        ...prevForm,
+        formFieldJson: addRecursively(prevForm.formFieldJson)
+      };
+    });
+  }, []);
+
+  const addFieldToDynamicOption = useCallback((dynamicFieldId: string, optionValue: string, formType: string) => {
+    const newField = createDynamicFormField(formConfigurations, formType, true);
+    if (!newField) return;
+
+    const callback = (field: IndividualFormFieldWithChildren) => {
+      if (field.id === dynamicFieldId && field.type === "dynamicField") {
+        const updatedOptions = field.options?.map(option => {
+          if (option.value === optionValue) {
+            const newForm = Array.isArray(option.form) ? [...option.form, newField] : [newField];
+            return { ...option, form: newForm };
+          }
+          return option;
+        });
+        return { ...field, options: updatedOptions };
+      }
+      return field;
+    };
+
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, dynamicFieldId, callback)
+    }));
+  }, [updateFieldRecursively]);
 
 
   const saveSchema = () => {
@@ -313,6 +424,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         if (field.type === "InputGroup") {
           return { ...field, value: field.value };
         }
+        if (field.type === "select" || field.type === "dynamicField") {
+          // Ensure value is a string for select and dynamicField
+          return { ...field, value: String(newValue) };
+        }
 
         return { ...field, value: newValue };
       }),
@@ -344,17 +459,23 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       ...prevForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => {
         if (newOptionTextValue.trim() !== "") {
-          const newOption = newOptionTextValue.trim();
-          if (field.options && !field.options.includes(newOption)) {
-            return {
-              ...field,
-              options: [...field.options, newOption],
+          const newOptionValue = newOptionTextValue.trim();
+          if (field.type === "dynamicField") {
+            const newOption = {
+              value: newOptionValue,
+              form: []
             };
-          } else if (!field.options) {
-            return {
-              ...field,
-              options: [newOption],
-            };
+            if (field.options && !field.options.some(o => o.value === newOptionValue)) {
+              return { ...field, options: [...field.options, newOption] };
+            } else if (!field.options) {
+              return { ...field, options: [newOption] };
+            }
+          } else {
+            if (field.options && !field.options.includes(newOptionValue)) {
+              return { ...field, options: [...field.options, newOptionValue] };
+            } else if (!field.options) {
+              return { ...field, options: [newOptionValue] };
+            }
           }
         }
         return field;
@@ -370,36 +491,52 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   }, [removeFieldRecursively]);
 
   const transformFieldForSubmission = useCallback((field: IndividualFormFieldWithChildren): IndividualFormField => {
-    if (field.type === "InputGroup" && Array.isArray(field.value)) {
+    const { isChild, ...rest } = field;
+
+    if (rest.type === "InputGroup" && Array.isArray(rest.value)) {
       return {
-        ...field,
-        value: field.value.map(transformFieldForSubmission),
+        ...rest,
+        value: rest.value.map(transformFieldForSubmission),
       } as IndividualFormField;
     }
-    const { isChild, ...rest } = field;
+
+    if (rest.type === "dynamicField" && Array.isArray(rest.options)) {
+      return {
+        ...rest,
+        options: rest.options.map(option => ({
+          ...option,
+          form: Array.isArray(option.form) ? option.form.map(transformFieldForSubmission) : []
+        }))
+      };
+    }
+
     return rest;
   }, []);
 
 
   const handleSend = useCallback(() => {
     const validateFields = (fields: IndividualFormFieldWithChildren[]): boolean => {
-      return fields.every(field => {
+      for (const field of fields) {
         if (field.required) {
-          if (field.type === "InputGroup") {
-            return Array.isArray(field.value) && validateFields(field.value);
-          }
-          if (Array.isArray(field.value)) {
-            return field.value.length > 0;
+          if (field.type === "InputGroup" && Array.isArray(field.value)) {
+            if (!validateFields(field.value)) return false;
+          } else if (field.type === "dynamicField") {
+            const selectedOption = field.options?.find(o => o.value === field.value);
+            if (!selectedOption || !validateFields(selectedOption.form || [])) {
+              return false;
+            }
+          } else if (Array.isArray(field.value)) {
+            if (field.value.length === 0) return false;
           } else if (typeof field.value === 'string') {
-            return field.value.trim() !== '';
+            if (field.value.trim() === '') return false;
           } else if (field.type === 'Integer') {
-            return typeof field.value === 'number' && !isNaN(field.value) && field.value !== null;
+            if (typeof field.value !== 'number' || isNaN(field.value) || field.value === null) return false;
           } else if (field.value === null || field.value === undefined) {
             return false;
           }
         }
-        return true;
-      });
+      }
+      return true;
     };
 
     const allFieldsValid = validateFields(currentForm.formFieldJson);
@@ -415,6 +552,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         onFormSubmit(submitData);
       }
     } else {
+      // Use a custom modal or message box instead of alert
+      console.error("Please fill in all required fields.");
+      // Example of a simple message box (you'd replace this with a proper UI component)
       alert("Please fill in all required fields.");
     }
   }, [currentForm, onFormSubmit, transformFieldForSubmission]);
@@ -422,6 +562,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
     if (!trimmedNewId) {
+      // Use a custom modal or message box instead of alert
+      console.error("Field ID cannot be empty!");
       alert("Field ID cannot be empty!");
       return;
     }
@@ -433,11 +575,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         if (field.type === "InputGroup" && Array.isArray(field.value) && checkIdExistsRecursively(field.value)) {
           return true;
         }
+        if (field.type === "dynamicField" && Array.isArray(field.options)) {
+          for (const option of field.options) {
+            if (Array.isArray(option.form) && checkIdExistsRecursively(option.form)) {
+              return true;
+            }
+          }
+        }
       }
       return false;
     };
 
     if (checkIdExistsRecursively(currentForm.formFieldJson)) {
+      // Use a custom modal or message box instead of alert
+      console.error(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
       alert(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
       return;
     }
@@ -456,15 +607,21 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       ...prevForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
         if (field.options) {
+          const removedOption = field.options[optionIndexToRemove];
           const updatedOptions = field.options.filter((_, index) => index !== optionIndexToRemove);
           let newValue = field.value;
-          if ((field.type === "select" || field.type === "radio") && field.value === field.options[optionIndexToRemove]) {
+
+          if (field.type === "dynamicField") {
+            // If the removed option was selected, clear the value
+            if (field.value === removedOption.value) {
+              newValue = "";
+            }
+          } else if ((field.type === "select" || field.type === "radio") && field.value === removedOption) {
             newValue = "";
           } else if (field.type === "option" && Array.isArray(field.value)) {
-            newValue = field.value.filter(
-              (val: string) => val !== field.options?.[optionIndexToRemove]
-            );
+            newValue = field.value.filter(val => val !== removedOption);
           }
+
           return {
             ...field,
             options: updatedOptions,
@@ -512,40 +669,67 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     }));
   }, [updateFieldRecursively]);
 
+  type PathSegment = UniqueIdentifier | { id: UniqueIdentifier; optionValue: string };
 
   const getParentAndCurrentArray = useCallback((
     fields: IndividualFormFieldWithChildren[],
     id: UniqueIdentifier,
-    parentPath: UniqueIdentifier[] = []
-  ): { arr: IndividualFormFieldWithChildren[]; index: number; parentId: UniqueIdentifier | null; path: UniqueIdentifier[] } | null => {
+    parentPath: PathSegment[] = []
+  ): { arr: IndividualFormFieldWithChildren[]; index: number; path: PathSegment[] } | null => {
     for (let i = 0; i < fields.length; i++) {
-      if (fields[i].id === id) {
-        return { arr: fields, index: i, parentId: parentPath.length > 0 ? parentPath[parentPath.length - 1] : null, path: parentPath };
+      const field = fields[i];
+      if (field.id === id) {
+        return { arr: fields, index: i, path: parentPath };
       }
-      if (fields[i].type === "InputGroup" && Array.isArray(fields[i].value)) {
-        const found = getParentAndCurrentArray(fields[i].value, id, [...parentPath, fields[i].id]);
+      if (field.type === "InputGroup" && Array.isArray(field.value)) {
+        const found = getParentAndCurrentArray(field.value, id, [...parentPath, field.id]);
         if (found) return found;
+      }
+      if (field.type === "dynamicField" && Array.isArray(field.options)) {
+        for (const option of field.options) {
+          if (Array.isArray(option.form)) {
+            const found = getParentAndCurrentArray(option.form, id, [...parentPath, { id: field.id, optionValue: option.value }]);
+            if (found) return found;
+          }
+        }
       }
     }
     return null;
   }, []);
 
+
   const updateNestedFormFields = useCallback((
     fields: IndividualFormFieldWithChildren[],
-    path: UniqueIdentifier[],
+    path: PathSegment[],
     updatedArray: IndividualFormFieldWithChildren[]
   ): IndividualFormFieldWithChildren[] => {
     if (path.length === 0) {
       return updatedArray;
     }
 
-    const currentId = path[0];
+    const currentPathSegment = path[0];
+    const currentId = (typeof currentPathSegment === 'object' && currentPathSegment !== null)
+      ? currentPathSegment.id
+      : currentPathSegment;
+
     return fields.map(field => {
-      if (field.id === currentId && field.type === "InputGroup") {
-        return {
-          ...field,
-          value: updateNestedFormFields(Array.isArray(field.value) ? field.value : [], path.slice(1), updatedArray),
-        };
+      if (field.id !== currentId) {
+        return field;
+      }
+
+      if (field.type === "InputGroup" && (typeof currentPathSegment === 'string' || typeof currentPathSegment === 'number')) {
+        return { ...field, value: updateNestedFormFields(Array.isArray(field.value) ? field.value : [], path.slice(1), updatedArray) };
+      }
+
+      if (field.type === "dynamicField" && typeof currentPathSegment === 'object' && currentPathSegment !== null) {
+        const optionValueToUpdate = currentPathSegment.optionValue;
+        const updatedOptions = field.options?.map(option => {
+          if (option.value === optionValueToUpdate) {
+            return { ...option, form: updateNestedFormFields(Array.isArray(option.form) ? option.form : [], path.slice(1), updatedArray) };
+          }
+          return option;
+        });
+        return { ...field, options: updatedOptions };
       }
       return field;
     });
@@ -553,92 +737,33 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
   const onDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
-
     if (!over || active.id === over.id) {
       return;
     }
 
     setCurrentForm(prevForm => {
-      const deepCopyFields = (fields: IndividualFormFieldWithChildren[]): IndividualFormFieldWithChildren[] => {
-        return fields.map(field => {
-          const newField: IndividualFormFieldWithChildren = { ...field };
-          if (newField.type === "InputGroup" && Array.isArray(newField.value)) {
-            newField.value = deepCopyFields(newField.value);
-          }
-          return newField;
-        });
-      };
-
-      const newFormFieldJson = deepCopyFields(prevForm.formFieldJson);
+      const newFormFieldJson = JSON.parse(JSON.stringify(prevForm.formFieldJson));
 
       const activeInfo = getParentAndCurrentArray(newFormFieldJson, active.id);
       const overInfo = getParentAndCurrentArray(newFormFieldJson, over.id);
 
       if (!activeInfo || !overInfo) {
-        console.warn("Drag end: Active or over info not found.");
         return prevForm;
       }
 
-      const { arr: activeArr, index: activeIndex, path: activePath } = activeInfo;
-      const { arr: overArr, index: overIndex, path: overPath } = overInfo;
+      const pathToString = (p: PathSegment[]) => p.map(i => (typeof i === 'object' ? `${i.id}_${i.optionValue}` : i)).join('>');
 
-      const overField = overArr[overIndex];
-
-      let targetContainerArr: IndividualFormFieldWithChildren[];
-      let targetContainerPath: UniqueIdentifier[];
-      let insertionIndex: number;
-
-      const isOverInputGroupContainer = overField.type === "InputGroup" && overField.id === over.id;
-      const activeItemIsChildOfOverInputGroup = activePath.length > 0 && activePath[activePath.length - 1] === overField.id;
-
-      const originalParentPathStr = activePath.join('-');
-      const overParentPathStr = overPath.join('-');
-
-      if (isOverInputGroupContainer && !activeItemIsChildOfOverInputGroup) {
-        targetContainerArr = Array.isArray(overField.value) ? overField.value : [];
-        targetContainerPath = [...overPath, overField.id];
-        insertionIndex = targetContainerArr.length;
-      } else if (originalParentPathStr === overParentPathStr || (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup)) {
-        targetContainerArr = activeArr;
-        targetContainerPath = activePath;
-        if (isOverInputGroupContainer && activeItemIsChildOfOverInputGroup) {
-          insertionIndex = activeArr.length;
-        } else {
-          insertionIndex = overIndex;
-        }
-      } else {
-        targetContainerArr = overArr;
-        targetContainerPath = overPath;
-        insertionIndex = overIndex;
+      if (pathToString(activeInfo.path) !== pathToString(overInfo.path)) {
+        console.warn("Moving items between different groups is not allowed.");
+        return prevForm;
       }
 
-      let finalFormJson: IndividualFormFieldWithChildren[];
+      const { arr: activeArr, index: activeIndex } = activeInfo;
+      const { index: overIndex } = overInfo;
+      const reorderedArr = arrayMove(activeArr, activeIndex, overIndex);
 
-      if (activeArr === targetContainerArr && activePath.join('-') === targetContainerPath.join('-')) {
-        const reorderedArr = arrayMove(activeArr, activeIndex, insertionIndex);
-        finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, reorderedArr);
-      } else {
-        const [movedItem] = activeArr.splice(activeIndex, 1);
+      const finalFormJson = updateNestedFormFields(newFormFieldJson, activeInfo.path, reorderedArr);
 
-        // New logic to prevent dropping elements into a group if canBeChild is false
-        const movedItemConfig = formConfigurations.find(config => config.formType === movedItem.type);
-        const isBeingMovedIntoGroup = targetContainerPath.length > 0;
-
-        if (movedItemConfig && !movedItemConfig.canBeChild && isBeingMovedIntoGroup) {
-          // Revert the splice as the move is not allowed
-          activeArr.splice(activeIndex, 0, movedItem);
-          console.warn(`Cannot move a "${movedItem.type}" into a group as it cannot be a child.`);
-          return prevForm;
-        }
-
-        const updatedMovedItem = { ...movedItem, isChild: isBeingMovedIntoGroup };
-        targetContainerArr.splice(insertionIndex, 0, updatedMovedItem);
-
-        finalFormJson = updateNestedFormFields(newFormFieldJson, activePath, activeArr);
-        if (activePath.join('-') !== targetContainerPath.join('-')) {
-          finalFormJson = updateNestedFormFields(finalFormJson, targetContainerPath, targetContainerArr);
-        }
-      }
       return { ...prevForm, formFieldJson: finalFormJson };
     });
   }, [getParentAndCurrentArray, updateNestedFormFields]);
@@ -653,11 +778,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleToggleRequired: (id: string) => void;
     handlePlaceholderChange: (id: string, newPlaceholder: string) => void;
     handleColSpanChange: (id: string, newColSpan: number) => void;
-    overallFormColSpan: number; // This is the overall form col span
-    handleOverallGroupColSpanChange: (e: React.ChangeEvent<HTMLInputElement>, groupId: string) => void; // Added for group
+    overallFormColSpan: number;
+    handleChildContainerColSpanChange: (e: React.ChangeEvent<HTMLInputElement>, containerId: string, containerType: "InputGroup" | "dynamicField") => void;
     addField: (formType: string, parentId?: string) => void;
+    addFieldToDynamicOption: (dynamicFieldId: string, optionValue: string, formType: string) => void;
     editFormData: boolean;
-    items: UniqueIdentifier[];
   }
 
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -670,9 +795,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     handleToggleRequired,
     handlePlaceholderChange,
     handleColSpanChange,
-    overallFormColSpan, // This is the overall form col span
-    handleOverallGroupColSpanChange, // Added for group
+    overallFormColSpan,
+    handleChildContainerColSpanChange,
     addField,
+    addFieldToDynamicOption,
     editFormData,
   }) => {
     const {
@@ -681,22 +807,34 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       setNodeRef,
       transform,
       transition,
+      isOver,
+      setActivatorNodeRef
     } = useSortable({ id: field.id });
 
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
+      opacity: isOver ? 0.5 : 1,
     };
 
+    const [isAddDropdownOpen, setAddDropdownOpen] = useState(false);
+    const [dynamicOptionDropdown, setDynamicOptionDropdown] = useState<Record<string, boolean>>({});
     const [localIdValue, setLocalIdValue] = useState(field.id);
     const [localLabelValue, setLocalLabelValue] = useState(field.label);
     const [localPlaceholderValue, setLocalPlaceholderValue] = useState(field.placeholder || "");
     const [localNewOptionText, setLocalNewOptionText] = useState("");
-    const [localGroupColSpan, setLocalGroupColSpan] = useState(field.GroupColSpan || 1); // State for group col span
+    const [localGroupColSpan, setLocalGroupColSpan] = useState(field.GroupColSpan || 1);
+    const [localDynamicFieldColSpan, setLocalDynamicFieldColSpan] = useState(field.DynamicFieldColSpan || 1);
+
 
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
     const placeholderInputRef = useRef<HTMLInputElement>(null);
+
+    const toggleDynamicFieldExpansion = (optionValue: string) => {
+      const key = `${field.id}-${optionValue}`;
+      setExpandedDynamicFields(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
     useEffect(() => {
       setLocalIdValue(field.id);
@@ -713,6 +851,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     useEffect(() => {
       setLocalGroupColSpan(field.GroupColSpan || 1);
     }, [field.GroupColSpan]);
+
+    useEffect(() => {
+      setLocalDynamicFieldColSpan(field.DynamicFieldColSpan || 1);
+    }, [field.DynamicFieldColSpan]);
 
 
     const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -792,8 +934,14 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     const handleLocalGroupColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalGroupColSpan(parseInt(e.target.value, 10));
-      handleOverallGroupColSpanChange(e, field.id);
-    }, [field.id, handleOverallGroupColSpanChange]);
+      handleChildContainerColSpanChange(e, field.id, "InputGroup");
+    }, [field.id, handleChildContainerColSpanChange]);
+
+    const handleLocalDynamicFieldColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalDynamicFieldColSpan(parseInt(e.target.value, 10));
+      handleChildContainerColSpanChange(e, field.id, "dynamicField");
+    }, [field.id, handleChildContainerColSpanChange]);
+
 
     const showPlaceholderInput =
       field.type === "textInput" ||
@@ -802,18 +950,25 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       field.type === "emailInput" ||
       field.type === "passwordInput";
 
-
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
-
     const isInputGroup = field.type === "InputGroup";
+    const isDynamicField = field.type === "dynamicField";
     const showLabelInput = !field.isChild;
+    const childFormFields = formConfigurations.filter(f => f.canBeChild);
+
+    // Z-INDEX FIX: Determine if any dropdown is open to apply a higher z-index
+    const isAnyDropdownOpen = isAddDropdownOpen || Object.values(dynamicOptionDropdown).some(Boolean);
+
     return (
       <div
-        ref={setNodeRef} style={style} {...attributes}
-        className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90`}
+        ref={setNodeRef} style={style}
+        // Z-INDEX FIX: Conditionally apply a higher z-index to lift this component
+        className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
+        {...attributes}
       >
         <div
-          className="flex top-2 left-2 p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 z-10"
+          ref={setActivatorNodeRef}
+          className="flex top-2 left-2 p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           title="Drag to reorder"
           {...listeners}
         >
@@ -904,19 +1059,19 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 </option>
               ))}
             </select>
-          </div> : field.type == "InputGroup" ?
+          </div> : (isInputGroup || isDynamicField) ?
             <div>
               <div className="flex items-center mt-2">
-                <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-white/90">
-                  Overall Group Column Span:
+                <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                  Overall {isInputGroup ? 'Group' : 'Dynamic Field'} Column Span:
                 </label>
                 <input
-                  id={`overallColSpan-input`}
+                  id={`overallColSpan-input-${field.id}`}
                   type="number"
                   min="1"
                   max="12"
-                  value={localGroupColSpan} // Use local state for group col span
-                  onChange={handleLocalGroupColSpanChange} // Call new handler
+                  value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan}
+                  onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange}
                   className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
                   disabled={!editFormData}
                 />
@@ -960,7 +1115,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             </div>}
 
 
-        {(field.type === "select" || field.type === "option" || field.type === "radio") && field.options ? (
+        {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && field.options ? (
           <div>
             <div className="flex items-center gap-2 mt-2">
               <input
@@ -981,32 +1136,121 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               </Button>
             </div>
 
-            {field.options.map((option, index) => (
-              <div key={option} className="flex justify-between gap-2 mt-2">
-                <p className="text-gray-700 dark:text-white ">- {option}</p>
-                <Button
-                  onClick={() => handleRemoveOption(field.id, index)}
-                  className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
-                  disabled={!editFormData}
-                >
-                  -
-                </Button>
-              </div>
-            ))}
+            {field.options.map((option, index) => {
+              const optionValue = isDynamicField ? option.value : option;
+              const optionKey = `${field.id}-${optionValue}`;
+              const isExpanded = !!expandedDynamicFields[optionKey];
+              const isOptionDropdownOpen = !!dynamicOptionDropdown[optionValue];
+
+              return (
+                <div key={optionValue} className="flex flex-col gap-2 mt-2 border-t pt-2">
+                  <div className="flex justify-between items-center">
+                    <p className="text-gray-700 dark:text-white">- {optionValue}</p>
+                    <div className="flex items-center gap-2">
+                      {isDynamicField && (
+                        <Button
+                          onClick={() => toggleDynamicFieldExpansion(optionValue)}
+                          className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs"
+                        >
+                          {isExpanded ? 'Hide Form' : 'Show Form'}
+                        </Button>
+                      )}
+                      <Button
+                        onClick={() => handleRemoveOption(field.id, index)}
+                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
+                        disabled={!editFormData}
+                      >
+                        -
+                      </Button>
+                    </div>
+                  </div>
+                  {isDynamicField && isExpanded && (
+                    <div className="mt-2 p-3  rounded-md bg-blue-50  dark:bg-white/[0.03]">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-semibold dark:text-white/90">Form for "{optionValue}"</h4>
+                        <div className="relative">
+                          <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>
+                            Add Field
+                          </Button>
+                          <Dropdown  isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
+                            {childFormFields.map(formItem => (
+                              <DropdownItem
+                              className="text-gray-700  text-sm dark:text-white/90"
+                                key={formItem.formType}
+                                onClick={() => {
+                                  addFieldToDynamicOption(field.id, optionValue, formItem.formType);
+                                  setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }));
+                                }}
+                              >
+                                {formItem.title}
+                              </DropdownItem>
+                            ))}
+                          </Dropdown>
+                        </div>
+                      </div>
+                      <SortableContext
+                        items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)}
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className={`min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
+                          {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (
+                            <div className={`col-span-${childField.colSpan || 1}`} key={childField.id}>
+                              <SortableFieldEditItem
+                                key={childField.id}
+                                field={childField}
+                                handleLabelChange={handleLabelChange}
+                                updateFieldId={updateFieldId}
+                                handleAddOption={handleAddOption}
+                                handleRemoveOption={handleRemoveOption}
+                                removeField={removeField}
+                                handleToggleRequired={handleToggleRequired}
+                                handlePlaceholderChange={handlePlaceholderChange}
+                                handleColSpanChange={handleColSpanChange}
+                                overallFormColSpan={field.DynamicFieldColSpan || 1}
+                                addField={addField}
+                                addFieldToDynamicOption={addFieldToDynamicOption}
+                                editFormData={editFormData}
+                                handleChildContainerColSpanChange={handleChildContainerColSpanChange}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <></>
-        )}
+        ) : null}
 
         {isInputGroup && (
           <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
-            <h3 className="text-md font-semibold mb-3 dark:text-white/90">Grouped Fields</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-md font-semibold dark:text-white/90">Grouped Fields</h3>
+              <div className="relative">
+                <Button className="dropdown-toggle" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
+                <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
+                  {childFormFields.map(item => (
+                    <DropdownItem
+                      key={item.formType}
+                      onClick={() => {
+                        addField(item.formType, field.id);
+                        setAddDropdownOpen(false);
+                      }}
+                    >
+                      {item.title}
+                    </DropdownItem>
+                  ))}
+                </Dropdown>
+              </div>
+            </div>
             <SortableContext
-              items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
+              items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []}
               strategy={rectSortingStrategy}
             >
               <div
-                className={`-space-y-6 grid grid-cols-${localGroupColSpan} gap-4`} // Use localGroupColSpan here
+                className={`min-h-[50px] -space-y-6 grid grid-cols-${field.GroupColSpan || 1} gap-4`}
               >
                 {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
                   <div className={`col-span-${childField.colSpan || 1}`} key={childField.id}>
@@ -1021,11 +1265,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                       handleToggleRequired={handleToggleRequired}
                       handlePlaceholderChange={handlePlaceholderChange}
                       handleColSpanChange={handleColSpanChange}
-                      overallFormColSpan={localGroupColSpan}
+                      overallFormColSpan={field.GroupColSpan || 1}
                       addField={addField}
+                      addFieldToDynamicOption={addFieldToDynamicOption}
                       editFormData={editFormData}
-                      items={Array.isArray(field.value) ? field.value.map(f => f.id) : []}
-                      handleOverallGroupColSpanChange={handleOverallGroupColSpanChange}
+                      handleChildContainerColSpanChange={handleChildContainerColSpanChange}
                     />
                   </div>
                 ))}
@@ -1049,20 +1293,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
   const FormEdit = useCallback(() => {
     const gridColsMapClass: Record<number, string> = {
-      1: "grid-cols-1",
-      2: "grid-cols-2",
-      3: "grid-cols-3",
-      4: "grid-cols-4",
-      5: "grid-cols-5",
-      6: "grid-cols-6",
-      7: "grid-cols-7",
-      8: "grid-cols-8",
-      9: "grid-cols-9",
-      10: "grid-cols-10",
-      11: "grid-cols-11",
-      12: "grid-cols-12",
+      1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
+      5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
+      9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
     };
-
     const overallGridClass = gridColsMapClass[currentForm.formColSpan] || "grid-cols-1";
 
     return (
@@ -1113,8 +1347,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             No fields added yet. Use the "Add Form" section to add new fields.
           </p>
         ) : (
-          <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20`}>
-            <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-blue-300">
+          <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50  dark:bg-blue-900/20`}>
+            <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
               Form Layout Preview (Overall {currentForm.formColSpan} Columns)
             </p>
             <SortableContext
@@ -1122,9 +1356,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               strategy={rectSortingStrategy}
               key={currentForm.formId}
             >
-              <div
-                className={`grid w-full ${overallGridClass} gap-4`}
-              >
+              <div className={`grid w-full ${overallGridClass} gap-4`}>
                 {currentForm.formFieldJson.map((field) => (
                   <div className={`col-span-${field.colSpan}`} key={field.id}>
                     <SortableFieldEditItem
@@ -1140,9 +1372,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                       handleColSpanChange={handleColSpanChange}
                       overallFormColSpan={currentForm.formColSpan}
                       addField={addField}
+                      addFieldToDynamicOption={addFieldToDynamicOption}
                       editFormData={editFormData}
-                      items={currentForm.formFieldJson.map(f => f.id)}
-                      handleOverallGroupColSpanChange={handleOverallGroupColSpanChange} // Pass to children
+                      handleChildContainerColSpanChange={handleChildContainerColSpanChange}
                     />
                   </div>
                 ))}
@@ -1152,13 +1384,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         )}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, editFormData, handleOverallGroupColSpanChange]); // Added handleOverallGroupColSpanChange to dependencies
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
     const commonProps = {
       id: field.id,
-      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90",
+      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90 dark:border-gray-800",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
@@ -1172,35 +1404,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </label>
     );
-
-    // const colSpanMap: Record<number, string> = {
-    //   1: "col-span-1",
-    //   2: "col-span-2",
-    //   3: "col-span-3",
-    //   4: "col-span-4",
-    //   5: "col-span-5",
-    //   6: "col-span-6",
-    //   7: "col-span-7",
-    //   8: "col-span-8",
-    //   9: "col-span-9",
-    //   10: "col-span-10",
-    //   11: "col-span-11",
-    //   12: "col-span-12",
-    // };
-
     const groupGridColsMap: Record<number, string> = {
-      1: "grid-cols-1",
-      2: "grid-cols-2",
-      3: "grid-cols-3",
-      4: "grid-cols-4",
-      5: "grid-cols-5",
-      6: "grid-cols-6",
-      7: "grid-cols-7",
-      8: "grid-cols-8",
-      9: "grid-cols-9",
-      10: "grid-cols-10",
-      11: "grid-cols-11",
-      12: "grid-cols-12",
+      1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
+      5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
+      9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
     };
 
 
@@ -1213,11 +1420,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             {labelComponent}
             <input
               type={
-                field.type === "textInput"
-                  ? "text"
-                  : field.type === "emailInput"
-                    ? "email"
-                    : "password"
+                field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"
               }
               value={field.value as string}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -1278,7 +1481,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <>
             {labelComponent}
             <select
-              value={field.value as string}
+              value={String(field.value || "")} // Ensure scalar value, default to empty string
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
               className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
@@ -1438,23 +1641,58 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             )}
           </div>
         );
+      case "dynamicField":
+        const selectedOption = field.options?.find(
+          (option: any) => option.value === field.value
+        );
+        const dynamicFieldColSpanClass = groupGridColsMap[field.DynamicFieldColSpan || 1] || "grid-cols-1";
+
+        return (
+          <>
+            {labelComponent}
+            <select
+              value={String(field.value || "")} // Ensure scalar value, default to empty string
+              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+              {...commonProps}
+              className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
+            >
+              <option value="" className="dark:bg-gray-800">
+                Select an option
+              </option>
+              {field.options?.map((option: any) => (
+                <option
+                  className="text-gray-700 dark:text-white dark:bg-gray-800"
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.value}
+                </option>
+              ))}
+            </select>
+            {selectedOption && Array.isArray(selectedOption.form) && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className={`grid ${dynamicFieldColSpanClass} gap-4`}>
+                  {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (
+                    <div
+                      key={nestedField.id}
+                      className={`col-span-${nestedField.colSpan || 1}`}
+                    >
+                      {renderFormField(nestedField)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        );
       default:
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
   }, [handleFieldChange, handleRemoveFile, editFormData]);
   const gridColsMap: Record<number, string> = {
-    1: "grid-cols-1",
-    2: "grid-cols-2",
-    3: "grid-cols-3",
-    4: "grid-cols-4",
-    5: "grid-cols-5",
-    6: "grid-cols-6",
-    7: "grid-cols-7",
-    8: "grid-cols-8",
-    9: "grid-cols-9",
-    10: "grid-cols-10",
-    11: "grid-cols-11",
-    12: "grid-cols-12",
+    1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
+    5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
+    9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
   };
 
   const FormPreview = useCallback(() => {
@@ -1533,7 +1771,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   <div className="flex">
                     <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button>
                   </div>
-                  <div className="flex gap-2 \t">
+                  <div className="flex gap-2 ">
                     <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
                     <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
                   </div>
@@ -1550,14 +1788,14 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     {FormPreview()}
     <div className="flex justify-between w-full">
       {showDynamicForm && <Button
-        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
+        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-dark-900 dark:text-white dark:hover:bg-dark-700"
         onClick={() => showDynamicForm && showDynamicForm(false)}
       >
         Close
       </Button>}
       {(currentForm.formFieldJson.length !== 0 && onFormSubmit) && (<div>
         <Button
-          className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-500"
+          className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-dark-900 dark:text-white dark:hover:bg-dark-700"
           onClick={handleSend}
         >
           Submit

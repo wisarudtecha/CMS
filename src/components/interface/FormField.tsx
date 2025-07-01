@@ -4,7 +4,7 @@ export interface IndividualFormField {
   label: string;
   type: string;
   value: any;
-  options?: string[];
+  options?: any[];
   newOptionText?: string;
   placeholder?: string;
   required: boolean;
