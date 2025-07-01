@@ -1360,9 +1360,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                             items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)}
                             strategy={rectSortingStrategy}
                           >
-                            <div className={`min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
+                            <div className={` min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
                               {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (
-                                <div className={colsMap[field.colSpan||1]} key={childField.id}>
+                                <div className={colsMap[childField.colSpan||1]} key={childField.id}>
                                   <SortableFieldEditItem
                                     key={childField.id}
                                     field={childField}
@@ -1423,7 +1423,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     className={`min-h-[50px] -space-y-6 grid grid-cols-${field.GroupColSpan || 1} gap-4`}
                   >
                     {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
-                      <div className={colsMap[field.colSpan||1]} key={childField.id}>
+                      <div className={colsMap[childField.colSpan||1]} key={childField.id}>
                         <SortableFieldEditItem
                           key={childField.id}
                           field={childField}
