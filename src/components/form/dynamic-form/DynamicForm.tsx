@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { v4 as uuidv4 } from 'uuid'; // IMPORT: Using uuid library
 import {
   DndContext,
   closestCenter,
@@ -17,16 +18,25 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { JSX } from "react/jsx-runtime";
+import {
+  AlignLeft,
+  Hash,
+  AlignJustify,
+  Mail,
+  CheckSquare,
+  ChevronsUpDown,
+  Image as ImageIcon,
+  Layers,
+  Lock,
+  CalendarDays,
+  Clock,
+  Circle,
+  LayoutGrid,
+  Slack,
+} from 'lucide-react';
 
-// Re-adding original imports for common UI components to preserve theme
-import PageBreadcrumb from "../../common/PageBreadCrumb";
-import PageMeta from "../../common/PageMeta";
-import ComponentCard from "../../common/ComponentCard";
-import Button from "../../ui/button/Button";
-import { Dropdown } from "@/components/ui/dropdown/Dropdown";
-import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-
-// --- Interface Definitions (Kept inline as they were not the source of import issues) ---
+// --- Interface Definitions ---
 interface IndividualFormField {
   id: string;
   label: string;
@@ -35,7 +45,7 @@ interface IndividualFormField {
   options?: any[];
   placeholder?: string;
   required: boolean;
-  colSpan: number;
+  colSpan?: number;
   isChild?: boolean;
   GroupColSpan?: number;
   DynamicFieldColSpan?: number;
@@ -72,6 +82,94 @@ interface DynamicFormProps {
   onFormSubmit?: (data: FormField) => void;
 }
 
+// --- Basic UI Components (Inline implementations to resolve import errors and preserve theme) ---
+const gridColsMap: Record<number, string> = {
+    1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
+    5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
+    9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
+  };
+  const colsMap: Record<number, string> = {
+    1: "col-span-1", 2: "col-span-2", 3: "col-span-3", 4: "col-span-4",
+    5: "col-span-5", 6: "col-span-6", 7: "col-span-7", 8: "col-span-8",
+    9: "col-span-9", 10: "col-span-10", 11: "col-span-11", 12: "col-span-12",
+  };
+  
+const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => {
+  return (
+    <button
+      className={`px-4 py-2 rounded-md bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+interface DropdownProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({ isOpen, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800">
+      <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+interface DropdownItemProps {
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const DropdownItem: React.FC<DropdownItemProps> = ({ onClick, children, className }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white dark:hover:bg-gray-700 ${className}`}
+      role="menuitem"
+    >
+      {children}
+    </button>
+  );
+};
+
+const ComponentCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6 xl:p-9">
+      <h4 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+};
+
+const PageMeta: React.FC<{ title: string; description: string }> = ({ title, description }) => {
+  useEffect(() => {
+    document.title = title;
+  }, [title, description]);
+  return null;
+};
+
+const PageBreadcrumb: React.FC<{ pageTitle: string }> = ({ pageTitle }) => {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h2 className="text-title-md2 font-semibold text-gray-900 dark:text-white">
+        {pageTitle}
+      </h2>
+    </div>
+  );
+};
+
+
 // --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text Form", canBeChild: true },
@@ -90,6 +188,24 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
 ];
 
+const formTypeIcons: Record<string, JSX.Element> = {
+  textInput: <AlignLeft size={16} />,
+  Integer: <Hash size={16} />,
+  textAreaInput: <AlignJustify size={16} />,
+  emailInput: <Mail size={16} />,
+  option: <CheckSquare size={16} />,
+  select: <ChevronsUpDown size={16} />,
+  image: <ImageIcon size={16} />,
+  multiImage: <div><Layers size={16} /><ImageIcon size={16} /></div>,
+  passwordInput: <Lock size={16} />,
+  dateInput: <CalendarDays size={16} />,
+  dateLocal: <Clock size={16} />,
+  radio: <Circle size={16} />,
+  InputGroup: <LayoutGrid size={16} />,
+  dynamicField: <Slack size={16} />,
+};
+
+
 function createDynamicFormField(
   config: FormConfigItem[],
   typeToInsert: string,
@@ -105,7 +221,7 @@ function createDynamicFormField(
     return undefined;
   }
 
-  const id = `field_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const id = uuidv4(); // EDIT: Use uuidv4 for ID generation
 
   let defaultValue: any;
   let fieldOptions: any[] | undefined;
@@ -116,10 +232,10 @@ function createDynamicFormField(
 
   if (configItem.formType === "InputGroup") {
     defaultValue = [];
-    GroupColSpan = 1; // Default for InputGroup
+    GroupColSpan = 1;
   } else if (configItem.formType === "dynamicField") {
-    defaultValue = ""; // Dynamic field value is the selected option (string)
-    DynamicFieldColSpan = 1; // Default for DynamicField's internal form
+    defaultValue = "";
+    DynamicFieldColSpan = 1;
   } else if (configItem.formType === "option") {
     defaultValue = [];
   } else if (configItem.formType === "Integer") {
@@ -163,20 +279,16 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         formFieldJson: initialForm.formFieldJson.map(field => {
           let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
 
-          // Ensure value is correctly typed for InputGroup and DynamicField
           if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
             updatedField.value = updatedField.value as IndividualFormFieldWithChildren[];
           } else if (updatedField.type === "dynamicField") {
-            // Ensure dynamicField value is a string, default to "" if not
             updatedField.value = typeof updatedField.value === 'string' ? updatedField.value : "";
-            // Ensure options for dynamicField have the 'form' property correctly typed
             updatedField.options = updatedField.options?.map(option => ({
               ...option,
               form: Array.isArray(option.form) ? option.form as IndividualFormFieldWithChildren[] : []
             }));
           }
 
-          // Handle GroupColSpan/DynamicFieldColSpan if not present in initialForm
           if (updatedField.type === "InputGroup" && updatedField.GroupColSpan === undefined) {
             updatedField.GroupColSpan = 1;
           }
@@ -188,13 +300,60 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         })
       } :
       {
-        formId: `form_${Date.now()}`,
+        formId: uuidv4(), // EDIT: Use uuidv4 for ID generation
         formName: "New Dynamic Form",
         formColSpan: 1,
         formFieldJson: [],
       }
   );
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
+  
+  // EDIT: State for managing hidden cards in the layout editor
+  const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
+
+  // EDIT: Toggle visibility of a single card
+  const toggleCardVisibility = useCallback((id: string) => {
+    setHiddenCardIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // EDIT: Get all field IDs recursively for "Hide/Show All"
+  const getAllFieldIds = (fields: IndividualFormFieldWithChildren[]): string[] => {
+    let ids: string[] = [];
+    for (const field of fields) {
+      ids.push(field.id);
+      if (field.type === "InputGroup" && Array.isArray(field.value)) {
+        ids = ids.concat(getAllFieldIds(field.value));
+      }
+      if (field.type === "dynamicField" && Array.isArray(field.options)) {
+        for (const option of field.options) {
+          if (Array.isArray(option.form)) {
+            ids = ids.concat(getAllFieldIds(option.form));
+          }
+        }
+      }
+    }
+    return ids;
+  };
+
+  // EDIT: Hide all cards
+  const hideAllCards = useCallback(() => {
+    const allIds = getAllFieldIds(currentForm.formFieldJson);
+    setHiddenCardIds(new Set(allIds));
+  }, [currentForm.formFieldJson]);
+
+  // EDIT: Show all cards
+  const showAllCards = useCallback(() => {
+    setHiddenCardIds(new Set());
+  }, []);
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -269,8 +428,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, containerId, (field) => {
         if (field.type === containerType) {
           const updatedChildren = Array.isArray(field.value)
-            ? field.value.map((childField: IndividualFormFieldWithChildren) => { // Explicitly type childField here
-              // Adjust child's colSpan if it exceeds the new container colSpan
+            ? field.value.map((childField: IndividualFormFieldWithChildren) => {
               if (childField.colSpan && childField.colSpan > newColSpan) {
                 return { ...childField, colSpan: newColSpan };
               }
@@ -281,11 +439,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           if (containerType === "InputGroup") {
             return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
           } else if (containerType === "dynamicField") {
-            // For dynamicField, the children are nested within options.form
-            // We need to update the DynamicFieldColSpan and also adjust children within selected option's form
             const updatedOptions = field.options?.map(option => {
               if (Array.isArray(option.form)) {
-                const updatedOptionForm = option.form.map((childField: IndividualFormFieldWithChildren) => { // Explicitly type childField here
+                const updatedOptionForm = option.form.map((childField: IndividualFormFieldWithChildren) => {
                   if (childField.colSpan && childField.colSpan > newColSpan) {
                     return { ...childField, colSpan: newColSpan };
                   }
@@ -425,7 +581,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           return { ...field, value: field.value };
         }
         if (field.type === "select" || field.type === "dynamicField") {
-          // Ensure value is a string for select and dynamicField
           return { ...field, value: String(newValue) };
         }
 
@@ -552,9 +707,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         onFormSubmit(submitData);
       }
     } else {
-      // Use a custom modal or message box instead of alert
-      console.error("Please fill in all required fields.");
-      // Example of a simple message box (you'd replace this with a proper UI component)
       alert("Please fill in all required fields.");
     }
   }, [currentForm, onFormSubmit, transformFieldForSubmission]);
@@ -562,8 +714,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
     if (!trimmedNewId) {
-      // Use a custom modal or message box instead of alert
-      console.error("Field ID cannot be empty!");
       alert("Field ID cannot be empty!");
       return;
     }
@@ -587,8 +737,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     };
 
     if (checkIdExistsRecursively(currentForm.formFieldJson)) {
-      // Use a custom modal or message box instead of alert
-      console.error(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
       alert(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
       return;
     }
@@ -612,7 +760,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           let newValue = field.value;
 
           if (field.type === "dynamicField") {
-            // If the removed option was selected, clear the value
             if (field.value === removedOption.value) {
               newValue = "";
             }
@@ -783,6 +930,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     addField: (formType: string, parentId?: string) => void;
     addFieldToDynamicOption: (dynamicFieldId: string, optionValue: string, formType: string) => void;
     editFormData: boolean;
+    isHidden: boolean; // EDIT: Receive hidden state as a prop
+    toggleCardVisibility: (id: string) => void; // EDIT: Receive toggle function as a prop
   }
 
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -800,6 +949,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     addField,
     addFieldToDynamicOption,
     editFormData,
+    isHidden, // EDIT
+    toggleCardVisibility, // EDIT
   }) => {
     const {
       attributes,
@@ -826,14 +977,12 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const [localGroupColSpan, setLocalGroupColSpan] = useState(field.GroupColSpan || 1);
     const [localDynamicFieldColSpan, setLocalDynamicFieldColSpan] = useState(field.DynamicFieldColSpan || 1);
 
-
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
     const placeholderInputRef = useRef<HTMLInputElement>(null);
 
     const toggleDynamicFieldExpansion = (optionValue: string) => {
-      const key = `${field.id}-${optionValue}`;
-      setExpandedDynamicFields(prev => ({ ...prev, [key]: !prev[key] }));
+      setExpandedDynamicFields(prev => ({ ...prev, [`${field.id}-${optionValue}`]: !prev[`${field.id}-${optionValue}`] }));
     };
 
     useEffect(() => {
@@ -956,13 +1105,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const showLabelInput = !field.isChild;
     const childFormFields = formConfigurations.filter(f => f.canBeChild);
 
-    // Z-INDEX FIX: Determine if any dropdown is open to apply a higher z-index
     const isAnyDropdownOpen = isAddDropdownOpen || Object.values(dynamicOptionDropdown).some(Boolean);
 
     return (
       <div
         ref={setNodeRef} style={style}
-        // Z-INDEX FIX: Conditionally apply a higher z-index to lift this component
         className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
         {...attributes}
       >
@@ -979,105 +1126,92 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </svg>
         </div>
 
-        <h1 className="my-px">({field.type}) </h1>
-        {showLabelInput && (
-          <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
-            Label:
-            <input
-              ref={labelInputRef}
-              type="text"
-              value={localLabelValue}
-              onChange={handleLocalLabelChange}
-              onBlur={handleLabelBlur}
-              onKeyDown={handleLabelKeyDown}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-              aria-label="Preview field title"
-              disabled={!editFormData}
-            />
-          </label>
-        )}
-        <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
-          ID:
-          <input
-            ref={idInputRef}
-            type="text"
-            value={localIdValue}
-            onChange={handleLocalIdChange}
-            onBlur={handleIdBlur}
-            onKeyDown={handleIdKeyDown}
-            className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-            aria-label="Edit field id"
-            title="Edit Field ID"
-            disabled={true}
-          />
-        </label>
-        {showPlaceholderInput && (
-          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
-            Placeholder:
-            <input
-              ref={placeholderInputRef}
-              type="text"
-              value={localPlaceholderValue}
-              onChange={handleLocalPlaceholderChange}
-              onBlur={handlePlaceholderBlur}
-              onKeyDown={handlePlaceholderKeyDown}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
-              aria-label="Edit field placeholder"
-              title="Edit Field Placeholder"
-              disabled={!editFormData}
-            />
-          </label>
-        )}
-        <div className="flex items-center mt-2">
-          <input
-            type="checkbox"
-            id={`required-${field.id}`}
-            checked={field.required}
-            onChange={() => handleToggleRequired(field.id)}
-            className="form-checkbox h-4 w-4 text-blue-600 rounded"
-            disabled={!editFormData}
-          />
-          <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
-            Required
-          </label>
+        {/* EDIT: Hide/Show button using new prop-based state */}
+        <div className="absolute top-2 right-9">
+          <Button
+            onClick={() => toggleCardVisibility(field.id)}
+            className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs"
+          >
+            {isHidden ? 'Show' : 'Hide'}
+          </Button>
         </div>
-        {field.isChild ?
-          <div className={`flex items-center mt-2`}>
-            <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
-              Column Span (Field):
-            </label>
-            <select
-              id={`colSpan-select-${field.id}`}
-              value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-              onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
-              disabled={!editFormData}
-            >
-              {colSpanOptions.map((span) => (
-                <option key={span} value={span}>
-                  {Math.trunc(span / overallFormColSpan * 100)} %
-                </option>
-              ))}
-            </select>
-          </div> : (isInputGroup || isDynamicField) ?
-            <div>
-              <div className="flex items-center mt-2">
-                <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
-                  Overall {isInputGroup ? 'Group' : 'Dynamic Field'} Column Span:
-                </label>
+
+        {/* EDIT: Conditional rendering based on `isHidden` prop */}
+        {isHidden ? (
+          <div className="flex items-center gap-2 py-2">
+            <span className="text-gray-700 dark:text-white/90 text-lg font-semibold">
+              {field.label}
+            </span>
+            <span className="text-blue-500 dark:text-blue-300 text-xl">
+              {formTypeIcons[field.type] || <span className="text-sm">?</span>}
+            </span>
+          </div>
+        ) : (
+          <>
+            <h1 className="my-px">({field.type}) </h1>
+            {showLabelInput && (
+              <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
+                Label:
                 <input
-                  id={`overallColSpan-input-${field.id}`}
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan}
-                  onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange}
-                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+                  ref={labelInputRef}
+                  type="text"
+                  value={localLabelValue}
+                  onChange={handleLocalLabelChange}
+                  onBlur={handleLabelBlur}
+                  onKeyDown={handleLabelKeyDown}
+                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                  aria-label="Preview field title"
                   disabled={!editFormData}
                 />
-              </div>
+              </label>
+            )}
+            <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+              ID:
+              <input
+                ref={idInputRef}
+                type="text"
+                value={localIdValue}
+                onChange={handleLocalIdChange}
+                onBlur={handleIdBlur}
+                onKeyDown={handleIdKeyDown}
+                className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                aria-label="Edit field id"
+                title="Edit Field ID"
+                disabled={true}
+              />
+            </label>
+            {showPlaceholderInput && (
+              <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+                Placeholder:
+                <input
+                  ref={placeholderInputRef}
+                  type="text"
+                  value={localPlaceholderValue}
+                  onChange={handleLocalPlaceholderChange}
+                  onBlur={handlePlaceholderBlur}
+                  onKeyDown={handlePlaceholderKeyDown}
+                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                  aria-label="Edit field placeholder"
+                  title="Edit Field Placeholder"
+                  disabled={!editFormData}
+                />
+              </label>
+            )}
+            <div className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                id={`required-${field.id}`}
+                checked={field.required}
+                onChange={() => handleToggleRequired(field.id)}
+                className="form-checkbox h-4 w-4 text-blue-600 rounded"
+                disabled={!editFormData}
+              />
+              <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
+                Required
+              </label>
+            </div>
+            {field.isChild ?
               <div className={`flex items-center mt-2`}>
-
                 <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
                   Column Span (Field):
                 </label>
@@ -1094,188 +1228,228 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     </option>
                   ))}
                 </select>
-              </div> </div> :
-            <div className="flex items-center mt-2">
-              <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
-                Column Span (Field):
-              </label>
-              <select
-                id={`colSpan-select-${field.id}`}
-                value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-                onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
-                disabled={!editFormData}
-              >
-                {colSpanOptions.map((span) => (
-                  <option key={span} value={span}>
-                    {Math.trunc(span / overallFormColSpan * 100)} %
-                  </option>
-                ))}
-              </select>
-            </div>}
-
-
-        {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && field.options ? (
-          <div>
-            <div className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                placeholder="New option"
-                value={localNewOptionText}
-                onChange={(e) => setLocalNewOptionText(e.target.value)}
-                onKeyDown={handleNewOptionKeyDown}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
-                disabled={!editFormData}
-              />
-              <Button
-                onClick={handleAddOptionClick}
-                className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
-                disabled={!editFormData}
-              >
-                +
-              </Button>
-            </div>
-
-            {field.options.map((option, index) => {
-              const optionValue = isDynamicField ? option.value : option;
-              const optionKey = `${field.id}-${optionValue}`;
-              const isExpanded = !!expandedDynamicFields[optionKey];
-              const isOptionDropdownOpen = !!dynamicOptionDropdown[optionValue];
-
-              return (
-                <div key={optionValue} className="flex flex-col gap-2 mt-2 border-t pt-2">
-                  <div className="flex justify-between items-center">
-                    <p className="text-gray-700 dark:text-white">- {optionValue}</p>
-                    <div className="flex items-center gap-2">
-                      {isDynamicField && (
-                        <Button
-                          onClick={() => toggleDynamicFieldExpansion(optionValue)}
-                          className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs"
-                        >
-                          {isExpanded ? 'Hide Form' : 'Show Form'}
-                        </Button>
-                      )}
-                      <Button
-                        onClick={() => handleRemoveOption(field.id, index)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
-                        disabled={!editFormData}
-                      >
-                        -
-                      </Button>
-                    </div>
-                  </div>
-                  {isDynamicField && isExpanded && (
-                    <div className="mt-2 p-3  rounded-md bg-blue-50  dark:bg-white/[0.03]">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-sm font-semibold dark:text-white/90">Form for "{optionValue}"</h4>
-                        <div className="relative">
-                          <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>
-                            Add Field
-                          </Button>
-                          <Dropdown  isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
-                            {childFormFields.map(formItem => (
-                              <DropdownItem
-                              className="text-gray-700  text-sm dark:text-white/90"
-                                key={formItem.formType}
-                                onClick={() => {
-                                  addFieldToDynamicOption(field.id, optionValue, formItem.formType);
-                                  setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }));
-                                }}
-                              >
-                                {formItem.title}
-                              </DropdownItem>
-                            ))}
-                          </Dropdown>
-                        </div>
-                      </div>
-                      <SortableContext
-                        items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)}
-                        strategy={rectSortingStrategy}
-                      >
-                        <div className={`min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
-                          {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (
-                            <div className={`col-span-${childField.colSpan || 1}`} key={childField.id}>
-                              <SortableFieldEditItem
-                                key={childField.id}
-                                field={childField}
-                                handleLabelChange={handleLabelChange}
-                                updateFieldId={updateFieldId}
-                                handleAddOption={handleAddOption}
-                                handleRemoveOption={handleRemoveOption}
-                                removeField={removeField}
-                                handleToggleRequired={handleToggleRequired}
-                                handlePlaceholderChange={handlePlaceholderChange}
-                                handleColSpanChange={handleColSpanChange}
-                                overallFormColSpan={field.DynamicFieldColSpan || 1}
-                                addField={addField}
-                                addFieldToDynamicOption={addFieldToDynamicOption}
-                                editFormData={editFormData}
-                                handleChildContainerColSpanChange={handleChildContainerColSpanChange}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-
-        {isInputGroup && (
-          <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-md font-semibold dark:text-white/90">Grouped Fields</h3>
-              <div className="relative">
-                <Button className="dropdown-toggle" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
-                <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
-                  {childFormFields.map(item => (
-                    <DropdownItem
-                      key={item.formType}
-                      onClick={() => {
-                        addField(item.formType, field.id);
-                        setAddDropdownOpen(false);
-                      }}
-                    >
-                      {item.title}
-                    </DropdownItem>
-                  ))}
-                </Dropdown>
-              </div>
-            </div>
-            <SortableContext
-              items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []}
-              strategy={rectSortingStrategy}
-            >
-              <div
-                className={`min-h-[50px] -space-y-6 grid grid-cols-${field.GroupColSpan || 1} gap-4`}
-              >
-                {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
-                  <div className={`col-span-${childField.colSpan || 1}`} key={childField.id}>
-                    <SortableFieldEditItem
-                      key={childField.id}
-                      field={childField}
-                      handleLabelChange={handleLabelChange}
-                      updateFieldId={updateFieldId}
-                      handleAddOption={handleAddOption}
-                      handleRemoveOption={handleRemoveOption}
-                      removeField={removeField}
-                      handleToggleRequired={handleToggleRequired}
-                      handlePlaceholderChange={handlePlaceholderChange}
-                      handleColSpanChange={handleColSpanChange}
-                      overallFormColSpan={field.GroupColSpan || 1}
-                      addField={addField}
-                      addFieldToDynamicOption={addFieldToDynamicOption}
-                      editFormData={editFormData}
-                      handleChildContainerColSpanChange={handleChildContainerColSpanChange}
+              </div> : (isInputGroup || isDynamicField) ?
+                <div>
+                  <div className="flex items-center mt-2">
+                    <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                      Overall {isInputGroup ? 'Group' : 'Dynamic Field'} Column Span:
+                    </label>
+                    <input
+                      id={`overallColSpan-input-${field.id}`}
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan}
+                      onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange}
+                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+                      disabled={!editFormData}
                     />
                   </div>
-                ))}
+                  <div className={`flex items-center mt-2`}>
+
+                    <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                      Column Span (Field):
+                    </label>
+                    <select
+                      id={`colSpan-select-${field.id}`}
+                      value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
+                      onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                      disabled={!editFormData}
+                    >
+                      {colSpanOptions.map((span) => (
+                        <option key={span} value={span}>
+                          {Math.trunc(span / overallFormColSpan * 100)} %
+                        </option>
+                      ))}
+                    </select>
+                  </div> </div> :
+                <div className="flex items-center mt-2">
+                  <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                    Column Span (Field):
+                  </label>
+                  <select
+                    id={`colSpan-select-${field.id}`}
+                    value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
+                    onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
+                    className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                    disabled={!editFormData}
+                  >
+                    {colSpanOptions.map((span) => (
+                      <option key={span} value={span}>
+                        {Math.trunc(span / overallFormColSpan * 100)} %
+                      </option>
+                    ))}
+                  </select>
+                </div>}
+
+
+            {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && field.options ? (
+              <div>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="text"
+                    placeholder="New option"
+                    value={localNewOptionText}
+                    onChange={(e) => setLocalNewOptionText(e.target.value)}
+                    onKeyDown={handleNewOptionKeyDown}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
+                    disabled={!editFormData}
+                  />
+                  <Button
+                    onClick={handleAddOptionClick}
+                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
+                    disabled={!editFormData}
+                  >
+                    +
+                  </Button>
+                </div>
+
+                {field.options.map((option, index) => {
+                  const optionValue = isDynamicField ? option.value : option;
+                  const isExpanded = !!expandedDynamicFields[`${field.id}-${optionValue}`];
+                  const isOptionDropdownOpen = !!dynamicOptionDropdown[optionValue];
+
+                  return (
+                    <div key={optionValue} className="flex flex-col gap-2 mt-2 border-t pt-2">
+                      <div className="flex justify-between items-center">
+                        <p className="text-gray-700 dark:text-white">- {optionValue}</p>
+                        <div className="flex items-center gap-2">
+                          {isDynamicField && (
+                            <Button
+                              onClick={() => toggleDynamicFieldExpansion(optionValue)}
+                              className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs"
+                            >
+                              {isExpanded ? 'Hide Form' : 'Show Form'}
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() => handleRemoveOption(field.id, index)}
+                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
+                            disabled={!editFormData}
+                          >
+                            -
+                          </Button>
+                        </div>
+                      </div>
+                      {isDynamicField && isExpanded && (
+                        <div className="mt-2 p-3  rounded-md bg-blue-50  dark:bg-white/[0.03]">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-semibold dark:text-white/90">Form for "{optionValue}"</h4>
+                            <div className="relative">
+                              <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>
+                                Add Field
+                              </Button>
+                              <Dropdown isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
+                                {childFormFields.map(formItem => (
+                                  <DropdownItem
+                                    className="text-gray-700  text-sm dark:text-white/90"
+                                    key={formItem.formType}
+                                    onClick={() => {
+                                      addFieldToDynamicOption(field.id, optionValue, formItem.formType);
+                                      setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }));
+                                    }}
+                                  >
+                                    {formItem.title}
+                                  </DropdownItem>
+                                ))}
+                              </Dropdown>
+                            </div>
+                          </div>
+                          <SortableContext
+                            items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)}
+                            strategy={rectSortingStrategy}
+                          >
+                            <div className={`min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
+                              {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (
+                                <div className={colsMap[field.colSpan||1]} key={childField.id}>
+                                  <SortableFieldEditItem
+                                    key={childField.id}
+                                    field={childField}
+                                    handleLabelChange={handleLabelChange}
+                                    updateFieldId={updateFieldId}
+                                    handleAddOption={handleAddOption}
+                                    handleRemoveOption={handleRemoveOption}
+                                    removeField={removeField}
+                                    handleToggleRequired={handleToggleRequired}
+                                    handlePlaceholderChange={handlePlaceholderChange}
+                                    handleColSpanChange={handleColSpanChange}
+                                    overallFormColSpan={field.DynamicFieldColSpan || 1}
+                                    addField={addField}
+                                    addFieldToDynamicOption={addFieldToDynamicOption}
+                                    editFormData={editFormData}
+                                    handleChildContainerColSpanChange={handleChildContainerColSpanChange}
+                                    isHidden={hiddenCardIds.has(childField.id)}
+                                    toggleCardVisibility={toggleCardVisibility}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            </SortableContext>
-          </div>
+            ) : null}
+
+            {isInputGroup && (
+              <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-md font-semibold dark:text-white/90">Grouped Fields</h3>
+                  <div className="relative">
+                    <Button className="dropdown-toggle" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
+                    <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
+                      {childFormFields.map(item => (
+                        <DropdownItem
+                          key={item.formType}
+                          onClick={() => {
+                            addField(item.formType, field.id);
+                            setAddDropdownOpen(false);
+                          }}
+                        >
+                          {item.title}
+                        </DropdownItem>
+                      ))}
+                    </Dropdown>
+                  </div>
+                </div>
+                <SortableContext
+                  items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []}
+                  strategy={rectSortingStrategy}
+                >
+                  <div
+                    className={`min-h-[50px] -space-y-6 grid grid-cols-${field.GroupColSpan || 1} gap-4`}
+                  >
+                    {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
+                      <div className={colsMap[field.colSpan||1]} key={childField.id}>
+                        <SortableFieldEditItem
+                          key={childField.id}
+                          field={childField}
+                          handleLabelChange={handleLabelChange}
+                          updateFieldId={updateFieldId}
+                          handleAddOption={handleAddOption}
+                          handleRemoveOption={handleRemoveOption}
+                          removeField={removeField}
+                          handleToggleRequired={handleToggleRequired}
+                          handlePlaceholderChange={handlePlaceholderChange}
+                          handleColSpanChange={handleColSpanChange}
+                          overallFormColSpan={field.GroupColSpan || 1}
+                          addField={addField}
+                          addFieldToDynamicOption={addFieldToDynamicOption}
+                          editFormData={editFormData}
+                          handleChildContainerColSpanChange={handleChildContainerColSpanChange}
+                          isHidden={hiddenCardIds.has(childField.id)}
+                          toggleCardVisibility={toggleCardVisibility}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+            )}
+          </>
         )}
 
         <button
@@ -1342,55 +1516,78 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </div>
         </div>
 
-        {currentForm.formFieldJson.length === 0 ? (
-          <p className="text-center text-gray-500 italic">
-            No fields added yet. Use the "Add Form" section to add new fields.
-          </p>
-        ) : (
-          <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50  dark:bg-blue-900/20`}>
-            <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
-              Form Layout Preview (Overall {currentForm.formColSpan} Columns)
-            </p>
-            <SortableContext
-              items={currentForm.formFieldJson.map(field => field.id)}
-              strategy={rectSortingStrategy}
-              key={currentForm.formId}
-            >
-              <div className={`grid w-full ${overallGridClass} gap-4`}>
-                {currentForm.formFieldJson.map((field) => (
-                  <div className={`col-span-${field.colSpan}`} key={field.id}>
-                    <SortableFieldEditItem
-                      key={field.id}
-                      field={field}
-                      handleLabelChange={handleLabelChange}
-                      updateFieldId={updateFieldId}
-                      handleAddOption={handleAddOption}
-                      handleRemoveOption={handleRemoveOption}
-                      removeField={removeField}
-                      handleToggleRequired={handleToggleRequired}
-                      handlePlaceholderChange={handlePlaceholderChange}
-                      handleColSpanChange={handleColSpanChange}
-                      overallFormColSpan={currentForm.formColSpan}
-                      addField={addField}
-                      addFieldToDynamicOption={addFieldToDynamicOption}
-                      editFormData={editFormData}
-                      handleChildContainerColSpanChange={handleChildContainerColSpanChange}
-                    />
-                  </div>
-                ))}
-              </div>
-            </SortableContext>
+        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold">Form Layout Preview</h2>
+            {/* EDIT: Hide/Show All buttons */}
+            <div className="flex gap-2">
+                <Button
+                    onClick={hideAllCards}
+                    className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm"
+                >
+                    Hide All
+                </Button>
+                <Button
+                    onClick={showAllCards}
+                    className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm"
+                >
+                    Show All
+                </Button>
+            </div>
           </div>
-        )}
+
+          {currentForm.formFieldJson.length === 0 ? (
+            <p className="text-center text-gray-500 italic">
+              No fields added yet. Use the "Add Form" section to add new fields.
+            </p>
+          ) : (
+            <div className={`p-4 border border-blue-300 rounded-lg bg-blue-50  dark:bg-blue-900/20`}>
+              <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
+                Form Layout Preview (Overall {currentForm.formColSpan} Columns)
+              </p>
+              <SortableContext
+                items={currentForm.formFieldJson.map(field => field.id)}
+                strategy={rectSortingStrategy}
+                key={currentForm.formId}
+              >
+                <div className={`grid w-full ${overallGridClass} gap-4`}>
+                  {currentForm.formFieldJson.map((field) => (
+                    <div className={colsMap[field.colSpan||1]} key={field.id}>
+                      <SortableFieldEditItem
+                        key={field.id}
+                        field={field}
+                        handleLabelChange={handleLabelChange}
+                        updateFieldId={updateFieldId}
+                        handleAddOption={handleAddOption}
+                        handleRemoveOption={handleRemoveOption}
+                        removeField={removeField}
+                        handleToggleRequired={handleToggleRequired}
+                        handlePlaceholderChange={handlePlaceholderChange}
+                        handleColSpanChange={handleColSpanChange}
+                        overallFormColSpan={currentForm.formColSpan}
+                        addField={addField}
+                        addFieldToDynamicOption={addFieldToDynamicOption}
+                        editFormData={editFormData}
+                        handleChildContainerColSpanChange={handleChildContainerColSpanChange}
+                        isHidden={hiddenCardIds.has(field.id)} // EDIT: Pass hidden state
+                        toggleCardVisibility={toggleCardVisibility} // EDIT: Pass toggle function
+                      />
+                    </div>
+                  ))}
+                </div>
+              </SortableContext>
+            </div>
+          )}
+        </div>
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
     const commonProps = {
       id: field.id,
-      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90 dark:border-gray-800",
+      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90 dark:border-gray-800 dark:bg-gray-900",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
@@ -1481,7 +1678,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <>
             {labelComponent}
             <select
-              value={String(field.value || "")} // Ensure scalar value, default to empty string
+              value={String(field.value || "")}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
               className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
@@ -1651,7 +1848,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <>
             {labelComponent}
             <select
-              value={String(field.value || "")} // Ensure scalar value, default to empty string
+              value={String(field.value || "")}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
               className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
@@ -1689,12 +1886,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
   }, [handleFieldChange, handleRemoveFile, editFormData]);
-  const gridColsMap: Record<number, string> = {
-    1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
-    5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
-    9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
-  };
-
+  
   const FormPreview = useCallback(() => {
 
     const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
@@ -1736,7 +1928,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       >
         {!isPreview && (
 
-          <div className="sticky top-[100px]  z-30 bg-white dark:bg-gray-700 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
+          <div className="sticky top-[100px]  z-30 bg-white dark:bg-gray-800 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
             <div className="grid grid-cols-9 gap-1 mb-2">
               {formConfigurations.map((item) => (
                 <button
@@ -1755,7 +1947,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
         <div className={isPreview ? "grid grid-cols-1" : "grid  gap-6 "}>
 
-          <div className="space-y-6">
+          <div className="space-y-6 ">
             <ComponentCard title="Dynamic Form">
               <div hidden={isPreview}>
                 {FormEdit()}
