@@ -11,14 +11,23 @@ import { TranslationLoader } from './components/common/TranslationLoader';
 
 import LoadingScreen from "./components/common/LoadingScreen";
 
+import { AuthProvider } from "@/providers/AuthProvider";
+import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <LanguageProvider>
         <TranslationLoader fallback={<LoadingScreen />}>
-          <AppWrapper>
-            <App />
-          </AppWrapper>
+          <AuthProvider>
+            <SessionTimeoutWarning />
+            <ProtectedRoute>
+              <AppWrapper>
+                <App />
+              </AppWrapper>
+            </ProtectedRoute>
+          </AuthProvider>
         </TranslationLoader>
       </LanguageProvider>
     </ThemeProvider>
