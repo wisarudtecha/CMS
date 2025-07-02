@@ -98,6 +98,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link to="/" className="lg:hidden">
+            {/*
             <img
               className="dark:hidden"
               src="./images/logo/logo.svg"
@@ -106,6 +107,18 @@ const AppHeader: React.FC = () => {
             <img
               className="hidden dark:block"
               src="./images/logo/logo-dark.svg"
+              alt="Logo"
+            />
+            */}
+
+            <img
+              className="dark:hidden"
+              src="./images/logo/logo.png"
+              alt="Logo"
+            />
+            <img
+              className="hidden dark:block"
+              src="./images/logo/logo.png"
               alt="Logo"
             />
           </Link>
@@ -173,9 +186,9 @@ const AppHeader: React.FC = () => {
             isApplicationMenuOpen ? "flex" : "hidden"
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
-          {/* <!-- Language Area --> */}
-          <LangDropdown />
           <div className="flex items-center gap-2 2xsm:gap-3">
+            {/* <!-- Language Area --> */}
+            <LangDropdown />
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
