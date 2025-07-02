@@ -1,3 +1,4 @@
+// /src/layout/AppSidebar.tsx
 import {
   useCallback,
   useEffect,
@@ -13,6 +14,7 @@ import {
   CalenderIcon,
   ChevronDownIcon,
   GridIcon,
+  FileIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
@@ -24,8 +26,15 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 // import SidebarWidget from "./SidebarWidget";
+import Button from "@/components/ui/button/Button";
 
 import { useTranslation } from "../hooks/useTranslation";
+import
+  {
+    BoxIcon,
+    // PencilIcon
+  }
+from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -34,75 +43,66 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-// const navItems: NavItem[] = [
-//   {
-//     icon: <GridIcon />,
-//     name: "Dashboard",
-//     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-//   },
-//   {
-//     icon: <CalenderIcon />,
-//     name: "Calendar",
-//     path: "/calendar",
-//   },
-//   {
-//     icon: <UserCircleIcon />,
-//     name: "User Profile",
-//     path: "/profile",
-//   },
-//   {
-//     name: "Forms",
-//     icon: <ListIcon />,
-//     subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-//   },
-//   {
-//     name: "Tables",
-//     icon: <TableIcon />,
-//     subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-//   },
-//   {
-//     name: "Pages",
-//     icon: <PageIcon />,
-//     subItems: [
-//       { name: "Blank Page", path: "/blank", pro: false },
-//       { name: "404 Error", path: "/error-404", pro: false },
-//     ],
-//   },
-// ];
-
-// const othersItems: NavItem[] = [
-//   {
-//     icon: <PieChartIcon />,
-//     name: "Charts",
-//     subItems: [
-//       { name: "Line Chart", path: "/line-chart", pro: false },
-//       { name: "Bar Chart", path: "/bar-chart", pro: false },
-//     ],
-//   },
-//   {
-//     icon: <BoxCubeIcon />,
-//     name: "UI Elements",
-//     subItems: [
-//       { name: "Alerts", path: "/alerts", pro: false },
-//       { name: "Avatar", path: "/avatars", pro: false },
-//       { name: "Badge", path: "/badge", pro: false },
-//       { name: "Buttons", path: "/buttons", pro: false },
-//       { name: "Images", path: "/images", pro: false },
-//       { name: "Videos", path: "/videos", pro: false },
-//     ],
-//   },
-//   {
-//     icon: <PlugInIcon />,
-//     name: "Authentication",
-//     subItems: [
-//       { name: "Sign In", path: "/signin", pro: false },
-//       { name: "Sign Up", path: "/signup", pro: false },
-//     ],
-//   },
-// ];
-
 const AppSidebar: React.FC = () => {
+  const [menuDisplay, setMenuDisplay] = useState("hidden");
+
   const { t } = useTranslation();
+
+  const mainItems: NavItem[] = useMemo(() => [
+    {
+      icon: <TaskIcon />,
+      name: "Case Management",
+      subItems: [
+        { name: "Case Creation", path: "/case-creation", pro: false },
+        { name: "Case Assignment", path: "/case-assignment", pro: false },
+        { name: "Case History", path: "/kanban", pro: false }
+      ],
+    },
+    {
+      icon: <PieChartIcon />,
+      name: "Dashboard & Analytics",
+      subItems: [
+        { name: "Overview SLA", path: "/", pro: false },
+        { name: "Ticket Summary", path: "/ticket-summary", pro: false },
+        { name: "Ticket Details", path: "/ticket-details", pro: false },
+        { name: "Transaction Summary", path: "/transaction-summary", pro: false },
+        { name: "Transaction Details", path: "/transaction-details", pro: false },
+        { name: "Responder Performance", path: "/responder-performance", pro: false },
+      ],
+    },
+    {
+      icon: <FileIcon />,
+      name: "Report",
+      path: "/report",
+    },
+    {
+      icon: <ListIcon />,
+      name: "Form Builder",
+      subItems: [
+        { name: "Forms Management", path: "/load-dynamic-form", pro: false },
+        { name: "Form Builder", path:"/dynamic-form", pro:false }
+      ],
+    },
+    {
+      icon: <BoxIcon />,
+      name: "Workflow",
+      subItems: [
+        { name: "Workflow Management", path: "/workflow/list", pro: false },
+        { name: "Workflow Builder", path: "/workflow/editor/v2", pro: false },
+      ],
+    },
+    {
+      icon: <PlugInIcon />,
+      name: "System Configuration",
+      subItems: [
+        { name: "User Management", path: "/user", pro: false },
+        { name: "Roles & Privileges", path: "/role", pro: false },
+        { name: "Organization Management", path: "/organization", pro: false },
+        { name: "Unit Management", path: "/unit", pro: false },
+        { name: "Service Management", path: "/service", pro: false },
+      ],
+    },
+  ], []);
 
   const navItems: NavItem[] = useMemo(() => [
     {
@@ -121,19 +121,10 @@ const AppSidebar: React.FC = () => {
       path: "/profile",
     },
     {
-      name: "Tasks",
-      icon: <TaskIcon />,
-      subItems: [
-        { name: "Kanban", path: "/kanban", pro: false },
-      ],
-    },
-    {
       name: t("navigation.sidebar.menu.forms.title"),
       icon: <ListIcon />,
       subItems: [
         { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false },
-        { name: "Dynamic Form", path: "/dynamic-form", pro: false },
-        { name: "Load Dynamic Form", path:"/load-dynamic-form", pro:false }
       ],
     },
     {
@@ -147,15 +138,6 @@ const AppSidebar: React.FC = () => {
       subItems: [
         { name: t("navigation.sidebar.menu.pages.nested.blank_page"), path: "/blank", pro: false },
         { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", pro: false },
-      ],
-    },
-    {
-      name: "Workflow",
-      icon: <ListIcon />,
-      subItems: [
-        { name: "Workflows", path: "/workflows", pro: false },
-        { name: "Workflow Builder v0.1.7", path: "/workflow-builder", pro: false },
-        { name: "Workflow Builder v0.2.0", path: "/workflow-builder/v02", pro: false },
       ],
     },
   ], [t]);
@@ -196,7 +178,7 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
+    type: "main" | "menu" | "others";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -204,7 +186,6 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -212,14 +193,14 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+    ["main", "menu", "others"].forEach((menuType) => {
+      const items = menuType === "main" ?  mainItems : menuType === "menu" ? navItems : othersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "others",
+                type: menuType as "main" | "menu" | "others",
                 index,
               });
               submenuMatched = true;
@@ -247,7 +228,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "menu" | "others") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -260,7 +241,16 @@ const AppSidebar: React.FC = () => {
     });
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
+  const handleMenuDisplay = () => {
+    if (menuDisplay === "hidden") {
+      setMenuDisplay("");
+    }
+    else {
+      setMenuDisplay("hidden");
+    }
+  }
+
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "menu" | "others") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
@@ -406,6 +396,7 @@ const AppSidebar: React.FC = () => {
         <Link to="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
+              {/*
               <img
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
@@ -420,21 +411,46 @@ const AppSidebar: React.FC = () => {
                 width={150}
                 height={40}
               />
+              */}
+
+              <img
+                className="dark:hidden"
+                src="./images/logo/logo.png"
+                alt="Logo"
+                width={150}
+                height={40}
+              />
+              <img
+                className="hidden dark:block"
+                src="./images/logo/logo.png"
+                alt="Logo"
+                width={150}
+                height={40}
+              />
             </>
           ) : (
-            <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            ""
+            // <img
+            //   src="/images/logo/logo-icon.svg"
+            //   alt="Logo"
+            //   width={32}
+            //   height={32}
+            // />
           )}
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
-            <div>
+            <div className={`mb-6`}>
+              {renderMenuItems(mainItems, "main")}
+            </div>
+            {isExpanded || isHovered || isMobileOpen ? (
+              <div className={`mb-6`}>
+                <Button onClick={() => handleMenuDisplay()}>Show / Hide Template Menu</Button>
+              </div>
+            ) : null}
+            <div className={`mb-6 ${menuDisplay}`}>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
@@ -446,12 +462,12 @@ const AppSidebar: React.FC = () => {
                   // "Menu"
                   t("navigation.sidebar.menu.title")
                 ) : (
-                  <HorizontaLDots className="size-6" />
+                  <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(navItems, "menu")}
             </div>
-            <div className="">
+            <div className={`mb-6 ${menuDisplay}`}>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
