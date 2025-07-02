@@ -7,13 +7,14 @@ interface ButtonProps {
   // variant?: "primary" | "outline" | "ghost"; // Button variant
   variant?: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
     | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
-    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"; // Button variant
+    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"|"outline-no-transparent"; // Button variant
   startIcon?: ReactNode; // Icon before the text
   endIcon?: ReactNode; // Icon after the text
   onClick?: () => void; // Click handler
   disabled?: boolean; // Disabled state
   className?: string; // Disabled state
   title?: string; // Button title
+  role?: string; // Button role
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -25,7 +26,8 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   className = "",
   disabled = false,
-  title = ""
+  title = "",
+  role=""
 }) => {
   // Size Classes
   const sizeClasses = {
@@ -56,7 +58,9 @@ const Button: React.FC<ButtonProps> = ({
       "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300",
     "outline-primary":
       "bg-white text-blue-700 ring-1 ring-inset ring-blue-300 hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:ring-blue-700 dark:hover:bg-white/[0.03] dark:hover:text-blue-300",
-    "outline-success":
+      "outline-no-transparent":
+      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300",
+      "outline-success":
       "bg-white text-green-700 ring-1 ring-inset ring-green-300 hover:bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:ring-green-700 dark:hover:bg-white/[0.03] dark:hover:text-green-300",
     "outline-error":
       "bg-white text-red-700 ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:ring-red-700 dark:hover:bg-white/[0.03] dark:hover:text-red-300",
@@ -89,6 +93,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      role={role}
     >
       {startIcon && <span className="flex items-center">{startIcon}</span>}
        {isIconOnlyChild ? <span className="flex items-center">{children}</span> : children}

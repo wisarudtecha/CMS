@@ -20,7 +20,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { JSX } from "react/jsx-runtime";
 import {
-  AlignLeft,
   Hash,
   AlignJustify,
   Mail,
@@ -33,8 +32,11 @@ import {
   Clock,
   Circle,
   LayoutGrid,
+  LetterText,
   Slack,
 } from 'lucide-react';
+import Button from "@/components/ui/button/Button";
+import  Input  from "@/components/form/input/InputField";
 
 // --- Interface Definitions ---
 interface IndividualFormField {
@@ -94,16 +96,6 @@ const gridColsMap: Record<number, string> = {
     9: "col-span-9", 10: "col-span-10", 11: "col-span-11", 12: "col-span-12",
   };
   
-const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => {
-  return (
-    <button
-      className={`px-4 py-2 rounded-md bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
 
 interface DropdownProps {
   isOpen: boolean;
@@ -115,7 +107,7 @@ const Dropdown: React.FC<DropdownProps> = ({ isOpen, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800">
+    <div className="absolute z-50 mt-2 w-48 rounded-md shadow-lg bg-white  focus:outline-none dark:bg-gray-800">
       <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
         {children}
       </div>
@@ -189,7 +181,7 @@ const formConfigurations: FormConfigItem[] = [
 ];
 
 const formTypeIcons: Record<string, JSX.Element> = {
-  textInput: <AlignLeft size={16} />,
+  textInput: <LetterText size={16} />,
   Integer: <Hash size={16} />,
   textAreaInput: <AlignJustify size={16} />,
   emailInput: <Mail size={16} />,
@@ -1110,7 +1102,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     return (
       <div
         ref={setNodeRef} style={style}
-        className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
+        className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
         {...attributes}
       >
         <div
@@ -1126,7 +1118,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </svg>
         </div>
 
-        {/* EDIT: Hide/Show button using new prop-based state */}
         <div className="absolute top-2 right-9">
           <Button
             onClick={() => toggleCardVisibility(field.id)}
@@ -1134,12 +1125,21 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           >
             {isHidden ? 'Show' : 'Hide'}
           </Button>
+          <Button
+          onClick={() => removeField(field.id)}
+          className="top-2 right-2 p-1 ml-4 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
+          title="Remove field"
+          disabled={!editFormData}
+          size="sm"
+        >
+          ✕
+        </Button>
         </div>
 
         {/* EDIT: Conditional rendering based on `isHidden` prop */}
         {isHidden ? (
           <div className="flex items-center gap-2 py-2">
-            <span className="text-gray-700 dark:text-white/90 text-lg font-semibold">
+            <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold">
               {field.label}
             </span>
             <span className="text-blue-500 dark:text-blue-300 text-xl">
@@ -1150,47 +1150,47 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <>
             <h1 className="my-px">({field.type}) </h1>
             {showLabelInput && (
-              <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
+              <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-gray-400">
                 Label:
-                <input
+                <Input
                   ref={labelInputRef}
                   type="text"
                   value={localLabelValue}
                   onChange={handleLocalLabelChange}
                   onBlur={handleLabelBlur}
                   onKeyDown={handleLabelKeyDown}
-                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
                   aria-label="Preview field title"
                   disabled={!editFormData}
                 />
               </label>
             )}
-            <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+            <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
               ID:
-              <input
+              <Input
                 ref={idInputRef}
                 type="text"
                 value={localIdValue}
                 onChange={handleLocalIdChange}
                 onBlur={handleIdBlur}
                 onKeyDown={handleIdKeyDown}
-                className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
                 aria-label="Edit field id"
                 title="Edit Field ID"
                 disabled={true}
               />
             </label>
             {showPlaceholderInput && (
-              <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+              <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
                 Placeholder:
-                <input
+                <Input
                   ref={placeholderInputRef}
                   type="text"
                   value={localPlaceholderValue}
                   onChange={handleLocalPlaceholderChange}
                   onBlur={handlePlaceholderBlur}
                   onKeyDown={handlePlaceholderKeyDown}
-                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
                   aria-label="Edit field placeholder"
                   title="Edit Field Placeholder"
                   disabled={!editFormData}
@@ -1206,20 +1206,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 className="form-checkbox h-4 w-4 text-blue-600 rounded"
                 disabled={!editFormData}
               />
-              <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-white/90">
+              <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">
                 Required
               </label>
             </div>
             {field.isChild ?
               <div className={`flex items-center mt-2`}>
-                <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
                   Column Span (Field):
                 </label>
                 <select
                   id={`colSpan-select-${field.id}`}
                   value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
                   onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
                   disabled={!editFormData}
                 >
                   {colSpanOptions.map((span) => (
@@ -1231,30 +1231,30 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               </div> : (isInputGroup || isDynamicField) ?
                 <div>
                   <div className="flex items-center mt-2">
-                    <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                    <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
                       Overall {isInputGroup ? 'Group' : 'Dynamic Field'} Column Span:
                     </label>
-                    <input
+                    <Input
                       id={`overallColSpan-input-${field.id}`}
                       type="number"
                       min="1"
                       max="12"
                       value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan}
                       onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange}
-                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20"
                       disabled={!editFormData}
                     />
                   </div>
                   <div className={`flex items-center mt-2`}>
 
-                    <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                    <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
                       Column Span (Field):
                     </label>
                     <select
                       id={`colSpan-select-${field.id}`}
                       value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
                       onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
                       disabled={!editFormData}
                     >
                       {colSpanOptions.map((span) => (
@@ -1265,14 +1265,14 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     </select>
                   </div> </div> :
                 <div className="flex items-center mt-2">
-                  <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-white/90">
+                  <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
                     Column Span (Field):
                   </label>
                   <select
                     id={`colSpan-select-${field.id}`}
                     value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
                     onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                    className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+                    className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
                     disabled={!editFormData}
                   >
                     {colSpanOptions.map((span) => (
@@ -1287,19 +1287,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && field.options ? (
               <div>
                 <div className="flex items-center gap-2 mt-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="New option"
                     value={localNewOptionText}
                     onChange={(e) => setLocalNewOptionText(e.target.value)}
                     onKeyDown={handleNewOptionKeyDown}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-white/90"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-gray-400"
                     disabled={!editFormData}
                   />
                   <Button
                     onClick={handleAddOptionClick}
                     className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
                     disabled={!editFormData}
+                    size="sm"
                   >
                     +
                   </Button>
@@ -1327,6 +1328,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                             onClick={() => handleRemoveOption(field.id, index)}
                             className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
                             disabled={!editFormData}
+                            size="sm"
                           >
                             -
                           </Button>
@@ -1335,7 +1337,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                       {isDynamicField && isExpanded && (
                         <div className="mt-2 p-3  rounded-md bg-blue-50  dark:bg-white/[0.03]">
                           <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-sm font-semibold dark:text-white/90">Form for "{optionValue}"</h4>
+                            <h4 className="text-sm font-semibold dark:text-gray-400">Form for "{optionValue}"</h4>
                             <div className="relative">
                               <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>
                                 Add Field
@@ -1343,7 +1345,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                               <Dropdown isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
                                 {childFormFields.map(formItem => (
                                   <DropdownItem
-                                    className="text-gray-700  text-sm dark:text-white/90"
+                                    className="text-gray-700  text-sm dark:text-gray-400"
                                     key={formItem.formType}
                                     onClick={() => {
                                       addFieldToDynamicOption(field.id, optionValue, formItem.formType);
@@ -1397,7 +1399,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             {isInputGroup && (
               <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-md font-semibold dark:text-white/90">Grouped Fields</h3>
+                  <h3 className="text-md font-semibold dark:text-gray-400">Grouped Fields</h3>
                   <div className="relative">
                     <Button className="dropdown-toggle" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
                     <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
@@ -1452,14 +1454,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </>
         )}
 
-        <button
-          onClick={() => removeField(field.id)}
-          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
-          title="Remove field"
-          disabled={!editFormData}
-        >
-          ✕
-        </button>
+      
       </div>
     );
   });
@@ -1475,48 +1470,48 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     return (
       <>
-        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
+        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
           <h2 className="text-lg font-bold mb-4">Form Settings</h2>
-          <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-white/90">
+          <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-gray-400">
             Form Name:
-            <input
+            <Input
               type="text"
               value={currentForm.formName}
               onChange={(e) => handleFormNameChange(e.target.value)}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
               placeholder="Enter form name"
               disabled={!editFormData}
             />
           </label>
-          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-white/90">
+          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
             Form ID:
-            <input
+            <Input
               type="text"
               value={currentForm.formId}
               onChange={(e) => handleFormIdChange(e.target.value)}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-white/90"
+              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
               placeholder="Enter unique form ID"
               disabled={true}
             />
           </label>
           <div className="flex items-center mt-2">
-            <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-white/90">
+            <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">
               Overall Form Column Span:
             </label>
-            <input
+            <Input
               id={`overallColSpan-input`}
               type="number"
               min="1"
               max="12"
               value={currentForm.formColSpan}
               onChange={handleOverallFormColSpanChange}
-              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-white/90 w-20"
+              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20"
               disabled={!editFormData}
             />
           </div>
         </div>
 
-        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-white/90">
+        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
           <div className="flex justify-between items-center mb-4 ">
             <h2 className="text-lg font-bold">Form Layout Preview</h2>
             {/* EDIT: Hide/Show All buttons */}
@@ -1587,7 +1582,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     const commonProps = {
       id: field.id,
-      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-white/90 dark:border-gray-800 dark:bg-gray-900",
+      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-400 dark:border-gray-800 dark:bg-gray-900",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
@@ -1596,7 +1591,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const labelComponent = !field.isChild && (
       <label
         htmlFor={field.id}
-        className="block text-gray-700 text-sm font-bold mb-2 dark:text-white/90"
+        className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400"
       >
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </label>
@@ -1615,7 +1610,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (
           <>
             {labelComponent}
-            <input
+            <Input
               type={
                 field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"
               }
@@ -1629,7 +1624,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (
           <>
             {labelComponent}
-            <input
+            <Input
               type="number"
               value={field.value !== null ? field.value : ''}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -1641,7 +1636,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (
           <>
             {labelComponent}
-            <input
+            <Input
               type="date"
               value={field.value as string}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -1653,7 +1648,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (
           <>
             {labelComponent}
-            <input
+            <Input
               type="datetime-local"
               value={field.value as string}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
@@ -1724,7 +1719,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     required={field.required && Array.isArray(field.value) && field.value.length === 0}
                     disabled={!editFormData}
                   />
-                  <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                  <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
                 </label>
               ))}
             </div>
@@ -1737,7 +1732,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <div className="flex flex-col gap-2">
               {field.options?.map((option) => (
                 <label key={option} className="inline-flex items-center">
-                  <input
+                  <Input
                     type="radio"
                     name={field.id}
                     value={option}
@@ -1747,7 +1742,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     required={field.required}
                     disabled={!editFormData}
                   />
-                  <span className="ml-2 text-gray-700 dark:text-white/90">{option}</span>
+                  <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
                 </label>
               ))}
             </div>
@@ -1776,13 +1771,15 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                     alt="Selected"
                     className="w-full h-full object-cover rounded border border-gray-600"
                   />
-                  <button
+                  <Button
                     onClick={() => handleRemoveFile(field.id)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1  rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     disabled={!editFormData}
+                    size="sm"
+                    variant="error"
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               )}
               {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
@@ -1796,13 +1793,15 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                           alt={`Upload ${index + 1}`}
                           className="w-full h-20 object-cover rounded border border-gray-600"
                         />
-                        <button
+                        <Button
                           onClick={() => handleRemoveFile(field.id, file.name)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1  rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                           disabled={!editFormData}
+                          size="sm"
+                          variant="error"
                         >
                           ×
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -1817,7 +1816,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (
           <div>
             {!field.isChild && (
-              <h3 className="text-lg font-semibold mb-3 dark:text-white/90">
+              <h3 className="text-lg font-semibold mb-3 dark:text-gray-400">
                 {field.label} {field.required && <span className="text-red-500">*</span>}
               </h3>
             )}
@@ -1892,7 +1891,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
     return (
 
-      <><h2 className="px-4 pb-2  dark:text-white">{currentForm.formName}</h2>
+      <div><div className="px-3 py-4 text-xl  dark:text-white" >{currentForm.formName}</div>
         {currentForm.formFieldJson.length === 0 ? (
           <p className="text-center text-gray-500 italic mb-4">
             No fields added yet. Click "Edit" to start adding.
@@ -1911,9 +1910,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             ))}
           </div>
         )}
-      </>
+      </div>
     );
-  }, [currentForm.formFieldJson, currentForm.formColSpan, renderFormField]);
+}, [currentForm.formFieldJson, currentForm.formColSpan, currentForm.formName, renderFormField]);
 
   return edit ? (
     <div >
@@ -1929,17 +1928,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       >
         {!isPreview && (
 
-          <div className="sticky top-[100px]  z-30 bg-white dark:bg-gray-800 border dark:border-gray-800 px-5 py-2 rounded-2xl my-3.5">
+          <div className="sticky top-[100px]  z-30  px-5 py-2 rounded-2xl my-3.5 bg-transparent dark:bg-transparent">
             <div className="grid grid-cols-9 gap-1 mb-2">
               {formConfigurations.map((item) => (
-                <button
+                <Button
                   key={item.formType}
-                  className="text-gray-700 hover:text-sky-700 w-full text-left dark:text-white/90 dark:hover:text-sky-400"
+                  className="text-gray-100 hover:text-sky-700 w-full text-center dark:text-gray-400 dark:hover:text-sky-400 bg-gray-300 rounded-lg "
                   onClick={() => addField(item.formType)}
                   disabled={!editFormData}
+                  variant="outline-no-transparent"
+                  size="sm"
+                  endIcon={formTypeIcons[item.formType]}
                 >
                   {item.title.replace(" Form", "")}
-                </button>
+                </Button>
               ))}
             </div>
 
