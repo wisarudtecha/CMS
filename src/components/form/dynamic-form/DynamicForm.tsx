@@ -1118,19 +1118,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           </svg>
         </div>
 
-        <div className="absolute top-2 right-9">
+        <div className="absolute top-4 right-3">
           <Button
             onClick={() => toggleCardVisibility(field.id)}
+            size="xxs"
             className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs"
           >
             {isHidden ? 'Show' : 'Hide'}
           </Button>
           <Button
           onClick={() => removeField(field.id)}
-          className="top-2 right-2 p-1 ml-4 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
+          className="p-1 ml-4 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
           title="Remove field"
           disabled={!editFormData}
-          size="sm"
+          size="xxs"
         >
           ✕
         </Button>
@@ -1472,7 +1473,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
           <h2 className="text-lg font-bold mb-4">Form Settings</h2>
-          <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-gray-400">
+          <label className="block text-gray-600 text-sm font-bold mb-1 dark:text-gray-400">
             Form Name:
             <Input
               type="text"
@@ -1483,7 +1484,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               disabled={!editFormData}
             />
           </label>
-          <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
+          <label className="text-gray-600 block Form Layout Previewtext-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
             Form ID:
             <Input
               type="text"
@@ -1536,9 +1537,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               No fields added yet. Use the "Add Form" section to add new fields.
             </p>
           ) : (
-            <div className={`p-4 border   dark:border-gray-500 rounded-lg  dark:bg-white/[0.03]`}>
+            <div >
               <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
-                Form Layout Preview (Overall {currentForm.formColSpan} Columns)
+                Overall {currentForm.formColSpan} Columns
               </p>
               <SortableContext
                 items={currentForm.formFieldJson.map(field => field.id)}
