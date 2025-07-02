@@ -20,7 +20,6 @@ interface InputProps {
   ref?: React.Ref<HTMLInputElement>;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   title?: string; 
   onClick?: () => void;
   checked?: boolean;
@@ -46,7 +45,6 @@ const Input: FC<InputProps> = ({
   ref,
   onBlur,
   onFocus,
-  onKeyDown,
   title = "",
   onClick = () => {},
   checked = false, 
@@ -82,7 +80,6 @@ const Input: FC<InputProps> = ({
         className={inputClasses}
         onBlur={onBlur}
         onFocus={onFocus}
-        onKeyDown={onKeyDown}
         title={title}
         onClick={onClick}
         checked={checked}
