@@ -1,3 +1,4 @@
+// /src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
@@ -22,9 +23,9 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
-import WorkflowListPage from "./pages/Workflow/Workflows";
-import WorkflowVisualEditor from "./components/builder/FlowEditor";
-import WorkflowVisualEditorV02 from "./components/builder/v02/FlowEditor";
+import WorkflowListPage from "./pages/Workflow/List";
+import WorkflowEditorPage from "./pages/Workflow/Editor";
+import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 
 // Lingui
 // import { i18n } from "@lingui/core";
@@ -73,10 +74,13 @@ export default function App() {
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
 
-            {/* Workflow Builder */}
-            <Route path="/workflows" element={<WorkflowListPage />} />
-            <Route path="/workflow-builder" element={<WorkflowVisualEditor />} />
-            <Route path="/workflow-builder/v02" element={<WorkflowVisualEditorV02 />} />
+            {/* Workflow Builder (Latest) */}
+            <Route path="/workflow/list" element={<WorkflowListPage />} />
+            <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />
+            <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorPage />} />
+            <Route path="/workflow/editor/v2/:id/edit" element={<WorkflowEditorPage />} />
+            {/* Workflow Builder (Archive) */}
+            <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
           </Route>
 
           {/* Auth Layout */}
