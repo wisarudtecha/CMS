@@ -3,19 +3,19 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
 // Import Lingui plugin for i18n support
-import { lingui } from "@lingui/vite-plugin";
+// import { lingui } from "@lingui/vite-plugin";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    // react(),
-    react({
-      // Enable React Fast Refresh
-      babel: {
-        // Use the Lingui macro for automatic message extraction
-        plugins: ["@lingui/babel-plugin-lingui-macro"],
-      },
-    }),
+    react(),
+    // react({
+    //   // Enable React Fast Refresh
+    //   babel: {
+    //     // Use the Lingui macro for automatic message extraction
+    //     plugins: ["@lingui/babel-plugin-lingui-macro"],
+    //   },
+    // }),
     svgr({
       svgrOptions: {
         icon: true,
@@ -25,7 +25,7 @@ export default defineConfig({
       },
     }),
     // Add Lingui plugin for i18n support
-    lingui(),
+    // lingui(),
   ],
   resolve: {
     alias: {
@@ -33,6 +33,7 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  
   // assetsInclude: [
   //   '**/*.json'
   // ],
@@ -43,4 +44,16 @@ export default defineConfig({
   //   // Do not stringify JSON files
   //   stringify: false,
   // },
+
+  // build: {
+  //   rollupOptions: {
+  //     output: {
+  //       manualChunks: {
+  //         vendor: ['react', 'react-dom'],
+  //         // arcgis: ['@arcgis/core'],
+  //         // charts: ['recharts', 'd3']
+  //       }
+  //     }
+  //   }
+  // }
 });
