@@ -81,6 +81,7 @@ interface DynamicFormProps {
   editFormData?: boolean;
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
+  enableFormTitle?: boolean;
 }
 
 // --- Basic UI Components (Inline implementations to resolve import errors and preserve theme) ---
@@ -261,7 +262,7 @@ function createDynamicFormField(
 }
 
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true }: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true,enableFormTitle=true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
@@ -1891,7 +1892,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
     return (
 
-      <div><div className="px-3 py-4 text-xl  dark:text-white" >{currentForm.formName}</div>
+      <div>
+        {enableFormTitle?<div className="px-3 py-4 text-xl  dark:text-white" >{currentForm.formName}</div>:<></>}
         {currentForm.formFieldJson.length === 0 ? (
           <p className="text-center text-gray-500 italic mb-4">
             No fields added yet. Click "Edit" to start adding.

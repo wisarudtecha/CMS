@@ -1,0 +1,136 @@
+{
+  "new": [
+    {
+      "id": 1,
+      "title": "003 - แจ้งขอความช่วยเหลือ 3-2",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "15 minutes ago",
+      "comments": 3,
+      "category": "Technical",
+      "categoryColor": "bg-blue-500",
+      "priorityColor": "border-l-red-500",
+      "assignee": {
+        "name": "SC",
+        "color": "bg-green-500"
+      }
+    },
+    {
+      "id": 2,
+      "title": "008 - สอบถามข้อมูลบริการ",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "5 hours ago",
+      "comments": 1,
+      "category": "Billing",
+      "categoryColor": "bg-purple-500",
+      "priorityColor": "border-l-blue-500",
+      "assignee": {
+        "name": "MJ",
+        "color": "bg-blue-500"
+      }
+    },
+    {
+      "id": 3,
+      "title": "705 - นักท่องเที่ยวกระเจาะวิจาก",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 hours ago",
+      "comments": 5,
+      "category": "Feature",
+      "categoryColor": "bg-green-500",
+      "priorityColor": "border-l-orange-500",
+      "assignee": {
+        "name": "AR",
+        "color": "bg-orange-500"
+      }
+    }
+  ],
+  "inProgress": [
+    {
+      "id": 4,
+      "title": "Integration setup for Salesforce",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "Today",
+      "comments": 8,
+      "category": "Integration",
+      "categoryColor": "bg-red-500",
+      "priorityColor": "border-l-red-500",
+      "assignee": {
+        "name": "ED",
+        "color": "bg-blue-500"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Performance optimization for dashboard",
+      "description": "Dashboard loading times need improvement for better user experience",
+      "date": "Feb 1, 2024",
+      "comments": 12,
+      "category": "Performance",
+      "categoryColor": "bg-red-500",
+      "priorityColor": "border-l-orange-500",
+      "assignee": {
+        "name": "TW",
+        "color": "bg-gray-500"
+      }
+    }
+  ],
+  "pendingReview": [
+    {
+      "id": 6,
+      "title": "Email notification system upgrade",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "Jan 25, 2024",
+      "comments": 4,
+      "category": "System",
+      "categoryColor": "bg-gray-500",
+      "priorityColor": "border-l-blue-500",
+      "assignee": {
+        "name": "LP",
+        "color": "bg-blue-500"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Security audit compliance review",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "Tomorrow",
+      "comments": 2,
+      "category": "Security",
+      "categoryColor": "bg-red-500",
+      "priorityColor": "border-l-red-500",
+      "assignee": {
+        "name": "DK",
+        "color": "bg-green-500"
+      }
+    }
+  ],
+  "resolved": [
+    {
+      "id": 8,
+      "title": "Customer onboarding flow improvement",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "Jan 10, 2024",
+      "comments": 15,
+      "category": "UX",
+      "categoryColor": "bg-pink-500",
+      "priorityColor": "border-l-orange-500",
+      "assignee": {
+        "name": "RG",
+        "color": "bg-blue-500"
+      }
+    },
+    {
+      "id": 9,
+      "title": "API rate limiting implementation",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "Jan 8, 2024",
+      "comments": 6,
+      "category": "API",
+      "categoryColor": "bg-blue-500",
+      "priorityColor": "border-l-blue-500",
+      "assignee": {
+        "name": "CB",
+        "color": "bg-purple-500"
+      }
+    }
+  ]
+}

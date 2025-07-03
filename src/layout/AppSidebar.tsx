@@ -55,7 +55,8 @@ const AppSidebar: React.FC = () => {
       subItems: [
         { name: "Case Creation", path: "/case-creation", pro: false },
         { name: "Case Assignment", path: "/case-assignment", pro: false },
-        { name: "Case History", path: "/kanban", pro: false }
+        { name: "Case History", path: "/kanban", pro: false },
+        { name: "Case View", path: "/case-view", pro: false }
       ],
     },
     {

@@ -26,7 +26,7 @@ import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
 import WorkflowListPage from "./pages/Workflow/List";
 import WorkflowEditorPage from "./pages/Workflow/Editor";
 import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
-
+import CasesView from "./pages/Case/caseView";
 // Lingui
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
@@ -54,6 +54,7 @@ export default function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/kanban" element={<Kanban />} />
+            <Route path="/case-view" element={<CasesView />} />
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
