@@ -125,7 +125,7 @@ export default function CasesView() {
     <div className="space-y-2">
       <div className="text-xs text-gray-500 font-medium"></div>
       <div
-        className={`dark:bg-gray-800 bg-gray-100 rounded-lg p-4 space-y-3 border-l-4 ${caseItem.priorityColor} hover:bg-gray-750 transition-colors cursor-pointer`}
+        className={`dark:bg-gray-800 bg-white rounded-lg p-4 space-y-3 border-l-4 ${caseItem.priorityColor} hover:bg-gray-750 transition-colors cursor-pointer`}
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
