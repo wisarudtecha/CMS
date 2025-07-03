@@ -72,6 +72,10 @@ export const LoginForm: React.FC = () => {
         <div className="flex flex-col flex-1">
           <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
             <div>
+              <div className="mb-5 sm:mb-8 place-items-center">
+                <img className="dark:hidden" src="/images/logo/logo.png" alt="Logo" />
+                <img className="hidden dark:block" src="/images/logo/logo.png" alt="Logo" />
+              </div>
               <div className="mb-5 sm:mb-8">
                 <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
                   Sign In
@@ -207,7 +211,7 @@ export const LoginForm: React.FC = () => {
                     Don&apos;t have an account? {""}
                     <a
                       href="/signup"
-                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-500"
                     >
                       Sign Up
                     </a>
