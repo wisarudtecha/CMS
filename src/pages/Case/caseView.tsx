@@ -43,20 +43,28 @@ export default function CasesView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
   const getCasesForColumn = (columnId: string) => {
-    const filtered = getFilteredCases()
-    return filtered.filter(c => getStatusKey(c) === columnId)
+  const allCases = getAllCases();
+  return allCases.filter(c => getStatusKey(c) === columnId);
+}
+  const getAllCases = () => {
+    return [
+      ...(caseData.new || []),
+      ...(caseData.inProgress || []),
+      ...(caseData.pendingReview || []),
+      ...(caseData.resolved || [])
+    ]
   }
 
   const getStatusKey = (caseItem: CaseItem): string => {
-    const allCases = [
-      ...(caseData.new || []).map(c => ({ ...c, __status: "new" })),
-      ...(caseData.inProgress || []).map(c => ({ ...c, __status: "in-progress" })),
-      ...(caseData.pendingReview || []).map(c => ({ ...c, __status: "pending" })),
-      ...(caseData.resolved || []).map(c => ({ ...c, __status: "resolved" }))
-    ]
-    const match = allCases.find((c: any) => c.id === caseItem.id)
-    return match?.__status || ""
-  }
+  if (caseData.new?.some(c => c.id === caseItem.id)) return "new"
+  if (caseData.inProgress?.some(c => c.id === caseItem.id)) return "in-progress"
+  if (caseData.pendingReview?.some(c => c.id === caseItem.id)) return "pending"
+  if (caseData.resolved?.some(c => c.id === caseItem.id)) return "resolved"
+  return ""
+}
+
+
+
 
   const handleCaseClick = (caseItem: CaseItem) => {
     const detailCaseData = {
