@@ -1732,7 +1732,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <div className="flex flex-col gap-2">
               {field.options?.map((option) => (
                 <label key={option} className="inline-flex items-center">
-                  <Input
+                  <input
                     type="radio"
                     name={field.id}
                     value={option}
