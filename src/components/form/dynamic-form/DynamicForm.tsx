@@ -1665,7 +1665,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               value={field.value as string}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
-              className={`${commonProps.className} h-24`}
+              className={`${commonProps.className} h-24  disabled:opacity-50`}
             ></textarea>
           </>
         );
@@ -1677,14 +1677,14 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               value={String(field.value || "")}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
-              className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
+              className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}
             >
               <option value="" className="dark:bg-gray-800">
                 Select an option
               </option>
               {field.options?.map((option) => (
                 <option
-                  className="text-gray-700 dark:text-white dark:bg-gray-800 "
+                  className="text-gray-700 dark:text-white dark:bg-gray-800 disabled:opacity-50"
                   key={option}
                   value={option}
                 >
