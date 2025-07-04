@@ -18,7 +18,7 @@ import createCase from "../../utils/json/createCase.json"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
-
+import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -27,7 +27,7 @@ const mockOfficers: Officer[] = [
     { id: '4', name: 'Linda Davis', status: 'En-Route', department: 'Communications', location: 'Hill Valley', service: 'Fiber Optics', serviceProvider: 'ConnectFast', workload: 4, distance: 1.2 },
     { id: '5', name: 'Michael Miller', status: 'Available', department: 'Structural', location: 'Sector 4', service: 'Inspection', serviceProvider: 'BuildSafe', workload: 1, distance: 4.8 },
 ];
-
+import  CaseHistory  from "@/utils/json/caseHistory.json"
 
 interface CaseDetailViewProps {
     onBack: () => void
@@ -46,34 +46,7 @@ const CustomerPanel = () => {
         { id: "other", label: "Other" },
     ];
 
-    const serviceHistory = [
-        {
-            id: "001",
-            date: "2025-06-20",
-            title: "AC Maintenance",
-            status: "Completed",
-            technician: "Mike",
-        },
-        {
-            id: "002",
-            date: "2025-06-25",
-            title: "Wiring Inspection",
-            status: "In Progress",
-            technician: "Sarah",
-        }, {
-            id: "003",
-            date: "2025-06-25",
-            title: "Wiring Inspection",
-            status: "In Progress",
-            technician: "Sarah",
-        }, {
-            id: "004",
-            date: "2025-06-25",
-            title: "Wiring Inspection",
-            status: "In Progress",
-            technician: "Sarah",
-        },
-    ];
+    const serviceHistory = CaseHistory
 
     return (
         <div className="overflow-y-auto w-full max-w-sm md:max-w-md xl:max-w-lg bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col">
@@ -173,12 +146,12 @@ const CustomerPanel = () => {
                         {serviceHistory.map((historyItem) => (
                             <div
                                 key={historyItem.id}
-                                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 border-l-green-500 group"
+                                className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(historyItem.priority)} group`}
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center space-x-2 mb-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                                            <div className={`w-2 h-2 ${getPriorityColorClass(historyItem.priority)} rounded-full flex-shrink-0`}></div>
                                             <span className="text-xs text-gray-600 dark:text-gray-500 font-mono">#{historyItem.id}</span>
                                             <span className="text-xs text-gray-600 dark:text-gray-500">{historyItem.date}</span>
                                         </div>
@@ -186,10 +159,14 @@ const CustomerPanel = () => {
                                             {historyItem.title}
                                         </h4>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs font-medium px-2 py-1 rounded bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-300">
+                                            <Badge >
                                                 {historyItem.status}
+                                            </Badge>
+                                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                                                {Array.isArray(historyItem.assignee)
+                                                    ? historyItem.assignee.map((a: { name: string }) => a.name).join(", ")
+                                                    : ((historyItem.assignee as { name?: string })?.name || "-")}
                                             </span>
-                                            <span className="text-xs text-gray-600 dark:text-gray-400">{historyItem.technician}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -205,36 +182,38 @@ const CustomerPanel = () => {
 interface TempCaseCardProps {
     onAssignClick: () => void;
     onEditChick?: () => void;
+    caseData: CaseItem;
 }
 
-const TempCaseCard = ({ onAssignClick, onEditChick }: TempCaseCardProps) => {
-    const caseData = {
-        title: "Power Outage Report",
-        createdDate: "2025-07-03 09:45",
-        assignee: "John Doe",
-        priority: "High",
-        status: "In Progress"
-    };
+const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProps) => {
+    const [editFormData, setEditFormData] = useState(false);
+    const onChick = () => {
 
+        onEditChick && onEditChick();
+        setEditFormData(!editFormData);
+
+    }
     return (
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 border-l-red-500">
+        <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
             <div className="flex items-start justify-between mb-3">
                 <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData.title}</h2>
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Created: {caseData.createdDate}</span>
+                            <span>Created: {caseData.date}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User className="w-4 h-4" />
-                            <span>Assigned: {caseData.assignee}</span>
+                            <span>Assigned: {caseData.createBy}</span>
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Badge>
-                        {caseData.priority} Priority
+                    <Badge  >
+                        <div className="text-center">
+                        {getTextPriority(caseData.priority)} Priority
+                        </div>
                     </Badge>
                     <Badge variant="outline">
                         {caseData.status}
@@ -287,12 +266,12 @@ const TempCaseCard = ({ onAssignClick, onEditChick }: TempCaseCardProps) => {
                                     >
                                         {step.title}
                                     </div>
-                                    <div
+                                    {/* <div
                                         className={`text-xs ${step.completed || step.current ? "text-gray-600 dark:text-gray-300" : "text-gray-500"
                                             }`}
                                     >
                                         {step.description}
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         ))}
@@ -310,8 +289,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick }: TempCaseCardProps) => {
                         <Paperclip className="w-4 h-4 mr-2" />
                         Attach File
                     </Button>
-                    <Button onClick={onEditChick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                        Edit
+                    <Button onClick={onChick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                        {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>
                 </div>
                 <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
@@ -323,31 +302,120 @@ const TempCaseCard = ({ onAssignClick, onEditChick }: TempCaseCardProps) => {
     );
 };
 
-function mapCaseToForm(singleCase: CaseItem, initialFormSchema: FormField): FormField {
-    const newFormSchema: FormField = JSON.parse(JSON.stringify(initialFormSchema));
-    const mappedFields: IndividualFormField[] = newFormSchema.formFieldJson.map(field => {
-        let updatedValue: any = field.value;
-        switch (field.label) {
-            case "Case Title": updatedValue = singleCase.title; break;
-            case "Description": updatedValue = singleCase.description || ""; break;
-            case "Priority": updatedValue = singleCase.priorityColor; break;
-            case "Status": updatedValue = "New"; break;
-            case "Customer": updatedValue = singleCase.assignee.name; break;
-            case "Assignee": updatedValue = singleCase.assignee; break;
-            case "Due Date": updatedValue = singleCase.date; break;
-        }
-        return { ...field, value: updatedValue };
-    });
-    newFormSchema.formFieldJson = mappedFields;
-    return newFormSchema;
+// function mapCaseToForm(singleCase: CaseItem, initialFormSchema: FormField): FormField {
+//     const newFormSchema: FormField = JSON.parse(JSON.stringify(initialFormSchema));
+//     const mappedFields: IndividualFormField[] = newFormSchema.formFieldJson.map(field => {
+//         let updatedValue: any = field.value;
+//         switch (field.label) {
+//             case "Case Title": updatedValue = singleCase.title; break;
+//             case "Description": updatedValue = singleCase.description || ""; break;
+//             case "Priority": updatedValue = singleCase.priorityColor; break;
+//             case "Status": updatedValue = "New"; break;
+//             case "Customer": updatedValue = singleCase.assignee.name; break;
+//             case "Assignee": updatedValue = singleCase.assignee; break;
+//             case "Due Date": updatedValue = singleCase.date; break;
+//         }
+//         return { ...field, value: updatedValue };
+//     });
+//     newFormSchema.formFieldJson = mappedFields;
+//     return newFormSchema;
+// }
+interface Props {
+    formData?: FormField;
 }
+
+const renderField = (field: IndividualFormField): Record<string, any> => {
+    if (field.type === "InputGroup" && Array.isArray(field.value)) {
+        return {
+            [field.label]: field.value.map((child: any) => renderField(child))
+        };
+    }
+
+    if (field.type === "dynamicField" && Array.isArray(field.options)) {
+        const selectedOption = field.options.find((opt: any) => opt.value === field.value);
+        return {
+            [field.label]: {
+                value: field.value || "-",
+                ...(selectedOption && Array.isArray(selectedOption.form)
+                    ? { form: selectedOption.form.map((child: any) => renderField(child)) }
+                    : {})
+            }
+        };
+    }
+
+    let value = field.value;
+    if (field.type === "option" && Array.isArray(value)) {
+        value = value.length > 0 ? value : [];
+    }
+    if (field.type === "select" || field.type === "radio") {
+        value = value || "-";
+    }
+    if (field.type === "multiImage" && Array.isArray(value)) {
+        value = value.length > 0 ? value.map((file: File) => file.name) : [];
+    }
+    if (field.type === "image" && value instanceof File) {
+        value = value.name;
+    }
+    if (typeof value === "string" && value.trim() === "") {
+        value = "-";
+    }
+    return { [field.label]: value };
+};
+
+const FormFieldValueDisplay: React.FC<Props> = ({ formData }) => {
+    if (!formData || !formData.formFieldJson) return null;
+    const result = formData.formFieldJson.map(renderField);
+
+    const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+    return (
+        <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <div className="mb-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Service Type</span>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div>
+                </div>
+                <div className="mb-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Date</span>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["2. Request Service Date:"] ?? "-"}</div>
+                </div>
+                <div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["Priority Level:"] ?? "-"}</div>
+                </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Location</span>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {/* Handle InputGroup for location */}
+                    {Array.isArray(fieldMap["3. Service Location & Destination:"])
+                        ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
+                            // Flatten nested objects
+                            return Object.values(item).map((val, i) => (
+                                <div key={idx + "-" + i}>{String(val)}</div>
+                            ));
+                        })
+                        : (fieldMap["3. Service Location & Destination:"] ?? "-")}
+                </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Description</span>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["7. Service Details: *"] ?? "-"}</div>
+            </div>
+        </div>
+    );
+};
 
 export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps) {
     const [showAssignModal, setShowAssignModal] = useState(false);
-    const [editFormData, setEditFormData] = useState<boolean>(false);
+    const [editFormData, setEditFormData] = useState<boolean>(caseData? false : true);
+    const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
     const handleAssignOfficers = (selectedOfficerIds: string[]) => {
-        console.log("Assigned Officer IDs:", selectedOfficerIds);
+        const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
+        setAssignedOfficers(selected);
+        setShowAssignModal(false);
     };
+    console.log("Case Data:", caseData);
     const handleFormSubmissionEdit = () => {
         console.log("Data received from Edit DynamicForm");
         setEditFormData(false);
@@ -366,8 +434,8 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 description="Case Detail Page"
             />
             <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="Create Case Page" />
-                <div className="px-6 py-3">
+                <PageBreadcrumb pageTitle="Create Case Assignment" />
+                <div className="px-6 ">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                             <Button variant="ghost" size="sm" onClick={onBack}>
@@ -391,14 +459,42 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 <div className="flex h-full gap-6">
                     <div className="overflow-y-auto">
                         <div className="pr-6 ">
-                            {caseData?<TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} />:<></>}
-                            <DynamicForm
-                                initialForm={caseData?mapCaseToForm(caseData, createCase):createCase}
+                            {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
+                            {(caseData  && assignedOfficers.length > 0) && (
+                                <div className="mb-4 flex flex-wrap gap-2 items-center">
+                                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                                        Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+                                    </span>
+                                    {assignedOfficers.map(officer => (
+                                        <span
+                                            key={officer.id}
+                                            className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+                                        >
+                                            {officer.name}
+                                            <button
+                                                onClick={() =>
+                                                    setAssignedOfficers(prev =>
+                                                        prev.filter(o => o.id !== officer.id)
+                                                    )
+                                                }
+                                                className="ml-2 text-blue-400 hover:text-red-500 focus:outline-none"
+                                                title="Remove"
+                                                type="button"
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {editFormData  ? <DynamicForm
+                                initialForm={caseData ? caseData.formData : createCase}
                                 edit={false}
-                                editFormData={caseData?editFormData:!editFormData}
-                                onFormSubmit={editFormData?handleFormSubmissionEdit: undefined}
+                                editFormData={true}
+                                onFormSubmit={editFormData ? handleFormSubmissionEdit : undefined}
                                 enableFormTitle={false}
-                            />
+                            /> : <FormFieldValueDisplay formData={caseData?.formData} />}
                         </div>
                     </div>
 

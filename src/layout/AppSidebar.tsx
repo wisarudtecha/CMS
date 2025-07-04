@@ -32,6 +32,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import
   {
     BoxIcon,
+    Ticket,
     // PencilIcon
   }
 from "lucide-react";
@@ -56,7 +57,6 @@ const AppSidebar: React.FC = () => {
         { name: "Case Creation", path: "/case-creation", pro: false },
         { name: "Case Assignment", path: "/case-assignment", pro: false },
         { name: "Case History", path: "/kanban", pro: false },
-        { name: "Case View", path: "/case-view", pro: false }
       ],
     },
     {
@@ -82,6 +82,13 @@ const AppSidebar: React.FC = () => {
       subItems: [
         { name: "Forms Management", path: "/load-dynamic-form", pro: false },
         { name: "Form Builder", path:"/dynamic-form", pro:false }
+      ],
+    },
+    {
+      icon: <Ticket />,
+      name: "Ticket Management",
+      subItems: [
+        { name: "Ticket Management", path: "/ticket", pro: false },
       ],
     },
     {

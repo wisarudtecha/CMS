@@ -12,8 +12,9 @@ import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import caseData from "../../utils/json/case.json"
-import CaseDetailView from "./case-detail-view"
+import CaseDetailView from "../../components/case/CaseDetailView"
 import { CaseItem } from "@/components/interface/CaseItem"
+import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
 
 const statusColumns = [
   { title: "new" },
@@ -51,33 +52,25 @@ export default function CasesView() {
   }
 
   const handleCaseClick = (caseItem: CaseItem) => {
-    const detailCaseData = {
-      id: typeof caseItem.id === "string" ? parseInt(caseItem.id, 10) : caseItem.id,
-      title: caseItem.title,
-      description: caseItem.description || "",
-      date: caseItem.date || "",
-      comments: caseItem.comments,
-      category: caseItem.category,
-      categoryColor: caseItem.categoryColor || "",
-      priorityColor: caseItem.priorityColor,
-      assignee: typeof caseItem.assignee === "object"
-        ? {
-            name: caseItem.assignee.name,
-            color: caseItem.assignee.color
-          }
-        : { name: "", color: "" }
-    }
-    setSelectedCase(detailCaseData)
+    
+    setSelectedCase(caseItem)
   }
 
   const getFilteredCases = () => {
     let allCases: CaseItem[] = []
     if (caseData && typeof caseData === "object") {
+      const mergeWithAssignee = (cases: any[] = []) =>
+        cases.map(c => ({
+          ...c,
+          assignee: c.assignee
+            ? c.assignee
+            : { name: "", color: "" }
+        }));
       allCases = [
-        ...(caseData.new || []),
-        ...(caseData.inProgress || []),
-        ...(caseData.pendingReview || []),
-        ...(caseData.resolved || [])
+        ...mergeWithAssignee(caseData.new),
+        ...mergeWithAssignee(caseData.inProgress),
+        ...mergeWithAssignee(caseData.pendingReview),
+        ...mergeWithAssignee(caseData.resolved)
       ]
     }
 
@@ -104,17 +97,32 @@ export default function CasesView() {
     <div className="space-y-2">
       <div className="text-xs text-gray-500 font-medium"></div>
       <div
-        className={`dark:bg-gray-800 bg-white rounded-lg p-4 space-y-3 border-l-4 ${caseItem.priorityColor} hover:bg-gray-750 transition-colors cursor-pointer`}
+        className={`dark:bg-gray-800 bg-white rounded-lg p-4 space-y-3 border-l-4 ${getPriorityBorderColorClass(caseItem.priority)} hover:bg-gray-750 transition-colors cursor-pointer`}
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
-          <h3 className="font-medium dark:text-white text-base leading-tight pr-2 text-gray-700">{caseItem.title}</h3>
+          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{caseItem.title}</h3>
         </div>
         <p className="text-sm text-gray-400 leading-relaxed">{caseItem.description}</p>
+        <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
+        {caseItem.assignee && caseItem.assignee.length > 0 && caseItem.assignee[0].name ? (
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
+              <span className="text-white text-xs">{createAvatarFromString(caseItem.assignee[0].name)}</span>
+            </div>
+            <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.assignee[0].name}</span>
+          </div>
+        ) : <div></div>}
+        <div className="flex items-center space-x-2">
+          <MessageCircle className="w-3 h-3" />
+          <span>{caseItem.comments}</span>
+        </div>
+      </div>
         <div className="flex items-center justify-between pt-2">
           <span className="text-xs text-gray-500 font-medium">{caseItem.date}</span>
-          <Badge>Assigned</Badge>
+          <Badge>{caseItem.category}</Badge>
         </div>
+
       </div>
     </div>
   )
@@ -143,9 +151,10 @@ export default function CasesView() {
     <div className="space-y-2">
       <div className="grid grid-cols-12 gap-4 p-3 text-xs font-medium text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
         <div className="col-span-4">Case</div>
+        <div className="col-span-2">Status</div>
         <div className="col-span-2">Priority</div>
         <div className="col-span-2">Assignee</div>
-        <div className="col-span-2">Due Date</div>
+        <div className="col-span-1">Due Date</div>
         <div className="col-span-1">Comments</div>
       </div>
 
@@ -156,21 +165,30 @@ export default function CasesView() {
           onClick={() => handleCaseClick(caseItem)}
         >
           <div className="col-span-4">
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{caseItem.title}</h4>
-            <div className="flex items-center space-x-2">
+            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{caseItem.title}</h4>
+            {/* <div className="flex items-center space-x-2">
               <Badge color="primary">{caseItem.category}</Badge>
-            </div>
+            </div> */}
+          </div>
+          <div className="flex col-span-2 items-center space-x-2">
+            <Badge color="primary">{caseItem.category}</Badge>
           </div>
           <div className="col-span-2 flex items-center mx-4">
-            <div className={`w-2 h-2 rounded-full ${caseItem.priorityColor.replace("border-l-", "bg-")}`} />
+            <div className={`w-2 h-2 rounded-full ${ getPriorityColorClass(caseItem.priority)}`} />
           </div>
           <div className="col-span-2 flex items-center space-x-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
-              <span className="text-white text-xs">{createAvatarFromString(caseItem.assignee.name)}</span>
-            </div>
-            <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.assignee.name}</span>
-          </div>
-          <div className="col-span-2 flex items-center space-x-2">
+          {caseItem.assignee && caseItem.assignee.length > 0 && caseItem.assignee[0].name ? (
+            <>
+              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
+                <span className="text-white text-xs">{createAvatarFromString(caseItem.assignee[0].name)}</span>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.assignee[0].name}</span>
+            </>
+          ) : (
+            <div className="ml-4 text-gray-500 dark:text-gray-400">-</div>
+          )}
+        </div>
+          <div className="col-span-1 flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.date}</span>
           </div>
           <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
@@ -194,7 +212,7 @@ export default function CasesView() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
       <PageBreadcrumb pageTitle="Cases" />
-      <div className="relative p-6">
+      <div className="relative ">
         <div className="flex flex-col gap-y-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -230,13 +248,13 @@ export default function CasesView() {
               <div className="space-x-2 flex items-center">
                 <input
                   type="text"
-                  className="px-2 py-1 rounded border text-sm dark:bg-gray-800 dark:text-white"
+                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                   placeholder="Search by title"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
                 <select
-                  className="px-2 py-1 rounded border text-sm dark:bg-gray-800 dark:text-white"
+                  className="px-2 py-1 rounded border text-sm text-gray-500 dark:text-gray-400 dark:border-gray-800"
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value as "title" | "date")}
                 >
@@ -256,6 +274,7 @@ export default function CasesView() {
             <Button
               className="flex items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
               onClick={() => setShowDynamicForm(true)}
+              size="sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add New Case

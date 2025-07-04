@@ -22,6 +22,7 @@ import KanbanCard from "@/components/ui/card/Casecard"
 // import KanbanView from "@/components/view/kanbanView"
 import {Case} from "@/components/interface/Case"
 import CreateCasePages from "../Forms/CreateCase"
+import { getPriorityColorClass } from "@/components/function/Prioriy"
 
 
 
@@ -45,11 +46,7 @@ const statusColumns = [
     { title: "resolved" },
 ]
 
-const getPriorityColorClass = (priority: number): string => {
-    if (priority <= 3) return "bg-red-600"
-    if (priority <= 6) return "bg-yellow-600"
-    return "bg-green-600"
-}
+
 
 function mapCaseToForm(singleCase: Case, initialFormSchema: FormField): FormField {
     const newFormSchema: FormField = JSON.parse(JSON.stringify(initialFormSchema));

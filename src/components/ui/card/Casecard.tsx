@@ -7,10 +7,10 @@ import { Dropdown } from "../dropdown/Dropdown";
 
 
 interface CaseCardProps {
-    priority_color: string;
-    dropdownChild: ReactNode; 
+    priority_color?: string;
+    dropdownChild?: ReactNode; 
     cardChild: ReactNode;
-    title : string;
+    title ?: string;
     onChick?:ReactEventHandler;
 }
 

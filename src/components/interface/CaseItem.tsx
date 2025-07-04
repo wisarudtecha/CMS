@@ -1,4 +1,12 @@
+import { FormField } from "./FormField"
+interface assignee{
+  name: string
+  color: string
+}
 export interface CaseItem {
+  status: string
+  priority: number
+  createBy: string
   id: number
   title: string
   description: string
@@ -7,8 +15,6 @@ export interface CaseItem {
   category: string
   categoryColor: string
   priorityColor: string
-  assignee: {
-    name: string
-    color: string
-  }
+  assignee: assignee[]
+  formData?: FormField
 }
