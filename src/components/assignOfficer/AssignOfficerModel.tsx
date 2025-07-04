@@ -153,9 +153,9 @@ export default function AssignOfficerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999">
+      <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             Assign Officers to Case
           </DialogTitle>
         </DialogHeader>
@@ -168,16 +168,16 @@ export default function AssignOfficerModal({
               placeholder="Search officers by name, department, or service..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 pl-10"
+              className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 pl-10 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
             />
           </div>
         </div>
 
         {/* Officers Table */}
-        <div className="border border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
           {/* Table Header */}
-          <div className="bg-gray-800 border-b border-gray-700">
-            <div className="grid grid-cols-9 gap-4 p-3 text-sm font-medium text-gray-300">
+          <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-9 gap-4 p-3 text-sm font-medium text-gray-600 dark:text-gray-300">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={
@@ -185,7 +185,7 @@ export default function AssignOfficerModal({
                     filteredOfficers.length > 0
                   }
                   onChange={handleSelectAll}
-                  className="border-gray-600"
+                  className="border-gray-300 dark:border-gray-600"
                 />
               </div>
               {(
@@ -203,7 +203,7 @@ export default function AssignOfficerModal({
                 <button
                   key={col}
                   onClick={() => handleSort(col)}
-                  className="flex items-center space-x-1 hover:text-white transition-colors text-left"
+                  className="flex items-center space-x-1 hover:text-gray-900 dark:hover:text-white transition-colors text-left"
                 >
                   <span>
                     {col.charAt(0).toUpperCase() +
@@ -222,31 +222,31 @@ export default function AssignOfficerModal({
           {/* Table Body */}
           <div className="flex-1 min-h-0">
             <ScrollArea className="h-full">
-              <div className="divide-y divide-gray-700">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {sortedOfficers.map((officer) => (
                   <div
                     key={officer.id}
-                    className={`grid grid-cols-9 gap-4 p-3 text-sm hover:bg-gray-800 transition-colors ${
-                      selectedOfficers.includes(officer.id) ? "bg-gray-800" : ""
+                    className={`grid grid-cols-9 gap-4 p-3 text-sm bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      selectedOfficers.includes(officer.id) ? "bg-gray-50 dark:bg-gray-800" : ""
                     }`}
                   >
                     <div className="flex items-center">
                       <Checkbox
                         checked={selectedOfficers.includes(officer.id)}
                         onChange={() => handleSelectOfficer(officer.id)}
-                        className="border-gray-600"
+                        className="border-gray-300 dark:border-gray-600"
                       />
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-gray-700 text-white text-xs">
+                        <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
                           {officer.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-white font-medium">
+                      <span className="text-gray-800 dark:text-white font-medium">
                         {officer.name}
                       </span>
                     </div>
@@ -257,27 +257,27 @@ export default function AssignOfficerModal({
                             officer.status,
                           )}`}
                         ></div>
-                        <span className="text-gray-300">{officer.status}</span>
+                        <span className="text-gray-600 dark:text-gray-300">{officer.status}</span>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-300">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
                       {officer.department}
                     </div>
-                    <div className="flex items-center text-gray-300">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
                       {officer.location}
                     </div>
-                    <div className="flex items-center text-gray-300">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
                       {officer.service}
                     </div>
-                    <div className="flex items-center text-gray-300">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
                       {officer.serviceProvider}
                     </div>
                     <div className="flex items-center">
                       <div className="flex items-center space-x-2">
-                        <span className="text-gray-300">
+                        <span className="text-gray-600 dark:text-gray-300">
                           {officer.workload}
                         </span>
-                        <div className="w-16 h-2 bg-gray-700 rounded-full">
+                        <div className="w-16 h-2 bg-gray-200 rounded-full dark:bg-gray-700">
                           <div
                             className={`h-full rounded-full transition-all ${
                               officer.workload > 6
@@ -298,10 +298,10 @@ export default function AssignOfficerModal({
                         <span
                           className={`text-sm font-medium ${
                             officer.distance <= 5
-                              ? "text-green-400"
+                              ? "text-green-600 dark:text-green-400"
                               : officer.distance <= 15
-                              ? "text-yellow-400"
-                              : "text-red-400"
+                              ? "text-yellow-600 dark:text-yellow-400"
+                              : "text-red-600 dark:text-red-400"
                           }`}
                         >
                           {officer.distance.toFixed(1)} km
@@ -320,8 +320,8 @@ export default function AssignOfficerModal({
 
         {/* Selection Summary */}
         {selectedOfficers.length > 0 && (
-          <div className="bg-gray-800 rounded-lg p-3">
-            <div className="text-sm text-gray-300">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Selected {selectedOfficers.length} officer
               {selectedOfficers.length !== 1 ? "s" : ""}:
             </div>
@@ -331,11 +331,12 @@ export default function AssignOfficerModal({
                 return officer ? (
                   <Badge
                     key={officerId}
+                    // Assuming Badge component handles its own dark/light theme based on its internal logic
                   >
                     {officer.name}
                     <button
                       onClick={() => handleSelectOfficer(officerId)}
-                      className="ml-2 hover:text-gray-300"
+                      className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -350,7 +351,7 @@ export default function AssignOfficerModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+            className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             Cancel
           </Button>

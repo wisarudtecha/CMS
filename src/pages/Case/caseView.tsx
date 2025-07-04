@@ -42,29 +42,13 @@ export default function CasesView() {
   const [sortField, setSortField] = useState<"title" | "date">("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
-  const getCasesForColumn = (columnId: string) => {
-  const allCases = getAllCases();
-  return allCases.filter(c => getStatusKey(c) === columnId);
-}
-  const getAllCases = () => {
-    return [
-      ...(caseData.new || []),
-      ...(caseData.inProgress || []),
-      ...(caseData.pendingReview || []),
-      ...(caseData.resolved || [])
-    ]
-  }
-
   const getStatusKey = (caseItem: CaseItem): string => {
-  if (caseData.new?.some(c => c.id === caseItem.id)) return "new"
-  if (caseData.inProgress?.some(c => c.id === caseItem.id)) return "in-progress"
-  if (caseData.pendingReview?.some(c => c.id === caseItem.id)) return "pending"
-  if (caseData.resolved?.some(c => c.id === caseItem.id)) return "resolved"
-  return ""
-}
-
-
-
+    if (caseData.new?.some(c => c.id === caseItem.id)) return "new"
+    if (caseData.inProgress?.some(c => c.id === caseItem.id)) return "in-progress"
+    if (caseData.pendingReview?.some(c => c.id === caseItem.id)) return "pending"
+    if (caseData.resolved?.some(c => c.id === caseItem.id)) return "resolved"
+    return ""
+  }
 
   const handleCaseClick = (caseItem: CaseItem) => {
     const detailCaseData = {
@@ -97,17 +81,6 @@ export default function CasesView() {
       ]
     }
 
-    if (selectedStatus !== null) {
-      const statusMap: { [key: string]: keyof typeof caseData } = {
-        new: "new",
-        "in-progress": "inProgress",
-        pending: "pendingReview",
-        resolved: "resolved"
-      }
-      const dataKey = statusMap[selectedStatus]
-      allCases = dataKey ? (caseData[dataKey] || []) : []
-    }
-
     const filtered = allCases.filter(c =>
       c.title.toLowerCase().includes(searchText.toLowerCase())
     )
@@ -119,6 +92,12 @@ export default function CasesView() {
       if (aVal > bVal) return sortOrder === "asc" ? 1 : -1
       return 0
     })
+  }
+
+  // Modified to use getFilteredCases and then filter by column status
+  const getCasesForColumn = (columnId: string) => {
+    const filteredCases = getFilteredCases();
+    return filteredCases.filter(c => getStatusKey(c) === columnId);
   }
 
   const CaseCard = ({ caseItem }: { caseItem: CaseItem }) => (
@@ -170,7 +149,7 @@ export default function CasesView() {
         <div className="col-span-1">Comments</div>
       </div>
 
-      {getFilteredCases().map((caseItem) => (
+      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).map((caseItem) => (
         <div
           key={caseItem.id}
           className="grid grid-cols-12 gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 hover:cursor-pointer"
@@ -291,10 +270,7 @@ export default function CasesView() {
               >
                 <span className="text-sm">All Cases</span>
                 <Badge color="primary">
-                  {(caseData.new?.length || 0) +
-                    (caseData.inProgress?.length || 0) +
-                    (caseData.pendingReview?.length || 0) +
-                    (caseData.resolved?.length || 0)}
+                  {getFilteredCases().length}
                 </Badge>
               </div>
               {statusColumns.map((col) => (
