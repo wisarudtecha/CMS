@@ -4,19 +4,82 @@
     "formColSpan": 2,
     "formFieldJson": [
         {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
+            "id": "b3a55ab3-4f59-43bd-968b-a904e0fe93f5",
+            "label": "Type",
+            "type": "dynamicField",
             "value": "",
             "options": [
-                "Maintenance",
-                "Repair",
-                "Installation"
+                {
+                    "value": "กล้อง",
+                    "form": [
+                        {
+                            "id": "81dc61a3-36e9-4d92-ae74-cd6fd46e3643",
+                            "label": "Text Form",
+                            "type": "textInput",
+                            "value": "",
+                            "required": true,
+                            "colSpan": 1,
+                            "isChild": true,
+                            "placeholder": "เลขกล้อง"
+                        },
+                        {
+                            "id": "8cd59ea5-c7b7-4b64-8e5a-05b030c46353",
+                            "label": "Text Form",
+                            "type": "textInput",
+                            "value": "",
+                            "required": true,
+                            "colSpan": 1,
+                            "isChild": true,
+                            "placeholder": "อาการ"
+                        }
+                    ]
+                },
+                {
+                    "value": "ท่อ",
+                    "form": [
+                        {
+                            "id": "8f886920-e652-4be3-ab1c-261357bcdfc2",
+                            "label": "Text Form",
+                            "type": "textInput",
+                            "value": "",
+                            "required": true,
+                            "colSpan": 1,
+                            "isChild": true,
+                            "placeholder": "ห้อง"
+                        }
+                    ]
+                },
+                {
+                    "value": "เครื่องสแกนลายนิ้วมือ",
+                    "form": [
+                        {
+                            "id": "6a57cc98-ccc8-4e53-ae30-d25649337d69",
+                            "label": "Text Form",
+                            "type": "textInput",
+                            "value": "",
+                            "required": true,
+                            "colSpan": 1,
+                            "isChild": true,
+                            "placeholder": "ห้อง"
+                        },
+                        {
+                            "id": "82ba690f-5c60-4401-9c33-c0af2dd5fa13",
+                            "label": "Text Form",
+                            "type": "textInput",
+                            "value": "",
+                            "required": true,
+                            "colSpan": 1,
+                            "isChild": true,
+                            "placeholder": "อาการ"
+                        }
+                    ]
+                }
             ],
             "newOptionText": "",
             "required": true,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "DynamicFieldColSpan": 2
         },
         {
             "id": "field_1750652560678_m7lgawm",

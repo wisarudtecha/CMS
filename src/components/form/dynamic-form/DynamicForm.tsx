@@ -33,9 +33,12 @@ import {
   LayoutGrid,
   LetterText,
   Slack,
+  FileIcon,
 } from 'lucide-react';
 import Button from "@/components/ui/button/Button";
 import  Input  from "@/components/form/input/InputField";
+import TextArea from "../input/TextArea";
+import { Modal } from "@/components/ui/modal";
 
 // --- Interface Definitions ---
 interface IndividualFormField {
@@ -298,8 +301,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         formFieldJson: [],
       }
   );
+  const [importJsonText, setImportJsonText] = useState(String);
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
-  
+  const [isImport, setImport] = useState(false);
   // EDIT: State for managing hidden cards in the layout editor
   const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
 
@@ -315,8 +319,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       return newSet;
     });
   }, []);
-
-  // EDIT: Get all field IDs recursively for "Hide/Show All"
+ const handleFormImport = useCallback(() => {
+    setCurrentForm(JSON.parse(importJsonText));
+    setImport(false);
+  }, [importJsonText]);
+  
   const getAllFieldIds = (fields: IndividualFormFieldWithChildren[]): string[] => {
     let ids: string[] = [];
     for (const field of fields) {
@@ -1448,7 +1455,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                         />
                       </div>
                     ))}
-                  </div>
+                  </div> 
                 </SortableContext>
               </div>
             )}
@@ -1468,7 +1475,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
     };
     const overallGridClass = gridColsMapClass[currentForm.formColSpan] || "grid-cols-1";
-
+    
     return (
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
@@ -1575,9 +1582,60 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             </div>
           )}
         </div>
+        {isImport && (
+          <Modal isOpen={isImport} onClose={() => setImport(false)} className="max-w-4xl p-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Import Workflow JSON</h3>
+            </div>
+            
+            <div className="p-4">
+              {/* <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Upload JSON File
+                </label>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFormImport}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white"
+                />
+              </div> */}
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Or Paste JSON Content
+                </label>
+                <TextArea
+                  value={importJsonText}
+                  onChange={(value) => setImportJsonText(value)}
+                  className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent font-mono text-sm"
+                  placeholder="Paste your workflow JSON here..."
+                />
+              </div>
+            </div><div className="flex items-center justify-end gap-2 p-4">
+              <Button
+                onClick={() => setImport(false)}
+                variant="error"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleFormImport}
+                disabled={!importJsonText.trim()}
+                variant={`${
+                  !importJsonText.trim()
+                    ? 'outline'
+                    : 'success'
+                }`}
+              >
+                <FileIcon className="w-4 h-4" />
+                Import Form
+              </Button>
+            </div>
+          </Modal>)}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards,isImport, importJsonText, setImportJsonText, setImport, isImport, setCurrentForm]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -1851,7 +1909,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               value={String(field.value || "")}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               {...commonProps}
-              className={`${commonProps.className} bg-white dark:bg-white/[0.03]`}
+              className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}
             >
               <option value="" className="dark:bg-gray-800">
                 Select an option
@@ -1956,7 +2014,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <ComponentCard >
               <div hidden={isPreview}>
                 {FormEdit()}
-                <div className="flex justify-end sticky bottom-2 z-30">
+                <div className="flex justify-end sticky bottom-2 z-30 space-x-2 ">
+                  <Button onClick={() => setImport(true)} disabled={!editFormData}>
+                    Import
+                  </Button>
                   <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>
                     Preview
                   </Button>

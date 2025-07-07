@@ -1,15 +1,15 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   ChevronUp,
   ChevronDown,
   X,
 } from "lucide-react"
-import  Button  from "@/components/ui/button/Button"
-import  Checkbox from "@/components/form/input/Checkbox"
-import  Input  from "@/components/form/input/InputField"
+import Button from "@/components/ui/button/Button"
+import Checkbox from "@/components/form/input/Checkbox"
+import Input from "@/components/form/input/InputField"
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dialog/dialog"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
-import  Badge  from "@/components/ui/badge/Badge"
+import Badge from "@/components/ui/badge/Badge"
+import {  getAvatarIconFromString } from "../avatar/createAvatarFromString"
 
 // Define the shape of an Officer object
 export interface Officer {
@@ -40,6 +41,7 @@ interface AssignOfficerModalProps {
   onOpenChange: (isOpen: boolean) => void
   officers: Officer[]
   onAssign: (selectedOfficerIds: string[]) => void
+  assignedOfficers?: Officer[]
 }
 
 type SortableColumns = keyof Omit<Officer, "id">
@@ -81,13 +83,18 @@ export default function AssignOfficerModal({
   onOpenChange,
   officers,
   onAssign,
+  assignedOfficers = [],
 }: AssignOfficerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
   const [sortColumn, setSortColumn] =
     useState<SortableColumns>("distance")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-
+  useEffect(() => {
+    if (open) {
+      setSelectedOfficers(assignedOfficers.map((o) => o.id))
+    }
+  }, [open, assignedOfficers])
   // Filter officers based on search term
   const filteredOfficers = useMemo(
     () =>
@@ -226,9 +233,8 @@ export default function AssignOfficerModal({
                 {sortedOfficers.map((officer) => (
                   <div
                     key={officer.id}
-                    className={`grid grid-cols-9 gap-4 p-3 text-sm bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                      selectedOfficers.includes(officer.id) ? "bg-gray-50 dark:bg-gray-800" : ""
-                    }`}
+                    className={`grid grid-cols-9 gap-4 p-3 text-sm bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${selectedOfficers.includes(officer.id) ? "bg-gray-50 dark:bg-gray-800" : ""
+                      }`}
                   >
                     <div className="flex items-center">
                       <Checkbox
@@ -279,13 +285,12 @@ export default function AssignOfficerModal({
                         </span>
                         <div className="w-16 h-2 bg-gray-200 rounded-full dark:bg-gray-700">
                           <div
-                            className={`h-full rounded-full transition-all ${
-                              officer.workload > 6
-                                ? "bg-red-500"
-                                : officer.workload > 3
+                            className={`h-full rounded-full transition-all ${officer.workload > 6
+                              ? "bg-red-500"
+                              : officer.workload > 3
                                 ? "bg-yellow-500"
                                 : "bg-green-500"
-                            }`}
+                              }`}
                             style={{
                               width: `${Math.min(officer.workload * 10, 100)}%`,
                             }}
@@ -296,13 +301,12 @@ export default function AssignOfficerModal({
                     <div className="flex items-center">
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`text-sm font-medium ${
-                            officer.distance <= 5
-                              ? "text-green-600 dark:text-green-400"
-                              : officer.distance <= 15
+                          className={`text-sm font-medium ${officer.distance <= 5
+                            ? "text-green-600 dark:text-green-400"
+                            : officer.distance <= 15
                               ? "text-yellow-600 dark:text-yellow-400"
                               : "text-red-600 dark:text-red-400"
-                          }`}
+                            }`}
                         >
                           {officer.distance.toFixed(1)} km
                         </span>
@@ -331,8 +335,9 @@ export default function AssignOfficerModal({
                 return officer ? (
                   <Badge
                     key={officerId}
-                    // Assuming Badge component handles its own dark/light theme based on its internal logic
+                  // Assuming Badge component handles its own dark/light theme based on its internal logic
                   >
+                    {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 my-1")}
                     {officer.name}
                     <button
                       onClick={() => handleSelectOfficer(officerId)}

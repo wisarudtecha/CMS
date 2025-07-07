@@ -7,17 +7,19 @@ import {
     User,
     MessageSquare,
     Paperclip,
+    MapPin,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { FormField, IndividualFormField } from "@/components/interface/FormField"
+import { IndividualFormField } from "@/components/interface/FormField"
 import createCase from "../../utils/json/createCase.json"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
+import locateImage from "@/icons/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
@@ -27,24 +29,34 @@ const mockOfficers: Officer[] = [
     { id: '4', name: 'Linda Davis', status: 'En-Route', department: 'Communications', location: 'Hill Valley', service: 'Fiber Optics', serviceProvider: 'ConnectFast', workload: 4, distance: 1.2 },
     { id: '5', name: 'Michael Miller', status: 'Available', department: 'Structural', location: 'Sector 4', service: 'Inspection', serviceProvider: 'BuildSafe', workload: 1, distance: 4.8 },
 ];
-import  CaseHistory  from "@/utils/json/caseHistory.json"
+import CaseHistory from "@/utils/json/caseHistory.json"
+import Avatar from "../ui/avatar/Avatar"
+import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 
 interface CaseDetailViewProps {
-    onBack: () => void
+    onBack?: () => void
     caseData?: CaseItem
 }
 
-
+interface CustomerPanelProps {
+    type: "edit" | "add"
+}
 // CustomerPanel and other sub-components remain unchanged as their internal structure is correct.
-const CustomerPanel = () => {
+const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("customer-info");
 
-    const tabs = [
+    const edittabs = [
         { id: "customer-info", label: "Info" },
-        { id: "history", label: "History" },
-        { id: "other", label: "Other" },
+        { id: "Location", label: "Location" },
+        { id: "Knowledge Base", label: "Knowledge Base" },
     ];
+    const addTab = [
+        { id: "customer-info", label: "Info" },
+        { id: "Location", label: "Location" },
+        { id: "Knowledge Base", label: "Knowledge Base" },
+        { id: "FAQ", label: "FAQ" },
+    ]
 
     const serviceHistory = CaseHistory
 
@@ -81,18 +93,34 @@ const CustomerPanel = () => {
             >
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                     <div className="flex overflow-x-auto">
-                        {tabs.slice(0, 3).map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab.id
-                                    ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
+                        {type === "edit" ? (
+                            edittabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab.id
+                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))
+                        ) : (
+                            // If type is not "edit", map through a slice of the 'tabs' array
+                            addTab.slice(0, 4).map((tab) => ( // Removed the extra curly braces here
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab.id
+                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -100,33 +128,71 @@ const CustomerPanel = () => {
                     <div className="p-3 space-y-3">
                         {activeTab === "customer-info" ? (
                             <>
+                                {/* Section Header */}
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">Customer Information</span>
+                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
+                                        Customer Information
+                                    </span>
                                 </div>
+
+                                {/* Avatar and Name Block */}
                                 <div className="flex items-center space-x-3">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium text-gray-900 dark:text-white text-sm">John Smith</h3>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">Business ID: 123456789</div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">Level: Premium</div>
+                                    <div className="flex flex-wrap gap-3 items-center">
+                                        <Avatar
+                                            src={
+                                                type === "edit"
+                                                    ? "/images/user/user-01.jpg"
+                                                    : "/images/user/unknow user.png"
+                                            }
+                                            size="xxlarge"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-medium text-gray-900 dark:text-white text-sm">
+                                                {type === "edit" ? "John Smith" : "-"}
+                                            </h3>
+                                            {type === "edit" && (
+                                                <>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                        Business ID: 123456789
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Level: Premium
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Info Grid */}
                                 <div className="space-y-2 text-xs">
                                     <div className="grid grid-cols-2 gap-2">
+                                        {/* DOB */}
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">DOB</div>
-                                            <div className="text-gray-900 dark:text-white">Jan 15, 1985</div>
+                                            <div className="text-gray-900 dark:text-white">
+                                                {type === "edit" ? "Jan 15, 1985" : "-"}
+                                            </div>
                                         </div>
+
+                                        {/* Insurance */}
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Insurance</div>
-                                            <div className="text-gray-900 dark:text-white">INS-789-456</div>
+                                            <div className="text-gray-900 dark:text-white">
+                                                {type === "edit" ? "INS-789-456" : "-"}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </>
+
+                        ) : activeTab === "Location" ? ( // Corrected: removed extra curly braces here
+                            <div className="text-center py-4">
+                                <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
+                            </div>
                         ) : (
                             <div className="text-center py-4">
-                                <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available</div>
+                                <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
                             </div>
                         )}
                     </div>
@@ -143,7 +209,7 @@ const CustomerPanel = () => {
                 </div>
                 <ScrollArea className="flex-1">
                     <div className="p-3 space-y-3">
-                        {serviceHistory.map((historyItem) => (
+                        {type == "edit" ? serviceHistory.map((historyItem) => (
                             <div
                                 key={historyItem.id}
                                 className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(historyItem.priority)} group`}
@@ -171,7 +237,7 @@ const CustomerPanel = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )) : <></>}
                     </div>
                 </ScrollArea>
             </div>
@@ -201,21 +267,19 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Created: {caseData.date}</span>
+                            <span>Create Date: {caseData.date}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User className="w-4 h-4" />
-                            <span>Assigned: {caseData.createBy}</span>
+                            <span>Created: {caseData.createBy}</span>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Badge  >
-                        <div className="text-center">
-                        {getTextPriority(caseData.priority)} Priority
-                        </div>
+                <div className="flex items-center space-x-2 text-center">
+                    <Badge color={`${getTextPriority(caseData.priority).color}`}>
+                        {getTextPriority(caseData.priority).level} Priority
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" >
                         {caseData.status}
                     </Badge>
                 </div>
@@ -281,7 +345,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
 
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Add Comment
                     </Button>
@@ -321,7 +385,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
 //     return newFormSchema;
 // }
 interface Props {
-    formData?: FormField;
+    caseData?: CaseItem;
 }
 
 const renderField = (field: IndividualFormField): Record<string, any> => {
@@ -362,9 +426,9 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
     return { [field.label]: value };
 };
 
-const FormFieldValueDisplay: React.FC<Props> = ({ formData }) => {
-    if (!formData || !formData.formFieldJson) return null;
-    const result = formData.formFieldJson.map(renderField);
+const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
+    if (!caseData || !caseData.formData || !caseData.formData.formFieldJson) return null;
+    const result = caseData.formData.formFieldJson.map(renderField);
 
     const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
@@ -373,7 +437,8 @@ const FormFieldValueDisplay: React.FC<Props> = ({ formData }) => {
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <div className="mb-2">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Service Type</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div>
+                    {/* <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div> */}
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.title}</div>
                 </div>
                 <div className="mb-2">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Date</span>
@@ -387,16 +452,18 @@ const FormFieldValueDisplay: React.FC<Props> = ({ formData }) => {
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Location</span>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {/* Handle InputGroup for location */}
-                    {Array.isArray(fieldMap["3. Service Location & Destination:"])
-                        ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
-                            // Flatten nested objects
-                            return Object.values(item).map((val, i) => (
-                                <div key={idx + "-" + i}>{String(val)}</div>
-                            ));
-                        })
-                        : (fieldMap["3. Service Location & Destination:"] ?? "-")}
-                </div>
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
+
+                        <MapPin />
+                        {Array.isArray(fieldMap["3. Service Location & Destination:"])
+                            ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
+                                // Flatten nested objects
+                                return Object.values(item).map((val, i) => (
+                                    <div key={idx + "-" + i}>{String(val)}</div>
+                                ));
+                            })
+                            : (fieldMap["3. Service Location & Destination:"] ?? "-")}
+                    </div></div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Description</span>
@@ -408,7 +475,7 @@ const FormFieldValueDisplay: React.FC<Props> = ({ formData }) => {
 
 export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps) {
     const [showAssignModal, setShowAssignModal] = useState(false);
-    const [editFormData, setEditFormData] = useState<boolean>(caseData? false : true);
+    const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
     const handleAssignOfficers = (selectedOfficerIds: string[]) => {
         const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
@@ -434,14 +501,14 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 description="Case Detail Page"
             />
             <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="Create Case Assignment" />
+                <PageBreadcrumb pageTitle="Create Case" />
                 <div className="px-6 ">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            <Button variant="ghost" size="sm" onClick={onBack}>
+                            {onBack ? <Button variant="ghost" size="sm" onClick={onBack}>
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Back
-                            </Button>
+                            </Button> : <></>}
                             <div className="flex items-center">
                                 <div className="flex">
                                     <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
@@ -460,16 +527,17 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                     <div className="overflow-y-auto">
                         <div className="pr-6 ">
                             {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
-                            {(caseData  && assignedOfficers.length > 0) && (
+                            {(caseData && assignedOfficers.length > 0) && (
                                 <div className="mb-4 flex flex-wrap gap-2 items-center">
                                     <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                                         Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
                                     </span>
                                     {assignedOfficers.map(officer => (
-                                        <span
+                                        <button
                                             key={officer.id}
                                             className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
                                         >
+                                            {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
                                             {officer.name}
                                             <button
                                                 onClick={() =>
@@ -477,28 +545,28 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                                         prev.filter(o => o.id !== officer.id)
                                                     )
                                                 }
-                                                className="ml-2 text-blue-400 hover:text-red-500 focus:outline-none"
+                                                className="ml-2 text-red-500 hover:text-red-600 focus:outline-none"
                                                 title="Remove"
                                                 type="button"
                                             >
-                                                ×
+                                                Cancel
                                             </button>
-                                        </span>
+                                        </button>
                                     ))}
                                 </div>
                             )}
 
-                            {editFormData  ? <DynamicForm
+                            {editFormData ? <DynamicForm
                                 initialForm={caseData ? caseData.formData : createCase}
                                 edit={false}
                                 editFormData={true}
                                 onFormSubmit={editFormData ? handleFormSubmissionEdit : undefined}
                                 enableFormTitle={false}
-                            /> : <FormFieldValueDisplay formData={caseData?.formData} />}
+                            /> : <FormFieldValueDisplay caseData={caseData} />}
                         </div>
                     </div>
 
-                    <CustomerPanel />
+                    {caseData ? <CustomerPanel type="edit" /> : <CustomerPanel type="add" />}
                 </div>
             </div>
 
@@ -508,6 +576,7 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 onOpenChange={setShowAssignModal}
                 officers={mockOfficers}
                 onAssign={handleAssignOfficers}
+                assignedOfficers={assignedOfficers}
             />
         </div>
     )
