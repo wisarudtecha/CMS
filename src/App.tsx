@@ -29,6 +29,7 @@ import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 import CasesAssignment from "./pages/Case/caseAssignment";
 import TicketListComponent from "./components/ticket/List";
 // Lingui
+
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
 // import { messages as enMessages } from "./locales/en/messages";

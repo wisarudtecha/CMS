@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Link } from "react-router";
+// import { Trans } from "@lingui/react/macro";
 import { useTranslation } from "../../hooks/useTranslation";
 import axios from "axios";
 import { Menu } from "@headlessui/react";
@@ -35,6 +36,7 @@ function timeAgo(date: string): string {
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
+
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -43,14 +45,13 @@ export default function NotificationDropdown() {
   const socketRef = useRef<WebSocket | null>(null);
   const [unread, setUnread] = useState(0);
   const hasInitialized = useRef(false);
-const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isOverflow, setIsOverflow] = useState<{ [key: string]: boolean }>({});
   const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
 
-
-const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
-// const API_BASE_URL = "http://localhost:8080"; 
+  const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
+  // const API_BASE_URL = "http://localhost:8080"; 
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -98,6 +99,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       return !prev;
     });
   };
+
   const toggleExpand = (id: string) => {
     if (expandedId === id) {
       setExpandedId(null); // ปิด ถ้าเปิดอยู่แล้ว
@@ -105,6 +107,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       setExpandedId(id); // เปิดรายการใหม่
     }
   };
+
   function getNotiTypeIcon(type: string) {
     switch (type.toLowerCase()) {
       case "broadcast":
@@ -142,7 +145,6 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
     }
   }
   
-
   const handleMarkAllRead = async () => {
     const updated = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(updated);
@@ -186,6 +188,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       (noti) => noti.recipient.toLowerCase() === username.toLowerCase() && !noti.read
     );
     setUnread(filteredUnread.length);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notifications]);
 
   const filteredNotifications = notifications.filter((n) => {
@@ -200,6 +203,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       n.eventType.toLowerCase().includes(term)
     );
   });
+
   useEffect(() => {
     const newIsOverflow: { [key: string]: boolean } = {};
   
@@ -210,7 +214,6 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       }
     });
   
-
     const isDifferent = Object.keys(newIsOverflow).some(
       (key) => newIsOverflow[key] !== isOverflow[key]
     );
@@ -218,6 +221,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
     if (isDifferent) {
       setIsOverflow(newIsOverflow);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredNotifications, expandedId]);
   
   const updateNotification = async (updated: Notification) => {
@@ -234,11 +238,12 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
         const newList = parsed.map((n: Notification) => (n.id === updated.id ? updated : n));
         localStorage.setItem("notifications", JSON.stringify(newList));
       }
-  
-    } catch (err) {
+    }
+    catch (err) {
       console.error("❌ Error updating notification:", err);
     }
   };
+
   const handleItemClick = (noti:Notification) => {
     if (!noti.read) {
       handleMarkAsRead(noti.id);
@@ -248,6 +253,7 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
       window.location.href = noti.redirectUrl;
     }
   };
+
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true;
@@ -261,7 +267,6 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
     }
   }, [notifications]);
   
-
   useEffect(() => {
     if (socketRef.current) return;
 
@@ -299,7 +304,6 @@ const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
   }, []);
 
   return (
-  
     <div className="relative">
        <audio ref={audioRef} src="/sounds/ring.mp3" preload="auto" />
       {/* Bell Icon */}

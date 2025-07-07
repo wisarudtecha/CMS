@@ -131,9 +131,7 @@ const AppSidebar: React.FC = () => {
     {
       name: t("navigation.sidebar.menu.forms.title"),
       icon: <ListIcon />,
-      subItems: [
-        { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false },
-      ],
+      subItems: [{ name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false }],
     },
     {
       name: t("navigation.sidebar.menu.tables.title"),
