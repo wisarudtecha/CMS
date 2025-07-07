@@ -32,7 +32,8 @@ const mockOfficers: Officer[] = [
 import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-
+import { CommandInformation } from "../assignOfficer/CommandInformation"
+import { ChevronDown,ChevronUp } from "lucide-react"
 interface CaseDetailViewProps {
     onBack?: () => void
     caseData?: CaseItem
@@ -426,6 +427,8 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
     return { [field.label]: value };
 };
 
+
+
 const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
     if (!caseData || !caseData.formData || !caseData.formData.formFieldJson) return null;
     const result = caseData.formData.formFieldJson.map(renderField);
@@ -477,10 +480,23 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
+    const [showOfficersData,setShowOFFicersData]= useState<Officer | null>(null);
+    
+    const handleSelectOfficer =(selectedOfficer:Officer)=>{
+        console.log(showOfficersData)
+        if(selectedOfficer.id==showOfficersData?.id){
+            setShowOFFicersData(null)
+        }
+        else{
+            setShowOFFicersData(selectedOfficer)
+        }
+    }
+
     const handleAssignOfficers = (selectedOfficerIds: string[]) => {
         const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
         setAssignedOfficers(selected);
         setShowAssignModal(false);
+
     };
     console.log("Case Data:", caseData);
     const handleFormSubmissionEdit = () => {
@@ -536,9 +552,12 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                         <button
                                             key={officer.id}
                                             className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+                                            onClick={() => handleSelectOfficer(officer)}
                                         >
+                                            {showOfficersData?.id==officer.id?<ChevronDown />:<ChevronUp />}
                                             {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
                                             {officer.name}
+                                            <Badge className="mx-1"  >Acknowledge</Badge>
                                             <button
                                                 onClick={() =>
                                                     setAssignedOfficers(prev =>
@@ -555,7 +574,9 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                     ))}
                                 </div>
                             )}
-
+                            
+                            {showOfficersData? <CommandInformation className=" my-2"/>:null}
+                            
                             {editFormData ? <DynamicForm
                                 initialForm={caseData ? caseData.formData : createCase}
                                 edit={false}

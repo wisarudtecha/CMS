@@ -29,7 +29,8 @@ import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 // import CasesView from "./pages/Case/caseView";
 import Dashboard from "./components/dashboard/Dashboard";
 import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
-
+import CasesAssignment from "./pages/Case/caseAssignment";
+import CaseCreation from "./components/case/CaseCreation";
 // Lingui
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
@@ -58,8 +59,11 @@ export default function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/kanban" element={<Kanban />} />
+            <Route path="/case-assignment" element={<CasesAssignment />} />
+            <Route path="/case-creation" element={<CaseCreation/>} />
             {/* <Route path="/case-view" element={<CasesView />} /> */}
             {/* Forms */}
+            
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
             <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
