@@ -581,10 +581,10 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-red-500",
       "priority": 2,
-      "assignee": {
+      "assignee": [{
         "name": "Mobile Users",
         "color": "bg-blue-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
@@ -774,10 +774,10 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-orange-500",
       "priority": 5,
-      "assignee": {
+      "assignee": [{
         "name": "Alex Rivera",
         "color": "bg-gray-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
@@ -969,10 +969,10 @@
       "categoryColor": "bg-gray-500",
       "priority": 4,
       "priorityColor": "border-l-blue-500",
-      "assignee": {
+      "assignee": [{
         "name": "Emma Davis",
         "color": "bg-blue-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
@@ -1161,10 +1161,10 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-red-500",
       "priority": 2,
-      "assignee": {
+      "assignee": [{
         "name": "Tom Wilson",
         "color": "bg-green-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
@@ -1355,10 +1355,10 @@
       "categoryColor": "bg-pink-500",
       "priorityColor": "border-l-orange-500",
       "priority": 5,
-      "assignee": {
+      "assignee": [{
         "name": "Lisa Park",
         "color": "bg-blue-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
@@ -1548,10 +1548,10 @@
       "categoryColor": "bg-blue-500",
       "priorityColor": "border-l-blue-500",
       "priority": 7,
-      "assignee": {
+      "assignee": [{
         "name": "David Kim",
         "color": "bg-purple-500"
-      },
+      }],
       "formData": {
         "formId": "form_1750652352497",
         "formName": "Create Cese",
