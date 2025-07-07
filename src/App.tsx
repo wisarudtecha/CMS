@@ -28,6 +28,10 @@ import WorkflowEditorPage from "./pages/Workflow/Editor";
 import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 // import CasesView from "./pages/Case/caseView";
 import Dashboard from "./components/dashboard/Dashboard";
+import AgentStatusDashboard from "@/components/dashboard/AgentStatusDashboard";
+import AnalyticsDashboard from "@/components/dashboard/AnalyticsDashboard";
+import CallcenterDashboard from "@/components/dashboard/CallcenterDashboard";
+import ServiceDashboard from "@/components/dashboard/ServiceDashboard";
 import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
@@ -52,7 +56,11 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
-            <Route index path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/agent-status" element={<AgentStatusDashboard />} />
+            <Route path="/dashboard/analytics" element={<AnalyticsDashboard />} />
+            <Route path="/dashboard/callcenter" element={<CallcenterDashboard />} />
+            <Route path="/dashboard/service" element={<ServiceDashboard />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

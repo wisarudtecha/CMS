@@ -63,12 +63,16 @@ const AppSidebar: React.FC = () => {
       icon: <PieChartIcon />,
       name: "Dashboard & Analytics",
       subItems: [
-        { name: "Overview SLA", path: "/dashboard", pro: false },
-        { name: "Ticket Summary", path: "/ticket-summary", pro: false },
-        { name: "Ticket Details", path: "/ticket-details", pro: false },
-        { name: "Transaction Summary", path: "/transaction-summary", pro: false },
-        { name: "Transaction Details", path: "/transaction-details", pro: false },
-        { name: "Responder Performance", path: "/responder-performance", pro: false },
+        // { name: "Overview SLA", path: "/overview-sla", pro: false },
+        // { name: "Ticket Summary", path: "/ticket-summary", pro: false },
+        // { name: "Ticket Details", path: "/ticket-details", pro: false },
+        // { name: "Transaction Summary", path: "/transaction-summary", pro: false },
+        // { name: "Transaction Details", path: "/transaction-details", pro: false },
+        // { name: "Responder Performance", path: "/responder-performance", pro: false },
+        { name: "Analytics", path: "/dashboard/analytics", pro: false },
+        { name: "Call Center", path: "/dashboard/callcenter", pro: false },
+        { name: "Agent Status", path: "/dashboard/agent-status", pro: false },
+        { name: "Service", path: "/dashboard/service", pro: false }
       ],
     },
     {
@@ -109,7 +113,10 @@ const AppSidebar: React.FC = () => {
     {
       icon: <GridIcon />,
       name: t("navigation.sidebar.menu.dashboard.title"),
-      subItems: [{ name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", pro: false }],
+      subItems: [
+        { name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", pro: false },
+        { name: "Dashboard Framework", path: "/dashboard", pro: false },
+      ],
     },
     {
       icon: <CalenderIcon />,
