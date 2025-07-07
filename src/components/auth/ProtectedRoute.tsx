@@ -20,6 +20,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { state } = useAuth();
 
+  // Updated: [06-07-2025] v0.1.1
+  console.log('🛡️ ProtectedRoute - Auth State:', {
+    isLoading: state.isLoading,
+    isAuthenticated: state.isAuthenticated,
+    user: !!state.user,
+    token: !!state.token
+  });
+
   if (state.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -33,6 +41,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!state.isAuthenticated) {
+    // Updated: [06-07-2025] v0.1.1
+    console.log('🔐 Showing LoginForm - user not authenticated');
+    
     return <LoginForm />;
   }
 

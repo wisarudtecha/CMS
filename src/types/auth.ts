@@ -35,3 +35,47 @@ export interface RegisterData {
   department: string;
   role: string;
 }
+
+// Updated: [04-07-2025] v0.1.1
+// JWT Token Interfaces
+export interface JWTHeader {
+  alg: string;
+  typ: string;
+  kid?: string;
+}
+
+// Updated: [04-07-2025] v0.1.1
+export interface JWTPayload {
+  sub: string;
+  email: string;
+  name?: string;
+  role?: string;
+  permissions?: string[];
+  iat: number;
+  exp: number;
+  iss?: string;
+  aud?: string;
+  jti?: string;
+}
+
+// Updated: [04-07-2025] v0.1.1
+export interface DecodedJWT {
+  header: JWTHeader;
+  payload: JWTPayload;
+  signature: string;
+  raw: {
+    header: string;
+    payload: string;
+    signature: string;
+  };
+}
+
+// Updated: [04-07-2025] v0.1.1
+export interface TokenValidationResult {
+  isValid: boolean;
+  isExpired: boolean;
+  user?: User;
+  errors: string[];
+  expiresAt?: Date;
+  issuedAt?: Date;
+}

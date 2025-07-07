@@ -23,6 +23,13 @@ export const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  // Updated: [06-07-2025] v0.1.1
+  console.log('🔐 LoginForm rendered at:', new Date().toISOString(), {
+    isLoading: state.isLoading,
+    isAuthenticated: state.isAuthenticated,
+    error: state.error
+  });
+
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
     
@@ -86,6 +93,18 @@ export const LoginForm: React.FC = () => {
               </div>
               <div>
                 <div className="space-y-6">
+                  {/* Updated: [06-07-2025] v0.1.1 */}
+                  {/* Lock message */}
+                  {state.isLocked && (
+                    <div className="mb-6 p-4 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-700 rounded-lg">
+                      <div className="flex items-center">
+                        <span className="text-red-700 dark:text-red-200 text-sm">
+                          Account temporarily locked due to multiple failed attempts. Please try again later.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Error message */}
                   {state.error && (
                     <div className="mb-6 p-4 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-700 rounded-lg">

@@ -18,6 +18,7 @@ import {
   HorizontaLDots,
   ListIcon,
   PageIcon,
+  PencilIcon,
   PieChartIcon,
   PlugInIcon,
   TableIcon,
@@ -26,13 +27,12 @@ import {
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 // import SidebarWidget from "./SidebarWidget";
-import Button from "@/components/ui/button/Button";
+// import Button from "@/components/ui/button/Button";
 
 import { useTranslation } from "../hooks/useTranslation";
 import
   {
     BoxIcon,
-    Ticket,
     // PencilIcon
   }
 from "lucide-react";
@@ -57,13 +57,14 @@ const AppSidebar: React.FC = () => {
         { name: "Case Creation", path: "/case-creation", pro: false },
         { name: "Case Assignment", path: "/case-assignment", pro: false },
         { name: "Case History", path: "/kanban", pro: false },
+        { name: "Case View", path: "/case-view", pro: false }
       ],
     },
     {
       icon: <PieChartIcon />,
       name: "Dashboard & Analytics",
       subItems: [
-        { name: "Overview SLA", path: "/", pro: false },
+        { name: "Overview SLA", path: "/dashboard", pro: false },
         { name: "Ticket Summary", path: "/ticket-summary", pro: false },
         { name: "Ticket Details", path: "/ticket-details", pro: false },
         { name: "Transaction Summary", path: "/transaction-summary", pro: false },
@@ -82,13 +83,6 @@ const AppSidebar: React.FC = () => {
       subItems: [
         { name: "Forms Management", path: "/load-dynamic-form", pro: false },
         { name: "Form Builder", path:"/dynamic-form", pro:false }
-      ],
-    },
-    {
-      icon: <Ticket />,
-      name: "Ticket Management",
-      subItems: [
-        { name: "Ticket Management", path: "/ticket", pro: false },
       ],
     },
     {
@@ -131,7 +125,9 @@ const AppSidebar: React.FC = () => {
     {
       name: t("navigation.sidebar.menu.forms.title"),
       icon: <ListIcon />,
-      subItems: [{ name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false }],
+      subItems: [
+        { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false },
+      ],
     },
     {
       name: t("navigation.sidebar.menu.tables.title"),
@@ -176,6 +172,7 @@ const AppSidebar: React.FC = () => {
       subItems: [
         { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", pro: false },
         { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", pro: false },
+        { name: "Authenticate Inspector", path: "/authenticate", pro: false },
       ],
     },
   ], [t]);
@@ -381,7 +378,9 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`
+        fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+        pb-38 lg:pb-24
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -394,6 +393,17 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {isExpanded || isHovered || isMobileOpen ? (
+        <div className="absolute bottom-16 lg:bottom-0 left-0 p-6 w-full bg-white dark:bg-gray-900 z-100">
+          <button
+            onClick={() => handleMenuDisplay()}
+            className="rounded-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900"
+            title="Show / Hide Template Menu"
+          >
+            <PencilIcon className="h-4 w-4" />
+          </button>
+        </div>
+      ) : null}
       <div
         className={`py-8 flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -451,11 +461,6 @@ const AppSidebar: React.FC = () => {
             <div className={`mb-6`}>
               {renderMenuItems(mainItems, "main")}
             </div>
-            {isExpanded || isHovered || isMobileOpen ? (
-              <div className={`mb-6`}>
-                <Button onClick={() => handleMenuDisplay()}>Show / Hide Template Menu</Button>
-              </div>
-            ) : null}
             <div className={`mb-6 ${menuDisplay}`}>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${

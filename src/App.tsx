@@ -26,10 +26,11 @@ import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
 import WorkflowListPage from "./pages/Workflow/List";
 import WorkflowEditorPage from "./pages/Workflow/Editor";
 import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
-import CasesAssignment from "./pages/Case/caseAssignment";
-import TicketListComponent from "./components/ticket/List";
-// Lingui
+// import CasesView from "./pages/Case/caseView";
+import Dashboard from "./components/dashboard/Dashboard";
+import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 
+// Lingui
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
 // import { messages as enMessages } from "./locales/en/messages";
@@ -50,21 +51,21 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+            <Route index path="/dashboard" element={<Dashboard />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="/kanban" element={<Kanban />} />
-            <Route path="/case-assignment" element={<CasesAssignment />} />
+            {/* <Route path="/case-view" element={<CasesView />} /> */}
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
             <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
-            {/* Ticket */}
-            <Route path="/ticket" element={<TicketListComponent />} />
+
             {/* Ui Elements */}
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/avatars" element={<Avatars />} />
@@ -85,6 +86,9 @@ export default function App() {
             <Route path="/workflow/editor/v2/:id/edit" element={<WorkflowEditorPage />} />
             {/* Workflow Builder (Archive) */}
             <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
+
+            {/* Authenticated Content */}
+            <Route path="/authenticate" element={<AuthenticatedContent />} />
           </Route>
 
           {/* Auth Layout */}
