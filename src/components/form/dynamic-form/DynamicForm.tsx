@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { v4 as uuidv4 } from 'uuid'; // IMPORT: Using uuid library
+import { v4 as uuidv4 } from 'uuid';
 import {
   DndContext,
   closestCenter,
@@ -87,18 +87,20 @@ interface DynamicFormProps {
   enableFormTitle?: boolean;
 }
 
-// --- Basic UI Components (Inline implementations to resolve import errors and preserve theme) ---
-const gridColsMap: Record<number, string> = {
-    1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
-    5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
-    9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
-  };
-  const colsMap: Record<number, string> = {
-    1: "col-span-1", 2: "col-span-2", 3: "col-span-3", 4: "col-span-4",
-    5: "col-span-5", 6: "col-span-6", 7: "col-span-7", 8: "col-span-8",
-    9: "col-span-9", 10: "col-span-10", 11: "col-span-11", 12: "col-span-12",
-  };
-  
+// --- Responsive Helper Functions & Maps ---
+const getResponsiveGridClass = (cols: number | undefined, prefix = 'md') => {
+    const count = cols || 1;
+    if (count > 12) return `${prefix}:grid-cols-12`;
+    return `${prefix}:grid-cols-${count}`;
+};
+
+const getResponsiveColSpanClass = (span: number | undefined, prefix = 'md') => {
+    const count = span || 1;
+    if (count > 12) return `${prefix}:col-span-12`;
+    // On mobile, everything is full-width (col-span-1 in a 1-col grid)
+    // On desktop, apply the specified span.
+    return `${prefix}:col-span-${count}`;
+};
 
 interface DropdownProps {
   isOpen: boolean;
@@ -138,7 +140,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ onClick, children, classNam
 
 const ComponentCard: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6 xl:p-9">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <h4 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
         {title?title:""}
       </h4>
@@ -167,19 +169,19 @@ const PageBreadcrumb: React.FC<{ pageTitle: string }> = ({ pageTitle }) => {
 
 // --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
-  { formType: "textInput", title: "Text Form", canBeChild: true },
-  { formType: "Integer", title: "Number Form", canBeChild: true },
-  { formType: "textAreaInput", title: "Text Area Form", canBeChild: true },
-  { formType: "emailInput", title: "Email Form", canBeChild: true },
-  { formType: "option", title: "Multiple Select Form", options: [], canBeChild: true },
-  { formType: "select", title: "Single Select Form", options: [], canBeChild: true },
+  { formType: "textInput", title: "Text", canBeChild: true },
+  { formType: "Integer", title: "Number", canBeChild: true },
+  { formType: "textAreaInput", title: "Text Area", canBeChild: true },
+  { formType: "emailInput", title: "Email", canBeChild: true },
+  { formType: "option", title: "Multi-Select", options: [], canBeChild: true },
+  { formType: "select", title: "Single-Select", options: [], canBeChild: true },
   { formType: "image", title: "Image", canBeChild: true },
-  { formType: "multiImage", title: "MultiImage", canBeChild: true },
+  { formType: "multiImage", title: "Multi-Image", canBeChild: true },
   { formType: "passwordInput", title: "Password", canBeChild: true },
-  { formType: "dateInput", title: "Date Form", canBeChild: true },
-  { formType: "dateLocal", title: "DateLocal Form", canBeChild: true },
-  { formType: "radio", title: "Radio Button Form", options: [], canBeChild: true },
-  { formType: "InputGroup", title: "Group of Input", canBeChild: false },
+  { formType: "dateInput", title: "Date", canBeChild: true },
+  { formType: "dateLocal", title: "Date & Time", canBeChild: true },
+  { formType: "radio", title: "Radio", options: [], canBeChild: true },
+  { formType: "InputGroup", title: "Group", canBeChild: false },
   { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
 ];
 
@@ -216,7 +218,7 @@ function createDynamicFormField(
     return undefined;
   }
 
-  const id = uuidv4(); // EDIT: Use uuidv4 for ID generation
+  const id = uuidv4();
 
   let defaultValue: any;
   let fieldOptions: any[] | undefined;
@@ -295,7 +297,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         })
       } :
       {
-        formId: uuidv4(), // EDIT: Use uuidv4 for ID generation
+        formId: uuidv4(),
         formName: "New Dynamic Form",
         formColSpan: 1,
         formFieldJson: [],
@@ -304,10 +306,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   const [importJsonText, setImportJsonText] = useState(String);
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
   const [isImport, setImport] = useState(false);
-  // EDIT: State for managing hidden cards in the layout editor
   const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
 
-  // EDIT: Toggle visibility of a single card
   const toggleCardVisibility = useCallback((id: string) => {
     setHiddenCardIds(prev => {
       const newSet = new Set(prev);
@@ -320,8 +320,14 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     });
   }, []);
  const handleFormImport = useCallback(() => {
-    setCurrentForm(JSON.parse(importJsonText));
-    setImport(false);
+    try {
+        const parsedJson = JSON.parse(importJsonText);
+        setCurrentForm(parsedJson);
+        setImport(false);
+    } catch (error) {
+        alert("Invalid JSON format. Please check the content and try again.");
+        console.error("JSON parsing error:", error);
+    }
   }, [importJsonText]);
   
   const getAllFieldIds = (fields: IndividualFormFieldWithChildren[]): string[] => {
@@ -342,13 +348,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     return ids;
   };
 
-  // EDIT: Hide all cards
   const hideAllCards = useCallback(() => {
     const allIds = getAllFieldIds(currentForm.formFieldJson);
     setHiddenCardIds(new Set(allIds));
   }, [currentForm.formFieldJson]);
 
-  // EDIT: Show all cards
   const showAllCards = useCallback(() => {
     setHiddenCardIds(new Set());
   }, []);
@@ -929,8 +933,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     addField: (formType: string, parentId?: string) => void;
     addFieldToDynamicOption: (dynamicFieldId: string, optionValue: string, formType: string) => void;
     editFormData: boolean;
-    isHidden: boolean; // EDIT: Receive hidden state as a prop
-    toggleCardVisibility: (id: string) => void; // EDIT: Receive toggle function as a prop
+    isHidden: boolean;
+    toggleCardVisibility: (id: string) => void;
   }
 
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
@@ -948,8 +952,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     addField,
     addFieldToDynamicOption,
     editFormData,
-    isHidden, // EDIT
-    toggleCardVisibility, // EDIT
+    isHidden,
+    toggleCardVisibility,
   }) => {
     const {
       attributes,
@@ -984,86 +988,23 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       setExpandedDynamicFields(prev => ({ ...prev, [`${field.id}-${optionValue}`]: !prev[`${field.id}-${optionValue}`] }));
     };
 
-    useEffect(() => {
-      setLocalIdValue(field.id);
-    }, [field.id]);
+    useEffect(() => { setLocalIdValue(field.id); }, [field.id]);
+    useEffect(() => { setLocalLabelValue(field.label); }, [field.label]);
+    useEffect(() => { setLocalPlaceholderValue(field.placeholder || ""); }, [field.placeholder]);
+    useEffect(() => { setLocalGroupColSpan(field.GroupColSpan || 1); }, [field.GroupColSpan]);
+    useEffect(() => { setLocalDynamicFieldColSpan(field.DynamicFieldColSpan || 1); }, [field.DynamicFieldColSpan]);
 
-    useEffect(() => {
-      setLocalLabelValue(field.label);
-    }, [field.label]);
+    const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setLocalIdValue(e.target.value); }, []);
+    const handleIdBlur = useCallback(() => { if (localIdValue !== field.id) { updateFieldId(field.id, localIdValue); } }, [localIdValue, field.id, updateFieldId]);
+    const handleIdKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); handleIdBlur(); idInputRef.current?.blur(); } }, [localIdValue, field.id, updateFieldId, handleIdBlur]);
+    
+    const handleLocalLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setLocalLabelValue(e.target.value); }, []);
+    const handleLabelBlur = useCallback(() => { if (localLabelValue !== field.label) { handleLabelChange(field.id, localLabelValue); } }, [localLabelValue, field.id, handleLabelChange]);
+    const handleLabelKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); handleLabelBlur(); labelInputRef.current?.blur(); } }, [localLabelValue, field.id, handleLabelChange, handleLabelBlur]);
 
-    useEffect(() => {
-      setLocalPlaceholderValue(field.placeholder || "");
-    }, [field.placeholder]);
-
-    useEffect(() => {
-      setLocalGroupColSpan(field.GroupColSpan || 1);
-    }, [field.GroupColSpan]);
-
-    useEffect(() => {
-      setLocalDynamicFieldColSpan(field.DynamicFieldColSpan || 1);
-    }, [field.DynamicFieldColSpan]);
-
-
-    const handleLocalIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalIdValue(e.target.value);
-    }, []);
-
-    const handleIdBlur = useCallback(() => {
-      if (localIdValue !== field.id) {
-        updateFieldId(field.id, localIdValue);
-      }
-    }, [localIdValue, field.id, updateFieldId]);
-
-    const handleIdKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (localIdValue !== field.id) {
-          updateFieldId(field.id, localIdValue);
-        }
-        idInputRef.current?.blur();
-      }
-    }, [localIdValue, field.id, updateFieldId]);
-
-    const handleLocalLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalLabelValue(e.target.value);
-    }, []);
-
-    const handleLabelBlur = useCallback(() => {
-      if (localLabelValue !== field.label) {
-        handleLabelChange(field.id, localLabelValue);
-      }
-    }, [localLabelValue, field.id, handleLabelChange]);
-
-    const handleLabelKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (localLabelValue !== field.label) {
-          handleLabelChange(field.id, localLabelValue);
-        }
-        labelInputRef.current?.blur();
-      }
-    }, [localLabelValue, field.id, handleLabelChange]);
-
-    const handleLocalPlaceholderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalPlaceholderValue(e.target.value);
-    }, []);
-
-    const handlePlaceholderBlur = useCallback(() => {
-      if (localPlaceholderValue !== field.placeholder) {
-        handlePlaceholderChange(field.id, localPlaceholderValue);
-      }
-    }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
-
-    const handlePlaceholderKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (localPlaceholderValue !== field.placeholder) {
-          handlePlaceholderChange(field.id, localPlaceholderValue);
-        }
-        placeholderInputRef.current?.blur();
-      }
-    }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
+    const handleLocalPlaceholderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setLocalPlaceholderValue(e.target.value); }, []);
+    const handlePlaceholderBlur = useCallback(() => { if (localPlaceholderValue !== field.placeholder) { handlePlaceholderChange(field.id, localPlaceholderValue); } }, [localPlaceholderValue, field.id, handlePlaceholderChange]);
+    const handlePlaceholderKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); handlePlaceholderBlur(); placeholderInputRef.current?.blur(); } }, [localPlaceholderValue, field.id, handlePlaceholderChange, handlePlaceholderBlur]);
 
     const handleAddOptionClick = useCallback(() => {
       const trimmedOption = localNewOptionText.trim();
@@ -1073,37 +1014,24 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       }
     }, [localNewOptionText, field.id, handleAddOption]);
 
-    const handleNewOptionKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleAddOptionClick();
-      }
-    }, [handleAddOptionClick]);
-
+    const handleNewOptionKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); handleAddOptionClick(); } }, [handleAddOptionClick]);
+    
     const handleLocalGroupColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalGroupColSpan(parseInt(e.target.value, 10));
       handleChildContainerColSpanChange(e, field.id, "InputGroup");
     }, [field.id, handleChildContainerColSpanChange]);
-
+    
     const handleLocalDynamicFieldColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalDynamicFieldColSpan(parseInt(e.target.value, 10));
       handleChildContainerColSpanChange(e, field.id, "dynamicField");
     }, [field.id, handleChildContainerColSpanChange]);
 
-
-    const showPlaceholderInput =
-      field.type === "textInput" ||
-      field.type === "Integer" ||
-      field.type === "textAreaInput" ||
-      field.type === "emailInput" ||
-      field.type === "passwordInput";
-
+    const showPlaceholderInput = ["textInput", "Integer", "textAreaInput", "emailInput", "passwordInput"].includes(field.type);
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
     const isInputGroup = field.type === "InputGroup";
     const isDynamicField = field.type === "dynamicField";
     const showLabelInput = !field.isChild;
     const childFormFields = formConfigurations.filter(f => f.canBeChild);
-
     const isAnyDropdownOpen = isAddDropdownOpen || Object.values(dynamicOptionDropdown).some(Boolean);
 
     return (
@@ -1112,288 +1040,113 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
         {...attributes}
       >
-        <div
-          ref={setActivatorNodeRef}
-          className="flex top-2 left-2 p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-          title="Drag to reorder"
-          {...listeners}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+        <div className="flex items-start justify-between flex-wrap gap-y-2">
+            <div
+              ref={setActivatorNodeRef}
+              className="p-1 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 -ml-1"
+              title="Drag to reorder"
+              {...listeners}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-menu">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => toggleCardVisibility(field.id)} size="xxs" className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs">
+                {isHidden ? 'Show' : 'Hide'}
+              </Button>
+              <Button onClick={() => removeField(field.id)} className="p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300" title="Remove field" disabled={!editFormData} size="xxs">
+              ✕
+            </Button>
+            </div>
         </div>
 
-        <div className="absolute top-4 right-3">
-          <Button
-            onClick={() => toggleCardVisibility(field.id)}
-            size="xxs"
-            className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs"
-          >
-            {isHidden ? 'Show' : 'Hide'}
-          </Button>
-          <Button
-          onClick={() => removeField(field.id)}
-          className="p-1 ml-4 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300 z-10"
-          title="Remove field"
-          disabled={!editFormData}
-          size="xxs"
-        >
-          ✕
-        </Button>
-        </div>
-
-        {/* EDIT: Conditional rendering based on `isHidden` prop */}
         {isHidden ? (
           <div className="flex items-center gap-2 py-2">
-            <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold">
-              {field.label}
-            </span>
-            <span className="text-blue-500 dark:text-blue-300 text-xl">
-              {formTypeIcons[field.type] || <span className="text-sm">?</span>}
-            </span>
+            <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold truncate">{field.label}</span>
+            <span className="text-blue-500 dark:text-blue-300 text-xl flex-shrink-0">{formTypeIcons[field.type] || <span className="text-sm">?</span>}</span>
           </div>
         ) : (
-          <>
-            <h1 className="my-px">({field.type}) </h1>
+          <div className="mt-2 space-y-4">
+            <h1 className="my-px font-mono text-xs">({field.type})</h1>
+            
             {showLabelInput && (
-              <label className="block text-gray-700 text-sm font-bold mb-1 dark:text-gray-400">
-                Label:
-                <Input
-                  ref={labelInputRef}
-                  type="text"
-                  value={localLabelValue}
-                  onChange={handleLocalLabelChange}
-                  onBlur={handleLabelBlur}
-                  onKeyDown={handleLabelKeyDown}
-                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
-                  aria-label="Preview field title"
-                  disabled={!editFormData}
-                />
+              <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Label:
+                <Input ref={labelInputRef} type="text" value={localLabelValue} onChange={handleLocalLabelChange} onBlur={handleLabelBlur} onKeyDown={handleLabelKeyDown} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" aria-label="Preview field title" disabled={!editFormData} />
               </label>
             )}
-            <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
-              ID:
-              <Input
-                ref={idInputRef}
-                type="text"
-                value={localIdValue}
-                onChange={handleLocalIdChange}
-                onBlur={handleIdBlur}
-                onKeyDown={handleIdKeyDown}
-                className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
-                aria-label="Edit field id"
-                title="Edit Field ID"
-                disabled={true}
-              />
+
+            <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">ID:
+              <Input ref={idInputRef} type="text" value={localIdValue} onChange={handleLocalIdChange} onBlur={handleIdBlur} onKeyDown={handleIdKeyDown} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" aria-label="Edit field id" title="Edit Field ID" disabled={true} />
             </label>
+
             {showPlaceholderInput && (
-              <label className="block text-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
-                Placeholder:
-                <Input
-                  ref={placeholderInputRef}
-                  type="text"
-                  value={localPlaceholderValue}
-                  onChange={handleLocalPlaceholderChange}
-                  onBlur={handlePlaceholderBlur}
-                  onKeyDown={handlePlaceholderKeyDown}
-                  className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
-                  aria-label="Edit field placeholder"
-                  title="Edit Field Placeholder"
-                  disabled={!editFormData}
-                />
+              <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Placeholder:
+                <Input ref={placeholderInputRef} type="text" value={localPlaceholderValue} onChange={handleLocalPlaceholderChange} onBlur={handlePlaceholderBlur} onKeyDown={handlePlaceholderKeyDown} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" aria-label="Edit field placeholder" title="Edit Field Placeholder" disabled={!editFormData} />
               </label>
             )}
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                id={`required-${field.id}`}
-                checked={field.required}
-                onChange={() => handleToggleRequired(field.id)}
-                className="form-checkbox h-4 w-4 text-blue-600 rounded"
-                disabled={!editFormData}
-              />
-              <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">
-                Required
-              </label>
+            
+            <div className="flex items-center">
+              <input type="checkbox" id={`required-${field.id}`} checked={field.required} onChange={() => handleToggleRequired(field.id)} className="form-checkbox h-4 w-4 text-blue-600 rounded" disabled={!editFormData} />
+              <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">Required</label>
             </div>
-            {field.isChild ?
-              <div className={`flex items-center mt-2`}>
-                <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
-                  Column Span (Field):
-                </label>
-                <select
-                  id={`colSpan-select-${field.id}`}
-                  value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-                  onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                  className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
-                  disabled={!editFormData}
-                >
-                  {colSpanOptions.map((span) => (
-                    <option key={span} value={span}>
-                      {Math.trunc(span / overallFormColSpan * 100)} %
-                    </option>
-                  ))}
-                </select>
-              </div> : (isInputGroup || isDynamicField) ?
-                <div>
-                  <div className="flex items-center mt-2">
-                    <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
-                      Overall {isInputGroup ? 'Group' : 'Dynamic Field'} Column Span:
-                    </label>
-                    <Input
-                      id={`overallColSpan-input-${field.id}`}
-                      type="number"
-                      min="1"
-                      max="12"
-                      value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan}
-                      onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange}
-                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20"
-                      disabled={!editFormData}
-                    />
-                  </div>
-                  <div className={`flex items-center mt-2`}>
 
-                    <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
-                      Column Span (Field):
-                    </label>
-                    <select
-                      id={`colSpan-select-${field.id}`}
-                      value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-                      onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                      className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
-                      disabled={!editFormData}
-                    >
-                      {colSpanOptions.map((span) => (
-                        <option key={span} value={span}>
-                          {Math.trunc(span / overallFormColSpan * 100)} %
-                        </option>
-                      ))}
+            <div className="space-y-2">
+                {(isInputGroup || isDynamicField) && !field.isChild && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
+                            Desktop Grid Columns:
+                        </label>
+                        <Input id={`overallColSpan-input-${field.id}`} type="number" min="1" max="12" value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan} onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData} />
+                    </div>
+                )}
+                <div className={`flex flex-wrap items-center gap-2`}>
+                    <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Column Span:</label>
+                    <select id={`colSpan-select-${field.id}`} value={field.colSpan || 1} onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value))} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400" disabled={!editFormData}>
+                        {colSpanOptions.map((span) => (<option key={span} value={span}>{span}</option>))}
                     </select>
-                  </div> </div> :
-                <div className="flex items-center mt-2">
-                  <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
-                    Column Span (Field):
-                  </label>
-                  <select
-                    id={`colSpan-select-${field.id}`}
-                    value={field.colSpan && field.colSpan <= overallFormColSpan ? field.colSpan : 1}
-                    onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value) as number)}
-                    className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
-                    disabled={!editFormData}
-                  >
-                    {colSpanOptions.map((span) => (
-                      <option key={span} value={span}>
-                        {Math.trunc(span / overallFormColSpan * 100)} %
-                      </option>
-                    ))}
-                  </select>
-                </div>}
+                </div>
+            </div>
 
-
-            {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && field.options ? (
-              <div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Input
-                    type="text"
-                    placeholder="New option"
-                    value={localNewOptionText}
-                    onChange={(e) => setLocalNewOptionText(e.target.value)}
-                    onKeyDown={handleNewOptionKeyDown}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-gray-400"
-                    disabled={!editFormData}
-                  />
-                  <Button
-                    onClick={handleAddOptionClick}
-                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm "
-                    disabled={!editFormData}
-                    size="sm"
-                  >
-                    +
-                  </Button>
+            {(field.type === "select" || field.type === "option" || field.type === "radio" || isDynamicField) && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                  <Input type="text" placeholder="New option" value={localNewOptionText} onChange={(e) => setLocalNewOptionText(e.target.value)} onKeyDown={handleNewOptionKeyDown} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm dark:text-gray-400" disabled={!editFormData}/>
+                  <Button onClick={handleAddOptionClick} className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 text-sm flex-shrink-0" disabled={!editFormData} size="sm">+</Button>
                 </div>
 
-                {field.options.map((option, index) => {
+                {field.options && field.options.map((option, index) => {
                   const optionValue = isDynamicField ? option.value : option;
                   const isExpanded = !!expandedDynamicFields[`${field.id}-${optionValue}`];
                   const isOptionDropdownOpen = !!dynamicOptionDropdown[optionValue];
 
                   return (
                     <div key={optionValue} className="flex flex-col gap-2 mt-2 border-t pt-2">
-                      <div className="flex justify-between items-center">
-                        <p className="text-gray-700 dark:text-white">- {optionValue}</p>
-                        <div className="flex items-center gap-2">
-                          {isDynamicField && (
-                            <Button
-                              onClick={() => toggleDynamicFieldExpansion(optionValue)}
-                              className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs"
-                            >
-                              {isExpanded ? 'Hide Form' : 'Show Form'}
-                            </Button>
-                          )}
-                          <Button
-                            onClick={() => handleRemoveOption(field.id, index)}
-                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm "
-                            disabled={!editFormData}
-                            size="sm"
-                          >
-                            -
-                          </Button>
+                      <div className="flex justify-between items-center flex-wrap gap-2">
+                        <p className="text-gray-700 dark:text-white break-all">- {optionValue}</p>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isDynamicField && (<Button onClick={() => toggleDynamicFieldExpansion(optionValue)} className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs">{isExpanded ? 'Hide' : 'Show'}</Button>)}
+                          <Button onClick={() => handleRemoveOption(field.id, index)} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm" disabled={!editFormData} size="sm">-</Button>
                         </div>
                       </div>
                       {isDynamicField && isExpanded && (
-                        <div className="mt-2 p-3  rounded-md bg-blue-50  dark:bg-white/[0.03]">
-                          <div className="flex justify-between items-center mb-2">
+                        <div className="mt-2 p-3 rounded-md bg-blue-50 dark:bg-white/[0.03]">
+                          <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
                             <h4 className="text-sm font-semibold dark:text-gray-400">Form for "{optionValue}"</h4>
                             <div className="relative">
-                              <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>
-                                Add Field
-                              </Button>
+                              <Button className="dropdown-toggle" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>Add Field</Button>
                               <Dropdown isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
-                                {childFormFields.map(formItem => (
-                                  <DropdownItem
-                                    className="text-gray-700  text-sm dark:text-gray-400"
-                                    key={formItem.formType}
-                                    onClick={() => {
-                                      addFieldToDynamicOption(field.id, optionValue, formItem.formType);
-                                      setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }));
-                                    }}
-                                  >
-                                    {formItem.title}
-                                  </DropdownItem>
-                                ))}
+                                {childFormFields.map(formItem => (<DropdownItem className="text-gray-700 text-sm dark:text-gray-400" key={formItem.formType} onClick={() => { addFieldToDynamicOption(field.id, optionValue, formItem.formType); setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false })); }}>{formItem.title}</DropdownItem>))}
                               </Dropdown>
                             </div>
                           </div>
-                          <SortableContext
-                            items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)}
-                            strategy={rectSortingStrategy}
-                          >
-                            <div className={` min-h-[50px] space-y-4 grid grid-cols-${field.DynamicFieldColSpan || 1} gap-4`}>
-                              {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (
-                                <div className={colsMap[childField.colSpan||1]} key={childField.id}>
-                                  <SortableFieldEditItem
-                                    key={childField.id}
-                                    field={childField}
-                                    handleLabelChange={handleLabelChange}
-                                    updateFieldId={updateFieldId}
-                                    handleAddOption={handleAddOption}
-                                    handleRemoveOption={handleRemoveOption}
-                                    removeField={removeField}
-                                    handleToggleRequired={handleToggleRequired}
-                                    handlePlaceholderChange={handlePlaceholderChange}
-                                    handleColSpanChange={handleColSpanChange}
-                                    overallFormColSpan={field.DynamicFieldColSpan || 1}
-                                    addField={addField}
-                                    addFieldToDynamicOption={addFieldToDynamicOption}
-                                    editFormData={editFormData}
-                                    handleChildContainerColSpanChange={handleChildContainerColSpanChange}
-                                    isHidden={hiddenCardIds.has(childField.id)}
-                                    toggleCardVisibility={toggleCardVisibility}
-                                  />
-                                </div>
-                              ))}
+                          <SortableContext items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)} strategy={rectSortingStrategy}>
+                            <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}>
+                              {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
+                                  <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.DynamicFieldColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility}/>
+                                </div>))}
                             </div>
                           </SortableContext>
                         </div>
@@ -1402,179 +1155,73 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                   );
                 })}
               </div>
-            ) : null}
+            )}
 
             {isInputGroup && (
               <div className="mt-4 p-3 border border-gray-300 rounded-md bg-gray-100 dark:border-gray-500 dark:bg-white/[0.05]">
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2 gap-2">
                   <h3 className="text-md font-semibold dark:text-gray-400">Grouped Fields</h3>
                   <div className="relative">
                     <Button className="dropdown-toggle" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
                     <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
-                      {childFormFields.map(item => (
-                        <DropdownItem
-                          key={item.formType}
-                          onClick={() => {
-                            addField(item.formType, field.id);
-                            setAddDropdownOpen(false);
-                          }}
-                        >
-                          {item.title}
-                        </DropdownItem>
-                      ))}
+                      {childFormFields.map(item => (<DropdownItem key={item.formType} onClick={() => { addField(item.formType, field.id); setAddDropdownOpen(false); }}>{item.title}</DropdownItem>))}
                     </Dropdown>
                   </div>
                 </div>
-                <SortableContext
-                  items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []}
-                  strategy={rectSortingStrategy}
-                >
-                  <div
-                    className={`min-h-[50px] -space-y-6 grid grid-cols-${field.GroupColSpan || 1} gap-4`}
-                  >
-                    {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
-                      <div className={colsMap[childField.colSpan||1]} key={childField.id}>
-                        <SortableFieldEditItem
-                          key={childField.id}
-                          field={childField}
-                          handleLabelChange={handleLabelChange}
-                          updateFieldId={updateFieldId}
-                          handleAddOption={handleAddOption}
-                          handleRemoveOption={handleRemoveOption}
-                          removeField={removeField}
-                          handleToggleRequired={handleToggleRequired}
-                          handlePlaceholderChange={handlePlaceholderChange}
-                          handleColSpanChange={handleColSpanChange}
-                          overallFormColSpan={field.GroupColSpan || 1}
-                          addField={addField}
-                          addFieldToDynamicOption={addFieldToDynamicOption}
-                          editFormData={editFormData}
-                          handleChildContainerColSpanChange={handleChildContainerColSpanChange}
-                          isHidden={hiddenCardIds.has(childField.id)}
-                          toggleCardVisibility={toggleCardVisibility}
-                        />
-                      </div>
-                    ))}
+                <SortableContext items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []} strategy={rectSortingStrategy}>
+                  <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}>
+                    {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
+                        <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.GroupColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility}/>
+                      </div>))}
                   </div> 
                 </SortableContext>
               </div>
             )}
-          </>
+          </div>
         )}
-
-      
       </div>
     );
   });
 
 
   const FormEdit = useCallback(() => {
-    const gridColsMapClass: Record<number, string> = {
-      1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
-      5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
-      9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
-    };
-    const overallGridClass = gridColsMapClass[currentForm.formColSpan] || "grid-cols-1";
-    
     return (
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
           <h2 className="text-lg font-bold mb-4">Form Settings</h2>
-          <label className="block text-gray-600 text-sm font-bold mb-1 dark:text-gray-400">
-            Form Name:
-            <Input
-              type="text"
-              value={currentForm.formName}
-              onChange={(e) => handleFormNameChange(e.target.value)}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
-              placeholder="Enter form name"
-              disabled={!editFormData}
-            />
-          </label>
-          <label className="text-gray-600 block Form Layout Previewtext-gray-700 text-sm font-bold mb-1 mt-2 dark:text-gray-400">
-            Form ID:
-            <Input
-              type="text"
-              value={currentForm.formId}
-              onChange={(e) => handleFormIdChange(e.target.value)}
-              className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
-              placeholder="Enter unique form ID"
-              disabled={true}
-            />
-          </label>
-          <div className="flex items-center mt-2">
-            <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">
-              Overall Form Column Span:
+          <div className="space-y-4">
+            <label className="block text-gray-600 text-sm font-bold dark:text-gray-400">Form Name:
+              <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter form name" disabled={!editFormData}/>
             </label>
-            <Input
-              id={`overallColSpan-input`}
-              type="number"
-              min="1"
-              max="12"
-              value={currentForm.formColSpan}
-              onChange={handleOverallFormColSpanChange}
-              className="ml-2 py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20"
-              disabled={!editFormData}
-            />
+            <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Form ID:
+              <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter unique form ID" disabled={true}/>
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Grid Columns:</label>
+              <Input id={`overallColSpan-input`} type="number" min="1" max="12" value={currentForm.formColSpan} onChange={handleOverallFormColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData}/>
+            </div>
           </div>
         </div>
 
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
-          <div className="flex justify-between items-center mb-4 ">
-            <h2 className="text-lg font-bold">Form Layout Preview</h2>
-            {/* EDIT: Hide/Show All buttons */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+            <h2 className="text-lg font-bold">Form Layout Editor</h2>
             <div className="flex gap-2">
-                <Button
-                    onClick={hideAllCards}
-                    className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm"
-                >
-                    Hide All
-                </Button>
-                <Button
-                    onClick={showAllCards}
-                    className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm"
-                >
-                    Show All
-                </Button>
+                <Button onClick={hideAllCards} className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Hide All</Button>
+                <Button onClick={showAllCards} className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Show All</Button>
             </div>
           </div>
 
           {currentForm.formFieldJson.length === 0 ? (
-            <p className="text-center text-gray-500 italic">
-              No fields added yet. Use the "Add Form" section to add new fields.
-            </p>
+            <p className="text-center text-gray-500 italic">No fields added yet. Use the buttons above to add new fields.</p>
           ) : (
-            <div >
-              <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">
-                Overall {currentForm.formColSpan} Columns
-              </p>
-              <SortableContext
-                items={currentForm.formFieldJson.map(field => field.id)}
-                strategy={rectSortingStrategy}
-                key={currentForm.formId}
-              >
-                <div className={`grid w-full ${overallGridClass} gap-4`}>
+            <div>
+              <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">Desktop: {currentForm.formColSpan} Columns | Mobile: 1 Column</p>
+              <SortableContext items={currentForm.formFieldJson.map(field => field.id)} strategy={rectSortingStrategy} key={currentForm.formId}>
+                <div className={`grid w-full grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
                   {currentForm.formFieldJson.map((field) => (
-                    <div className={colsMap[field.colSpan||1]} key={field.id}>
-                      <SortableFieldEditItem
-                        key={field.id}
-                        field={field}
-                        handleLabelChange={handleLabelChange}
-                        updateFieldId={updateFieldId}
-                        handleAddOption={handleAddOption}
-                        handleRemoveOption={handleRemoveOption}
-                        removeField={removeField}
-                        handleToggleRequired={handleToggleRequired}
-                        handlePlaceholderChange={handlePlaceholderChange}
-                        handleColSpanChange={handleColSpanChange}
-                        overallFormColSpan={currentForm.formColSpan}
-                        addField={addField}
-                        addFieldToDynamicOption={addFieldToDynamicOption}
-                        editFormData={editFormData}
-                        handleChildContainerColSpanChange={handleChildContainerColSpanChange}
-                        isHidden={hiddenCardIds.has(field.id)} // EDIT: Pass hidden state
-                        toggleCardVisibility={toggleCardVisibility} // EDIT: Pass toggle function
-                      />
+                    <div className={getResponsiveColSpanClass(field.colSpan)} key={field.id}>
+                      <SortableFieldEditItem key={field.id} field={field} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={currentForm.formColSpan} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(field.id)} toggleCardVisibility={toggleCardVisibility}/>
                     </div>
                   ))}
                 </div>
@@ -1582,60 +1229,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             </div>
           )}
         </div>
-        {isImport && (
-          <Modal isOpen={isImport} onClose={() => setImport(false)} className="max-w-4xl p-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Import Workflow JSON</h3>
-            </div>
-            
-            <div className="p-4">
-              {/* <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Upload JSON File
-                </label>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleFormImport}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white"
-                />
-              </div> */}
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Or Paste JSON Content
-                </label>
-                <TextArea
-                  value={importJsonText}
-                  onChange={(value) => setImportJsonText(value)}
-                  className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent font-mono text-sm"
-                  placeholder="Paste your workflow JSON here..."
-                />
-              </div>
-            </div><div className="flex items-center justify-end gap-2 p-4">
-              <Button
-                onClick={() => setImport(false)}
-                variant="error"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleFormImport}
-                disabled={!importJsonText.trim()}
-                variant={`${
-                  !importJsonText.trim()
-                    ? 'outline'
-                    : 'success'
-                }`}
-              >
-                <FileIcon className="w-4 h-4" />
-                Import Form
-              </Button>
+        {isImport && (<Modal isOpen={isImport} onClose={() => setImport(false)} className="max-w-4xl p-6">
+            <div><h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Import Form JSON</h3></div>
+            <div className="p-4"><div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Paste JSON Content</label>
+                <TextArea value={importJsonText} onChange={(value) => setImportJsonText(value)} className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent font-mono text-sm" placeholder="Paste your form JSON here..."/>
+              </div></div>
+            <div className="flex items-center justify-end gap-2 p-4">
+              <Button onClick={() => setImport(false)} variant="error">Cancel</Button>
+              <Button onClick={handleFormImport} disabled={!importJsonText.trim()} variant={!importJsonText.trim() ? 'outline' : 'success'}><FileIcon className="w-4 h-4" /> Import Form</Button>
             </div>
           </Modal>)}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards,isImport, importJsonText, setImportJsonText, setImport, isImport, setCurrentForm]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards,isImport, importJsonText, handleFormImport, setImportJsonText]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -1647,418 +1254,134 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       disabled: !editFormData,
     };
 
-    const labelComponent = !field.isChild && (
-      <label
-        htmlFor={field.id}
-        className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400"
-      >
-        {field.label} {field.required && <span className="text-red-500">*</span>}
-      </label>
-    );
-    const groupGridColsMap: Record<number, string> = {
-      1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4",
-      5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7", 8: "grid-cols-8",
-      9: "grid-cols-9", 10: "grid-cols-10", 11: "grid-cols-11", 12: "grid-cols-12",
-    };
-
+    const labelComponent = !field.isChild && (<label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</label>);
 
     switch (field.type) {
-      case "textInput":
-      case "emailInput":
-      case "passwordInput":
-        return (
-          <>
-            {labelComponent}
-            <Input
-              type={
-                field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"
-              }
-              value={field.value as string}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-            />
-          </>
-        );
+      case "textInput": case "emailInput": case "passwordInput":
+        return (<> {labelComponent} <Input type={field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"} value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}/> </>);
+      
       case "Integer":
-        return (
-          <>
-            {labelComponent}
-            <Input
-              type="number"
-              value={field.value !== null ? field.value : ''}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-            />
-          </>
-        );
+        return (<> {labelComponent} <Input type="number" value={field.value !== null ? field.value : ''} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}/> </>);
+
       case "dateInput":
-        return (
-          <>
-            {labelComponent}
-            <Input
-              type="date"
-              value={field.value as string}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-            />
-          </>
-        );
+        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}/> </>);
+
       case "dateLocal":
-        return (
-          <>
-            {labelComponent}
-            <Input
-              type="datetime-local"
-              value={field.value as string}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-            />
-          </>
-        );
+        return (<> {labelComponent} <Input type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}/> </>);
+
       case "textAreaInput":
-        return (
-          <>
-            {labelComponent}
-            <textarea
-              value={field.value as string}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-               className={commonProps.disabled?`${commonProps.className} bg-gray-100 dark:bg-gray-800 disabled:opacity-50`:`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}
-            ></textarea>
-          </>
-        );
+        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}></textarea> </>);
+      
       case "select":
-        return (
-          <>
-            {labelComponent}
-            <select
-              value={String(field.value || "")}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-              className={commonProps.disabled?`${commonProps.className} bg-gray-100 dark:bg-gray-800 disabled:opacity-50`:`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}
-            >
-              <option value="" className="dark:bg-gray-800">
-                Select an option
-              </option>
-              {field.options?.map((option) => (
-                <option
-                  className="text-gray-700 dark:text-white dark:bg-gray-800 disabled:opacity-50"
-                  key={option}
-                  value={option}
-                >
-                  {option}
-                </option>
-              ))}
-            </select>
-          </>
-        );
+        return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}>
+              <option value="" className="dark:bg-gray-800">Select an option</option>
+              {field.options?.map((option) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
+            </select> </>);
+
       case "option":
-        return (
-          <>
-            {labelComponent}
-            <div className="flex flex-col gap-2 ">
-              {field.options?.map((option) => (
-                <label key={option} className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    value={option}
-                    checked={Array.isArray(field.value) && field.value.includes(option)}
-                    onChange={(e) => {
-                      const currentValues = Array.isArray(field.value) ? [...field.value] : [];
-                      if (e.target.checked) {
-                        handleFieldChange(field.id, [...currentValues, option]);
-                      } else {
-                        handleFieldChange(
-                          field.id,
-                          currentValues.filter((val: string) => val !== option)
-                        );
-                      }
-                    }}
-                    className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                    required={field.required && Array.isArray(field.value) && field.value.length === 0}
-                    disabled={!editFormData}
-                  />
+        return (<> {labelComponent} <div className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
+                  <input type="checkbox" value={option} checked={Array.isArray(field.value) && field.value.includes(option)} onChange={(e) => { const currentValues = Array.isArray(field.value) ? [...field.value] : []; if (e.target.checked) { handleFieldChange(field.id, [...currentValues, option]); } else { handleFieldChange(field.id, currentValues.filter((val: string) => val !== option)); } }} className="form-checkbox h-5 w-5 text-blue-600 rounded" required={field.required && Array.isArray(field.value) && field.value.length === 0} disabled={!editFormData}/>
                   <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
-                </label>
-              ))}
-            </div>
-          </>
-        );
+                </label>))} </div> </>);
+
       case "radio":
-        return (
-          <>
-            {labelComponent}
-            <div className="flex flex-col gap-2">
-              {field.options?.map((option) => (
-                <label key={option} className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name={field.id}
-                    value={option}
-                    checked={field.value === option}
-                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                    className="form-radio h-5 w-5 text-blue-600"
-                    required={field.required}
-                    disabled={!editFormData}
-                  />
+        return (<> {labelComponent} <div className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
+                  <input type="radio" name={field.id} value={option} checked={field.value === option} onChange={(e) => handleFieldChange(field.id, e.target.value)} className="form-radio h-5 w-5 text-blue-600" required={field.required} disabled={!editFormData}/>
                   <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
-                </label>
-              ))}
-            </div>
-          </>
-        );
-      case "image":
-      case "multiImage":
-        return (
-          <>
-            {labelComponent}
-            <div>
-              <input
-                id={field.id}
-                type="file"
-                accept="image/*"
-                multiple={field.type === "multiImage"}
-                onChange={(e) => handleFieldChange(field.id, e.target.files)}
-                className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))}
-                disabled={!editFormData}
-              />
-              {field.type === "image" && field.value instanceof File && (
-                <div className="relative group mt-2 w-20 h-20">
-                  <img
-                    src={URL.createObjectURL(field.value)}
-                    alt="Selected"
-                    className="w-full h-full object-cover rounded border border-gray-600"
-                  />
-                  <Button
-                    onClick={() => handleRemoveFile(field.id)}
-                    className="absolute top-1 right-1  rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    disabled={!editFormData}
-                    size="sm"
-                    variant="error"
-                  >
-                    ×
-                  </Button>
-                </div>
-              )}
-              {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (
-                <div className="mt-2">
+                </label>))} </div> </>);
+
+      case "image": case "multiImage":
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple={field.type === "multiImage"} onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData}/>
+              {field.type === "image" && field.value instanceof File && (<div className="relative group mt-2 w-20 h-20">
+                  <img src={URL.createObjectURL(field.value)} alt="Selected" className="w-full h-full object-cover rounded border border-gray-600"/>
+                  <Button onClick={() => handleRemoveFile(field.id)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
+                </div>)}
+              {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
                   <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {field.value.map((file: File, index: number) => (
-                      <div key={file.name + index} className="relative group">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-20 object-cover rounded border border-gray-600"
-                        />
-                        <Button
-                          onClick={() => handleRemoveFile(field.id, file.name)}
-                          className="absolute top-1 right-1  rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={!editFormData}
-                          size="sm"
-                          variant="error"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
-        );
+                  <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">
+                        <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-20 object-cover rounded border border-gray-600"/>
+                        <Button onClick={() => handleRemoveFile(field.id, file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
+                      </div>))} </div> </div>)} </div> </>);
+      
       case "InputGroup":
-        const groupColSpanClass = groupGridColsMap[field.GroupColSpan || 1] || "grid-cols-1";
+        return (<div> {!field.isChild && (<h3 className="text-lg font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
+            <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}> {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div key={childField.id} className={getResponsiveColSpanClass(childField.colSpan)}>{renderFormField(childField)}</div>))} </div>
+            {Array.isArray(field.value) && field.value.length === 0 && (<p className="text-center text-gray-500 italic text-sm mt-2">No fields in this group for preview.</p>)}
+          </div>);
 
-        return (
-          <div>
-            {!field.isChild && (
-              <h3 className="text-lg font-semibold mb-3 dark:text-gray-400">
-                {field.label} {field.required && <span className="text-red-500">*</span>}
-              </h3>
-            )}
-            <div className={`grid ${groupColSpanClass} gap-4`}>
-              {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (
-                <div
-                  key={childField.id}
-                  className={`${childField.colSpan ? `col-span-${childField.colSpan}` : 'col-span-1'}`}
-                >
-                  {renderFormField(childField)}
-                </div>
-              ))}
-            </div>
-            {Array.isArray(field.value) && field.value.length === 0 && (
-              <p className="text-center text-gray-500 italic text-sm mt-2">
-                No fields in this group for preview.
-              </p>
-            )}
-          </div>
-        );
       case "dynamicField":
-        const selectedOption = field.options?.find(
-          (option: any) => option.value === field.value
-        );
-        const dynamicFieldColSpanClass = groupGridColsMap[field.DynamicFieldColSpan || 1] || "grid-cols-1";
-
-        return (
-          <>
-            {labelComponent}
-            <select
-              value={String(field.value || "")}
-              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-              {...commonProps}
-              className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}
-            >
-              <option value="" className="dark:bg-gray-800">
-                Select an option
-              </option>
-              {field.options?.map((option: any) => (
-                <option
-                  className="text-gray-700 dark:text-white dark:bg-gray-800"
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.value}
-                </option>
-              ))}
+        const selectedOption = field.options?.find((option: any) => option.value === field.value);
+        return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}>
+              <option value="" className="dark:bg-gray-800">Select an option</option>
+              {field.options?.map((option: any) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option.value} value={option.value}>{option.value}</option>))}
             </select>
-            {selectedOption && Array.isArray(selectedOption.form) && (
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className={`grid ${dynamicFieldColSpanClass} gap-4`}>
-                  {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (
-                    <div
-                      key={nestedField.id}
-                      className={`col-span-${nestedField.colSpan || 1}`}
-                    >
-                      {renderFormField(nestedField)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        );
-      default:
-        return <p className="text-red-500">Unsupported field type: {field.type}</p>;
+            {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)}</div>))} </div>
+              </div>)} </>);
+
+      default: return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
   }, [handleFieldChange, handleRemoveFile, editFormData]);
   
   const FormPreview = useCallback(() => {
-
-    const gridColsClass = gridColsMap[currentForm.formColSpan] || "grid-cols-1";
     return (
-
       <div>
-        {enableFormTitle?<div className="px-3 py-4 text-xl  dark:text-white" >{currentForm.formName}</div>:<></>}
-        {currentForm.formFieldJson.length === 0 ? (
-          <p className="text-center text-gray-500 italic mb-4">
-            No fields added yet. Click "Edit" to start adding.
-          </p>
+        {enableFormTitle && <div className="px-3 py-4 text-xl dark:text-white">{currentForm.formName}</div>}
+        {currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
         ) : (
-
-          <div className={`grid ${gridColsClass} gap-4`}>
-            {currentForm.formFieldJson.map((field) => (
-              <div
-                key={field.id}
-                className={`mb-2 p-4 relative ${field.colSpan ? `col-span-${field.colSpan}` : 'col-span-1'
-                  }`}
-              >
-                {renderFormField(field)}
-              </div>
-            ))}
+          <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
+            {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 p-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}>{renderFormField(field)}</div>))}
           </div>
         )}
       </div>
     );
-}, [currentForm.formFieldJson, currentForm.formColSpan, currentForm.formName, renderFormField]);
+}, [currentForm, renderFormField, enableFormTitle]);
 
   return edit ? (
-    <div >
-      <PageMeta
-        title="React.js Form Elements Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Form Elements Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
-      />
-      <PageBreadcrumb pageTitle="From Elements" />
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={onDragEnd}
-      >
+    <div>
+      <PageMeta title="Dynamic Form Builder" description="A responsive dynamic form builder in React."/>
+      <PageBreadcrumb pageTitle="Form Builder" />
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         {!isPreview && (
-
-          <div className="sticky top-[100px]  z-30  px-5 py-2 rounded-2xl my-3.5 bg-transparent dark:bg-transparent">
-            <div className="grid grid-cols-9 gap-1 mb-2">
-              {formConfigurations.map((item) => (
-                <Button
-                  key={item.formType}
-                  className="text-gray-100 hover:text-sky-700 w-full text-center dark:text-gray-400 dark:hover:text-sky-400 bg-gray-300 rounded-lg "
-                  onClick={() => addField(item.formType)}
-                  disabled={!editFormData}
-                  variant="outline-no-transparent"
-                  size="sm"
-                  endIcon={formTypeIcons[item.formType]}
-                >
-                  {item.title.replace(" Form", "")}
-                </Button>
-              ))}
+          <div className="sticky top-[100px] z-30 px-2 sm:px-5 py-2 rounded-2xl my-3.5 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-10 xl:grid-cols-14 gap-2">
+              {formConfigurations.map((item) => (<Button key={item.formType} className="text-gray-800 hover:text-sky-700 w-full text-center dark:text-gray-300 dark:hover:text-sky-400 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg p-1 sm:p-2" onClick={() => addField(item.formType)} disabled={!editFormData} variant="outline-no-transparent" size="sm" endIcon={formTypeIcons[item.formType]}>
+                  <span className="text-xs sm:text-sm truncate">{item.title}</span>
+                </Button>))}
             </div>
-
           </div>
         )}
 
-        <div className={isPreview ? "grid grid-cols-1" : "grid  gap-6 "}>
-
-          <div className="space-y-6 ">
-            <ComponentCard >
-              <div hidden={isPreview}>
-                {FormEdit()}
-                <div className="flex justify-end sticky bottom-2 z-30 space-x-2 ">
-                  <Button onClick={() => setImport(true)} disabled={!editFormData}>
-                    Import
-                  </Button>
-                  <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>
-                    Preview
-                  </Button>
+        <div className="grid grid-cols-1 gap-6">
+          <ComponentCard>
+            <div hidden={isPreview}>
+              {FormEdit()}
+              <div className="flex justify-end sticky bottom-2 z-30 space-x-2 mt-6">
+                <Button onClick={() => setImport(true)} disabled={!editFormData}>Import</Button>
+                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
+              </div>
+            </div>
+            <div hidden={!isPreview}>
+              {FormPreview()}
+              <div className="flex justify-between flex-wrap gap-2 mt-6">
+                  <Button onClick={saveSchema} disabled={!editFormData}>Save Schema</Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
+                  <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button>
                 </div>
               </div>
-              <div hidden={!isPreview} >
-                {FormPreview()}
-                <div className="flex justify-between">
-                  <div className="flex">
-                    <Button onClick={saveSchema} disabled={!editFormData}>Save schema</Button>
-                  </div>
-                  <div className="flex gap-2 ">
-                    <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
-                    <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Enter</Button>
-                  </div>
-                </div>
-              </div>
-            </ComponentCard>
-
-          </div>
-
+            </div>
+          </ComponentCard>
         </div>
       </DndContext>
     </div>
-  ) : (<div>
-    {FormPreview()}
-    <div className="flex justify-between w-full">
-      {showDynamicForm && <Button
-        className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-dark-900 dark:text-white dark:hover:bg-dark-700"
-        onClick={() => showDynamicForm && showDynamicForm(false)}
-      >
-        Close
-      </Button>}
-      {(currentForm.formFieldJson.length !== 0 && onFormSubmit) && (<div>
-        <Button
-          className="m-4 flex mt-4 text-gray-800 hover:bg-blue-300 bg-blue-700 dark:bg-dark-900 dark:text-white dark:hover:bg-dark-700"
-          onClick={handleSend}
-        >
-          Submit
-        </Button>
-      </div>)}
+  ) : (
+    <div>
+      {FormPreview()}
+      <div className="flex justify-between w-full mt-4">
+        {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}
+        {onFormSubmit && currentForm.formFieldJson.length > 0 && <Button className="m-4" onClick={handleSend}>Submit</Button>}
+      </div>
     </div>
-  </div>);
+  );
 }

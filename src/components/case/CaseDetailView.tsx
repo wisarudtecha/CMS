@@ -8,6 +8,8 @@ import {
     MessageSquare,
     Paperclip,
     MapPin,
+    ChevronDown,
+    ChevronUp
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import { CaseItem } from "@/components/interface/CaseItem"
@@ -33,7 +35,7 @@ import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
-import { ChevronDown,ChevronUp } from "lucide-react"
+import Comments from "../comment/Comment"
 interface CaseDetailViewProps {
     onBack?: () => void
     caseData?: CaseItem
@@ -62,7 +64,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
     const serviceHistory = CaseHistory
 
     return (
-        <div className="overflow-y-auto w-full max-w-sm md:max-w-md xl:max-w-lg bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col">
+        <div className="overflow-y-auto w-full md:max-w-md lg:max-w-lg xl:max-w-lg bg-gray-50 dark:bg-gray-900 md:border-l border-gray-200 dark:border-gray-800 flex flex-col">
             {/* Mobile/Tablet Tabs */}
             <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                 <div className="flex">
@@ -90,7 +92,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
             {/* Customer Info Section */}
             <div
                 className={`${activeRightPanel === "customer" ? "flex" : "hidden"
-                    } md:flex flex-col border-b border-gray-200 dark:border-gray-800 md:max-h-80`}
+                    } md:flex flex-col border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 md:max-h-80`}
             >
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                     <div className="flex overflow-x-auto">
@@ -253,6 +255,7 @@ interface TempCaseCardProps {
 }
 
 const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProps) => {
+    const [showComment,setShowComment]=useState<boolean>(false);
     const [editFormData, setEditFormData] = useState(false);
     const onChick = () => {
 
@@ -260,12 +263,19 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
         setEditFormData(!editFormData);
 
     }
+    const onChickComment = () => {
+        if(showComment==false){
+        setShowComment(true);
+        }else{
+        setShowComment(false);
+        }
+    }
     return (
         <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
                 <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData.title}</h2>
-                    <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
                             <span>Create Date: {caseData.date}</span>
@@ -276,7 +286,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center space-x-2 text-center">
+                <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
                     <Badge color={`${getTextPriority(caseData.priority).color}`}>
                         {getTextPriority(caseData.priority).level} Priority
                     </Badge>
@@ -287,8 +297,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-4">
-                <div className="relative">
+            <div className="mb-4 overflow-x-auto"> {/* Added overflow-x-auto for small screens */}
+                <div className="relative min-w-max-content"> {/* Added min-w-max-content to ensure full width */}
                     <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
                     <div
                         className="absolute top-4 left-0 h-0.5 bg-blue-500 transition-all duration-300"
@@ -303,7 +313,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                             { id: 5, title: "On Site", description: "Arrived at service location", completed: false },
                             { id: 6, title: "Completed", description: "Service completed", completed: false }
                         ].map((step) => (
-                            <div key={step.id} className="flex flex-col items-center text-center" style={{ width: "16.66%" }}>
+                            <div key={step.id} className="flex flex-col items-center text-center px-1" style={{ width: "16.66%" }}> {/* Added px-1 for spacing */}
                                 <div
                                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mb-2 transition-all duration-300 ${step.completed || step.current
                                         ? "bg-blue-500 border-blue-500"
@@ -344,11 +354,12 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                 </div>
             </div>
 
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Add Comment
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+                <div className="flex flex-wrap gap-2"> {/* Changed to flex-wrap for buttons */}
+                    <Button onClick={onChickComment} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                        {showComment? <ChevronUp size={20}/>:<ChevronDown size={20} />}
+                        <MessageSquare className="w-4 h-4 mr-2" size={20}/>
+                        Comment
                     </Button>
                     <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         <Paperclip className="w-4 h-4 mr-2" />
@@ -363,6 +374,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                     <span>Assign</span>
                 </Button>
             </div>
+            {showComment?
+            <Comments />:null}
         </div>
     );
 };
@@ -436,7 +449,7 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
     const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Changed to 1 column on mobile, 2 on md */}
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <div className="mb-2">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Service Type</span>
@@ -468,7 +481,7 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
                             : (fieldMap["3. Service Location & Destination:"] ?? "-")}
                     </div></div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2"> {/* Changed col-span for responsiveness */}
                 <span className="text-xs text-gray-500 dark:text-gray-400">Description</span>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["7. Service Details: *"] ?? "-"}</div>
             </div>
@@ -480,14 +493,13 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
-    const [showOfficersData,setShowOFFicersData]= useState<Officer | null>(null);
-    
-    const handleSelectOfficer =(selectedOfficer:Officer)=>{
+    const [showOfficersData, setShowOFFicersData] = useState<Officer | null>(null);
+    const handleSelectOfficer = (selectedOfficer: Officer) => {
         console.log(showOfficersData)
-        if(selectedOfficer.id==showOfficersData?.id){
+        if (selectedOfficer.id == showOfficersData?.id) {
             setShowOFFicersData(null)
         }
-        else{
+        else {
             setShowOFFicersData(selectedOfficer)
         }
     }
@@ -518,7 +530,7 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
             />
             <div className="flex-shrink-0">
                 <PageBreadcrumb pageTitle="Create Case" />
-                <div className="px-6 ">
+                <div className="px-4 sm:px-6"> {/* Adjusted padding */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                             {onBack ? <Button variant="ghost" size="sm" onClick={onBack}>
@@ -538,45 +550,49 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 </div>
             </div>
 
-            <div className="flex-1 px-5 py-7 xl:px-10 xl:py-12 overflow-hidden bg-white dark:bg-gray-800 rounded-lg">
-                <div className="flex h-full gap-6">
-                    <div className="overflow-y-auto">
-                        <div className="pr-6 ">
+            <div className="flex-1 px-4 py-6 sm:px-6 sm:py-8 overflow-hidden bg-white dark:bg-gray-800 rounded-lg md:flex"> {/* Adjusted padding and added md:flex */}
+                <div className="flex flex-col md:flex-row h-full gap-6 w-full"> {/* Changed to flex-col on mobile, flex-row on md */}
+                    <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4"> {/* Adjusted width for responsiveness */}
+                        <div className="pr-0 md:pr-6"> {/* Adjusted padding */}
                             {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
                             {(caseData && assignedOfficers.length > 0) && (
-                                <div className="mb-4 flex flex-wrap gap-2 items-center">
+                                <div className="mb-4 flex flex-wrap gap-2 items-center"> {/* Added flex-wrap */}
                                     <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                                         Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
                                     </span>
-                                    {assignedOfficers.map(officer => (
-                                        <button
-                                            key={officer.id}
-                                            className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
-                                            onClick={() => handleSelectOfficer(officer)}
-                                        >
-                                            {showOfficersData?.id==officer.id?<ChevronDown />:<ChevronUp />}
-                                            {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                                            {officer.name}
-                                            <Badge className="mx-1"  >Acknowledge</Badge>
+
+
+                                        {assignedOfficers.map(officer => (
                                             <button
-                                                onClick={() =>
-                                                    setAssignedOfficers(prev =>
-                                                        prev.filter(o => o.id !== officer.id)
-                                                    )
-                                                }
-                                                className="ml-2 text-red-500 hover:text-red-600 focus:outline-none"
-                                                title="Remove"
-                                                type="button"
+                                                key={officer.id}
+                                                className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
+                                                onClick={() => handleSelectOfficer(officer)}
                                             >
-                                                Cancel
+                                                {showOfficersData?.id == officer.id ? <ChevronDown /> : <ChevronUp />}
+                                                {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                                                {officer.name}
+                                                <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
+                                                <Button
+                                                    onClick={() =>
+                                                        setAssignedOfficers(prev =>
+                                                            prev.filter(o => o.id !== officer.id)
+                                                        )
+                                                    }
+                                                    className="ml-2  "
+                                                    title="Remove"
+                                                    variant="outline-no-transparent"
+                                                    size="xxs"
+                                                >
+                                                    Cancel
+                                                </Button>
                                             </button>
-                                        </button>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+
                             )}
-                            
-                            {showOfficersData? <CommandInformation className=" my-2"/>:null}
-                            
+
+                            {showOfficersData ? <CommandInformation className=" my-2" /> : null}
+
                             {editFormData ? <DynamicForm
                                 initialForm={caseData ? caseData.formData : createCase}
                                 edit={false}

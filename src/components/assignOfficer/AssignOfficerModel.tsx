@@ -362,7 +362,6 @@ export default function AssignOfficerModal({
           </Button>
           <Button
             onClick={handleAssignOfficers}
-            disabled={selectedOfficers.length === 0}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             Assign Selected Officers ({selectedOfficers.length})

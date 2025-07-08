@@ -1,0 +1,142 @@
+[
+  {
+    "caseid": "CASE001",
+    "id": "a1b2c3d4e5",
+    "name": "Alice Wonderland",
+    "date": "2024-07-01",
+    "message": "Great progress on the project! Keep up the excellent work."
+  },
+  {
+    "caseid": "CASE002",
+    "id": "f6g7h8i9j0",
+    "name": "Bob Thebuilder",
+    "date": "2024-07-02",
+    "message": "I've reviewed the latest design mockups. Looks solid."
+  },
+  {
+    "caseid": "CASE003",
+    "id": "k1l2m3n4o5",
+    "name": "Charlie Chaplin",
+    "date": "2024-07-03",
+    "message": "Could we schedule a quick sync to discuss the new features?"
+  },
+  {
+    "caseid": "CASE004",
+    "id": "p6q7r8s9t0",
+    "name": "Diana Prince",
+    "date": "2024-07-04",
+    "message": "The documentation is very clear and helpful. Thanks!"
+  },
+  {
+    "caseid": "CASE005",
+    "id": "u1v2w3x4y5",
+    "name": "Eve Harrington",
+    "date": "2024-07-05",
+    "message": "I've encountered a small bug with the latest build. Details sent."
+  },
+  {
+    "caseid": "CASE006",
+    "id": "z6a7b8c9d0",
+    "name": "Frankenstein Monster",
+    "date": "2024-07-06",
+    "message": "Let's revisit the user flow for the onboarding process."
+  },
+  {
+    "caseid": "CASE007",
+    "id": "e1f2g3h4i5",
+    "name": "Grace Hopper",
+    "date": "2024-07-07",
+    "message": "Fantastic job on optimizing the database queries!"
+  },
+  {
+    "caseid": "CASE008",
+    "id": "j6k7l8m9n0",
+    "name": "Harry Potter",
+    "date": "2024-07-08",
+    "message": "I've added my comments to the pull request. Please review."
+  },
+  {
+    "caseid": "CASE009",
+    "id": "o1p2q3r4s5",
+    "name": "Ivy League",
+    "date": "2024-07-09",
+    "message": "The performance improvements are very noticeable. Well done."
+  },
+  {
+    "caseid": "CASE010",
+    "id": "t6u7v8w9x0",
+    "name": "Jack Sparrow",
+    "date": "2024-07-10",
+    "message": "I'll be out of office tomorrow, but available for urgent matters."
+  },
+  {
+    "caseid": "CASE011",
+    "id": "y1z2a3b4c5",
+    "name": "Karen Carpenter",
+    "date": "2024-07-11",
+    "message": "The new feature integration went smoothly. No issues found."
+  },
+  {
+    "caseid": "CASE012",
+    "id": "d6e7f8g9h0",
+    "name": "Liam Neeson",
+    "date": "2024-07-12",
+    "message": "Could you provide an update on the backend API development?"
+  },
+  {
+    "caseid": "CASE013",
+    "id": "i1j2k3l4m5",
+    "name": "Mia Khalifa",
+    "date": "2024-07-13",
+    "message": "I've completed my tasks for this sprint. Moving to testing."
+  },
+  {
+    "caseid": "CASE014",
+    "id": "n6o7p8q9r0",
+    "name": "Noah Wyle",
+    "date": "2024-07-14",
+    "message": "The latest bug fix resolved the critical issue. Thank you!"
+  },
+  {
+    "caseid": "CASE015",
+    "id": "s1t2u3v4w5",
+    "name": "Olivia Newton-John",
+    "date": "2024-07-15",
+    "message": "Looking forward to seeing the live demo next week."
+  },
+  {
+    "caseid": "CASE016",
+    "id": "x6y7z8a9b0",
+    "name": "Peter Pan",
+    "date": "2024-07-16",
+    "message": "I've merged the changes to the main branch."
+  },
+  {
+    "caseid": "CASE017",
+    "id": "c1d2e3f4g5",
+    "name": "Quinn Fabray",
+    "date": "2024-07-17",
+    "message": "Great work on the UI/UX improvements. It's much more intuitive."
+  },
+  {
+    "caseid": "CASE018",
+    "id": "h6i7j8k9l0",
+    "name": "Rachel Green",
+    "date": "2024-07-18",
+    "message": "I've updated the task statuses in the project management tool."
+  },
+  {
+    "caseid": "CASE019",
+    "id": "m1n2o3p4q5",
+    "name": "Steve Rogers",
+    "date": "2024-07-19",
+    "message": "Team, let's aim to finalize the sprint goals by end of day."
+  },
+  {
+    "caseid": "CASE020",
+    "id": "r6s7t8u9v0",
+    "name": "Tina Turner",
+    "date": "2024-07-20",
+    "message": "The recent deployment seems stable. Monitoring for any issues."
+  }
+]
