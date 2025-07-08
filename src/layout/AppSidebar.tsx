@@ -84,7 +84,7 @@ const AppSidebar: React.FC = () => {
       icon: <ListIcon />,
       name: "Form Builder",
       subItems: [
-        { name: "Forms Management", path: "/load-dynamic-form", pro: false },
+        { name: "Forms Management", path: "/form-management", pro: false },
         { name: "Form Builder", path:"/dynamic-form", pro:false }
       ],
     },

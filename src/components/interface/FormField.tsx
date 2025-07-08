@@ -26,3 +26,13 @@ export interface FormField {
   formColSpan: number; 
   formFieldJson: IndividualFormField[]; 
 }
+
+export interface FormSop {
+  id: string;
+  name: string;
+  description: string;
+  status: "active" | "inactive" | "draft" | "testing";
+  createdAt: string;
+  category?: string;
+  type?:string;
+}

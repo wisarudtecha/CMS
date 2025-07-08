@@ -25,31 +25,19 @@ import {
 } from "@/icons";
 
 // Import the new TicketCard component
-import TicketCard from './TicketCard';
+import FormCard from './formCard';
 // Import the new TableRowActions component
 import TableRowActions from './TableRowActions';
-
-
+import { statusConfig } from '../ui/status/status';
+import { FormSop } from '../interface/FormField';
 // TypeScript interfaces
-interface Ticket {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "draft" | "testing";
-  createdAt: string;
-  lastRun?: string;
-  runCount: number;
-  category?: string;
-  tags?: string[];
-}
 
 interface ApiResponse {
-  tickets: Ticket[];
-  total: number;
+  Forms: FormSop[];
 }
 
 interface SortConfig {
-  key: keyof Ticket | null;
+  key: keyof FormSop | null;
   direction: 'asc' | 'desc';
 }
 
@@ -69,7 +57,7 @@ interface ConfirmDialog {
   type: 'delete' | 'status';
   ticketId: string;
   ticketName: string;
-  newStatus?: Ticket['status'];
+  newStatus?: FormSop['status'];
 }
 
 interface Toast {
@@ -78,170 +66,102 @@ interface Toast {
   message: string;
 }
 
-// Mock API function - replace with your actual API call
-const fetchTickets = async (): Promise<ApiResponse> => {
-  // Simulate API delay
-  // await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // Mock data
+const fetchForms = async (): Promise<ApiResponse> => {
+
   return {
-    tickets: [
+    Forms: [
       {
-        id: '1',
-        name: 'Customer Onboarding',
-        description: 'Automated workflow for new customer registration and setup',
-        status: 'active',
-        createdAt: '2025-01-15T10:30:00Z',
-        lastRun: '2025-06-11T08:15:00Z',
-        runCount: 234
+        "id": "a1b2c3d4e5",
+        "name": "Onboarding New Employees SOP",
+        "description": "Standard operating procedure for integrating new hires into the company.",
+        "status": "active",
+        "createdAt": "2024-03-15T10:00:00Z",
+        "category": "Human Resources",
+        "type": "Process"
       },
       {
-        id: '2',
-        name: 'Invoice Processing',
-        description: 'Handle incoming invoices and route for approval',
-        status: 'active',
-        createdAt: '2025-02-20T14:20:00Z',
-        lastRun: '2025-06-10T16:45:00Z',
-        runCount: 1456
+        "id": "f6g7h8i9j0",
+        "name": "Customer Support Ticket Resolution",
+        "description": "SOP for handling and resolving customer support tickets efficiently.",
+        "status": "active",
+        "createdAt": "2024-02-20T14:30:00Z",
+        "category": "Customer Service",
+        "type": "Guideline"
       },
       {
-        id: '3',
-        name: 'Data Backup',
-        description: 'Daily backup of critical system data',
-        status: 'inactive',
-        createdAt: '2025-01-05T09:00:00Z',
-        lastRun: '2025-06-08T02:00:00Z',
-        runCount: 89
+        "id": "k1l2m3n4o5",
+        "name": "Software Deployment Checklist",
+        "description": "Checklist for deploying new software versions to production.",
+        "status": "draft",
+        "createdAt": "2024-06-01T09:15:00Z",
+        "category": "IT Operations",
+        "type": "Checklist"
       },
       {
-        id: '4',
-        name: 'Email Campaign',
-        description: 'Automated marketing email sequences for leads',
-        status: 'draft',
-        createdAt: '2025-06-10T11:30:00Z',
-        runCount: 0
+        "id": "p6q7r8s9t0",
+        "name": "Monthly Financial Report Generation",
+        "description": "Procedure for generating and distributing monthly financial reports.",
+        "status": "active",
+        "createdAt": "2023-11-10T16:45:00Z",
+        "category": "Finance",
+        "type": "Process"
       },
       {
-        id: '5',
-        name: 'Quality Assurance',
-        description: 'Automated testing and quality checks for production releases',
-        status: 'active',
-        createdAt: '2025-03-12T13:45:00Z',
-        lastRun: '2025-06-11T07:30:00Z',
-        runCount: 567
+        "id": "u1v2w3x4y5",
+        "name": "Product Quality Assurance Testing",
+        "description": "SOP for conducting quality assurance tests on new product features.",
+        "status": "testing",
+        "createdAt": "2025-01-05T11:00:00Z",
+        "category": "Product Development",
+        "type": "Methodology"
       },
       {
-        id: '6',
-        name: 'User Analytics',
-        description: 'Track and analyze user behavior patterns',
-        status: 'active',
-        createdAt: '2025-04-01T12:00:00Z',
-        lastRun: '2025-06-12T09:20:00Z',
-        runCount: 892,
-        category: 'Analytics',
-        tags: ['analytics', 'tracking', 'insights']
+        "id": "z6a7b8c9d0",
+        "name": "Data Backup and Recovery Policy",
+        "description": "Policy outlining procedures for data backup and disaster recovery.",
+        "status": "active",
+        "createdAt": "2023-09-25T08:00:00Z",
+        "category": "IT Security",
+        "type": "Policy"
       },
       {
-        id: '7',
-        name: 'Inventory Management',
-        description: 'Monitor and manage inventory levels automatically',
-        status: 'active',
-        createdAt: '2025-05-15T16:30:00Z',
-        lastRun: '2025-06-11T14:10:00Z',
-        runCount: 124,
-        category: 'Operations',
-        tags: ['inventory', 'management', 'monitoring']
+        "id": "e1f2g3h4i5",
+        "name": "Employee Performance Review Process",
+        "description": "Guide for managers conducting annual employee performance reviews.",
+        "status": "active",
+        "createdAt": "2024-01-01T13:00:00Z",
+        "category": "Human Resources",
+        "type": "Process"
       },
       {
-        id: '8',
-        name: 'Security Audit',
-        description: 'Regular security checks and vulnerability assessments',
-        status: 'inactive',
-        createdAt: '2025-02-28T08:45:00Z',
-        lastRun: '2025-06-05T22:30:00Z',
-        runCount: 67,
-        category: 'Security',
-        tags: ['security', 'audit', 'compliance']
+        "id": "j6k7l8m9n0",
+        "name": "Website Content Update Procedure",
+        "description": "Steps for updating and publishing content on the company website.",
+        "status": "inactive",
+        "createdAt": "2023-07-18T09:00:00Z",
+        "category": "Marketing",
+        "type": "Guideline"
       },
       {
-        id: '9',
-        name: 'Customer Onboarding',
-        description: 'Automated workflow for new customer registration and setup',
-        status: 'active',
-        createdAt: '2025-01-15T10:30:00Z',
-        lastRun: '2025-06-11T08:15:00Z',
-        runCount: 234
+        "id": "o1p2q3r4s5",
+        "name": "New Vendor Onboarding Form",
+        "description": "Form and associated procedure for bringing on new vendors.",
+        "status": "active",
+        "createdAt": "2024-04-22T10:30:00Z",
+        "category": "Procurement",
+        "type": "Form"
       },
       {
-        id: '10',
-        name: 'Invoice Processing',
-        description: 'Handle incoming invoices and route for approval',
-        status: 'active',
-        createdAt: '2025-02-20T14:20:00Z',
-        lastRun: '2025-06-10T16:45:00Z',
-        runCount: 1456
-      },
-      {
-        id: '11',
-        name: 'Data Backup',
-        description: 'Daily backup of critical system data',
-        status: 'inactive',
-        createdAt: '2025-01-05T09:00:00Z',
-        lastRun: '2025-06-08T02:00:00Z',
-        runCount: 89
-      },
-      {
-        id: '12',
-        name: 'Email Campaign',
-        description: 'Automated marketing email sequences for leads',
-        status: 'draft',
-        createdAt: '2025-06-10T11:30:00Z',
-        runCount: 0
-      },
-      {
-        id: '13',
-        name: 'Quality Assurance',
-        description: 'Automated testing and quality checks for production releases',
-        status: 'active',
-        createdAt: '2025-03-12T13:45:00Z',
-        lastRun: '2025-06-11T07:30:00Z',
-        runCount: 567
-      },
-      {
-        id: '14',
-        name: 'User Analytics',
-        description: 'Track and analyze user behavior patterns',
-        status: 'active',
-        createdAt: '2025-04-01T12:00:00Z',
-        lastRun: '2025-06-12T09:20:00Z',
-        runCount: 892,
-        category: 'Analytics',
-        tags: ['analytics', 'tracking', 'insights']
-      },
-      {
-        id: '15',
-        name: 'Inventory Management',
-        description: 'Monitor and manage inventory levels automatically',
-        status: 'active',
-        createdAt: '2025-05-15T16:30:00Z',
-        lastRun: '2025-06-11T14:10:00Z',
-        runCount: 124,
-        category: 'Operations',
-        tags: ['inventory', 'management', 'monitoring']
-      },
-      {
-        id: '16',
-        name: 'Security Audit',
-        description: 'Regular security checks and vulnerability assessments',
-        status: 'inactive',
-        createdAt: '2025-02-28T08:45:00Z',
-        lastRun: '2025-06-05T22:30:00Z',
-        runCount: 67,
-        category: 'Security',
-        tags: ['security', 'audit', 'compliance']
+        "id": "t6u7v8w9x0",
+        "name": "Social Media Engagement Strategy",
+        "description": "Draft strategy for engaging with users on social media platforms.",
+        "status": "draft",
+        "createdAt": "2025-02-14T15:00:00Z",
+        "category": "Marketing",
+        "type": "Strategy"
       }
-    ],
-    total: 5
+    ]
   };
 };
 
@@ -250,15 +170,17 @@ const deleteWorkflow = async (id: string): Promise<void> => {
   console.log(`Deleting workflow ${id}`);
 };
 
-const updateWorkflowStatus = async (id: string, status: Ticket['status']): Promise<void> => {
+const updateWorkflowStatus = async (id: string, status: FormSop['status']): Promise<void> => {
   // await new Promise(resolve => setTimeout(resolve, 500));
   console.log(`Updating workflow ${id} status to ${status}`);
 };
 
-const TicketListComponent: React.FC = () => {
+
+
+const FormListComponent: React.FC = () => {
   const navigate = useNavigate();
 
-  const [workflows, setWorkflows] = useState<Ticket[]>([]);
+  const [workflows, setWorkflows] = useState<FormSop[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -311,8 +233,8 @@ const TicketListComponent: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetchTickets();
-        setWorkflows(response.tickets);
+        const response = await fetchForms();
+        setWorkflows(response.Forms);
       }
       catch (err) {
         setError('Failed to fetch workflows. Please try again.');
@@ -347,7 +269,7 @@ const TicketListComponent: React.FC = () => {
   };
 
   // Handle sort
-  const handleSort = (key: keyof Ticket) => {
+  const handleSort = (key: keyof FormSop) => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
@@ -487,6 +409,7 @@ const TicketListComponent: React.FC = () => {
       label: category
     }));
 
+
   return (
     <>
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
@@ -529,17 +452,7 @@ const TicketListComponent: React.FC = () => {
             <div className="mx-auto">
               {/* Header */}
               <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-gray-600 dark:text-gray-300">Manage and monitor your automated workflows</p>
-                  </div>
-                  <Button
-                    onClick={handleCreateWorkflow}
-                    variant="primary"
-                  >
-                    Create Ticket
-                  </Button>
-                </div>
+
 
                 {/* Controls */}
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
@@ -550,7 +463,7 @@ const TicketListComponent: React.FC = () => {
                         type="text"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
-                        placeholder="Search workflows..."
+                        placeholder="Search FormSop..."
                       />
                     </div>
                     <Button
@@ -587,7 +500,14 @@ const TicketListComponent: React.FC = () => {
                         <ListIcon className="w-4 h-4" />
                       </Button>
                     </div>
+                    <Button
+                      onClick={handleCreateWorkflow}
+                      variant="primary"
+                    >
+                      Create FormSop
+                    </Button>
                   </div>
+
                 </div>
 
                 {/* Filters */}
@@ -645,10 +565,10 @@ const TicketListComponent: React.FC = () => {
               {displayMode === 'card' ? (
                 /* Card View */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {paginatedWorkflows.map((ticket) => (
-                    <TicketCard
-                      key={ticket.id}
-                      ticket={ticket}
+                  {paginatedWorkflows.map((form) => (
+                    <FormCard
+                      key={form.id}
+                      form={form}
                       formatDate={formatDate}
                       handleReadWorkflow={handleReadWorkflow}
                       handleUpdateWorkflow={handleUpdateWorkflow}
@@ -696,51 +616,53 @@ const TicketListComponent: React.FC = () => {
                               )}
                             </button>
                           </th>
-                         
+
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                        {paginatedWorkflows.map((ticket) => {
+                        {paginatedWorkflows.map((form) => {
+                          const config = statusConfig[form.status]
                           return (
-                            <tr key={ticket.id} className="hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <tr key={form.id} className="hover:bg-gray-100 dark:hover:bg-gray-800">
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div>
-                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{ticket.name}</div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{ticket.description}</div>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{form.name}</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{form.description}</div>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
-                                <Select
-                                  value={ticket.status}
+                              <td className={`px-6 py-4 `}>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+                                  {form.status}
+                                </span>
+
+                                {/* <Select 
+                                  value={form.status}
                                   onChange={(value) => setConfirmDialog({
                                     isOpen: true,
                                     type: 'status',
-                                    ticketId: ticket.id,
-                                    ticketName: ticket.name,
-                                    newStatus: value as Ticket['status']
+                                    ticketId: form.id,
+                                    ticketName: form.name,
+                                    newStatus: value as FormSop['status']
                                   })}
                                   className={`px-2 py-1 rounded-full text-xs font-medium border-0`}
                                   options={filterOptions}
                                 >
-                                </Select>
+                                </Select> */}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                {formatDate(ticket.createdAt)}
+                                {formatDate(form.createdAt)}
                               </td>
-                              
+
                               <td className="px-6 py-4">
                                 {/* Use the new TableRowActions component */}
                                 <TableRowActions
-                                  ticketId={ticket.id}
-                                  ticketName={ticket.name}
-                                  handleReadWorkflow={handleReadWorkflow}
-                                  handleUpdateWorkflow={handleUpdateWorkflow}
-                                  setConfirmDialog={setConfirmDialog}
+                                  form={form}
+
                                 />
                               </td>
                             </tr>
@@ -867,4 +789,4 @@ const TicketListComponent: React.FC = () => {
   );
 };
 
-export default TicketListComponent;
+export default FormListComponent;
