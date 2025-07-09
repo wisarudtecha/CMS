@@ -6,14 +6,14 @@ import {
 } from "@/icons";
 import { statusConfig } from '../ui/status/status';
 import { FormManager } from '../interface/FormField';
-import TableRowActions from './TableRowActions';
+import ButtonAction from './ButtonAction';
 
 
 interface FormCardProps {
   form: FormManager;
   formatDate: (dateString: string) => string;
-  handleOnEdit?:()=>void;
-  handleOnView?:()=>void;
+  handleOnEdit?: () => void;
+  handleOnView?: () => void;
   onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['status']) => void; // Add this line
 }
 
@@ -42,15 +42,7 @@ const FormCard: React.FC<FormCardProps> = ({
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
             {config.label}
           </span>
-          <div className="relative inline-block">
 
-            <TableRowActions
-              form={form}
-              handleOnEdit={handleOnEdit}
-              handleOnView={handleOnView}
-              onSetStatusInactive={onSetStatusInactive} // Pass the prop down
-            />
-          </div>
         </div>
       </div>
 
@@ -64,6 +56,13 @@ const FormCard: React.FC<FormCardProps> = ({
       </div>
       <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
       </div>
+      <ButtonAction
+        type='button'
+        form={form}
+        handleOnEdit={handleOnEdit}
+        handleOnView={handleOnView}
+        onSetStatusInactive={onSetStatusInactive} // Pass the prop down
+      />
     </div>
   );
 };

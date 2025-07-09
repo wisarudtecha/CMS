@@ -26,7 +26,7 @@ import OnBackOnly from "@/components/ui/pagesTemplate/onBackOnly"
 // Import the new TicketCard component
 import FormCard from './formCard';
 // Import the new TableRowActions component
-import TableRowActions from './TableRowActions';
+import ButtonAction from './ButtonAction';
 import { statusConfig } from '../ui/status/status';
 import { FormField, FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
@@ -75,6 +75,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-001",
         "formName": "Employee Onboarding Survey",
         "formColSpan": 12,
+        "createBy":"Phanuphong",
         "formFieldJson": [
           {
             "id": "e6a1b2c3-d4e5-6f7a-8b9c-0d1e2f3a4b5c",
@@ -186,6 +187,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-002",
         "formName": "Travel Request Form",
         "formColSpan": 12,
+        "createBy":"Phanu",
         "formFieldJson": [
           {
             "id": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
@@ -255,6 +257,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-003",
         "formName": "IT Support Ticket",
         "formColSpan": 12,
+        "createBy":"phong",
         "formFieldJson": [
           {
             "id": "e6a1b2c3-d4e5-6f7a-8b9c-0d1e2f3a4b5c",
@@ -315,6 +318,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-004",
         "formName": "Customer Feedback Form",
         "formColSpan": 12,
+        "createBy":"nu",
         "formFieldJson": [
           {
             "id": "i9j0k1l2-m3n4-o5p6-q7r8-s9t0u1v2w3x4",
@@ -374,6 +378,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-005",
         "formName": "Product Bug Report",
         "formColSpan": 12,
+        "createBy":"tung tung tung sahur",
         "formFieldJson": [
           {
             "id": "u2v3w4x5-y6z7-a8b9-c0d1-e2f3a4b5c6d7",
@@ -424,6 +429,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-006",
         "formName": "New Project Proposal",
         "formColSpan": 12,
+        "createBy":"tralalero tralala",
         "formFieldJson": [
           {
             "id": "field-601",
@@ -455,6 +461,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-007",
         "formName": "Leave Request Form",
         "formColSpan": 12,
+        "createBy":"Bombbubini gusini",
         "formFieldJson": [
           {
             "id": "y6z7a8b9-c0d1-e2f3-a4b5-c6d7e8f9g0h1",
@@ -525,6 +532,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-008",
         "formName": "Expense Reimbursement Form",
         "formColSpan": 12,
+        "createBy":"tar tar tar shur",
         "formFieldJson": [
           {
             "id": "p0q1r2s3-t4u5-v6w7-x8y9-z0a1b2c3d4e5",
@@ -617,6 +625,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-009",
         "formName": "Vendor Registration Form",
         "formColSpan": 12,
+        "createBy":"bananinu",
         "formFieldJson": [
           {
             "id": "v6w7x8y9-z0a1-b2c3-d4e5-f6g7h8i9j0k1",
@@ -677,6 +686,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-010",
         "formName": "Training Program Enrollment",
         "formColSpan": 12,
+        "createBy":"tesr",
         "formFieldJson": [
           {
             "id": "m3n4o5p6-q7r8-s9t0-u1v2-w3x4y5z6a7b8",
@@ -1003,7 +1013,7 @@ const FormListComponent: React.FC = () => {
       value: category,
       label: category
     }));
-  const handleSetWorkflowStatusInactive = (formId: string, formName: string, newStatus: FormManager['status']) => {
+  const onSetStatusInactive = (formId: string, formName: string, newStatus: FormManager['status']) => {
     setConfirmDialog({
       isOpen: true,
       type: 'status', // Set type to 'status' for status updates
@@ -1182,7 +1192,7 @@ const FormListComponent: React.FC = () => {
                       handleOnEdit={() => handleOnEdit(form)}
                       handleOnView={() => handleOnView(form)}
                       formatDate={formatDate}
-                      onSetStatusInactive={handleSetWorkflowStatusInactive}
+                      onSetStatusInactive={onSetStatusInactive}
                     />
                   ))}
                 </div>
@@ -1226,8 +1236,10 @@ const FormListComponent: React.FC = () => {
                               )}
                             </button>
                           </th>
-
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Create By
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -1268,15 +1280,29 @@ const FormListComponent: React.FC = () => {
                                 {formatDate(form.createdAt)}
                               </td>
 
-                              <td className="px-6 py-4">
+                      
                                 {/* Use the new TableRowActions component */}
-                                <TableRowActions
+                                {/* <TableRowActions
                                   form={form}
                                   onSetStatusInactive={handleSetWorkflowStatusInactive}
                                   handleOnEdit={() => handleOnEdit(form)} 
                                   handleOnView={() => handleOnView(form)}
-                                />
+                                /> */}
+                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                  {form.createBy}
+                                </td>
+                                <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <ButtonAction
+                                  form={form}
+                                  type='list'
+                                  onSetStatusInactive={onSetStatusInactive}
+                                  handleOnEdit={() => handleOnEdit(form)} 
+                                  handleOnView={() => handleOnView(form)}/>
+                                </div>
                               </td>
+                              
+                             
                             </tr>
                           );
                         })}

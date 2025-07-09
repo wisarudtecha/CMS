@@ -42,5 +42,6 @@ export interface FormManager extends FormField {
   status: "active" | "inactive" | "draft" ;
   createdAt: string;
   type:string;
+  createBy:string
   description:string;
 }
