@@ -190,6 +190,102 @@ const DndImageUploader: React.FC<{
   );
 };
 
+const DndMultiImageUploader: React.FC<{
+  onFilesSelect: (files: File[]) => void;
+  existingFiles: File[];
+  handleRemoveFile: (fileName: string) => void;
+  disabled?: boolean;
+}> = ({ onFilesSelect, existingFiles, handleRemoveFile, disabled }) => {
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) setDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+    if (disabled) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      if (imageFiles.length > 0) {
+        onFilesSelect(imageFiles);
+      } else {
+        alert('Please drop image files.');
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onFilesSelect(Array.from(files));
+    }
+  };
+
+  const handleClick = () => {
+    if (!disabled) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  return (
+    <div>
+      
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={handleClick}
+        className={`w-full h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors
+            ${dragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'}
+            ${disabled ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-800' : 'cursor-pointer hover:border-blue-400'}`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+          disabled={disabled}
+        />
+        <ImageIcon className="w-12 h-12 text-gray-400" />
+        
+        <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Drag & drop images here, or click to select</p>
+      </div>
+      {existingFiles.length > 0 && (
+        <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
+          {existingFiles.map((file: File, index: number) => (
+            <div key={`${file.name}-${index}`} className="relative group aspect-square">
+              <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-full object-cover rounded border border-gray-300 dark:border-gray-600" />
+              <Button onClick={() => handleRemoveFile(file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const ComponentCard: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => {
   return (
@@ -231,6 +327,7 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "image", title: "Image", canBeChild: true },
   { formType: "dndImage", title: "DnD Image", canBeChild: true },
   { formType: "multiImage", title: "Multi-Image", canBeChild: true },
+  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true },
   { formType: "passwordInput", title: "Password", canBeChild: true },
   { formType: "dateInput", title: "Date", canBeChild: true },
   { formType: "dateLocal", title: "Date & Time", canBeChild: true },
@@ -248,7 +345,8 @@ const formTypeIcons: Record<string, JSX.Element> = {
   select: <ChevronsUpDown size={16} />,
   image: <ImageIcon size={16} />,
   dndImage: <FileIcon size={16} />,
-  multiImage: <div><ImageIcon size={16} /></div>,
+  multiImage: <ImageIcon size={16} />,
+  dndMultiImage: <ImageIcon size={16} />,
   passwordInput: <Lock size={16} />,
   dateInput: <CalendarDays size={16} />,
   dateLocal: <Clock size={16} />,
@@ -292,7 +390,7 @@ function createDynamicFormField(
     defaultValue = [];
   } else if (configItem.formType === "Integer") {
     defaultValue = null;
-  } else if (configItem.formType === "multiImage") {
+  } else if (configItem.formType === "multiImage" || configItem.formType === "dndMultiImage") {
     defaultValue = [];
   } else if (configItem.formType === "image" || configItem.formType === "dndImage") {
     defaultValue = null;
@@ -321,6 +419,60 @@ function createDynamicFormField(
     ...(DynamicFieldColSpan !== undefined && { DynamicFieldColSpan: DynamicFieldColSpan }),
   };
 }
+
+const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
+  const commonClasses = "shadow-sm appearance-none border rounded w-full py-1 px-2 text-gray-700 leading-tight bg-gray-200 dark:bg-gray-700 dark:border-gray-600 pointer-events-none opacity-70";
+
+  switch (field.type) {
+    case 'textInput':
+    case 'emailInput':
+    case 'passwordInput':
+    case 'Integer':
+    case 'dateInput':
+    case 'dateLocal':
+      return <Input type="text" className={commonClasses} disabled placeholder={field.placeholder} />;
+    case 'textAreaInput':
+      return <textarea className={`${commonClasses} h-12`} disabled placeholder={field.placeholder} />;
+    case 'select':
+    case 'dynamicField':
+      return (
+        <select className={commonClasses} disabled>
+          <option>{field.options?.length ? `${field.options.length} options` : 'Select...'}</option>
+        </select>
+      );
+    case 'option':
+      return (
+        <div className="flex flex-col gap-1 text-xs text-gray-500 p-2 border rounded bg-gray-200 dark:bg-gray-700 dark:border-gray-600">
+          {(field.options && field.options.length > 0) ? field.options.slice(0, 3).map(opt => <div key={opt} className="truncate"><CheckSquare size={12} className="inline-block mr-1" />{opt}</div>) : <span className="italic">No options</span>}
+          {field.options && field.options.length > 3 && <span className="italic">...and more</span>}
+        </div>
+      );
+    case 'radio':
+      return (
+        <div className="flex flex-col gap-1 text-xs text-gray-500 p-2 border rounded bg-gray-200 dark:bg-gray-700 dark:border-gray-600">
+          {(field.options && field.options.length > 0) ? field.options.slice(0, 3).map(opt => <div key={opt} className="truncate"><Circle size={12} className="inline-block mr-1" />{opt}</div>) : <span className="italic">No options</span>}
+          {field.options && field.options.length > 3 && <span className="italic">...and more</span>}
+        </div>
+      );
+    case 'dndImage':
+    case 'image':
+    case 'dndMultiImage':
+    case 'multiImage':
+      return (
+        <div className={`${commonClasses} flex items-center justify-center h-20`}>
+          <ImageIcon className="w-8 h-8 text-gray-400" />
+        </div>
+      );
+    case 'InputGroup':
+      return (
+        <div className={`${commonClasses} flex items-center justify-center h-20`}>
+          <LayoutGrid className="w-8 h-8 text-gray-400" />
+        </div>
+      );
+    default:
+      return <div className="text-xs italic text-gray-400">No preview available</div>;
+  }
+};
 
 
 export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true }: DynamicFormProps) {
@@ -625,15 +777,21 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
             : newValue;
           return { ...field, value: valueToStore };
         }
-        if (field.type === "multiImage") {
-          if (newValue instanceof FileList) {
-            const currentFiles = Array.isArray(field.value) ? field.value : [];
-            const newFiles = Array.from(newValue);
-            const uniqueNewFiles = newFiles.filter(
+        if (field.type === "multiImage" || field.type === "dndMultiImage") {
+          const currentFiles = Array.isArray(field.value) ? field.value : [];
+          const newFilesArray = (newValue instanceof FileList) ? Array.from(newValue) : Array.isArray(newValue) ? newValue : [];
+
+          const filesToAdd = newFilesArray.filter(
+            (newFile): newFile is File => newFile instanceof File
+          );
+
+          if (filesToAdd.length > 0) {
+            const uniqueNewFiles = filesToAdd.filter(
               (newFile) => !currentFiles.some((existingFile: File) => existingFile.name === newFile.name && existingFile.size === newFile.size)
             );
             return { ...field, value: [...currentFiles, ...uniqueNewFiles] };
           }
+
           return { ...field, value: newValue };
         }
         if (field.type === "Integer") {
@@ -859,7 +1017,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
         if (field.type === "image" || field.type === "dndImage") {
           return { ...field, value: null };
-        } else if (field.type === "multiImage" && Array.isArray(field.value)) {
+        } else if ((field.type === "multiImage" || field.type === "dndMultiImage") && Array.isArray(field.value)) {
           const updatedFiles = field.value.filter((file: File) => file.name !== fileNameToRemove);
           return { ...field, value: updatedFiles };
         }
@@ -1134,9 +1292,14 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
         </div>
 
         {isHidden ? (
-          <div className="flex items-center gap-2 py-2">
-            <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold truncate">{field.label}</span>
-            <span className="text-blue-500 dark:text-blue-300 text-xl flex-shrink-0">{formTypeIcons[field.type] || <span className="text-sm">?</span>}</span>
+          <div>
+            <div className="flex items-center justify-between gap-2 py-2">
+              <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold truncate">{field.label}</span>
+              <span className="text-blue-500 dark:text-blue-300 text-xl flex-shrink-0">{formTypeIcons[field.type] || <span className="text-sm">?</span>}</span>
+            </div>
+            <div className="mt-2">
+              {renderHiddenFieldPreview(field)}
+            </div>
           </div>
         ) : (
           <div className="mt-2 space-y-4">
@@ -1346,7 +1509,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
 
     const commonProps = {
       id: field.id,
-      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-400 dark:border-gray-800 dark:bg-gray-900",
+      className:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
@@ -1402,18 +1565,36 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
           </>
         );
 
-      case "image": case "multiImage":
-        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple={field.type === "multiImage"} onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
-          {field.type === "image" && field.value instanceof File && (<div className="relative group mt-2 w-20 h-20">
+      case "image":
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && !field.value} disabled={!editFormData} />
+          {field.value instanceof File && (<div className="relative group mt-2 w-20 h-20">
             <img src={URL.createObjectURL(field.value)} alt="Selected" className="w-full h-full object-cover rounded border border-gray-600" />
             <Button onClick={() => handleRemoveFile(field.id)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
           </div>)}
-          {field.type === "multiImage" && Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
+        </div></>);
+
+      case "multiImage":
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
+          {Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
             <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
             <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">
               <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-20 object-cover rounded border border-gray-600 " />
               <Button onClick={() => handleRemoveFile(field.id, file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
             </div>))} </div> </div>)} </div> </>);
+
+      case "dndMultiImage":
+        return (
+          <>
+            {labelComponent}
+            <DndMultiImageUploader
+              onFilesSelect={(files) => handleFieldChange(field.id, files)}
+              existingFiles={Array.isArray(field.value) ? field.value : []}
+              handleRemoveFile={(fileName) => handleRemoveFile(field.id, fileName)}
+              disabled={!editFormData}
+            />
+            {field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0)) && <p className="text-red-500 text-xs italic mt-1">This field is required.</p>}
+          </>
+        );
 
       case "InputGroup":
         return (<div> {field.showLabel && (<h3 className="text-lg font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
