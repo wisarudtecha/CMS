@@ -2,37 +2,45 @@
 export interface IndividualFormField {
   id: string;
   label: string;
+  showLabel?:boolean;
   type: string;
   value: any;
   options?: any[];
-  newOptionText?: string;
   placeholder?: string;
   required: boolean;
-  colSpan?: number; 
+  colSpan?: number;
+  isChild?: boolean;
+  GroupColSpan?: number;
+  DynamicFieldColSpan?: number;
 }
 
 export interface IndividualFormFieldWithChildren extends IndividualFormField {
-  isChild?: boolean;
-  GroupColSpan?:number
+  value: any | IndividualFormFieldWithChildren[];
+  options?: Array<any | { value: string; form: IndividualFormFieldWithChildren[] }>;
+}
+
+export interface FormField {
+  formId: string;
+  formName: string;
+  formColSpan: number;
+  formFieldJson: IndividualFormField[];
 }
 
 export interface FormFieldWithChildren extends FormField {
   formFieldJson: IndividualFormFieldWithChildren[];
 }
 
-export interface FormField {
-  formId: string;
-  formName: string;
-  formColSpan: number; 
-  formFieldJson: IndividualFormField[]; 
+export interface FormConfigItem {
+  formType: string;
+  title: string;
+  options?: any[];
+  canBeChild?: boolean;
 }
 
-export interface FormSop {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "draft" | "testing";
+
+export interface FormManager extends FormField {
+  status: "active" | "inactive" | "draft" ;
   createdAt: string;
-  category?: string;
-  type?:string;
+  type:string;
+  description:string;
 }

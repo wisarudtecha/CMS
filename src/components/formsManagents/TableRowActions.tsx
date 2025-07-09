@@ -4,28 +4,32 @@ import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import Button from '@/components/ui/button/Button';
 import { MoreDotIcon } from "@/icons";
+import { FormManager } from '../interface/FormField';
 
 interface TableRowActionsProps {
-  ticketId: string;
-  ticketName: string;
+  form: FormManager;
+  handleOnEdit?:()=>void;
+  handleOnView?:()=>void;
+  onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['status']) => void; // Add this line
 }
 
 const TableRowActions: React.FC<TableRowActionsProps> = ({
-  ticketId,
-  ticketName
+  form,
+  handleOnEdit,
+  handleOnView,
+  onSetStatusInactive, // Destructure the new prop
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  console.log(ticketId,ticketName)
-  const handleOnEdit = () => {
 
-  }
+
+
   const handleOnDel = () => {
+    // Call the new prop to trigger the status update in the parent
+    onSetStatusInactive(form.formId, form.formName, 'inactive');
+  };
 
-  }
 
-  const handleOnView = () => {
 
-  }
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -50,7 +54,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
       >
         <DropdownItem
           onItemClick={() => {
-            handleOnEdit();
+            handleOnEdit && handleOnEdit();
             closeDropdown();
           }}
           className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
@@ -59,7 +63,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
         </DropdownItem>
         <DropdownItem
           onItemClick={() => {
-            handleOnView();
+            handleOnView && handleOnView();
             closeDropdown();
           }}
           className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
@@ -68,12 +72,12 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
         </DropdownItem>
         <DropdownItem
           onItemClick={() => {
-            handleOnDel();
+            handleOnDel(); // This will now call onSetStatusInactive
             closeDropdown();
           }}
           className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >
-          Delete
+          Set Inactive {/* Change label from Delete to Set Inactive */}
         </DropdownItem>
       </Dropdown>
     </div>

@@ -39,44 +39,9 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import TextArea from "../input/TextArea";
 import { Modal } from "@/components/ui/modal";
-
+import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren } from "@/components/interface/FormField";
 // --- Interface Definitions ---
-interface IndividualFormField {
-  id: string;
-  label: string;
-  type: string;
-  value: any;
-  options?: any[];
-  placeholder?: string;
-  required: boolean;
-  colSpan?: number;
-  isChild?: boolean;
-  GroupColSpan?: number;
-  DynamicFieldColSpan?: number;
-}
 
-interface IndividualFormFieldWithChildren extends IndividualFormField {
-  value: any | IndividualFormFieldWithChildren[];
-  options?: Array<any | { value: string; form: IndividualFormFieldWithChildren[] }>;
-}
-
-interface FormField {
-  formId: string;
-  formName: string;
-  formColSpan: number;
-  formFieldJson: IndividualFormField[];
-}
-
-interface FormFieldWithChildren extends FormField {
-  formFieldJson: IndividualFormFieldWithChildren[];
-}
-
-interface FormConfigItem {
-  formType: string;
-  title: string;
-  options?: any[];
-  canBeChild?: boolean;
-}
 
 interface DynamicFormProps {
   initialForm?: FormField;
@@ -97,8 +62,6 @@ const getResponsiveGridClass = (cols: number | undefined, prefix = 'md') => {
 const getResponsiveColSpanClass = (span: number | undefined, prefix = 'md') => {
   const count = span || 1;
   if (count > 12) return `${prefix}:col-span-12`;
-  // On mobile, everything is full-width (col-span-1 in a 1-col grid)
-  // On desktop, apply the specified span.
   return `${prefix}:col-span-${count}`;
 };
 
@@ -138,6 +101,96 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ onClick, children, classNam
   );
 };
 
+const DndImageUploader: React.FC<{
+  onFileSelect: (file: File) => void;
+  existingFile: File | null;
+  handleRemoveFile: () => void;
+  disabled?: boolean;
+}> = ({ onFileSelect, existingFile, handleRemoveFile, disabled }) => {
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) setDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation(); // Necessary to allow drop
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+    if (disabled) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      if (files[0].type.startsWith('image/')) {
+        onFileSelect(files[0]);
+      } else {
+        alert('Please drop an image file.');
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onFileSelect(files[0]);
+    }
+  };
+
+  const handleClick = () => {
+    if (!disabled) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  return (
+    <div>
+      {existingFile ? (
+        <div className="relative group mt-2 w-full h-40">
+          <img src={URL.createObjectURL(existingFile)} alt="Selected" className="w-full h-full object-contain rounded border border-gray-300 dark:border-gray-600" />
+          <Button onClick={handleRemoveFile} className="absolute top-1 right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
+        </div>
+      ) : (
+        <div
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={handleClick}
+          className={`w-full h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors
+              ${dragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'}
+              ${disabled ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-800' : 'cursor-pointer hover:border-blue-400'}`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={disabled}
+          />
+          <ImageIcon className="w-12 h-12 text-gray-400" />
+          <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Drag & drop an image here, or click to select</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 const ComponentCard: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
@@ -176,6 +229,7 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "option", title: "Multi-Select", options: [], canBeChild: true },
   { formType: "select", title: "Single-Select", options: [], canBeChild: true },
   { formType: "image", title: "Image", canBeChild: true },
+  { formType: "dndImage", title: "DnD Image", canBeChild: true },
   { formType: "multiImage", title: "Multi-Image", canBeChild: true },
   { formType: "passwordInput", title: "Password", canBeChild: true },
   { formType: "dateInput", title: "Date", canBeChild: true },
@@ -193,6 +247,7 @@ const formTypeIcons: Record<string, JSX.Element> = {
   option: <CheckSquare size={16} />,
   select: <ChevronsUpDown size={16} />,
   image: <ImageIcon size={16} />,
+  dndImage: <FileIcon size={16} />,
   multiImage: <div><ImageIcon size={16} /></div>,
   passwordInput: <Lock size={16} />,
   dateInput: <CalendarDays size={16} />,
@@ -239,7 +294,7 @@ function createDynamicFormField(
     defaultValue = null;
   } else if (configItem.formType === "multiImage") {
     defaultValue = [];
-  } else if (configItem.formType === "image") {
+  } else if (configItem.formType === "image" || configItem.formType === "dndImage") {
     defaultValue = null;
   } else {
     defaultValue = "";
@@ -254,6 +309,7 @@ function createDynamicFormField(
     id: id,
     label: configItem.title,
     type: configItem.formType,
+    showLabel: true,
     value: defaultValue,
     ...(fieldOptions && { options: fieldOptions }),
     ...(newOptionText !== undefined && { newOptionText: newOptionText }),
@@ -365,6 +421,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     })
   );
 
+const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
+  if (span <= 0 || totalColumns <= 0) return '0%';
+  return `${((span / totalColumns) * 100).toFixed(0)}%`;
+};
   const handleFormIdChange = useCallback((newId: string) => {
     setCurrentForm(prevForm => ({ ...prevForm, formId: newId }));
   }, []);
@@ -559,7 +619,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     setCurrentForm(prevForm => ({
       ...prevForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => {
-        if (field.type === "image") {
+        if (field.type === "image" || field.type === "dndImage") {
           const valueToStore = newValue instanceof FileList
             ? newValue[0] || null
             : newValue;
@@ -598,6 +658,16 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => ({
         ...field,
         label: newLabel
+      })),
+    }));
+  }, [updateFieldRecursively]);
+
+  const handleShowLabelChange = useCallback((id: string, newValue: boolean) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => ({
+        ...field,
+        showLabel: newValue
       })),
     }));
   }, [updateFieldRecursively]);
@@ -787,7 +857,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     setCurrentForm(prevForm => ({
       ...prevForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
-        if (field.type === "image") {
+        if (field.type === "image" || field.type === "dndImage") {
           return { ...field, value: null };
         } else if (field.type === "multiImage" && Array.isArray(field.value)) {
           const updatedFiles = field.value.filter((file: File) => file.name !== fileNameToRemove);
@@ -921,6 +991,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   interface FieldEditItemProps {
     field: IndividualFormFieldWithChildren;
     handleLabelChange: (id: string, newLabel: string) => void;
+    handleShowLabelChange: (id: string, showLabel: boolean) => void;
     updateFieldId: (oldId: string, newId: string) => void;
     handleAddOption: (id: string, newOptionText: string) => void;
     handleRemoveOption: (fieldId: string, optionIndexToRemove: number) => void;
@@ -940,6 +1011,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
     field,
     handleLabelChange,
+    handleShowLabelChange,
     updateFieldId,
     handleAddOption,
     handleRemoveOption,
@@ -979,7 +1051,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const [localNewOptionText, setLocalNewOptionText] = useState("");
     const [localGroupColSpan, setLocalGroupColSpan] = useState(field.GroupColSpan || 1);
     const [localDynamicFieldColSpan, setLocalDynamicFieldColSpan] = useState(field.DynamicFieldColSpan || 1);
-
     const idInputRef = useRef<HTMLInputElement>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
     const placeholderInputRef = useRef<HTMLInputElement>(null);
@@ -1030,7 +1101,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
     const isInputGroup = field.type === "InputGroup";
     const isDynamicField = field.type === "dynamicField";
-    const showLabelInput = !field.isChild;
     const childFormFields = formConfigurations.filter(f => f.canBeChild);
     const isAnyDropdownOpen = isAddDropdownOpen || Object.values(dynamicOptionDropdown).some(Boolean);
 
@@ -1072,11 +1142,35 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <div className="mt-2 space-y-4">
             <h1 className="my-px font-mono text-xs">({field.type})</h1>
 
-            {showLabelInput && (
-              <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Label:
-                <Input ref={labelInputRef} type="text" value={localLabelValue} onChange={handleLocalLabelChange} onBlur={handleLabelBlur} onKeyDown={handleLabelKeyDown} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" aria-label="Preview field title" disabled={!editFormData} />
-              </label>
-            )}
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  id={`showLabel-toggle-${field.id}`}
+                  type="checkbox"
+                  checked={field.showLabel}
+                  onChange={(e) => handleShowLabelChange(field.id, e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-blue-600 rounded"
+                  disabled={!editFormData}
+                />
+                <label htmlFor={`showLabel-toggle-${field.id}`} className="ml-2 text-gray-700 text-sm font-bold dark:text-gray-400">Show Label</label>
+              </div>
+              {field.showLabel && (
+                <label className="block text-gray-700 text-sm dark:text-gray-400">
+                  Label Text:
+                  <Input
+                    ref={labelInputRef}
+                    type="text"
+                    value={localLabelValue}
+                    onChange={handleLocalLabelChange}
+                    onBlur={handleLabelBlur}
+                    onKeyDown={handleLabelKeyDown}
+                    className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400"
+                    aria-label="Edit field label"
+                    disabled={!editFormData}
+                  />
+                </label>
+              )}
+            </div>
 
             <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">ID:
               <Input ref={idInputRef} type="text" value={localIdValue} onChange={handleLocalIdChange} onBlur={handleIdBlur} onKeyDown={handleIdKeyDown} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" aria-label="Edit field id" title="Edit Field ID" disabled={true} />
@@ -1105,7 +1199,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
               <div className={`flex flex-wrap items-center gap-2`}>
                 <label htmlFor={`colSpan-select-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Column Span:</label>
                 <select id={`colSpan-select-${field.id}`} value={field.colSpan || 1} onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value))} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400" disabled={!editFormData}>
-                  {colSpanOptions.map((span) => (<option key={span} value={span}>{span}</option>))}
+                  {colSpanOptions.map((span) => (
+                    <option key={span} value={span}>
+                      {getColSpanPercentage(span,overallFormColSpan)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1145,7 +1243,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                           <SortableContext items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)} strategy={rectSortingStrategy}>
                             <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}>
                               {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
-                                <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.DynamicFieldColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
+                                <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.DynamicFieldColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
                               </div>))}
                             </div>
                           </SortableContext>
@@ -1171,7 +1269,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <SortableContext items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []} strategy={rectSortingStrategy}>
                   <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}>
                     {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
-                      <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.GroupColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
+                      <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.GroupColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
                     </div>))}
                   </div>
                 </SortableContext>
@@ -1216,12 +1314,12 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             <p className="text-center text-gray-500 italic">No fields added yet. Use the buttons above to add new fields.</p>
           ) : (
             <div>
-              <p className="text-blue-700 text-sm font-semibold mb-3 dark:text-gray-300">Desktop: {currentForm.formColSpan} Columns | Mobile: 1 Column</p>
+             
               <SortableContext items={currentForm.formFieldJson.map(field => field.id)} strategy={rectSortingStrategy} key={currentForm.formId}>
                 <div className={`grid w-full grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
                   {currentForm.formFieldJson.map((field) => (
                     <div className={getResponsiveColSpanClass(field.colSpan)} key={field.id}>
-                      <SortableFieldEditItem key={field.id} field={field} handleLabelChange={handleLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={currentForm.formColSpan} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(field.id)} toggleCardVisibility={toggleCardVisibility} />
+                      <SortableFieldEditItem key={field.id} field={field} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={currentForm.formColSpan} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(field.id)} toggleCardVisibility={toggleCardVisibility} />
                     </div>
                   ))}
                 </div>
@@ -1242,7 +1340,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         </Modal>)}
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards, isImport, importJsonText, handleFormImport, setImportJsonText]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, handleShowLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards, isImport, importJsonText, handleFormImport, setImportJsonText]);
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
@@ -1254,7 +1352,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       disabled: !editFormData,
     };
 
-    const labelComponent = !field.isChild && (<label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</label>);
+    const labelComponent = field.showLabel && (<label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</label>);
 
     switch (field.type) {
       case "textInput": case "emailInput": case "passwordInput":
@@ -1290,6 +1388,20 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
           <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
         </label>))} </div> </>);
 
+      case "dndImage":
+        return (
+          <>
+            {labelComponent}
+            <DndImageUploader
+              onFileSelect={(file) => handleFieldChange(field.id, file)}
+              existingFile={field.value instanceof File ? field.value : null}
+              handleRemoveFile={() => handleRemoveFile(field.id)}
+              disabled={!editFormData}
+            />
+            {field.required && !field.value && <p className="text-red-500 text-xs italic mt-1">This field is required.</p>}
+          </>
+        );
+
       case "image": case "multiImage":
         return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple={field.type === "multiImage"} onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
           {field.type === "image" && field.value instanceof File && (<div className="relative group mt-2 w-20 h-20">
@@ -1304,7 +1416,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             </div>))} </div> </div>)} </div> </>);
 
       case "InputGroup":
-        return (<div> {!field.isChild && (<h3 className="text-lg font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
+        return (<div> {field.showLabel && (<h3 className="text-lg font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}> {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div key={childField.id} className={getResponsiveColSpanClass(childField.colSpan)}>{renderFormField(childField)}</div>))} </div>
           {Array.isArray(field.value) && field.value.length === 0 && (<p className="text-center text-gray-500 italic text-sm mt-2">No fields in this group for preview.</p>)}
         </div>);
