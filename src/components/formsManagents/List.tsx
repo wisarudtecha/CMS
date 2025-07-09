@@ -11,7 +11,6 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
-import { Table } from "@/components/ui/table";
 import {
   AlertIcon,
   CheckCircleIcon,
@@ -30,6 +29,7 @@ import ButtonAction from './ButtonAction';
 import { statusConfig } from '../ui/status/status';
 import { FormField, FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
+import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
 // TypeScript interfaces
 
 interface ApiResponse {
@@ -75,7 +75,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-001",
         "formName": "Employee Onboarding Survey",
         "formColSpan": 12,
-        "createBy":"Phanuphong",
+        "createBy": "Phanuphong",
         "formFieldJson": [
           {
             "id": "e6a1b2c3-d4e5-6f7a-8b9c-0d1e2f3a4b5c",
@@ -187,7 +187,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-002",
         "formName": "Travel Request Form",
         "formColSpan": 12,
-        "createBy":"Phanu",
+        "createBy": "Phanu",
         "formFieldJson": [
           {
             "id": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
@@ -257,7 +257,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-003",
         "formName": "IT Support Ticket",
         "formColSpan": 12,
-        "createBy":"phong",
+        "createBy": "phong",
         "formFieldJson": [
           {
             "id": "e6a1b2c3-d4e5-6f7a-8b9c-0d1e2f3a4b5c",
@@ -318,7 +318,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-004",
         "formName": "Customer Feedback Form",
         "formColSpan": 12,
-        "createBy":"nu",
+        "createBy": "nu",
         "formFieldJson": [
           {
             "id": "i9j0k1l2-m3n4-o5p6-q7r8-s9t0u1v2w3x4",
@@ -378,7 +378,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-005",
         "formName": "Product Bug Report",
         "formColSpan": 12,
-        "createBy":"tung tung tung sahur",
+        "createBy": "tung tung tung sahur",
         "formFieldJson": [
           {
             "id": "u2v3w4x5-y6z7-a8b9-c0d1-e2f3a4b5c6d7",
@@ -429,7 +429,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-006",
         "formName": "New Project Proposal",
         "formColSpan": 12,
-        "createBy":"tralalero tralala",
+        "createBy": "tralalero tralala",
         "formFieldJson": [
           {
             "id": "field-601",
@@ -461,7 +461,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-007",
         "formName": "Leave Request Form",
         "formColSpan": 12,
-        "createBy":"Bombbubini gusini",
+        "createBy": "Bombbubini gusini",
         "formFieldJson": [
           {
             "id": "y6z7a8b9-c0d1-e2f3-a4b5-c6d7e8f9g0h1",
@@ -532,7 +532,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-008",
         "formName": "Expense Reimbursement Form",
         "formColSpan": 12,
-        "createBy":"tar tar tar shur",
+        "createBy": "tar tar tar shur",
         "formFieldJson": [
           {
             "id": "p0q1r2s3-t4u5-v6w7-x8y9-z0a1b2c3d4e5",
@@ -625,7 +625,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-009",
         "formName": "Vendor Registration Form",
         "formColSpan": 12,
-        "createBy":"bananinu",
+        "createBy": "bananinu",
         "formFieldJson": [
           {
             "id": "v6w7x8y9-z0a1-b2c3-d4e5-f6g7h8i9j0k1",
@@ -686,7 +686,7 @@ const fetchForms = async (): Promise<ApiResponse> => {
         "formId": "form-010",
         "formName": "Training Program Enrollment",
         "formColSpan": 12,
-        "createBy":"tesr",
+        "createBy": "tesr",
         "formFieldJson": [
           {
             "id": "m3n4o5p6-q7r8-s9t0-u1v2-w3x4y5z6a7b8",
@@ -768,11 +768,6 @@ const fetchForms = async (): Promise<ApiResponse> => {
   };
 };
 
-const deleteWorkflow = async (id: string): Promise<void> => {
-  // await new Promise(resolve => setTimeout(resolve, 500));
-  console.log(`Deleting workflow ${id}`);
-};
-
 const updateWorkflowStatus = async (id: string, status: FormManager['status']): Promise<void> => {
   // await new Promise(resolve => setTimeout(resolve, 500));
   console.log(`Updating workflow ${id} status to ${status}`);
@@ -832,6 +827,12 @@ const FormListComponent: React.FC = () => {
     setSelectForm(form)
     setDynamicEditFormAction(false)
     setDynamicEditDataFormAction(false)
+    setShowDynamicForm(true)
+  }
+  const handleOnCreate = () => {
+    setSelectForm(undefined)
+    setDynamicEditFormAction(true)
+    setDynamicEditDataFormAction(true)
     setShowDynamicForm(true)
   }
   const onBack = () => {
@@ -909,17 +910,7 @@ const FormListComponent: React.FC = () => {
   };
 
   // Handle delete workflow
-  const handleDeleteWorkflow = async () => {
-    try {
-      await deleteWorkflow(confirmDialog.FormManagerId);
-      setForms(prev => prev.filter(w => w.formId !== confirmDialog.FormManagerId));
-      addToast('success', `Workflow "${confirmDialog.FormManagerName}" deleted successfully`);
-      setConfirmDialog({ isOpen: false, type: 'delete', FormManagerId: '', FormManagerName: '' });
-    }
-    catch (err) {
-      addToast('error', `Failed to delete workflow, ${err}`);
-    }
-  };
+
 
   // Handle update workflow status
   const handleUpdateStatus = async () => {
@@ -941,9 +932,6 @@ const FormListComponent: React.FC = () => {
       addToast('error', `Failed to update workflow status, ${err}`);
     }
   };
-
-
-
 
 
   // Filter and sort forms
@@ -985,13 +973,6 @@ const FormListComponent: React.FC = () => {
   const startEntry = (pagination.page - 1) * pagination.pageSize + 1;
   const endEntry = Math.min(pagination.page * pagination.pageSize, filteredAndSortedFormManagers.length);
 
-  // Status configurations
-  // const statusConfig = {
-  //   active: { icon: VideoIcon, color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800", label: "Active" },
-  //   inactive: { icon: ListIcon, color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800", label: "Inactive" },
-  //   draft: { icon: TimeIcon, color: "text-yellow-600 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-800", label: "Draft" },
-  //   testing: { icon: BoltIcon, color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800", label: "Testing" }
-  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -1036,12 +1017,12 @@ const FormListComponent: React.FC = () => {
         <div className="mx-auto w-full">
           {/* Loading */}
           {loading && (
-            <></>
+            <div className="text-center py-10">Loading forms...</div>
           )}
 
           {/* Error */}
           {error && (
-            <></>
+            <div className="text-center py-10 text-red-500">{error}</div>
           )}
 
           {/* Toast Notifications */}
@@ -1072,83 +1053,84 @@ const FormListComponent: React.FC = () => {
             <div className="mx-auto">
               {/* Header */}
               <div className="mb-8">
-
-
                 {/* Controls */}
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                   {/* Search */}
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        placeholder="Search FormManager..."
-                      />
-                    </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
+                    <Input
+                      type="text"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      placeholder="Search FormManager..."
+                      className="w-full sm:w-auto"
+                    />
                     <Button
                       onClick={handleSearch}
                       variant="dark"
-                      className="h-11"
+                      className="h-11 w-full sm:w-auto"
                     >
                       Search
                     </Button>
                   </div>
 
-                  {/* Display Mode Toggle */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">View:</span>
-                    <div className="flex rounded-lg overflow-hidden">
+                  {/* Display Mode Toggle and Create Button */}
+                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-4 lg:mt-0">
+                    <span className="text-sm text-gray-600 dark:text-gray-300 hidden sm:block">View:</span>
+                    <div className="flex rounded-lg overflow-hidden w-full sm:w-auto">
                       <Button
                         onClick={() => setDisplayMode('card')}
-                        className="rounded-r-none"
+                        className="rounded-r-none flex-grow sm:flex-grow-0"
                         variant={`${displayMode === 'card'
                           ? 'primary'
                           : 'outline'
                           }`}
                       >
-                        <GridIcon className="w-4 h-4" />
+                        <GridIcon className="w-4 h-4 mr-2 sm:mr-0" />
+                        <span className="sm:hidden">Card</span>
                       </Button>
                       <Button
                         onClick={() => setDisplayMode('table')}
-                        className="rounded-l-none"
+                        className="rounded-l-none flex-grow sm:flex-grow-0"
                         variant={`${displayMode === 'table'
                           ? 'primary'
                           : 'outline'
                           }`}
                       >
-                        <ListIcon className="w-4 h-4" />
+                        <ListIcon className="w-4 h-4 mr-2 sm:mr-0" />
+                        <span className="sm:hidden">Table</span>
                       </Button>
                     </div>
                     <Button
-                      onClick={undefined}
+                      onClick={handleOnCreate}
                       variant="primary"
+                      className="w-full sm:w-auto mt-2 sm:mt-0"
                     >
                       Create Form
                     </Button>
                   </div>
-
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap items-center gap-4 mt-4">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 mt-4">
                   {/* Status Filter */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Select
                       value={filterConfig.status}
                       onChange={(value) => handleFilter('status', value)}
                       options={filterOptions}
                       placeholder="Select Status"
+                      className="w-full"
                     />
                   </div>
 
                   {/* Category Filter */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Select
                       value={filterConfig.category}
                       onChange={(value) => handleFilter('category', value)}
                       options={getUniqueCategoriesOptions}
                       placeholder="Select Category"
+                      className="w-full"
                     />
                   </div>
 
@@ -1156,9 +1138,9 @@ const FormListComponent: React.FC = () => {
                   {(filterConfig.search || filterConfig.status || filterConfig.category) && (
                     <Button
                       onClick={clearFilters}
-                      className="h-11"
+                      className="h-11 w-full sm:w-auto"
                     >
-                      <CloseIcon className="w-4 h-4" />
+                      <CloseIcon className="w-4 h-4 mr-2" />
                       Clear Filters
                     </Button>
                   )}
@@ -1166,7 +1148,7 @@ const FormListComponent: React.FC = () => {
               </div>
 
               {/* Results Info */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
                 <div className="text-sm text-gray-600 dark:text-gray-300">
                   Showing {startEntry}-{endEntry} of {filteredAndSortedFormManagers.length} forms
                 </div>
@@ -1199,11 +1181,10 @@ const FormListComponent: React.FC = () => {
               ) : (
                 /* Table View */
                 <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
-                  <div className="overflow-x-auto">
-                    <Table className="w-full">
-                      <thead className="bg-gray-100 dark:bg-gray-800">
+                  <div className="overflow-x-auto"> {/* Added overflow-x-auto for horizontal scrolling on small screens */}
+                    <table className="w-full table-auto"><thead className="bg-gray-100 dark:bg-gray-800">
                         <tr>
-                          <th className="px-6 py-3 text-left">
+                          <th className="px-6 py-3 text-left whitespace-nowrap">
                             <button
                               onClick={() => handleSort('formName')}
                               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
@@ -1214,7 +1195,7 @@ const FormListComponent: React.FC = () => {
                               )}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left">
+                          <th className="px-6 py-3 text-left whitespace-nowrap">
                             <button
                               onClick={() => handleSort('status')}
                               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
@@ -1225,7 +1206,7 @@ const FormListComponent: React.FC = () => {
                               )}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left">
+                          <th className="px-6 py-3 text-left whitespace-nowrap">
                             <button
                               onClick={() => handleSort('createdAt')}
                               className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
@@ -1236,10 +1217,10 @@ const FormListComponent: React.FC = () => {
                               )}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                             Create By
                           </th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                             Actions
                           </th>
                         </tr>
@@ -1249,72 +1230,50 @@ const FormListComponent: React.FC = () => {
                           const config = statusConfig[form.status]
                           return (
                             <tr key={form.formId} className="hover:bg-gray-100 dark:hover:bg-gray-800">
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center gap-3">
                                   <div>
                                     <div className="text-sm font-medium text-gray-900 dark:text-white">{form.formName}</div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{form.description}</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[150px] sm:max-w-xs">{form.description}</div>
                                   </div>
                                 </div>
                               </td>
-                              <td className={`px-6 py-4 `}>
+                              <td className={`px-6 py-4 whitespace-nowrap`}>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
                                   {form.status}
                                 </span>
-
-                                {/* <Select 
-                                  value={form.status}
-                                  onChange={(value) => setConfirmDialog({
-                                    isOpen: true,
-                                    type: 'status',
-                                    FormManagerId: form.formId,
-                                    FormManagerName: form.name,
-                                    newStatus: value as FormManager['status']
-                                  })}
-                                  className={`px-2 py-1 rounded-full text-xs font-medium border-0`}
-                                  options={filterOptions}
-                                >
-                                </Select> */}
                               </td>
-                              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 {formatDate(form.createdAt)}
                               </td>
-
-                      
-                                {/* Use the new TableRowActions component */}
-                                {/* <TableRowActions
-                                  form={form}
-                                  onSetStatusInactive={handleSetWorkflowStatusInactive}
-                                  handleOnEdit={() => handleOnEdit(form)} 
-                                  handleOnView={() => handleOnView(form)}
-                                /> */}
-                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                <div className="flex items-left  gap-2">
+                                  {getAvatarIconFromString(form.createBy, "bg-blue-600 dark:bg-blue-700")}
                                   {form.createBy}
-                                </td>
-                                <td className="px-6 py-4">
-                                <div className="flex items-center gap-2">
-                                  <ButtonAction
-                                  form={form}
-                                  type='list'
-                                  onSetStatusInactive={onSetStatusInactive}
-                                  handleOnEdit={() => handleOnEdit(form)} 
-                                  handleOnView={() => handleOnView(form)}/>
                                 </div>
                               </td>
-                              
-                             
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center justify-center gap-2">
+                                  <ButtonAction
+                                    form={form}
+                                    type='list'
+                                    onSetStatusInactive={onSetStatusInactive}
+                                    handleOnEdit={() => handleOnEdit(form)}
+                                    handleOnView={() => handleOnView(form)} />
+                                </div>
+                              </td>
                             </tr>
                           );
                         })}
                       </tbody>
-                    </Table>
+                    </table>
                   </div>
                 </div>
               )}
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-600 dark:text-gray-300">
                     Page {pagination.page} of {totalPages}
                   </div>
@@ -1356,7 +1315,7 @@ const FormListComponent: React.FC = () => {
               )}
 
               {/* No Results */}
-              {paginatedFormManagers.length === 0 && (
+              {paginatedFormManagers.length === 0 && !loading && !error && (
                 <div className="text-center py-12">
                   <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No forms found</div>
                   <p className="text-gray-400 dark:text-gray-500 mb-4">
@@ -1410,7 +1369,7 @@ const FormListComponent: React.FC = () => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={confirmDialog.type === 'delete' ? handleDeleteWorkflow : handleUpdateStatus}
+                  onClick={handleUpdateStatus}
                   variant={`${confirmDialog.type === 'delete'
                     ? 'error'
                     : 'primary'

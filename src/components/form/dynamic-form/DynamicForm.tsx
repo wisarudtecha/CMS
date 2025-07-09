@@ -305,15 +305,15 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
   return null;
 };
 
-const PageBreadcrumb: React.FC<{ pageTitle: string }> = ({ pageTitle }) => {
-  return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h2 className="text-title-md2 font-semibold text-gray-900 dark:text-white">
-        {pageTitle}
-      </h2>
-    </div>
-  );
-};
+// const PageBreadcrumb: React.FC<{ pageTitle: string }> = ({ pageTitle }) => {
+//   return (
+//     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//       <h2 className="text-title-md2 font-semibold text-gray-900 dark:text-white">
+//         {pageTitle}
+//       </h2>
+//     </div>
+//   );
+// };
 
 
 // --- Main DynamicForm Component ---
@@ -1631,13 +1631,41 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
   }, [currentForm, renderFormField, enableFormTitle]);
 
   return edit ? (
-    <div>
+    <div className={!isPreview ? "2xsm:grid 2xsm:grid-cols-[2fr_8fr]  md:block" : ""}>
       <PageMeta title="Dynamic Form Builder" description="" />
-      <PageBreadcrumb pageTitle="Form Builder" />
+      {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         {!isPreview && (
-          <div className="sticky top-[100px] z-30 px-2 sm:px-5 py-2 rounded-2xl my-3.5 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm">
-            <div className="grid grid-cols-5 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-10 xl:grid-cols-14 gap-2">
+          <div className="
+            
+            left-0 top-[70px] w-30 
+            py-4 px-2 /* Padding for the sidebar */
+            z-30 /* Ensure it's above other content */
+            bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm
+            rounded-r-2xl 
+            flex-col 
+            sticky
+            
+            
+            overflow-y-auto 
+            
+            /* === Styles for Medium and Larger Screens (md and up) === */
+            md:sticky md:top-[100px] /* Revert to  positioning at the top */
+            md:w-full md:h-auto /* Full width, auto height for the top bar */
+            md:my-3.5 /* Original top bar margin */
+            md:px-2 md:sm:px-5 md:py-2 /* Original top bar padding */
+            md:rounded-2xl /* Full rounded corners for the top bar */
+            md:flex-none md:block /* Remove  properties and treat as a block for desktop layout */
+          ">
+            <div className="
+              /* === Default Styles (Mobile/Small Screens < md) - Inner Button Container === */
+              flex flex-col space-y-2 /* Stack buttons vertically inside the sidebar with spacing */
+              w-full /* Buttons take full width of the sidebar */
+
+              /* === Styles for Medium and Larger Screens (md and up) - Inner Button Container === */
+              md:grid md:grid-cols-5 md:sm:grid-cols-4 md:md:grid-cols-7 md:lg:grid-cols-10 md:xl:grid-cols-14 md:gap-2 
+              md:w-auto md:h-auto 
+            ">
               {formConfigurations.map((item) => (
                 <Button
                   key={item.formType}
@@ -1653,9 +1681,8 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
               ))}
             </div>
           </div>
-
         )}
-
+        
         <div className="grid grid-cols-1 gap-6">
           <ComponentCard>
             <div hidden={isPreview}>
