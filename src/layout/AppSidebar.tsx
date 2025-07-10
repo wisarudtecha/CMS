@@ -1,14 +1,11 @@
 // /src/layout/AppSidebar.tsx
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo
-} from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { Link, useLocation } from "react-router";
+import { useSidebar } from "../context/SidebarContext";
+import { useTranslation } from "../hooks/useTranslation";
+// import SidebarWidget from "./SidebarWidget";
+// import Button from "@/components/ui/button/Button";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -25,17 +22,10 @@ import {
   TaskIcon,
   UserCircleIcon,
 } from "../icons";
-import { useSidebar } from "../context/SidebarContext";
-// import SidebarWidget from "./SidebarWidget";
-// import Button from "@/components/ui/button/Button";
-
-import { useTranslation } from "../hooks/useTranslation";
-import
-  {
-    BoxIcon,
-    // PencilIcon
-  }
-from "lucide-react";
+import {
+  BoxIcon,
+  // PencilIcon
+} from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -49,19 +39,23 @@ const AppSidebar: React.FC = () => {
 
   const { t } = useTranslation();
 
+  // Main Menu
   const mainItems: NavItem[] = useMemo(() => [
     {
       icon: <TaskIcon />,
-      name: "Case Management",
+      name: "Case Management", // Case Management
       subItems: [
-        { name: "Case Creation", path: "/case-creation", pro: false },
-        { name: "Case Assignment", path: "/case-assignment", pro: false },
-        { name: "Case History", path: "/kanban", pro: false },
-      ],
+        // { name: "Case Creation", path: "/case-creation", pro: false },  // Case Management (Archived)
+        { name: "Case Creation", path: "/case/creation", pro: false },  // Case Management
+        // { name: "Case Assignment", path: "/case-assignment", pro: false },  // Case Assignment (Archived)
+        { name: "Case Assignment", path: "/case/assignment", pro: false },  // Case Assignment
+        // { name: "Case History", path: "/kanban", pro: false },  // Case History (Archived)
+        { name: "Case History", path: "/case/history", pro: false },  // Case History
+      ]
     },
     {
       icon: <PieChartIcon />,
-      name: "Dashboard & Analytics",
+      name: "Dashboard & Analytics", // Dashboard & Analytics
       subItems: [
         // { name: "Overview SLA", path: "/overview-sla", pro: false },
         // { name: "Ticket Summary", path: "/ticket-summary", pro: false },
@@ -69,44 +63,55 @@ const AppSidebar: React.FC = () => {
         // { name: "Transaction Summary", path: "/transaction-summary", pro: false },
         // { name: "Transaction Details", path: "/transaction-details", pro: false },
         // { name: "Responder Performance", path: "/responder-performance", pro: false },
-        { name: "Analytics", path: "/dashboard/analytics", pro: false },
-        { name: "Call Center", path: "/dashboard/callcenter", pro: false },
-        { name: "Agent Status", path: "/dashboard/agent-status", pro: false },
-        { name: "Service", path: "/dashboard/service", pro: false }
-      ],
+        { name: "Analytics", path: "/dashboard/analytics", pro: false }, // Mockup
+        { name: "Call Center", path: "/dashboard/callcenter", pro: false }, // Mockup
+        { name: "Agent Status", path: "/dashboard/agent-status", pro: false }, // Mockup
+        { name: "Service", path: "/dashboard/service", pro: false }, // Mockup
+      ]
     },
     {
       icon: <FileIcon />,
-      name: "Report",
+      name: "Report", // Report
       path: "/report",
+      // subItems: [
+      //   { name: "...", path: "/...", pro: false }, // ...
+      // ]
     },
     {
       icon: <ListIcon />,
-      name: "Form Builder",
+      name: "Form Builder", // Form Builder
       subItems: [
-        { name: "Forms Management", path: "/form-management", pro: false },
+        { name: "Form Management", path: "/form-management", pro: false },
         { name: "Form Builder", path:"/dynamic-form", pro:false }
       ],
     },
     {
       icon: <BoxIcon />,
-      name: "Workflow",
+      name: "Workflow", // Workflow
       subItems: [
-        { name: "Workflow Management", path: "/workflow/list", pro: false },
-        { name: "Workflow Builder", path: "/workflow/editor/v2", pro: false },
-      ],
+        { name: "Workflow Management", path: "/workflow/list", pro: false },  // Workflow Management
+        { name: "Workflow Builder", path: "/workflow/editor/v2", pro: false },  // Workflow Builder
+      ]
     },
     {
       icon: <PlugInIcon />,
-      name: "System Configuration",
+      name: "System Configuration", // System Configuration
       subItems: [
-        { name: "User Management", path: "/user", pro: false },
-        { name: "Roles & Privileges", path: "/role", pro: false },
-        { name: "Organization Management", path: "/organization", pro: false },
-        { name: "Unit Management", path: "/unit", pro: false },
-        { name: "Service Management", path: "/service", pro: false },
-      ],
+        { name: "User Management", path: "/user", pro: false },  // User Management
+        { name: "Roles & Privileges", path: "/role", pro: false },  // Roles & Privileges
+        { name: "Organization Management", path: "/organization", pro: false },  // Organization Management
+        { name: "Unit Management", path: "/unit", pro: false },  // Unit Management
+        { name: "Service Management", path: "/service", pro: false },  // Service Management
+      ]
     },
+    // {
+    //   icon: <... />,
+    //   name: "...", // ...
+    //   path: "/...",
+    //   subItems: [
+    //     { name: "...", path: "/...", pro: false }, // ...
+    //   ]
+    // },
   ], []);
 
   const navItems: NavItem[] = useMemo(() => [
