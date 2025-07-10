@@ -22,7 +22,6 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm"
 import WorkflowListPage from "./pages/Workflow/List";
 import WorkflowEditorPage from "./pages/Workflow/Editor";
 import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
@@ -35,6 +34,8 @@ import ServiceDashboard from "@/components/dashboard/ServiceDashboard";
 import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
+import FormManagement from "./pages/Forms/FormManagement"
+
 // Lingui
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
@@ -74,7 +75,7 @@ export default function App() {
             
             <Route path="/form-elements" element={<FormElements />} />
             <Route path="/dynamic-form" element={<DynamicForm />} />
-            <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
+            <Route path="/form-management" element={<FormManagement />} />
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
 

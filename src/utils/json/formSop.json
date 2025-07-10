@@ -1,0 +1,92 @@
+[
+  {
+    "id": "a1b2c3d4e5",
+    "name": "Onboarding New Employees SOP",
+    "description": "Standard operating procedure for integrating new hires into the company.",
+    "status": "active",
+    "createdAt": "2024-03-15T10:00:00Z",
+    "category": "Human Resources",
+    "type": "Process"
+  },
+  {
+    "id": "f6g7h8i9j0",
+    "name": "Customer Support Ticket Resolution",
+    "description": "SOP for handling and resolving customer support tickets efficiently.",
+    "status": "active",
+    "createdAt": "2024-02-20T14:30:00Z",
+    "category": "Customer Service",
+    "type": "Guideline"
+  },
+  {
+    "id": "k1l2m3n4o5",
+    "name": "Software Deployment Checklist",
+    "description": "Checklist for deploying new software versions to production.",
+    "status": "draft",
+    "createdAt": "2024-06-01T09:15:00Z",
+    "category": "IT Operations",
+    "type": "Checklist"
+  },
+  {
+    "id": "p6q7r8s9t0",
+    "name": "Monthly Financial Report Generation",
+    "description": "Procedure for generating and distributing monthly financial reports.",
+    "status": "active",
+    "createdAt": "2023-11-10T16:45:00Z",
+    "category": "Finance",
+    "type": "Process"
+  },
+  {
+    "id": "u1v2w3x4y5",
+    "name": "Product Quality Assurance Testing",
+    "description": "SOP for conducting quality assurance tests on new product features.",
+    "status": "testing",
+    "createdAt": "2025-01-05T11:00:00Z",
+    "category": "Product Development",
+    "type": "Methodology"
+  },
+  {
+    "id": "z6a7b8c9d0",
+    "name": "Data Backup and Recovery Policy",
+    "description": "Policy outlining procedures for data backup and disaster recovery.",
+    "status": "active",
+    "createdAt": "2023-09-25T08:00:00Z",
+    "category": "IT Security",
+    "type": "Policy"
+  },
+  {
+    "id": "e1f2g3h4i5",
+    "name": "Employee Performance Review Process",
+    "description": "Guide for managers conducting annual employee performance reviews.",
+    "status": "active",
+    "createdAt": "2024-01-01T13:00:00Z",
+    "category": "Human Resources",
+    "type": "Process"
+  },
+  {
+    "id": "j6k7l8m9n0",
+    "name": "Website Content Update Procedure",
+    "description": "Steps for updating and publishing content on the company website.",
+    "status": "inactive",
+    "createdAt": "2023-07-18T09:00:00Z",
+    "category": "Marketing",
+    "type": "Guideline"
+  },
+  {
+    "id": "o1p2q3r4s5",
+    "name": "New Vendor Onboarding Form",
+    "description": "Form and associated procedure for bringing on new vendors.",
+    "status": "active",
+    "createdAt": "2024-04-22T10:30:00Z",
+    "category": "Procurement",
+    "type": "Form"
+  },
+  {
+    "id": "t6u7v8w9x0",
+    "name": "Social Media Engagement Strategy",
+    "description": "Draft strategy for engaging with users on social media platforms.",
+    "status": "draft",
+    "createdAt": "2025-02-14T15:00:00Z",
+    "category": "Marketing",
+    "type": "Strategy"
+  }
+]
