@@ -21,7 +21,7 @@ export const TableWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) =
   //   { id: '#004', title: 'Performance Issue', status: 'Open', priority: 'High', assignee: 'Alice Brown' }
   // ]);
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const data = [
     { id: '#001', product: 'MacBook Pro 13"', category: 'Laptop', price: '$2399.00', status: 'Delivered', variant: '2 Variants' },
     { id: '#002', product: 'Apple Watch Ultra', category: 'Watch', price: '$879.00', status: 'Pending', variant: '1 Variant' },
@@ -51,7 +51,7 @@ export const TableWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) =
   //   return colors[status as keyof typeof colors] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100';
   // };
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const getStatusBadge = (status: string) => {
     const colors = {
       'Delivered': 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100',
@@ -62,6 +62,7 @@ export const TableWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) =
   };
 
   return (
+    // Updated: [07-07-2025] v0.1.1
     <div className="h-full bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{widget.title}</h3>

@@ -19,7 +19,7 @@ const Dashboard: React.FC = () => {
     addWidget,
     removeWidget,
     reorderWidgets,
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     updateRowHeight
   } = useDashboard();
 
@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
         //   position: { x: 0, y: 2, w: 2, h: 2 }
         // }
 
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         {
           type: 'metric' as WidgetType,
           title: 'Total Cases',
@@ -155,12 +155,12 @@ const Dashboard: React.FC = () => {
       <DashboardHeader
         layoutName={currentLayout.name}
         isCustomizing={isCustomizing}
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         rowHeight={currentLayout.rowHeight}
         onToggleCustomizing={() => setIsCustomizing(!isCustomizing)}
         onAddWidget={handleAddWidget}
         onRefresh={handleRefresh}
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         onRowHeightChange={updateRowHeight}
       />
       
@@ -178,7 +178,7 @@ const Dashboard: React.FC = () => {
       <DashboardGrid
         widgets={currentLayout.widgets}
         isCustomizing={isCustomizing}
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         rowHeight={currentLayout.rowHeight}
         onUpdateWidget={updateWidget}
         onRemoveWidget={removeWidget}

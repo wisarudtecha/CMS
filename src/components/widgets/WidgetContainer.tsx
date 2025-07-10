@@ -2,13 +2,13 @@
 import
   React,
   {
-    useState,
-    // Updated: [04-07-2025] v0.1.1
+    // useState,
+    // Updated: [07-07-2025] v0.1.1
     useEffect,
     useRef
   }
 from "react";
-// Updated: [04-07-2025] v0.1.1
+// Updated: [07-07-2025] v0.1.1
 import type { DashboardWidget } from "@/types/dashboard";
 import { MetricWidget } from "@/components/widgets/MetricWidget";
 import { ChartWidget } from "@/components/widgets/ChartWidget";
@@ -19,20 +19,20 @@ import { AreaChartWidget } from "@/components/widgets/AreaChartWidget";
 import { WorldMapWidget } from "@/components/widgets/WorldMapWidget";
 import { CaseStatusWidget } from "@/components/widgets/CaseStatusWidget";
 import { SLAMonitorWidget } from "@/components/widgets/SLAMonitorWidget";
-import Button from "@/components/ui/button/Button";
-// Updated: [04-07-2025] v0.1.1
-import { Dropdown } from "@/components/ui/dropdown/Dropdown";
-import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import {
-  MoreDotIcon,
-} from "@/icons";
+// import Button from "@/components/ui/button/Button";
+// Updated: [07-07-2025] v0.1.1
+// import { Dropdown } from "@/components/ui/dropdown/Dropdown";
+// import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+// import {
+//   MoreDotIcon,
+// } from "@/icons";
 import {
   // Settings,
   // Minimize2,
   // Maximize2,
   // X,
   GripVertical,
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   // MoreVertical,
   // Eye,
   // Copy,
@@ -45,36 +45,36 @@ export const WidgetContainer: React.FC<{
   isCustomizing: boolean;
   onRemove: () => void;
   onConfigure: () => void;
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   onViewMore: () => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   rowHeight: number;
 }> = ({
   widget,
   index,
   isCustomizing,
-  onRemove,
+  // onRemove,
   // onConfigure,
-  // Updated: [04-07-2025] v0.1.1
-  onViewMore,
+  // Updated: [07-07-2025] v0.1.1
+  // onViewMore,
   onDragStart,
   onDragOver,
   onDrop,
-  // Updated: [04-07-2025] v0.1.1
-  rowHeight
+  // Updated: [07-07-2025] v0.1.1
+  // rowHeight
 }) => {
   // const [isExpanded, setIsExpanded] = useState(false);
-  // Updated: [04-07-2025] v0.1.1
-  const [showDropdown, setShowDropdown] = useState(false);
+  // Updated: [07-07-2025] v0.1.1
+  // const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
+        // setShowDropdown(false);
       }
     };
 
@@ -92,7 +92,7 @@ export const WidgetContainer: React.FC<{
         return <TableWidget widget={widget} />;
       case 'activity':
         return <ActivityWidget widget={widget} />;
-      // Updated: [04-07-2025] v0.1.1
+      // Updated: [07-07-2025] v0.1.1
       case 'circular-progress':
         return <CircularProgressWidget widget={widget} />;
       case 'area-chart':
@@ -118,19 +118,19 @@ export const WidgetContainer: React.FC<{
   return (
     <div 
       // className={`relative group ${isExpanded ? 'fixed inset-4 z-50' : ''}`}
-      // Updated: [04-07-2025] v0.1.1
+      // Updated: [07-07-2025] v0.1.1
       className={`relative group ${isCustomizing ? 'cursor-move' : ''}`}
       draggable={isCustomizing}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
       data-widget-index={index}
-      // Updated: [04-07-2025] v0.1.1
-      style={{ height: `${rowHeight * widget.position.h}px` }}
+      // Updated: [07-07-2025] v0.1.1
+      // style={{ height: `${rowHeight * widget.position.h}px` }}
     >
-      {/* Updated: [04-07-2025] v0.1.1 */}
+      {/* Updated: [07-07-2025] v0.1.1 */}
       {/* Widget Actions Dropdown */}
-      <div className="relative inline-block">
+      {/* <div className="relative inline-block">
         <Button
           className="dropdown-toggle"
           onClick={() => setShowDropdown(!showDropdown)}
@@ -163,7 +163,8 @@ export const WidgetContainer: React.FC<{
             Delete
           </DropdownItem>
         </Dropdown>
-      </div>
+      </div> */}
+
       {/*
       <div className="absolute top-2 right-2 z-10" ref={dropdownRef}>
         <Button
@@ -269,7 +270,7 @@ export const WidgetContainer: React.FC<{
       )}
       */}
 
-      {/* Updated: [04-07-2025] v0.1.1 */}
+      {/* Updated: [07-07-2025] v0.1.1 */}
       {/* Drag Handle */}
       {isCustomizing && (
         <div className="absolute top-2 left-2 z-10">
@@ -281,7 +282,7 @@ export const WidgetContainer: React.FC<{
       
       <div
         // className={`${isExpanded ? 'relative z-50' : ''} ${isCustomizing ? 'cursor-move' : ''}`}
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         className="h-full"
       >
         {renderWidget()}

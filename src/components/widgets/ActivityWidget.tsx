@@ -11,7 +11,7 @@ export const ActivityWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }
   //   { id: 4, user: 'Alice Brown', action: 'assigned ticket', target: '#004', time: '1 hour ago', type: 'assign' }
   // ]);
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const [activities, setActivities] = useState([
     { id: 1, user: 'John Doe', action: 'created case', target: '#CAS-001', time: '2 mins ago', type: 'create' },
     { id: 2, user: 'Jane Smith', action: 'updated status', target: '#CAS-002', time: '5 mins ago', type: 'update' },
@@ -21,7 +21,7 @@ export const ActivityWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Updated: [04-07-2025] v0.1.1
+      // Updated: [07-07-2025] v0.1.1
       const actions = ['created case', 'updated status', 'assigned case', 'resolved case', 'commented on'];
       const users = ['John Doe', 'Jane Smith', 'Bob Wilson', 'Alice Brown', 'Mike Johnson'];
       const types = ['create', 'update', 'assign', 'resolve', 'comment'];
@@ -35,7 +35,7 @@ export const ActivityWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }
       //   type: ['create', 'update', 'comment', 'assign'][Math.floor(Math.random() * 4)]
       // };
 
-      // Updated: [04-07-2025] v0.1.1
+      // Updated: [07-07-2025] v0.1.1
       const newActivity = {
         id: Date.now(),
         user: users[Math.floor(Math.random() * users.length)],
@@ -57,7 +57,7 @@ export const ActivityWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }
       case 'update': return <Activity className="h-3 w-3 text-blue-500 dark:text-blue-400" />;
       case 'comment': return <Clock className="h-3 w-3 text-yellow-500 dark:text-yellow-400" />;
       case 'assign': return <Users className="h-3 w-3 text-purple-500 dark:text-purple-400" />;
-      // Updated: [04-07-2025] v0.1.1
+      // Updated: [07-07-2025] v0.1.1
       case 'resolve': return <CheckCircle className="h-3 w-3 text-green-500 dark:text-green-400" />;
       default: return <Activity className="h-3 w-3 text-gray-500 dark:text-gray-400" />;
     }

@@ -6,6 +6,7 @@ import {
   ArrowUpIcon,
 } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
+import { WidgetActions } from "@/components/widgets/WidgetActions";
 import { TrendingUp } from "lucide-react";
 
 export const MetricWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) => {
@@ -16,7 +17,7 @@ export const MetricWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) 
   //   trend: 'up'
   // });
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const [data, setData] = useState({
     value: widget.title.includes('Cases') ? 1247 : widget.title.includes('Tickets') ? 856 : 3782,
     label: widget.title,
@@ -37,7 +38,7 @@ export const MetricWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) 
   }, [widget.config.refreshInterval]);
 
   return (
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     // <div className="h-full bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
     //   <div className="flex items-center justify-between mb-4">
     //     <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{widget.title}</h3>
@@ -54,23 +55,51 @@ export const MetricWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) 
     //   </div>
     // </div>
 
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-      <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-        <TrendingUp className="text-gray-800 size-6 dark:text-white/90" />
-      </div>
-      <div className="flex items-end justify-between mt-5">
-        <div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {widget.title}
-          </span>
-          <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-            {data.value.toLocaleString()}
-          </h4>
+    // <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+    //   <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+    //     <TrendingUp className="text-gray-800 size-6 dark:text-white/90" />
+    //   </div>
+    //   <div className="flex items-end justify-between mt-5">
+    //     <div>
+    //       <span className="text-sm text-gray-500 dark:text-gray-400">
+    //         {widget.title}
+    //       </span>
+    //       <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+    //         {data.value.toLocaleString()}
+    //       </h4>
+    //     </div>
+    //     <Badge color={`${data.change.startsWith('+') ? 'success' : 'error'}`}>
+    //       {data.change.startsWith('+') ? <ArrowUpIcon /> : <ArrowDownIcon />}
+    //       {data.change}
+    //     </Badge>
+    //   </div>
+    // </div>
+
+    // Updated: [08-07-2025] v0.1.2
+    <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="p-6 bg-white shadow-default rounded-2xl dark:bg-gray-900">
+        <div className="flex justify-between">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+            <TrendingUp className="text-gray-800 size-6 dark:text-white/90" />
+          </div>
+          <WidgetActions onRemove={() => console.log('Remove')} onViewMore={() => console.log('View More')} />
         </div>
-        <Badge color={`${data.change.startsWith('+') ? 'success' : 'error'}`}>
-          {data.change.startsWith('+') ? <ArrowUpIcon /> : <ArrowDownIcon />}
-          {data.change}
-        </Badge>
+        <div className="relative">
+          <div className="flex items-end justify-between mt-6">
+            <div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {widget.title}
+              </span>
+              <h4 className="mt-3 font-bold text-gray-800 text-title-sm dark:text-white/90">
+                {data.value.toLocaleString()}
+              </h4>
+            </div>
+            <Badge color={`${data.change.startsWith('+') ? 'success' : 'error'}`}>
+              {data.change.startsWith('+') ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              {data.change}
+            </Badge>
+          </div>
+        </div>
       </div>
     </div>
     

@@ -2,12 +2,12 @@
 import
   React,
   {
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     useState
   }
 from "react";
 import type { DashboardWidget, WidgetType } from "@/types/dashboard";
-// Updated: [04-07-2025] v0.1.1
+// Updated: [07-07-2025] v0.1.1
 import Button from "@/components/ui/button/Button";
 import {
   TrendingUp,
@@ -17,7 +17,7 @@ import {
   // MapPin,
   // Clock,
   X,
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   FileText,
   Timer,
   Target,
@@ -41,7 +41,7 @@ export const WidgetLibrary: React.FC<{
   //   { type: 'timeline' as WidgetType, name: 'Timeline', icon: Clock, description: 'Chronological events' }
   // ];
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const widgetCategories = {
     'CMS': [
       { type: 'case-status' as WidgetType, name: 'Case Status', icon: FileText, description: 'Monitor case statuses and counts' },
@@ -63,10 +63,10 @@ export const WidgetLibrary: React.FC<{
 
   const handleAddWidget = (
     type: WidgetType,
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     name: string
   ) => {
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     // const widgetSizes = {
     //   'metric': { w: 1, h: 1 },
     //   'case-status': { w: 1, h: 1 },
@@ -90,7 +90,7 @@ export const WidgetLibrary: React.FC<{
       'activity': { w: 2, h: 2 }
     };
 
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     const size = widgetSizes[type] || { w: 2, h: 2 };
 
     const widget = {
@@ -106,7 +106,7 @@ export const WidgetLibrary: React.FC<{
         y: 0,
         // w: type === 'metric' ? 1 : 2,
         // h: type === 'metric' ? 1 : 2
-        // Updated: [04-07-2025] v0.1.1
+        // Updated: [07-07-2025] v0.1.1
         ...size
       }
     };
@@ -128,7 +128,7 @@ export const WidgetLibrary: React.FC<{
           </button>
         </div>
 
-        {/* Updated: [04-07-2025] v0.1.1 */}
+        {/* Updated: [07-07-2025] v0.1.1 */}
         <div className="flex">
           <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
             {Object.keys(widgetCategories).map((category) => (

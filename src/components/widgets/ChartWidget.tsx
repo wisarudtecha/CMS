@@ -11,7 +11,7 @@ export const ChartWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) =
   //   }))
   // );
 
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const [data, setData] = useState(() => 
     Array.from({ length: 12 }, (_, i) => ({
       name: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
@@ -33,7 +33,7 @@ export const ChartWidget: React.FC<{ widget: DashboardWidget }> = ({ widget }) =
   const maxValue = Math.max(...data.map(d => d.value));
 
   return (
-    // Updated: [04-07-2025] v0.1.1
+    // Updated: [07-07-2025] v0.1.1
     <div className="h-full bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{widget.title}</h3>

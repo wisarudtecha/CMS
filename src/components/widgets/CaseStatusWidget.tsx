@@ -1,5 +1,5 @@
 // /src/components/widgets/CaseStatusWidget.tsx
-// Updated: [04-07-2025] v0.1.1
+// Updated: [07-07-2025] v0.1.1
 import React, { useState, useEffect } from "react";
 import type { DashboardWidget } from "@/types/dashboard";
 import { AlertCircle, Clock, CheckCircle, XCircle, FileText } from "lucide-react";

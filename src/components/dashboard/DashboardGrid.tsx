@@ -2,14 +2,14 @@
 import React, { useState } from "react";
 import type { DashboardWidget } from "@/types/dashboard";
 import { WidgetContainer } from "@/components/widgets/WidgetContainer";
-// Updated: [04-07-2025] v0.1.1
+// Updated: [07-07-2025] v0.1.1
 import { ViewMoreModal } from "@/components/ui/modal/ViewMoreModal";
 import { WidgetConfigModal } from "@/components/ui/modal/WidgetConfigModal";
 
 export const DashboardGrid: React.FC<{
   widgets: DashboardWidget[];
   isCustomizing: boolean;
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   rowHeight: number;
   onUpdateWidget: (widgetId: string, updates: Partial<DashboardWidget>) => void;
   onRemoveWidget: (widgetId: string) => void;
@@ -17,7 +17,7 @@ export const DashboardGrid: React.FC<{
 }> = ({
   widgets,
   isCustomizing,
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   rowHeight,
   onUpdateWidget,
   onRemoveWidget,
@@ -25,7 +25,7 @@ export const DashboardGrid: React.FC<{
 }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  // Updated: [04-07-2025] v0.1.1
+  // Updated: [07-07-2025] v0.1.1
   const [viewMoreWidget, setViewMoreWidget] = useState<DashboardWidget | null>(null);
   const [configWidget, setConfigWidget] = useState<DashboardWidget | null>(null);
 
@@ -81,7 +81,7 @@ export const DashboardGrid: React.FC<{
             //   ${dragOverIndex === index && draggedIndex !== index ? 'scale-105 ring-2 ring-blue-300 dark:ring-blue-600' : ''}
             // `}
 
-            // Updated: [04-07-2025] v0.1.1
+            // Updated: [07-07-2025] v0.1.1
             className={`
               ${widget.position.w === 1 ? 'col-span-1' : 
                 widget.position.w === 2 ? 'md:col-span-2' : 
@@ -99,13 +99,13 @@ export const DashboardGrid: React.FC<{
               // onConfigure={() => {
               //   console.log('Configure widget:', widget.id);
               // }}
-              // Updated: [04-07-2025] v0.1.1
+              // Updated: [07-07-2025] v0.1.1
               onConfigure={() => setConfigWidget(widget)}
               onViewMore={() => setViewMoreWidget(widget)}
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
-              // Updated: [04-07-2025] v0.1.1
+              // Updated: [07-07-2025] v0.1.1
               rowHeight={rowHeight}
             />
           </div>
