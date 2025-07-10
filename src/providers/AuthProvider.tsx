@@ -101,7 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => {
           logout();
         }, 60000);
-      }, 15 * 60 * 1000); // 15 minutes
+      },
+      // 15 * 60 * 1000); // 15 minutes
+      60 * 60 * 1000); // 60 minutes
 
       setSessionTimer(timer);
     };
