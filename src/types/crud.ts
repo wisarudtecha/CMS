@@ -1,0 +1,90 @@
+// /src/types/crud.ts
+export interface BaseEntity {
+  id: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SortConfig<T> {
+  key: keyof T | null;
+  direction: "asc" | "desc";
+}
+
+export interface FilterConfig {
+  [key: string]: string | number | boolean | unknown | undefined;
+}
+
+export interface PaginationConfig {
+  page: number;
+  pageSize: number;
+  total?: number;
+}
+
+export interface ConfirmDialog {
+  isOpen: boolean;
+  type: "delete" | "status" | "custom";
+  entityId: string;
+  entityName: string;
+  title?: string;
+  message?: string;
+  newValue?: unknown;
+  onConfirm?: () => void;
+}
+
+export interface Toast {
+  id: string;
+  type: "success" | "error" | "warning" | "info";
+  message: string;
+  duration?: number;
+}
+
+export interface CrudConfig<T> {
+  entityName: string;
+  entityNamePlural: string;
+  apiEndpoints: {
+    list: string;
+    create: string;
+    read: string;
+    update: string;
+    delete: string;
+  };
+  columns: TableColumn<T>[];
+  filters?: FilterDefinition[];
+  actions?: CrudAction<T>[];
+  statusOptions?: StatusOption[];
+}
+
+export interface TableColumn<T> {
+  key: keyof T | string;
+  label: string;
+  sortable?: boolean;
+  render?: (item: T) => React.ReactNode;
+  className?: string;
+}
+
+export interface FilterDefinition {
+  key: string;
+  label: string;
+  type: "select" | "text" | "date" | "boolean";
+  options?: { value: string; label: string }[];
+  placeholder?: string;
+}
+
+export interface CrudAction<T> {
+  key: string;
+  label: string;
+  variant: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
+    | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
+    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
+    | "outline-no-transparent";
+  icon?: React.ComponentType<unknown>;
+  onClick: (item: T) => void;
+  condition?: (item: T) => boolean;
+}
+
+export interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+  icon?: React.ComponentType<unknown>;
+}
