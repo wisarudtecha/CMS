@@ -1631,20 +1631,20 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
   }, [currentForm, renderFormField, enableFormTitle]);
 
   return edit ? (
-    <div className={!isPreview ? "2xsm:grid 2xsm:grid-cols-[2fr_8fr]  md:block" : ""}>
+    <div className={!isPreview ? "grid grid-cols-[2fr_8fr]  md:block" : ""}>
       <PageMeta title="Dynamic Form Builder" description="" />
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         {!isPreview && (
           <div className="
-            
-            left-0 top-[70px] w-30 
+            left-0 top-[70px]  h-screen
             py-4 px-2 /* Padding for the sidebar */
             z-30 /* Ensure it's above other content */
             bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm
             rounded-r-2xl 
             flex-col 
             sticky
+            
             
             
             overflow-y-auto 
