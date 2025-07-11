@@ -50,6 +50,7 @@ interface DynamicFormProps {
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
   enableFormTitle?: boolean;
+  enableSelfBg?:boolean;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -502,7 +503,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true }: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false}: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
@@ -1664,13 +1665,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (<> {labelComponent} <Input type="number" value={field.value !== null ? field.value : ''} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
 
       case "dateInput":
-        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}  /> </>);
+        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> </>);
 
       case "dateLocal":
-        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert disabled:dark:bg-gray-800"/> </>);
+        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100"/> </>);
 
       case "textAreaInput":
-        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'}`}></textarea> </>);
+        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'} rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100` }></textarea> </>);
 
       case "select":
         if (field.enableSearch) {
@@ -1869,7 +1870,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
               </div>
             </div>
-            <div hidden={!isPreview}>
+            <div hidden={!isPreview} className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
               {FormPreview()}
               <div className="flex justify-between flex-wrap gap-2 mt-6">
                 <Button onClick={saveSchema} disabled={!editFormData}>Save Schema</Button>
@@ -1884,8 +1885,8 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     </div>
   ) : (
 
-
-    <div >
+    
+    <div className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}

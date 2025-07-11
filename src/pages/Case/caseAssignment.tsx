@@ -15,7 +15,7 @@ import caseData from "../../utils/json/case.json"
 import CaseDetailView from "../../components/case/CaseDetailView"
 import { CaseItem } from "@/components/interface/CaseItem"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
-
+import { Modal } from "@/components/ui/modal"
 const statusColumns = [
   { title: "new" },
   { title: "in-progress" },
@@ -40,8 +40,19 @@ export default function CasesView() {
 
   // NEW: filter/sort state
   const [searchText, setSearchText] = useState("")
-  const [sortField, setSortField] = useState<"title" | "date">("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [sortField] = useState<"title" | "date">("date")
+  const [sortOrder] = useState<"asc" | "desc">("asc")
+  const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
+  const [advancedFilters, setAdvancedFilters] = useState({ priority: "", category: "" })
+
+  const allCasesForMeta = [
+    ...(caseData.new || []),
+    ...(caseData.inProgress || []),
+    ...(caseData.pendingReview || []),
+    ...(caseData.resolved || []),
+  ];
+  const uniquePriorities = [...new Set(allCasesForMeta.map(c => c.priority).filter(Boolean))];
+  const uniqueCategories = [...new Set(allCasesForMeta.map(c => c.category).filter(Boolean))];
 
   const getStatusKey = (caseItem: CaseItem): string => {
     if (caseData.new?.some(c => c.id === caseItem.id)) return "new"
@@ -54,6 +65,9 @@ export default function CasesView() {
   const handleCaseClick = (caseItem: CaseItem) => {
     
     setSelectedCase(caseItem)
+  }
+  const handleAdvanceFilterClose =()=>{
+    setShowAdvanceFilter(false)
   }
 
   const getFilteredCases = () => {
@@ -74,9 +88,23 @@ export default function CasesView() {
       ]
     }
 
-    const filtered = allCases.filter(c =>
-      c.title.toLowerCase().includes(searchText.toLowerCase())
-    )
+    const filtered = allCases.filter(c => {
+      const term = searchText.toLowerCase()
+      const assigneeName = c.assignee && c.assignee.length > 0 && c.assignee[0].name ? c.assignee[0].name.toLowerCase() : '';
+
+      // General search condition
+      const searchCondition = term === '' ||
+          c.title.toLowerCase().includes(term) ||
+          c.description.toLowerCase().includes(term) ||
+          c.category.toLowerCase().includes(term) ||
+          assigneeName.includes(term);
+
+      // Advanced filter condition
+      const priorityCondition = advancedFilters.priority === '' || c.priority === parseInt(advancedFilters.priority, 10);
+      const categoryCondition = advancedFilters.category === '' || c.category === advancedFilters.category;
+
+      return searchCondition && priorityCondition && categoryCondition;
+    })
 
     return filtered.sort((a, b) => {
       const aVal = a[sortField]
@@ -91,6 +119,56 @@ export default function CasesView() {
   const getCasesForColumn = (columnId: string) => {
     const filteredCases = getFilteredCases();
     return filteredCases.filter(c => getStatusKey(c) === columnId);
+  }
+
+  const AdvanceFilter : React.FC = () => {
+    const [localFilters, setLocalFilters] = useState(advancedFilters);
+
+    const handleApply = () => {
+      setAdvancedFilters(localFilters);
+      handleAdvanceFilterClose();
+    };
+
+    const handleClear = () => {
+      setAdvancedFilters({ priority: "", category: "" });
+      handleAdvanceFilterClose();
+    };
+
+    return(<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
+      <div>
+          <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">Advance Filtering</h3>
+          <div className="space-y-4">
+              <div>
+                <label htmlFor="priority-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                <select
+                    id="priority-filter"
+                    value={localFilters.priority}
+                    onChange={(e) => setLocalFilters({ ...localFilters, priority: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+                >
+                    <option value="">All Priorities</option>
+                    {uniquePriorities.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <select
+                    id="category-filter"
+                    value={localFilters.category}
+                    onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+                >
+                    <option value="">All Categories</option>
+                    {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+          </div>
+          <div className="mt-6 flex justify-end space-x-3">
+              <Button variant="outline" onClick={handleClear}>Clear</Button>
+              <Button onClick={handleApply}>Apply Filters</Button>
+          </div>
+      </div>
+    </Modal>)
   }
 
   const CaseCard = ({ caseItem }: { caseItem: CaseItem }) => (
@@ -249,25 +327,22 @@ export default function CasesView() {
                 <input
                   type="text"
                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
-                  placeholder="Search by title"
+                  placeholder="Search cases..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
-                <select
+                {/* <select
                   className="px-2 py-1 rounded border text-sm text-gray-500 dark:text-gray-400 dark:border-gray-800"
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value as "title" | "date")}
                 >
                   <option value="date">Date</option>
                   <option value="title">Title</option>
-                </select>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                >
-                  {sortOrder === "asc" ? "⬆ Asc" : "⬇ Desc"}
+                </select> */}
+                <Button variant="outline" onClick={()=>{setShowAdvanceFilter(true)}}>
+                  Advance Filtering
                 </Button>
+                
               </div>
             </div>
 
@@ -310,6 +385,9 @@ export default function CasesView() {
           {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
+      {
+        showAdvanceFilter?<AdvanceFilter></AdvanceFilter>:null
+      }
     </div>
   )
 }

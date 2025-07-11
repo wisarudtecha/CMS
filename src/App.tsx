@@ -103,7 +103,7 @@ export default function App() {
 
             {/* Forms Builder */}
             <Route path="/form-elements" element={<FormElements />} />
-            <Route path="/dynamic-form" element={<DynamicForm />} />
+            <Route path="/dynamic-form" element={<DynamicForm enableSelfBg={true}/>} />
             <Route path="/form-management" element={<FormManagement />} />
             {/* Forms Builder (Archived) */}
             <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
