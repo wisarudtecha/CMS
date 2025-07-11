@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import {
   DndContext,
@@ -41,7 +41,7 @@ import TextArea from "../input/TextArea";
 import { Modal } from "@/components/ui/modal";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren } from "@/components/interface/FormField";
 // --- Interface Definitions ---
-
+import Toast from "@/components/toast/Toast";
 
 interface DynamicFormProps {
   initialForm?: FormField;
@@ -51,18 +51,46 @@ interface DynamicFormProps {
   onFormSubmit?: (data: FormField) => void;
   enableFormTitle?: boolean;
 }
-
+const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
-const getResponsiveGridClass = (cols: number | undefined, prefix = 'md') => {
-  const count = cols || 1;
-  if (count > 12) return `${prefix}:grid-cols-12`;
-  return `${prefix}:grid-cols-${count}`;
+const colSpanClasses: Record<string, string> = {
+  1: 'md:col-span-1',
+  2: 'md:col-span-2',
+  3: 'md:col-span-3',
+  4: 'md:col-span-4',
+  5: 'md:col-span-5',
+  6: 'md:col-span-6',
+  7: 'md:col-span-7',
+  8: 'md:col-span-8',
+  9: 'md:col-span-9',
+  10: 'md:col-span-10',
+  11: 'md:col-span-11',
+  12: 'md:col-span-12',
 };
 
-const getResponsiveColSpanClass = (span: number | undefined, prefix = 'md') => {
-  const count = span || 1;
-  if (count > 12) return `${prefix}:col-span-12`;
-  return `${prefix}:col-span-${count}`;
+const gridColumnContainerClasses: Record<string, string> = {
+  1: 'md:grid-cols-1',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4',
+  5: 'md:grid-cols-5',
+  6: 'md:grid-cols-6',
+  7: 'md:grid-cols-7',
+  8: 'md:grid-cols-8',
+  9: 'md:grid-cols-9',
+  10: 'md:grid-cols-10',
+  11: 'md:grid-cols-11',
+  12: 'md:grid-cols-12',
+};
+
+const getResponsiveGridClass = (cols: number | undefined,) => {
+
+  return gridColumnContainerClasses[cols ?? 1];
+};
+
+const getResponsiveColSpanClass = (span: number | undefined) => {
+
+  return colSpanClasses[span ?? 1];
 };
 
 interface DropdownProps {
@@ -138,7 +166,8 @@ const DndImageUploader: React.FC<{
       if (files[0].type.startsWith('image/')) {
         onFileSelect(files[0]);
       } else {
-        alert('Please drop an image file.');
+
+        // setShowToast(true)
       }
     }
   };
@@ -228,7 +257,7 @@ const DndMultiImageUploader: React.FC<{
       if (imageFiles.length > 0) {
         onFilesSelect(imageFiles);
       } else {
-        alert('Please drop image files.');
+        // setShowToast(true)
       }
     }
   };
@@ -248,7 +277,7 @@ const DndMultiImageUploader: React.FC<{
 
   return (
     <div>
-      
+
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -269,7 +298,7 @@ const DndMultiImageUploader: React.FC<{
           disabled={disabled}
         />
         <ImageIcon className="w-12 h-12 text-gray-400" />
-        
+
         <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Drag & drop images here, or click to select</p>
       </div>
       {existingFiles.length > 0 && (
@@ -318,19 +347,19 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
 
 // --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
-  { formType: "textInput", title: "Text", canBeChild: true },
-  { formType: "Integer", title: "Number", canBeChild: true },
-  { formType: "textAreaInput", title: "Text Area", canBeChild: true },
-  { formType: "emailInput", title: "Email", canBeChild: true },
-  { formType: "option", title: "Multi-Select", options: [], canBeChild: true },
+  { formType: "textInput", title: "Text", canBeChild: true ,property:["contain","maxLength","minLength"] },
+  { formType: "Integer", title: "Number", canBeChild: true ,property:["maxnumber","minnumber"]},
+  { formType: "textAreaInput", title: "Text Area", canBeChild: true ,property:["contain","maxLength","minLength"]},
+  { formType: "emailInput", title: "Email", canBeChild: true ,property:["validEmailFormat"]},
+  { formType: "option", title: "Multi-Checkbox", options: [], canBeChild: true ,property:["maxSelections","minSelections"] },
   { formType: "select", title: "Single-Select", options: [], canBeChild: true },
-  { formType: "image", title: "Image", canBeChild: true },
-  { formType: "dndImage", title: "DnD Image", canBeChild: true },
-  { formType: "multiImage", title: "Multi-Image", canBeChild: true },
-  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true },
-  { formType: "passwordInput", title: "Password", canBeChild: true },
-  { formType: "dateInput", title: "Date", canBeChild: true },
-  { formType: "dateLocal", title: "Date & Time", canBeChild: true },
+  { formType: "image", title: "Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes"]},
+  { formType: "dndImage", title: "DnD Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes"]},
+  { formType: "multiImage", title: "Multi-Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes","minFiles","maxFiles",]},
+  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes","minFiles","maxFiles",]},
+  { formType: "passwordInput", title: "Password", canBeChild: true ,property: ["minLength","maxLength","hasUppercase","hasLowercase","hasNumber","hasSpecialChar","noWhitespace",],},
+  { formType: "dateInput", title: "Date", canBeChild: true ,property: [ "minDate", "maxDate", "futureDateOnly", "pastDateOnly"]},
+  { formType: "dateLocal", title: "Date & Time", canBeChild: true ,property: [ "minDate", "maxDate", "futureDateOnly", "pastDateOnly"]},
   { formType: "radio", title: "Radio", options: [], canBeChild: true },
   { formType: "InputGroup", title: "Group", canBeChild: false },
   { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
@@ -379,6 +408,8 @@ function createDynamicFormField(
   let placeholder: string | undefined;
   let GroupColSpan: number | undefined;
   let DynamicFieldColSpan: number | undefined;
+  let enableSearch: boolean | undefined;
+
 
   if (configItem.formType === "InputGroup") {
     defaultValue = [];
@@ -403,12 +434,18 @@ function createDynamicFormField(
     newOptionText = "";
   }
 
+  if ([ "select", "dynamicField"].includes(configItem.formType)) {
+    enableSearch = false;
+  }
+
+
   return {
     id: id,
     label: configItem.title,
     type: configItem.formType,
     showLabel: true,
     value: defaultValue,
+    ...(enableSearch !== undefined && { enableSearch }),
     ...(fieldOptions && { options: fieldOptions }),
     ...(newOptionText !== undefined && { newOptionText: newOptionText }),
     ...(placeholder && { placeholder: placeholder }),
@@ -477,6 +514,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 
 export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
       {
@@ -533,8 +571,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       setCurrentForm(parsedJson);
       setImport(false);
     } catch (error) {
-      alert("Invalid JSON format. Please check the content and try again.");
-      console.error("JSON parsing error:", error);
+      setShowToast(true)
     }
   }, [importJsonText]);
 
@@ -573,10 +610,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     })
   );
 
-const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
-  if (span <= 0 || totalColumns <= 0) return '0%';
-  return `${((span / totalColumns) * 100).toFixed(0)}%`;
-};
+  const getColSpanPercentage = (span: number, totalColumns: number = maxGridCol) => {
+    if (span <= 0 || totalColumns <= 0) return '0%';
+    return `${((span / totalColumns) * 100).toFixed(0)}%`;
+  };
   const handleFormIdChange = useCallback((newId: string) => {
     setCurrentForm(prevForm => ({ ...prevForm, formId: newId }));
   }, []);
@@ -589,8 +626,8 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     let newColSpan = parseInt(e.target.value, 10);
     if (isNaN(newColSpan) || newColSpan < 1) {
       newColSpan = 1;
-    } else if (newColSpan > 12) {
-      newColSpan = 12;
+    } else if (newColSpan > maxGridCol) {
+      newColSpan = maxGridCol;
     }
 
     setCurrentForm(prevForm => {
@@ -634,8 +671,8 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     let newColSpan = parseInt(e.target.value, 10);
     if (isNaN(newColSpan) || newColSpan < 1) {
       newColSpan = 1;
-    } else if (newColSpan > 12) {
-      newColSpan = 12;
+    } else if (newColSpan > maxGridCol) {
+      newColSpan = maxGridCol;
     }
 
     setCurrentForm(prevForm => ({
@@ -938,14 +975,14 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
         onFormSubmit(submitData);
       }
     } else {
-      alert("Please fill in all required fields.");
+      setShowToast(true)
     }
   }, [currentForm, onFormSubmit, transformFieldForSubmission]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
     if (!trimmedNewId) {
-      alert("Field ID cannot be empty!");
+      setShowToast(true)
       return;
     }
     const checkIdExistsRecursively = (fields: IndividualFormFieldWithChildren[]): boolean => {
@@ -968,7 +1005,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     };
 
     if (checkIdExistsRecursively(currentForm.formFieldJson)) {
-      alert(`Error: ID '${trimmedNewId}' already exists. Please choose a unique ID.`);
+      setShowToast(true)
       return;
     }
 
@@ -1036,6 +1073,15 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     }));
   }, [updateFieldRecursively]);
 
+  const handleToggleEnableSearch = useCallback((id: string) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => ({
+        ...field,
+        enableSearch: !field.enableSearch
+      })),
+    }));
+  }, [updateFieldRecursively]);
 
   const handleColSpanChange = useCallback((id: string, newColSpan: number) => {
     setCurrentForm(prevForm => ({
@@ -1350,13 +1396,29 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
               <label htmlFor={`required-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">Required</label>
             </div>
 
+            {["select", "dynamicField"].includes(field.type) && (
+              <div className="flex items-center">
+                <input
+                  id={`enableSearch-toggle-${field.id}`}
+                  type="checkbox"
+                  checked={!!field.enableSearch}
+                  onChange={() => handleToggleEnableSearch(field.id)}
+                  className="form-checkbox h-4 w-4 text-blue-600 rounded"
+                  disabled={!editFormData}
+                />
+                <label htmlFor={`enableSearch-toggle-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">Enable Search</label>
+              </div>
+            )}
+
+            
+
             <div className="space-y-2">
               {(isInputGroup || isDynamicField) && !field.isChild && (
                 <div className="flex flex-wrap items-center gap-2">
                   <label htmlFor={`overallColSpan-input-${field.id}`} className="text-gray-700 text-sm dark:text-gray-400">
                     Desktop Grid Columns:
                   </label>
-                  <Input id={`overallColSpan-input-${field.id}`} type="number" min="1" max="12" value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan} onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData} />
+                  <Input id={`overallColSpan-input-${field.id}`} type="number" min="1" max={maxGridCol.toString()} value={isInputGroup ? localGroupColSpan : localDynamicFieldColSpan} onChange={isInputGroup ? handleLocalGroupColSpanChange : handleLocalDynamicFieldColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData} />
                 </div>
               )}
               <div className={`flex flex-wrap items-center gap-2`}>
@@ -1364,7 +1426,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
                 <select id={`colSpan-select-${field.id}`} value={field.colSpan || 1} onChange={(e) => handleColSpanChange(field.id, parseInt(e.target.value))} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400" disabled={!editFormData}>
                   {colSpanOptions.map((span) => (
                     <option key={span} value={span}>
-                      {getColSpanPercentage(span,overallFormColSpan)}
+                      {getColSpanPercentage(span, overallFormColSpan)}
                     </option>
                   ))}
                 </select>
@@ -1459,7 +1521,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
             </label>
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Grid Columns:</label>
-              <Input id={`overallColSpan-input`} type="number" min="1" max="12" value={currentForm.formColSpan} onChange={handleOverallFormColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData} />
+              <Input id={`overallColSpan-input`} type="number" min="1" max={maxGridCol.toString()} value={currentForm.formColSpan} onChange={handleOverallFormColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-white/[0.03] dark:text-gray-400 w-20" disabled={!editFormData} />
             </div>
           </div>
         </div>
@@ -1477,7 +1539,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
             <p className="text-center text-gray-500 italic">No fields added yet. Use the buttons above to add new fields.</p>
           ) : (
             <div>
-             
+
               <SortableContext items={currentForm.formFieldJson.map(field => field.id)} strategy={rectSortingStrategy} key={currentForm.formId}>
                 <div className={`grid w-full grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
                   {currentForm.formFieldJson.map((field) => (
@@ -1505,11 +1567,98 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     );
   }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, handleShowLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards, isImport, importJsonText, handleFormImport, setImportJsonText]);
 
+
+  const SearchableSelect: React.FC<{
+    options: any[],
+    value: string;
+    onChange: (newValue: string) => void;
+    placeholder?: string;
+    disabled?: boolean;
+    isDynamic?: boolean;
+  }> = ({ options, value, onChange, placeholder, disabled, isDynamic = false }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const filteredOptions = useMemo(() => {
+      if (!searchTerm) return options;
+      return options.filter(opt => {
+        const label = isDynamic ? opt.value : opt;
+        return label.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    }, [options, searchTerm, isDynamic]);
+
+    const selectedLabel = useMemo(() => {
+      const selected = options.find(opt => (isDynamic ? opt.value : opt) === value);
+      return selected ? (isDynamic ? selected.value : selected) : placeholder || "Select an option";
+    }, [options, value, placeholder, isDynamic]);
+
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [wrapperRef]);
+
+    const handleSelect = (option: any) => {
+      onChange(isDynamic ? option.value : option);
+      setIsOpen(false);
+      setSearchTerm("");
+    };
+
+    return (
+      <div className="relative" ref={wrapperRef}>
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={disabled}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 text-left flex justify-between items-center"
+        >
+          <span className="truncate">{selectedLabel}</span>
+          <ChevronsUpDown size={16} className="text-gray-400" />
+        </button>
+        {isOpen && (
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700">
+            <div className="p-2">
+              <Input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <ul className="max-h-60 overflow-auto">
+              {filteredOptions.map((option, index) => {
+                const optionValue = isDynamic ? option.value : option;
+                const optionKey = isDynamic ? option.value : `${option}-${index}`;
+                return (
+                  <li
+                    key={optionKey}
+                    onClick={() => handleSelect(option)}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white dark:hover:bg-gray-700 cursor-pointer"
+                  >
+                    {optionValue}
+                  </li>
+                );
+              })}
+              {filteredOptions.length === 0 && (
+                <li className="px-4 py-2 text-sm text-gray-500 italic">No options found.</li>
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
     const commonProps = {
       id: field.id,
-      className:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
+      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
       placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
@@ -1528,12 +1677,24 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
         return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
 
       case "dateLocal":
-        return (<> {labelComponent} <Input type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
+        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert"/> </>);
 
       case "textAreaInput":
         return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}></textarea> </>);
 
       case "select":
+        if (field.enableSearch) {
+          return <>
+            {labelComponent}
+            <SearchableSelect
+              options={field.options || []}
+              value={String(field.value || "")}
+              onChange={(newValue) => handleFieldChange(field.id, newValue)}
+              placeholder={field.placeholder || "Select an option"}
+              disabled={!editFormData}
+            />
+          </>;
+        }
         return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}>
           <option value="" className="dark:bg-gray-800">Select an option</option>
           {field.options?.map((option) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
@@ -1597,13 +1758,29 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
         );
 
       case "InputGroup":
-        return (<div> {field.showLabel && (<h3 className="text-lg font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
+        return (<div> {field.showLabel && (<h3 className="text-sm font-semibold mb-3 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</h3>)}
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}> {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div key={childField.id} className={getResponsiveColSpanClass(childField.colSpan)}>{renderFormField(childField)}</div>))} </div>
           {Array.isArray(field.value) && field.value.length === 0 && (<p className="text-center text-gray-500 italic text-sm mt-2">No fields in this group for preview.</p>)}
         </div>);
 
       case "dynamicField":
         const selectedOption = field.options?.find((option: any) => option.value === field.value);
+        if (field.enableSearch) {
+          return <>
+            {labelComponent}
+            <SearchableSelect
+              options={field.options || []}
+              value={String(field.value || "")}
+              onChange={(newValue) => handleFieldChange(field.id, newValue)}
+              placeholder={field.placeholder || "Select an option"}
+              disabled={!editFormData}
+              isDynamic={true}
+            />
+            {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)} </div>))} </div>
+            </div>)}
+          </>;
+        }
         return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}>
           <option value="" className="dark:bg-gray-800">Select an option</option>
           {field.options?.map((option: any) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option.value} value={option.value}>{option.value}</option>))}
@@ -1619,7 +1796,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
   const FormPreview = useCallback(() => {
     return (
       <div>
-        {enableFormTitle && <div className="px-3 py-4 text-xl dark:text-white">{currentForm.formName}</div>}
+        {enableFormTitle && <div className="px-3  text-xl dark:text-white">{currentForm.formName}</div>}
         {currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
         ) : (
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
@@ -1634,7 +1811,16 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
     <div className={!isPreview ? "grid grid-cols-[2fr_8fr]  md:block" : ""}>
       <PageMeta title="Dynamic Form Builder" description="" />
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
+      {showToast && (
+        <Toast
+          message="Please enter all data."
+          type="error"
+          duration={1000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+
         {!isPreview && (
           <div className="
             left-0 top-[70px]  h-screen
@@ -1666,6 +1852,8 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
               md:grid md:grid-cols-5 md:sm:grid-cols-4 md:md:grid-cols-7 md:lg:grid-cols-10 md:xl:grid-cols-14 md:gap-2 
               md:w-auto md:h-auto 
             ">
+
+              <h1 className="text-gray-700 dark:text-white text-center content-center">Form Element</h1>
               {formConfigurations.map((item) => (
                 <Button
                   key={item.formType}
@@ -1682,7 +1870,7 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
             </div>
           </div>
         )}
-        
+
         <div className="grid grid-cols-1 gap-6">
           <ComponentCard>
             <div hidden={isPreview}>
@@ -1707,7 +1895,9 @@ const getColSpanPercentage = (span: number, totalColumns: number = 12) => {
       </DndContext>
     </div>
   ) : (
-    <div>
+
+
+    <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}

@@ -9,7 +9,8 @@ import {
     Paperclip,
     MapPin,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    X // Added for the close button
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import { CaseItem } from "@/components/interface/CaseItem"
@@ -43,9 +44,10 @@ interface CaseDetailViewProps {
 
 interface CustomerPanelProps {
     type: "edit" | "add"
+    onClose: () => void; // Added onClose handler for mobile view
 }
-// CustomerPanel and other sub-components remain unchanged as their internal structure is correct.
-const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
+
+const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("customer-info");
 
@@ -64,8 +66,18 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
     const serviceHistory = CaseHistory
 
     return (
-        <div className="overflow-y-auto w-full md:max-w-md lg:max-w-lg xl:max-w-lg bg-gray-50 dark:bg-gray-900 md:border-l border-gray-200 dark:border-gray-800 flex flex-col">
-            {/* Mobile/Tablet Tabs */}
+        // The main div is set to h-full to fill its container, crucial for the fixed mobile view.
+        // Width constraints like md:max-w-* are removed to allow the parent to control the size.
+        <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
+            {/* Mobile-only header with a title and close button */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
+                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Customer Details</h3>
+                <Button variant="ghost" onClick={onClose}>
+                    <X className="w-5 h-5" />
+                </Button>
+            </div>
+
+            {/* Mobile/Tablet Tabs for switching between Customer Info and Service History */}
             <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                 <div className="flex">
                     <button
@@ -110,8 +122,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
                                 </button>
                             ))
                         ) : (
-                            // If type is not "edit", map through a slice of the 'tabs' array
-                            addTab.slice(0, 4).map((tab) => ( // Removed the extra curly braces here
+                            addTab.slice(0, 4).map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
@@ -131,14 +142,11 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
                     <div className="p-3 space-y-3">
                         {activeTab === "customer-info" ? (
                             <>
-                                {/* Section Header */}
                                 <div className="flex items-center space-x-2">
                                     <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
                                         Customer Information
                                     </span>
                                 </div>
-
-                                {/* Avatar and Name Block */}
                                 <div className="flex items-center space-x-3">
                                     <div className="flex flex-wrap gap-3 items-center">
                                         <Avatar
@@ -166,19 +174,14 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Info Grid */}
                                 <div className="space-y-2 text-xs">
                                     <div className="grid grid-cols-2 gap-2">
-                                        {/* DOB */}
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">DOB</div>
                                             <div className="text-gray-900 dark:text-white">
                                                 {type === "edit" ? "Jan 15, 1985" : "-"}
                                             </div>
                                         </div>
-
-                                        {/* Insurance */}
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Insurance</div>
                                             <div className="text-gray-900 dark:text-white">
@@ -189,7 +192,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type }) => {
                                 </div>
                             </>
 
-                        ) : activeTab === "Location" ? ( // Corrected: removed extra curly braces here
+                        ) : activeTab === "Location" ? (
                             <div className="text-center py-4">
                                 <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
                             </div>
@@ -296,9 +299,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                 </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="mb-4 overflow-x-auto"> {/* Added overflow-x-auto for small screens */}
-                <div className="relative min-w-max-content"> {/* Added min-w-max-content to ensure full width */}
+            <div className="mb-4 overflow-x-auto">
+                <div className="relative min-w-max-content">
                     <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
                     <div
                         className="absolute top-4 left-0 h-0.5 bg-blue-500 transition-all duration-300"
@@ -313,7 +315,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                             { id: 5, title: "On Site", description: "Arrived at service location", completed: false },
                             { id: 6, title: "Completed", description: "Service completed", completed: false }
                         ].map((step) => (
-                            <div key={step.id} className="flex flex-col items-center text-center px-1" style={{ width: "16.66%" }}> {/* Added px-1 for spacing */}
+                            <div key={step.id} className="flex flex-col items-center text-center px-1" style={{ width: "16.66%" }}>
                                 <div
                                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mb-2 transition-all duration-300 ${step.completed || step.current
                                         ? "bg-blue-500 border-blue-500"
@@ -341,12 +343,6 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                                     >
                                         {step.title}
                                     </div>
-                                    {/* <div
-                                        className={`text-xs ${step.completed || step.current ? "text-gray-600 dark:text-gray-300" : "text-gray-500"
-                                            }`}
-                                    >
-                                        {step.description}
-                                    </div> */}
                                 </div>
                             </div>
                         ))}
@@ -355,7 +351,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
-                <div className="flex flex-wrap gap-2"> {/* Changed to flex-wrap for buttons */}
+                <div className="flex flex-wrap gap-2">
                     <Button onClick={onChickComment} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         {showComment? <ChevronUp size={20}/>:<ChevronDown size={20} />}
                         <MessageSquare className="w-4 h-4 mr-2" size={20}/>
@@ -380,24 +376,6 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
     );
 };
 
-// function mapCaseToForm(singleCase: CaseItem, initialFormSchema: FormField): FormField {
-//     const newFormSchema: FormField = JSON.parse(JSON.stringify(initialFormSchema));
-//     const mappedFields: IndividualFormField[] = newFormSchema.formFieldJson.map(field => {
-//         let updatedValue: any = field.value;
-//         switch (field.label) {
-//             case "Case Title": updatedValue = singleCase.title; break;
-//             case "Description": updatedValue = singleCase.description || ""; break;
-//             case "Priority": updatedValue = singleCase.priorityColor; break;
-//             case "Status": updatedValue = "New"; break;
-//             case "Customer": updatedValue = singleCase.assignee.name; break;
-//             case "Assignee": updatedValue = singleCase.assignee; break;
-//             case "Due Date": updatedValue = singleCase.date; break;
-//         }
-//         return { ...field, value: updatedValue };
-//     });
-//     newFormSchema.formFieldJson = mappedFields;
-//     return newFormSchema;
-// }
 interface Props {
     caseData?: CaseItem;
 }
@@ -449,11 +427,10 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
     const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Changed to 1 column on mobile, 2 on md */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <div className="mb-2">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Service Type</span>
-                    {/* <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div> */}
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.title}</div>
                 </div>
                 <div className="mb-2">
@@ -473,7 +450,6 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
                         <MapPin />
                         {Array.isArray(fieldMap["3. Service Location & Destination:"])
                             ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
-                                // Flatten nested objects
                                 return Object.values(item).map((val, i) => (
                                     <div key={idx + "-" + i}>{String(val)}</div>
                                 ));
@@ -481,7 +457,7 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
                             : (fieldMap["3. Service Location & Destination:"] ?? "-")}
                     </div></div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2"> {/* Changed col-span for responsiveness */}
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Description</span>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["7. Service Details: *"] ?? "-"}</div>
             </div>
@@ -494,8 +470,10 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
     const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
     const [showOfficersData, setShowOFFicersData] = useState<Officer | null>(null);
+    // State to control the visibility of the customer panel on mobile
+    const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
+
     const handleSelectOfficer = (selectedOfficer: Officer) => {
-        console.log(showOfficersData)
         if (selectedOfficer.id == showOfficersData?.id) {
             setShowOFFicersData(null)
         }
@@ -508,9 +486,8 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
         const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
         setAssignedOfficers(selected);
         setShowAssignModal(false);
-
     };
-    console.log("Case Data:", caseData);
+
     const handleFormSubmissionEdit = () => {
         console.log("Data received from Edit DynamicForm");
         setEditFormData(false);
@@ -528,9 +505,9 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 title="Case Detail"
                 description="Case Detail Page"
             />
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 ">
                 <PageBreadcrumb pageTitle="Create Case" />
-                <div className="px-4 sm:px-6"> {/* Adjusted padding */}
+                <div className="px-4 sm:px-6 ">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                             {onBack ? <Button variant="ghost" size="sm" onClick={onBack}>
@@ -546,22 +523,28 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                 </div>
                             </div>
                         </div>
+                        {/* Button to open the customer panel, visible only on small screens */}
+                        <div className="md:hidden ">
+                            <Button  className="mb-2"variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
+                                <User className="w-4 h-4 mr-2 " />
+                                View Customer
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 px-4 py-6 sm:px-6 sm:py-8 overflow-hidden bg-white dark:bg-gray-800 rounded-lg md:flex"> {/* Adjusted padding and added md:flex */}
-                <div className="flex flex-col md:flex-row h-full gap-6 w-full"> {/* Changed to flex-col on mobile, flex-row on md */}
-                    <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4"> {/* Adjusted width for responsiveness */}
-                        <div className="pr-0 md:pr-6"> {/* Adjusted padding */}
+            <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl">
+                <div className="flex flex-col md:flex-row h-full gap-1 w-full">
+                    <div className="overflow-y-auto  w-full md:w-2/3 lg:w-3/4">
+                        <div className="pr-0 md:pr-6 ">
+                            <div className="px-4 pt-6">
                             {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
                             {(caseData && assignedOfficers.length > 0) && (
-                                <div className="mb-4 flex flex-wrap gap-2 items-center"> {/* Added flex-wrap */}
+                                <div className="mb-4 flex flex-wrap gap-2 items-center">
                                     <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                                         Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
                                     </span>
-
-
                                         {assignedOfficers.map(officer => (
                                             <button
                                                 key={officer.id}
@@ -578,7 +561,7 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                                             prev.filter(o => o.id !== officer.id)
                                                         )
                                                     }
-                                                    className="ml-2  "
+                                                    className="ml-2"
                                                     title="Remove"
                                                     variant="outline-no-transparent"
                                                     size="xxs"
@@ -588,11 +571,12 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                             </button>
                                         ))}
                                     </div>
-
                             )}
+                            
 
                             {showOfficersData ? <CommandInformation className=" my-2" /> : null}
-
+                            </div>
+                            <div className="px-4 ">
                             {editFormData ? <DynamicForm
                                 initialForm={caseData ? caseData.formData : createCase}
                                 edit={false}
@@ -601,13 +585,32 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                 enableFormTitle={false}
                             /> : <FormFieldValueDisplay caseData={caseData} />}
                         </div>
+                        </div>
                     </div>
 
-                    {caseData ? <CustomerPanel type="edit" /> : <CustomerPanel type="add" />}
+                    {/* Wrapper for the CustomerPanel to handle responsive positioning and animation */}
+                    <div className={`
+                        fixed top-0 right-0 h-full w-[90%] max-w-md z-40
+                        transition-transform duration-300 ease-in-out
+                        md:relative md:h-auto md:w-1/3 lg:w-1/4 md:translate-x-0 md:z-auto
+                        md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
+                        ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
+                    `}>
+                        {caseData 
+                            ? <CustomerPanel type="edit" onClose={() => setIsCustomerPanelOpen(false)} /> 
+                            : <CustomerPanel type="add" onClose={() => setIsCustomerPanelOpen(false)} />}
+                    </div>
                 </div>
             </div>
+            
+            {/* Overlay to dim the background when the panel is open on mobile */}
+            {isCustomerPanelOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 z-30 md:hidden"
+                    onClick={() => setIsCustomerPanelOpen(false)}
+                ></div>
+            )}
 
-            {/* Render the modal */}
             <AssignOfficerModal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}

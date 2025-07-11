@@ -5,6 +5,7 @@ export interface IndividualFormField {
   showLabel?:boolean;
   type: string;
   value: any;
+  enableSearch?:boolean
   options?: any[];
   placeholder?: string;
   required: boolean;
@@ -35,6 +36,7 @@ export interface FormConfigItem {
   title: string;
   options?: any[];
   canBeChild?: boolean;
+  property?:string[];
 }
 
 
