@@ -20,7 +20,7 @@ interface Notification {
   read: boolean;
   senderImg: string;
   notificationType: string;
-  redirectUrl: string;
+  redirectURL: string;
 }
 
 function timeAgo(date: string): string {
@@ -49,9 +49,12 @@ export default function NotificationDropdown() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isOverflow, setIsOverflow] = useState<{ [key: string]: boolean }>({});
   const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
+   const WEBSOCKET_BASE_URL = "ws://cmsapi-production-7239.up.railway.app";
   // const API_BASE_URL = "http://localhost:8080"; 
+  // const WEBSOCKET_BASE_URL = "ws://localhost:8080"; 
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -167,19 +170,19 @@ export default function NotificationDropdown() {
     );
   };
 
-  const handleDeleteNotification = async (id: string) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/api/v1/notifications/delete/${id}`);
+  // const handleDeleteNotification = async (id: string) => {
+  //   try {
+  //     await axios.delete(`${API_BASE_URL}/api/v1/notifications/delete/${id}`);
 
-      setNotifications((prev) => {
-        const newList = prev.filter((n) => n.id !== id);
-        localStorage.setItem("notifications", JSON.stringify(newList));
-        return newList;
-      });
-    } catch (err) {
-      console.error("❌ Failed to delete notification:", err);
-    }
-  };
+  //     setNotifications((prev) => {
+  //       const newList = prev.filter((n) => n.id !== id);
+  //       localStorage.setItem("notifications", JSON.stringify(newList));
+  //       return newList;
+  //     });
+  //   } catch (err) {
+  //     console.error("❌ Failed to delete notification:", err);
+  //   }
+  // };
 
   const username = localStorage.getItem("username") || "";
 
@@ -244,15 +247,15 @@ export default function NotificationDropdown() {
     }
   };
 
-  const handleItemClick = (noti:Notification) => {
-    if (!noti.read) {
-      handleMarkAsRead(noti.id);
-    }
+  // const handleItemClick = (noti:Notification) => {
+  //   if (!noti.read) {
+  //     handleMarkAsRead(noti.id);
+  //   }
   
-    if (noti.redirectUrl) {
-      window.location.href = noti.redirectUrl;
-    }
-  };
+  //   if (noti.redirectURL) {
+  //     window.location.href = noti.redirectURL;
+  //   }
+  // };
 
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -270,7 +273,8 @@ export default function NotificationDropdown() {
   useEffect(() => {
     if (socketRef.current) return;
 
-    const ws = new WebSocket(`${API_BASE_URL.replace('https', 'wss')}/api/v1/notifications/ws`);
+    const ws = new WebSocket(`${WEBSOCKET_BASE_URL}/api/v1/notifications/ws`);
+
     ws.onopen = () => {
       const username = localStorage.getItem("username") || "";
       if (username) ws.send(username);
@@ -293,7 +297,7 @@ export default function NotificationDropdown() {
       }
     };
 
-    ws.onerror = (e) => console.error("WS error:", e);
+    // ws.onerror = (e) => console.error("WS error:", e);
     ws.onclose = () => console.log("WS closed");
     socketRef.current = ws;
 
@@ -303,8 +307,21 @@ export default function NotificationDropdown() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
        <audio ref={audioRef} src="/sounds/ring.mp3" preload="auto" />
       {/* Bell Icon */}
       <button
@@ -427,17 +444,19 @@ export default function NotificationDropdown() {
    <li
    key={noti.id}
    className="relative cursor-pointer group"
-   onClick={async () => {
+   onClick={async (e) => {
+     e.preventDefault();
      if (!noti.read) {
        await handleMarkAsRead(noti.id);
      }
-     if (noti.redirectUrl) {
-       window.location.href = noti.redirectUrl;
+     if (noti.redirectURL) {
+       setTimeout(() => {
+         window.location.href = noti.redirectURL;
+       }, 100); // Give time for marking as read
      }
    }}
  >
-  <DropdownItem
-  onClick={() => handleItemClick(noti)}
+   <DropdownItem
   className={`relative flex gap-2 p-2 px-3 py-2 rounded-xl
     ${
       noti.read
@@ -453,48 +472,46 @@ export default function NotificationDropdown() {
     }
   `}
 >
-      {/* Main content */}
-      <div className={`flex flex-col justify-between h-full p-2 pl-2 gap-1 ${noti.eventType === "broadcast" ? "flex-1 ml-2" : ""}`}>
-        <div className="flex items-center gap-3">
-          <div className="relative flex-shrink-0">
-          <img
-  src={
-    noti.eventType === "broadcast"
-      ? "/images/notification/system.svg"
-      : noti.sender === "system"
-      ? "/images/notification/system.svg"
-      : noti.sender === "responder"
-      ? "/images/notification/responder.jpg"
-      : noti.sender === "dispatcher"
-      ? "/images/notification/dispatch.png"
-      : "/images/notification/system.svg"  
-  }
-  alt={noti.eventType === "broadcast" ? "System" : noti.sender}
-  className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
-/>
+  <div className="flex items-start gap-3 w-full">
+    {/* รูปโปรไฟล์ */}
+    <div className="relative flex-shrink-0 mt-6">
+      <img
+        src={
+          noti.eventType === "broadcast"
+            ? "/images/notification/system.svg"
+            : noti.sender === "system"
+            ? "/images/notification/system.svg"
+            : noti.sender === "responder"
+            ? "/images/notification/responder.jpg"
+            : noti.sender === "dispatcher"
+            ? "/images/notification/dispatch.png"
+            : "/images/notification/system.svg"
+        }
+        alt={noti.eventType === "broadcast" ? "System" : noti.sender}
+        className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
+      />
+      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
+    </div>
 
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                    noti.eventType === "broadcast"
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                      : "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300"
-                  }`}
-                >
-                  {getNotiTypeIcon(noti.eventType)}
-                  <span className="truncate max-w-[80px]" title={noti.eventType}>
-                    {noti.eventType}
-                  </span>
-                </span>
-              </div>
-
-              {/* Dropdown menu */}
-              <Menu as="div" className="relative flex-shrink-0">
+    {/* กล่องข้อความ */}
+    <div className="flex flex-col w-full gap-1">
+      {/* eventType Badge (ด้านบนสุด แยกจาก sender) */}
+      <div className="flex justify-between items-center">
+        <span
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+            noti.eventType === "broadcast"
+              ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+              : "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300"
+          }`}
+        >
+          {getNotiTypeIcon(noti.eventType)}
+          <span className="truncate max-w-[80px]" title={noti.eventType}>
+            {noti.eventType}
+          </span>
+        </span>
+      </div>
+  {/* Dropdown menu */}
+              {/* <Menu as="div" className="relative flex-shrink-0">
                 <Menu.Button
                   onClick={(e) => e.stopPropagation()}
                   className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -537,91 +554,85 @@ export default function NotificationDropdown() {
                     </Menu.Item>
                   </div>
                 </Menu.Items>
-              </Menu>
-            </div>
+              </Menu> */}
+{/* Action Text */}
 
-            {/* Action Text */}
-            <div className="mb-1 text-xs font-medium text-gray-900 dark:text-gray-100 leading-relaxed relative">
-            <p
-  ref={(el) => {
-    textRefs.current[noti.id] = el;
-  }}
-  style={{
-    display: expandedId === noti.id ? "block" : "-webkit-box",
-    WebkitLineClamp: expandedId === noti.id ? "unset" : 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    marginBottom: 0,
-  }}
->
-    {noti.eventType === "broadcast" ? (
-  <>
-    <span className="text-blue-600 dark:text-blue-400 font-semibold">คุณได้รับ</span>{" "}
-    <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
-      {noti.sender}
-    </span>{" "}
-    <span className="text-gray-900 dark:text-gray-100">{noti.message}</span>
-  </>
-) : (
-  <>
-    <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
-      {noti.sender}
-    </span>{" "}
-    <span className="text-blue-600 dark:text-blue-400 font-semibold">ส่งถึงคุณ</span>{" "}
-    <span className="text-gray-900 dark:text-gray-100">{noti.message}</span>
-  </>
-)}
+      {/* noti.sender + noti.message */}
+      <div className="text-xs font-medium text-gray-900 dark:text-gray-100 leading-relaxed relative">
+        <p
+          ref={(el) => {
+            textRefs.current[noti.id] = el;
+          }}
+          style={{
+            display: expandedId === noti.id ? "block" : "-webkit-box",
+            WebkitLineClamp: expandedId === noti.id ? "unset" : 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            marginBottom: 0,
+          }}
+        >
+          {noti.eventType === "broadcast" ? (
+            <>
+              <span className="text-blue-600 dark:text-blue-400 font-semibold">คุณได้รับ</span>{" "}
+              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                {noti.sender}
+              </span>{" "}
+              <span className="text-gray-900 dark:text-gray-100">{noti.message}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                {noti.sender}
+              </span>{" "}
+              <span className="text-blue-600 dark:text-blue-400 font-semibold">ส่งถึงคุณ</span>{" "}
+              <span className="text-gray-900 dark:text-gray-100">{noti.message}</span>
+            </>
+          )}
+        </p>
 
-  </p>
-
-  {/* Footer พร้อมปุ่มแสดง/ซ่อน */}
-  <div className="flex justify-between items-center text-[10px] text-gray-500 dark:text-gray-400 mt-1">
-   
-
-  {(isOverflow[noti.id] || expandedId === noti.id) && (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleExpand(noti.id);
-    }}
-    className={`${
-      expandedId === noti.id
-        ? "text-red-500 dark:text-red-300"
-        : "text-blue-500 dark:text-blue-300"
-    } bg-white dark:bg-gray-900 px-1 rounded`}
-  >
-    {expandedId === noti.id ? "แสดงน้อยลง" : "แสดงทั้งหมด"}
-  </button>
-)}
-  </div>
-</div>
-          </div>
-        </div>
-        {/* Footer */}
-        <div className="flex flex-col text-[10px] text-gray-500 dark:text-gray-400">
-        {noti.eventType !== "broadcast" && (
-  <span className="truncate max-w-full">
-    CaseID:{" "}
-    <span className="font-mono text-gray-700 dark:text-gray-300">
-      {noti.caseId}
-    </span>
-  </span>
-)}
-
-          <div className="flex justify-end items-center gap-1 mt-0.5">
-            <span className="font-mono text-gray-400 dark:text-gray-500">
-              {timeAgo(noti.createdAt)}
-            </span>
-          </div>
-        </div>
+        {/* ปุ่มแสดงทั้งหมด */}
+        {(isOverflow[noti.id] || expandedId === noti.id) && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand(noti.id);
+            }}
+            className={`mt-1 ${
+              expandedId === noti.id
+                ? "text-red-500 dark:text-red-300"
+                : "text-blue-500 dark:text-blue-300"
+            } bg-white dark:bg-gray-900 px-1 rounded text-[10px]`}
+          >
+            {expandedId === noti.id ? "แสดงน้อยลง" : "แสดงทั้งหมด"}
+          </button>
+        )}
       </div>
 
-      {/* Overlay for unread */}
-      {!noti.read && (
-      <div className="absolute inset-0 bg-gray-300 dark:bg-gray-700 opacity-20 pointer-events-none rounded-2xl transition-all duration-200"></div>
-      )}
-    </DropdownItem>
+      {/* Footer */}
+      <div className="flex flex-col text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+        {noti.eventType !== "broadcast" && (
+          <span className="truncate max-w-full">
+            CaseID:{" "}
+            <span className="font-mono text-gray-700 dark:text-gray-300">
+              {noti.caseId}
+            </span>
+          </span>
+        )}
+        <div className="flex justify-end items-center gap-1 mt-0.5">
+          <span className="font-mono text-gray-400 dark:text-gray-500">
+            {timeAgo(noti.createdAt)}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Overlay */}
+  {!noti.read && (
+    <div className="absolute inset-0 bg-gray-300 dark:bg-gray-700 opacity-20 pointer-events-none rounded-2xl transition-all duration-200" />
+  )}
+</DropdownItem>
   </li>
 ))}
 
