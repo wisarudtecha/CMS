@@ -52,7 +52,7 @@ export default function NotificationDropdown() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const API_BASE_URL = "https://cmsapi-production-7239.up.railway.app";
-   const WEBSOCKET_BASE_URL = "ws://cmsapi-production-7239.up.railway.app";
+   const WEBSOCKET_BASE_URL = "wss://cmsapi-production-7239.up.railway.app";
   // const API_BASE_URL = "http://localhost:8080"; 
   // const WEBSOCKET_BASE_URL = "ws://localhost:8080"; 
 
