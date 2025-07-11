@@ -316,16 +316,6 @@ const DndMultiImageUploader: React.FC<{
 };
 
 
-const ComponentCard: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => {
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-      <h4 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-        {title ? title : ""}
-      </h4>
-      {children}
-    </div>
-  );
-};
 
 const PageMeta: React.FC<{ title: string; description: string }> = ({ title, description }) => {
   useEffect(() => {
@@ -1674,13 +1664,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         return (<> {labelComponent} <Input type="number" value={field.value !== null ? field.value : ''} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
 
       case "dateInput":
-        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
+        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps}  /> </>);
 
       case "dateLocal":
-        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert"/> </>);
+        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert disabled:dark:bg-gray-800"/> </>);
 
       case "textAreaInput":
-        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}></textarea> </>);
+        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'}`}></textarea> </>);
 
       case "select":
         if (field.enableSearch) {
@@ -1695,9 +1685,9 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             />
           </>;
         }
-        return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}`}>
+        return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : ' dark:bg-gray-900 bg-transparent'}`}>
           <option value="" className="dark:bg-gray-800">Select an option</option>
-          {field.options?.map((option) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
+          {field.options?.map((option) => (<option className="text-gray-700  dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
         </select> </>);
 
       case "option":
@@ -1872,7 +1862,6 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         )}
 
         <div className="grid grid-cols-1 gap-6">
-          <ComponentCard>
             <div hidden={isPreview}>
               {FormEdit()}
               <div className="flex justify-end sticky bottom-2 z-30 space-x-2 mt-6">
@@ -1890,14 +1879,13 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 </div>
               </div>
             </div>
-          </ComponentCard>
         </div>
       </DndContext>
     </div>
   ) : (
 
 
-    <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
+    <div >
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}
