@@ -3,7 +3,6 @@
 import { Table } from "@/components/ui/table";
 import Button from "@/components/ui/button/Button";
 import { ChevronUpIcon, ChevronDownIcon } from "@/icons";
-// import type { TableColumn, SortConfig, CrudAction } from "@/types/enhanced-crud";
 import type { TableColumn, SortConfig, CrudAction } from "@/types/crud";
 
 interface EnhancedDataTableProps<T> {
@@ -40,7 +39,6 @@ export const EnhancedDataTable = <T extends { id: string }>({
       return column.render(item);
     }
     
-    // const value = (item as any)[column.key];
     const value = item[column.key as keyof T];
     return value?.toString() || "";
   };

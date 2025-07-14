@@ -9,19 +9,12 @@ interface ApiState<T> {
 
 interface UseApiResult<T> {
   state: ApiState<T>;
-  // execute: (...args: any[]) => Promise<T>;
   execute: (...args: unknown[]) => Promise<T>;
   reset: () => void;
 }
 
-export const useApi = <T =
-  // any
-  unknown
->(
-  apiFunction: (...args:
-    // any[]
-    unknown[]
-  ) => Promise<T>
+export const useApi = <T = unknown>(
+  apiFunction: (...args: unknown[]) => Promise<T>
 ): UseApiResult<T> => {
   const [state, setState] = useState<ApiState<T>>({
     data: null,
@@ -29,10 +22,7 @@ export const useApi = <T =
     error: null
   });
 
-  const execute = useCallback(async (...args:
-    // any[]
-    unknown[]
-  ): Promise<T> => {
+  const execute = useCallback(async (...args: unknown[]): Promise<T> => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {

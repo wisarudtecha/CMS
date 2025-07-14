@@ -62,12 +62,10 @@ export const CrudContainer = <T extends { id: string }>({
 
   const {
     toasts,
-    // addToast,
     removeToast
   } = useToast();
   const {
     confirmDialog,
-    // openConfirmDialog,
     closeConfirmDialog,
     handleConfirm
   } = useConfirmDialog();
@@ -78,7 +76,6 @@ export const CrudContainer = <T extends { id: string }>({
   const paginatedData = sortedData.slice(startIndex, endIndex);
 
   const handleSearch = () => {
-    // handleFilter("search", searchInput);
     handleFilter('search', searchInput.trim());
   };
 
@@ -106,7 +103,6 @@ export const CrudContainer = <T extends { id: string }>({
 
   return (
     <div
-      // className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12"
       className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6"
     >
       <div className="mx-auto w-full">
@@ -114,15 +110,9 @@ export const CrudContainer = <T extends { id: string }>({
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              {/*
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage and monitor your {config.entityNamePlural.toLowerCase()}
-              </p>
-              */}
-
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                {/* Controls */}
                 <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
-
                 <SearchBar
                   value={searchInput}
                   onChange={setSearchInput}
@@ -131,16 +121,15 @@ export const CrudContainer = <T extends { id: string }>({
                   placeholder={`Search ${config.entityNamePlural.toLowerCase()}...`}
                 />
 
+                {/* Filters */}
                 {config.filters && (
-                  // <div className="mt-4">
-                    <FilterBar
-                      filters={config.filters}
-                      values={filterConfig}
-                      onChange={handleFilter}
-                      onClear={clearFilters}
-                      hasActiveFilters={hasActiveFilters}
-                    />
-                  // </div>
+                  <FilterBar
+                    filters={config.filters}
+                    values={filterConfig}
+                    onChange={handleFilter}
+                    onClear={clearFilters}
+                    hasActiveFilters={hasActiveFilters}
+                  />
                 )}
               </div>
             </div>
@@ -150,43 +139,16 @@ export const CrudContainer = <T extends { id: string }>({
               </Button>
             )}
           </div>
-
-          {/* Controls */}
-          {/*
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <SearchBar
-              value={searchInput}
-              onChange={setSearchInput}
-              onSearch={handleSearch}
-              placeholder={`Search ${config.entityNamePlural.toLowerCase()}...`}
-            />
-
-            <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
-          </div>
-          */}
-
-          {/* Filters */}
-          {/*
-          {config.filters && (
-            <div className="mt-4">
-              <FilterBar
-                filters={config.filters}
-                values={filterConfig}
-                onChange={handleFilter}
-                onClear={clearFilters}
-                hasActiveFilters={hasActiveFilters}
-              />
-            </div>
-          )}
-          */}
         </div>
 
         {/* Results Info */}
-        {/* <div className="flex items-center justify-between mb-4">
+        {/*
+        <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-600 dark:text-gray-300">
             Showing {startEntry}-{endEntry} of {sortedData.length} {config.entityNamePlural.toLowerCase()}
           </div>
-        </div> */}
+        </div>
+        */}
 
         {/* Content */}
         {loading ? (

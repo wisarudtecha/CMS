@@ -21,7 +21,6 @@ export const useRealTimeUpdates = <T extends { id: string }>({
   useEffect(() => {
     if (!enabled) return;
 
-    // const wsUrl = `ws://localhost:8080/ws/${endpoint}`;
     const wsUrl = `ws://localhost:5173/ws`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

@@ -37,20 +37,14 @@ class ApiService {
     return this.request<T>(endpoint, { method: "GET" });
   }
 
-  async post<T>(endpoint: string, data:
-    // any
-    unknown
-  ): Promise<T> {
+  async post<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: JSON.stringify(data)
     });
   }
 
-  async put<T>(endpoint: string, data:
-    // any
-    unknown
-  ): Promise<T> {
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",
       body: JSON.stringify(data)
@@ -68,11 +62,7 @@ class ApiService {
     });
   }
 
-  async export(endpoint: string, format: string, filters?:
-    // any
-    // unknown
-    Record<string, string | number | boolean | null>
-  ): Promise<Blob> {
+  async export(endpoint: string, format: string, filters?: Record<string, string | number | boolean | null>): Promise<Blob> {
     const params = new URLSearchParams({
       format,
       ...(filters && { filters: JSON.stringify(filters) })

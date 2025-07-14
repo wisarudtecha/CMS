@@ -1,16 +1,11 @@
 // /src/components/crud/EnhancedCrudContainer.tsx
-import React, {
-  useState,
-  // useEffect,
-  useCallback,
-  useMemo
-} from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import Button from "@/components/ui/button/Button";
 import { SearchBar } from "./SearchBar";
 import { FilterBar } from "./FilterBar";
 import { DisplayModeToggle } from "./DisplayModeToggle";
-import { EnhancedDataTable } from "./EnhancedDataTable";
-import { EnhancedCardGrid } from "./EnhancedCardGrid";
+// import { EnhancedDataTable } from "./EnhancedDataTable";
+// import { EnhancedCardGrid } from "./EnhancedCardGrid";
 import { Pagination } from "./Pagination";
 import { ToastContainer } from "./ToastContainer";
 import { ConfirmModal } from "./ConfirmModal";
@@ -18,12 +13,16 @@ import { BulkActionBar } from "./BulkActionBar";
 import { ExportMenu } from "./ExportMenu";
 import { AdvancedFilterPanel } from "./AdvancedFilterPanel";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
+import { PreviewDialog } from "./PreviewDialog";
+import { ClickableCard } from "./ClickableCard";
+import { ClickableTableRow } from "./ClickableTableRow";
 import { usePagination } from "@/hooks/usePagination";
 import { useSort } from "@/hooks/useSort";
 import { useFilter } from "@/hooks/useFilter";
 import { useToast } from "@/hooks/useToast";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
+import { usePreview } from "@/hooks/usePreview";
 import { useApi } from "@/hooks/useApi";
 import { useRealTimeUpdates } from "@/hooks/useRealTimeUpdates";
 import {
@@ -31,24 +30,24 @@ import {
   exportToJSON
 } from "@/utils/export";
 import { apiService } from "@/services/api";
+import { InfoIcon, ChevronDownIcon, ChevronUpIcon } from "@/icons";
 import type { 
-  // CrudConfig, 
   BulkAction, 
   ExportOption, 
   AdvancedFilter,
   KeyboardShortcut,
   CrudFeatures,
-  ApiConfig
+  ApiConfig,
+  PreviewConfig
 } from "@/types/enhanced-crud";
-import type { 
-  CrudConfig,
-  // ConfirmDialog
-} from "@/types/crud";
-
+import type { CrudConfig } from "@/types/crud";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import Checkbox from "@/components/form/input/Checkbox"; 
 interface EnhancedCrudContainerProps<T> {
   data: T[];
   config: CrudConfig<T>;
   features?: Partial<CrudFeatures>;
+  previewConfig?: PreviewConfig<T>;
   apiConfig?: ApiConfig;
   loading?: boolean;
   error?: string | null;
@@ -57,10 +56,7 @@ interface EnhancedCrudContainerProps<T> {
   onUpdate?: (item: T) => void;
   onDelete?: (id: string) => void;
   renderCard?: (item: T) => React.ReactNode;
-  customFilterFunction?: (item: T, filters:
-    // any
-    unknown
-  ) => boolean;
+  customFilterFunction?: (item: T, filters: unknown) => boolean;
   searchFields?: (keyof T)[];
   bulkActions?: BulkAction<T>[];
   exportOptions?: ExportOption[];
@@ -73,6 +69,7 @@ interface EnhancedCrudContainerProps<T> {
 export const EnhancedCrudContainer = <T extends { id: string }>({
   data,
   config,
+  previewConfig,
   features = {},
   apiConfig,
   loading = false,
@@ -102,6 +99,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     pagination: true,
     bulkActions: true,
     export: true,
+    // preview: true,
     realTimeUpdates: false,
     dragAndDrop: false,
     keyboardShortcuts: true,
@@ -123,32 +121,19 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     changePageSize 
   } = usePagination(sortedData.length);
 
-  // Simple direct modal state for debugging
-  // const [debugModalOpen, setDebugModalOpen] = useState(false);
-
-  // const openDebugModal = () => {
-  //   console.log('Opening debug modal directly');
-  //   setDebugModalOpen(true);
-  // };
-
-  // const closeDebugModal = () => {
-  //   console.log('Closing debug modal');
-  //   setDebugModalOpen(false);
-  // };
-
   const { toasts, addToast, removeToast } = useToast();
   const { confirmDialog, openConfirmDialog, closeConfirmDialog, handleConfirm } = useConfirmDialog();
   
   // Debug the confirmDialog state changes
   React.useEffect(() => {
-    console.log('EnhancedCrudContainer: confirmDialog state changed:', confirmDialog);
+    console.log("EnhancedCrudContainer: confirmDialog state changed:", confirmDialog);
   }, [confirmDialog]);
 
   const {
     selectedItems,
     // isSelected,
     isAllSelected,
-    isPartialSelected,
+    // isPartialSelected,
     selectItem,
     selectAll,
     deselectAll,
@@ -156,10 +141,19 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     getSelectedCount
   } = useBulkSelection(sortedData);
 
+  // Preview functionality
+  const {
+    previewState,
+    openPreview,
+    closePreview,
+    nextItem,
+    prevItem,
+    canGoNext,
+    canGoPrev
+  } = usePreview<T>();
+
   // API hooks
-  // const deleteApi = useApi(apiService.delete);
   const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
-  // const bulkDeleteApi = useApi(apiService.bulkDelete);
   const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
 
   // Real-time updates
@@ -205,7 +199,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     openConfirmDialog({
       type: "delete",
       entityId: item.id,
-      // entityName: (item as any).name || (item as any).title || item.id,
       entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
       onConfirm: async () => {
         console.log("Delete confirmed for item:", item.id);
@@ -253,7 +246,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     if (onItemAction) {
       onItemAction(actionKey, item);
     }
-  }, [handleDeleteItem, config.actions, onItemAction]);
+  }, [
+    handleDeleteItem,
+    config.actions,
+    onItemAction
+  ]);
 
   // Create enhanced actions with proper delete handling
   const enhancedActions = useMemo(() => {
@@ -269,7 +266,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     if (action.confirmationRequired) {
       openConfirmDialog({
         type: "custom",
-        // type: ["delete", "status"].includes(action.key) ? (action.key as ConfirmDialog["type"]) : "custom",
         entityId: "",
         entityName: "",
         title: `${action.label} ${getSelectedCount()} items`,
@@ -329,6 +325,13 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     }
   }, [config.entityNamePlural, addToast]);
 
+  // Handle item click for preview
+  const handleItemClick = useCallback((item: T) => {
+    if (previewConfig) {
+      openPreview(item, sortedData);
+    }
+  }, [previewConfig, openPreview, sortedData]);
+
   // Default keyboard shortcuts
   const defaultShortcuts: KeyboardShortcut[] = [
     {
@@ -380,9 +383,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       key: "delete",
       label: "Delete Selected",
       variant: "error",
-      // icon: TrashBinIcon,
       onClick: async (items) => {
-        // console.log(items);
         const ids = items.map(item => item.id);
         if (apiConfig) {
           await bulkDeleteApi.execute(apiConfig.endpoints.bulkDelete, ids);
@@ -397,10 +398,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const allBulkActions = [...defaultBulkActions, ...bulkActions];
 
   return (
-    <div
-      // className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12"
-      className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6"
-    >
+    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
       <div className="mx-auto w-full">
         {/* Keyboard Shortcuts */}
         {enabledFeatures.keyboardShortcuts && (
@@ -409,59 +407,73 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="xl:flex items-center justify-between mb-4">
             <div>
-              {/*
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage and monitor your {config.entityNamePlural.toLowerCase()}
-              </p>
-              */}
-
               {/* Controls */}
-              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+              <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
+                <div className="xl:flex items-center gap-4">
+                  <div className="mb-2 xl:mb-0">
+                    <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+                  </div>
 
                   {enabledFeatures.search && (
-                    <SearchBar
-                      value={searchInput}
-                      onChange={setSearchInput}
-                      onSearch={handleSearch}
-                      onClear={handleClearSearch}
-                      placeholder={`Search ${config.entityNamePlural.toLowerCase()}...`}
-                    />
+                    <div className="mb-2 xl:mb-0">
+                      <SearchBar
+                        value={searchInput}
+                        onChange={setSearchInput}
+                        onSearch={handleSearch}
+                        onClear={handleClearSearch}
+                        placeholder={`Search ${config.entityNamePlural.toLowerCase()}...`}
+                      />
+                    </div>
                   )}
 
                   {/* Basic Filters */}
                   {enabledFeatures.filtering && config.filters && (
-                    <FilterBar
-                      filters={config.filters}
-                      values={filterConfig}
-                      onChange={handleFilter}
-                      onClear={clearFilters}
-                      hasActiveFilters={hasActiveFilters}
-                    />
+                    <div className="mb-2 xl:mb-0">
+                      <FilterBar
+                        filters={config.filters}
+                        values={filterConfig}
+                        onChange={handleFilter}
+                        onClear={clearFilters}
+                        hasActiveFilters={hasActiveFilters}
+                      />
+                    </div>
                   )}
 
                   {advancedFilters.length > 0 && (
-                    <AdvancedFilterPanel
-                      filters={advancedFilters}
-                      values={filterConfig}
-                      onChange={(filters) => Object.entries(filters).forEach(([key, value]) => 
-                        handleFilter(key, value as string | number | boolean | null | undefined)
-                      )}
-                      onApply={() => {}}
-                      onReset={clearFilters}
-                    />
+                    <div className="mb-2 xl:mb-0">
+                      <AdvancedFilterPanel
+                        filters={advancedFilters}
+                        values={filterConfig}
+                        onChange={(filters) => Object.entries(filters).forEach(([key, value]) => 
+                          handleFilter(key, value as string | number | boolean | null | undefined)
+                        )}
+                        onApply={() => {}}
+                        onReset={clearFilters}
+                      />
+                    </div>
                   )}
 
                   {enabledFeatures.export && allExportOptions.length > 0 && (
-                    <ExportMenu
-                      data={selectedItems.length > 0 ? selectedItems : sortedData}
-                      exportOptions={allExportOptions}
-                      onExport={handleExport}
-                    />
+                    <div className="mb-2 xl:mb-0">
+                      <ExportMenu
+                        data={selectedItems.length > 0 ? selectedItems : sortedData}
+                        exportOptions={allExportOptions}
+                        onExport={handleExport}
+                      />
+                    </div>
                   )}
+
+                  {/*
+                  {previewConfig && (
+                    <div className="mb-2 xl:mb-0">
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        (Click items to preview)
+                      </span>
+                    </div>
+                  )}
+                  */}
                 </div>
               </div>
             </div>
@@ -519,32 +531,111 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             )}
           </div>
         ) : displayMode === "card" && renderCard ? (
-          <EnhancedCardGrid
-            data={paginatedData}
-            renderCard={renderCard}
-            // actions={config.actions}
-            actions={enhancedActions}
-            selectedItems={selectedItems}
-            onSelectItem={selectItem}
-            bulkSelectionEnabled={enabledFeatures.bulkActions}
-            className="mb-8"
-          />
+          // <EnhancedCardGrid
+          //   data={paginatedData}
+          //   renderCard={renderCard}
+          //   actions={enhancedActions}
+          //   selectedItems={selectedItems}
+          //   onSelectItem={selectItem}
+          //   bulkSelectionEnabled={enabledFeatures.bulkActions}
+          //   className="mb-8"
+          // />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8">
+            {paginatedData.map((item) => (
+              <ClickableCard
+                key={item.id}
+                item={item}
+                onClick={handleItemClick}
+                actions={enhancedActions}
+                selectedItems={selectedItems}
+                onSelectItem={selectItem}
+                bulkSelectionEnabled={enabledFeatures.bulkActions}
+              >
+                {renderCard(item)}
+              </ClickableCard>
+            ))}
+          </div>
         ) : (
-          <EnhancedDataTable
-            data={paginatedData}
-            columns={config.columns}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            // actions={config.actions}
-            actions={enhancedActions}
-            selectedItems={selectedItems}
-            onSelectItem={selectItem}
-            onSelectAll={toggleSelectAll}
-            isAllSelected={isAllSelected}
-            isPartialSelected={isPartialSelected}
-            bulkSelectionEnabled={enabledFeatures.bulkActions}
-            className="mb-8"
-          />
+          // <EnhancedDataTable
+          //   data={paginatedData}
+          //   columns={config.columns}
+          //   sortConfig={sortConfig}
+          //   onSort={handleSort}
+          //   actions={enhancedActions}
+          //   selectedItems={selectedItems}
+          //   onSelectItem={selectItem}
+          //   onSelectAll={toggleSelectAll}
+          //   isAllSelected={isAllSelected}
+          //   isPartialSelected={isPartialSelected}
+          //   bulkSelectionEnabled={enabledFeatures.bulkActions}
+          //   className="mb-8"
+          // />
+
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
+            <div className="overflow-x-auto">
+              <Table className="w-full">
+                <TableHeader className="bg-gray-50 dark:bg-gray-800">
+                  <TableRow>
+                    {enabledFeatures.bulkActions && (
+                      <TableCell isHeader className="px-6 py-3 text-left w-12">
+                        <Checkbox
+                          checked={isAllSelected}
+                          // ref={(input) => {
+                          //   if (input) input.indeterminate = isPartialSelected;
+                          // }}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        />
+                      </TableCell>
+                    )}
+                    
+                    {config.columns.map((column) => (
+                      <TableCell isHeader key={column.key as string} className="px-6 py-3 text-left">
+                        {column.sortable ? (
+                          <button
+                            onClick={() => handleSort(column.key as keyof T)}
+                            className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          >
+                            {column.label}
+                            {sortConfig.key === column.key && (
+                              sortConfig.direction === "asc" 
+                                ? <ChevronUpIcon className="w-4 h-4" /> 
+                                : <ChevronDownIcon className="w-4 h-4" />
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            {column.label}
+                          </span>
+                        )}
+                      </TableCell>
+                    ))}
+                    
+                    {enhancedActions && enhancedActions.length > 0 && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {paginatedData.map((item) => (
+                    <ClickableTableRow
+                      key={item.id}
+                      item={item}
+                      columns={config.columns}
+                      actions={enhancedActions}
+                      onClick={handleItemClick}
+                      selectedItems={selectedItems}
+                      onSelectItem={selectItem}
+                      bulkSelectionEnabled={enabledFeatures.bulkActions}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         )}
 
         {/* Pagination */}
@@ -574,70 +665,74 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         {/* Toast Notifications */}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-        {/* Debug Info (only in development) */}
-
-        {/* Direct Debug Modal */}
-        {/* {debugModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-              <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={closeDebugModal}></div>
-              <div className="inline-block bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Direct Debug Modal
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  This modal bypasses all hooks and state management. If you see this, the basic modal functionality works.
-                </p>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={closeDebugModal}
-                    className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert('Direct modal action executed!');
-                      closeDebugModal();
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Test Action
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )} */}
-        
-        {/* Debug Info (only in development) */}
-        {enableDebug && (
-          ""
-          // <div className="fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-sm text-xs font-mono z-40">
-          //   <div className="font-bold mb-2">🔧 Debug Info</div>
-          //   <div>Total Items: {data.length}</div>
-          //   <div>Filtered Items: {filteredData.length}</div>
-          //   <div>Selected Items: {getSelectedCount()}</div>
-          //   <div>Display Mode: {displayMode}</div>
-          //   <div>Actions Count: {enhancedActions?.length || 0}</div>
-          //   {/* <div>Debug Modal: {debugModalOpen ? 'OPEN' : 'CLOSED'}</div> */}
-          //   <div className="mt-2 pt-2 border-t border-gray-700">
-          //     <div className="font-bold">Confirm Dialog:</div>
-          //     <div>Is Open: {confirmDialog.isOpen ? 'YES' : 'NO'}</div>
-          //     <div>Type: {confirmDialog.type}</div>
-          //     <div>Entity: {confirmDialog.entityName}</div>
-          //     <div>Has onConfirm: {confirmDialog.onConfirm ? 'YES' : 'NO'}</div>
-          //   </div>
-          // </div>
-        )}
-       
-
         {/* Confirmation Dialog */}
         <ConfirmModal
           dialog={confirmDialog}
           onConfirm={handleConfirm}
           onCancel={closeConfirmDialog}
         />
+
+        {/* Preview Dialog */}
+        {previewConfig && (
+          <PreviewDialog
+            previewState={previewState}
+            config={previewConfig}
+            onClose={closePreview}
+            onNext={nextItem}
+            onPrev={prevItem}
+            canGoNext={canGoNext}
+            canGoPrev={canGoPrev}
+          />
+        )}
+
+        {/* Debug Info (only in development) */}
+        {enableDebug && (
+          // ""
+          <div
+            className="
+              fixed
+              bottom-12
+              right-12
+              xl:bottom-6
+              xl:right-3
+              bg-gray-200
+              dark:bg-gray-700
+              text-gray-700
+              dark:text-gray-200
+              border-gray-300
+              dark:border-gray-600
+              border
+              p-2
+              rounded-lg
+              shadow-lg
+              max-w-sm
+              text-xs
+              font-mono
+              z-40
+              h-9
+              hover:h-auto
+              w-9
+              hover:w-auto
+              overflow-hidden
+            "
+          >
+            <InfoIcon className="w-5 h-5" />
+            <div className="font-bold mt-2">Debug Info</div>
+            <div>Total Items: {data.length}</div>
+            <div>Filtered Items: {filteredData.length}</div>
+            <div>Selected Items: {getSelectedCount()}</div>
+            <div>Display Mode: {displayMode}</div>
+            <div>Actions Count: {enhancedActions?.length || 0}</div>
+            {/* <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div> */}
+            <div className="mt-2 pt-2 border-t border-gray-700 dark:border-gray-200">
+              <div className="font-bold">Confirm Dialog</div>
+              <div>Is Open: {confirmDialog.isOpen ? "YES" : "NO"}</div>
+              <div>Type: {confirmDialog.type}</div>
+              <div>Entity: {confirmDialog.entityName}</div>
+              <div>Has onConfirm: {confirmDialog.onConfirm ? "YES" : "NO"}</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

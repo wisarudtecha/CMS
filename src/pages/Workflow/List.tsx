@@ -10,7 +10,7 @@
  * @metadata
  * Author: [Wisarud Techa]
  * First Created: [11-06-2025] v0.1.0
- * Last Updated: [13-06-2025] v0.1.1
+ * Last Updated: [11-07-2025] v0.1.4
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -64,5 +64,42 @@ export default WorkflowListPage;
  * 
  * @version 0.1.1
  * @date    13-06-2025
+ * ----------------------------------------------------------------------------
+ * CRUD Components Extraction
+ * - New CRUD pages need minimal code.
+ * - Same patterns across all entities.
+ * - Full TypeScript support with generics.
+ * - Isolated, focused components.
+ * - Changes in one place affect all CRUD operations.
+ * - Easy to add new features to all entities.
+ * 
+ * @version 0.1.2
+ * @date    09-07-2025
+ * ----------------------------------------------------------------------------
+ * Real Functional Operations
+ * - Actual Delete Operations.
+ * - Toast Notifications.
+ * - Bulk Operations and Selection.
+ * - Export Functionality.
+ * - Real-time Updates.
+ * - Advanced Filtering.
+ * - Smart Pagination.
+ * - Optimistic Updates.
+ * 
+ * @version 0.1.3
+ * @date    10-07-2025
+ * ----------------------------------------------------------------------------
+ * Interactive Preview Dialog System
+ * - Item Click Detection.
+ * - Smart Event Handling.
+ * - Visual Feedback.
+ * - Tabbed Interface.
+ * - Field Type System.
+ * - Navigation Controls.
+ * - Copyable Fields.
+ * - Keyboard Shortcuts.
+ * 
+ * @version 0.1.4
+ * @date    11-07-2025
  * ----------------------------------------------------------------------------
  */

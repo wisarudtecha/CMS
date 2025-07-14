@@ -8,7 +8,6 @@ import {
   // FilterIcon,
   CloseIcon
 } from "@/icons";
-// import type { AdvancedFilter, FilterConfig } from "@/types/enhanced-crud";
 import type { AdvancedFilter } from "@/types/enhanced-crud";
 import type { FilterConfig } from "@/types/crud";
 
@@ -30,10 +29,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [localValues, setLocalValues] = useState<FilterConfig>(values);
 
-  const handleFilterChange = (key: string, value:
-    // any
-    unknown
-  ) => {
+  const handleFilterChange = (key: string, value: unknown) => {
     setLocalValues(prev => ({ ...prev, [key]: value }));
   };
 
@@ -78,10 +74,8 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="date"
-              // value={(value as any)?.start || ""}
               value={(value as { start?: string })?.start || ""}
               onChange={(e) => handleFilterChange(filter.key, {
-                // ...(value as any),
                 ...(value as { start?: string }),
                 start: e.target.value
               })}
@@ -89,10 +83,8 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             />
             <Input
               type="date"
-              // value={(value as any)?.end || ""}
               value={(value as { end?: string })?.end || ""}
               onChange={(e) => handleFilterChange(filter.key, {
-                // ...(value as any),
                 ...(value as { end?: string }),
                 end: e.target.value
               })}
@@ -106,10 +98,8 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="number"
-              // value={(value as any)?.min || ""}
               value={(value as { min?: string })?.min || ""}
               onChange={(e) => handleFilterChange(filter.key, {
-                // ...(value as any),
                 ...(value as { min?: string }),
                 min: parseInt(e.target.value) || undefined
               })}
@@ -119,10 +109,8 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             />
             <Input
               type="number"
-              // value={(value as any)?.max || ""}
               value={(value as { max?: string })?.max || ""}
               onChange={(e) => handleFilterChange(filter.key, {
-                // ...(value as any),
                 ...(value as { max?: string }),
                 max: parseInt(e.target.value) || undefined
               })}
