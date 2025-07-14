@@ -51,6 +51,7 @@ interface DynamicFormProps {
   onFormSubmit?: (data: FormField) => void;
   enableFormTitle?: boolean;
   enableSelfBg?:boolean;
+  saveDraftsLocalStoreName?:string;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -503,7 +504,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false}: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName=""}: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
@@ -540,6 +541,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         formFieldJson: [],
       }
   );
+  
   const [importJsonText, setImportJsonText] = useState(String);
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
   const [isImport, setImport] = useState(false);
@@ -1053,6 +1055,36 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       }),
     }));
   }, [updateFieldRecursively]);
+
+  const getDrafts = () => {
+    if (saveDraftsLocalStoreName !== "") {
+      try {
+        const savedDraft = localStorage.getItem(saveDraftsLocalStoreName);
+        if (savedDraft) {
+          const parsedDraft: FormFieldWithChildren = JSON.parse(savedDraft);
+          setCurrentForm(parsedDraft);
+          console.log("Draft loaded successfully:", parsedDraft.formName);
+        } else {
+          console.log("No draft found in localStorage.");
+        }
+      } catch (error) {
+        console.error("Failed to parse draft from localStorage:", error);
+        localStorage.removeItem(saveDraftsLocalStoreName); 
+      }
+    }
+  };
+  useEffect(() => {
+    getDrafts();
+  }, [])
+  const saveDrafts = ()=>{
+    const handleSaveDrafts = ()=>{
+      localStorage.setItem(saveDraftsLocalStoreName,JSON.stringify(currentForm))
+    }
+    return (<div className="flex justify-end">
+      <Button  variant="success" onClick={handleSaveDrafts}>Save Drafts</Button>
+    </div>
+    )
+  }
 
   const handleToggleRequired = useCallback((id: string) => {
     setCurrentForm(prevForm => ({
@@ -1887,6 +1919,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     
     <div className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
+      {saveDraftsLocalStoreName!=""? saveDrafts():null}
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}

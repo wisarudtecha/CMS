@@ -583,6 +583,7 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                 editFormData={true}
                                 onFormSubmit={editFormData ? handleFormSubmissionEdit : undefined}
                                 enableFormTitle={false}
+                                saveDraftsLocalStoreName={caseData?"":"CaseAdd"}
                             /> : <FormFieldValueDisplay caseData={caseData} />}
                         </div>
                         </div>
