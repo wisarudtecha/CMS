@@ -9,8 +9,8 @@
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [09-07-2025] v0.1.0
- * Last Updated: [09-07-2025] v0.1.0
+ * First Created: [11-07-2025] v0.1.0
+ * Last Updated: [11-07-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -21,7 +21,7 @@
 import React from 'react';
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
-// import CaseHistoryComponent from "@/components/case/CaseHistory";
+import CaseHistoryComponent from "@/components/case/CaseHistory";
 
 const CaseHistoryPage: React.FC = () => {
   return (
@@ -33,7 +33,7 @@ const CaseHistoryPage: React.FC = () => {
 
       <PageBreadcrumb pageTitle="Case History" />
 
-      {/* <CaseHistoryComponent /> */}
+      <CaseHistoryComponent />
     </>
   );
 };
@@ -46,6 +46,6 @@ export default CaseHistoryPage;
  * - Dupplicate from /src/pages/Workflow/List.tsx.
  * 
  * @version 0.1.0
- * @date    09-07-2025
+ * @date    11-07-2025
  * ----------------------------------------------------------------------------
  */

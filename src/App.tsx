@@ -31,6 +31,7 @@ import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 // Case Management Imports
 import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
+import CaseHistoryPage from "./pages/Case/CaseHistory";
 // Case Management (Archived) Imports 
 import Kanban from "./pages/Task/kanban";
 // Case Management (No Longer Used) Imports
@@ -84,7 +85,7 @@ export default function App() {
             {/* Case Management (Latest) */}
             <Route path="/case/assignment" element={<CasesAssignment />} />
             <Route path="/case/creation" element={<CaseCreation/>} />
-            <Route path="/case/history" element={<Kanban />} />
+            <Route path="/case/history" element={<CaseHistoryPage />} />
             {/* Case Management (Archived) */}
             <Route path="/case-assignment" element={<CasesAssignment />} />
             <Route path="/case-creation" element={<CaseCreation/>} />
