@@ -43,7 +43,13 @@ export default function CasesView() {
   const [sortField] = useState<"title" | "date">("date")
   const [sortOrder] = useState<"asc" | "desc">("asc")
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
-  const [advancedFilters, setAdvancedFilters] = useState({ priority: "", category: "" })
+  const [advancedFilters, setAdvancedFilters] = useState({ 
+    priority: "", 
+    category: "",
+    titleSearch: "", // New state for title search
+    descriptionSearch: "", // New state for description search
+    dateSearch: "", // New state for date search
+  })
 
   const allCasesForMeta = [
     ...(caseData.new || []),
@@ -51,7 +57,7 @@ export default function CasesView() {
     ...(caseData.pendingReview || []),
     ...(caseData.resolved || []),
   ];
-  const uniquePriorities = [...new Set(allCasesForMeta.map(c => c.priority).filter(Boolean))];
+  const uniquePriorities = ["High","Medium","Low"];
   const uniqueCategories = [...new Set(allCasesForMeta.map(c => c.category).filter(Boolean))];
 
   const getStatusKey = (caseItem: CaseItem): string => {
@@ -89,21 +95,52 @@ export default function CasesView() {
     }
 
     const filtered = allCases.filter(c => {
-      const term = searchText.toLowerCase()
+      const generalSearchTerm = searchText.toLowerCase()
       const assigneeName = c.assignee && c.assignee.length > 0 && c.assignee[0].name ? c.assignee[0].name.toLowerCase() : '';
 
-      // General search condition
-      const searchCondition = term === '' ||
-          c.title.toLowerCase().includes(term) ||
-          c.description.toLowerCase().includes(term) ||
-          c.category.toLowerCase().includes(term) ||
-          assigneeName.includes(term);
+      // General search condition for quick filter bar
+      const generalSearchCondition = generalSearchTerm === '' ||
+          c.title.toLowerCase().includes(generalSearchTerm) ||
+          c.description.toLowerCase().includes(generalSearchTerm) ||
+          c.category.toLowerCase().includes(generalSearchTerm) ||
+          assigneeName.includes(generalSearchTerm) ||
+          c.date.toLowerCase().includes(generalSearchTerm); // Added date to general search
 
-      // Advanced filter condition
-      const priorityCondition = advancedFilters.priority === '' || c.priority === parseInt(advancedFilters.priority, 10);
+      // Advanced filter conditions
+      let priorityCondition = true;
+      if (advancedFilters.priority !== '') {
+          let isPriorityMatch = false; // Changed to a boolean flag for range checking
+          switch (advancedFilters.priority) {
+              case "High":
+                  isPriorityMatch = (c.priority >= 0 && c.priority <= 3);
+                  break;
+              case "Medium":
+                  isPriorityMatch = (c.priority >= 4 && c.priority <= 6);
+                  break;
+              case "Low":
+                  isPriorityMatch = (c.priority >= 7 && c.priority <= 9);
+                  break;
+              default:
+                  isPriorityMatch = true; // No specific priority filter applied
+          }
+          priorityCondition = isPriorityMatch;
+      }
+      
       const categoryCondition = advancedFilters.category === '' || c.category === advancedFilters.category;
+      
+      const titleSearchCondition = 
+        advancedFilters.titleSearch === '' || 
+        c.title.toLowerCase().includes(advancedFilters.titleSearch.toLowerCase());
 
-      return searchCondition && priorityCondition && categoryCondition;
+      const descriptionSearchCondition = 
+        advancedFilters.descriptionSearch === '' || 
+        c.description.toLowerCase().includes(advancedFilters.descriptionSearch.toLowerCase());
+
+      const dateSearchCondition = 
+        advancedFilters.dateSearch === '' || 
+        c.date.toLowerCase().includes(advancedFilters.dateSearch.toLowerCase());
+
+      return generalSearchCondition && priorityCondition && categoryCondition && titleSearchCondition && descriptionSearchCondition && dateSearchCondition;
     })
 
     return filtered.sort((a, b) => {
@@ -130,7 +167,7 @@ export default function CasesView() {
     };
 
     const handleClear = () => {
-      setAdvancedFilters({ priority: "", category: "" });
+      setAdvancedFilters({ priority: "", category: "", titleSearch: "", descriptionSearch: "", dateSearch: "" });
       handleAdvanceFilterClose();
     };
 
@@ -138,6 +175,40 @@ export default function CasesView() {
       <div>
           <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">Advance Filtering</h3>
           <div className="space-y-4">
+              {/* New fields for advanced search */}
+              <div>
+                <label htmlFor="title-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title Search</label>
+                <input
+                  id="title-search"
+                  type="text"
+                  value={localFilters.titleSearch}
+                  onChange={(e) => setLocalFilters({ ...localFilters, titleSearch: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+                  placeholder="Search by title..."
+                />
+              </div>
+              <div>
+                <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description Search</label>
+                <input
+                  id="description-search"
+                  type="text"
+                  value={localFilters.descriptionSearch}
+                  onChange={(e) => setLocalFilters({ ...localFilters, descriptionSearch: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+                  placeholder="Search by description..."
+                />
+              </div>
+              <div>
+                <label htmlFor="date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Search</label>
+                <input
+                  id="date-search"
+                  type="text"
+                  value={localFilters.dateSearch}
+                  onChange={(e) => setLocalFilters({ ...localFilters, dateSearch: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+                  placeholder="Search by date (e.g., YYYY-MM-DD)..."
+                />
+              </div>
               <div>
                 <label htmlFor="priority-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
                 <select
@@ -326,7 +397,7 @@ export default function CasesView() {
               <div className="space-x-2 flex items-center">
                 <input
                   type="text"
-                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                   placeholder="Search cases..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
