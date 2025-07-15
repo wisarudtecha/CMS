@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
     ArrowLeft,
     Clock,
@@ -17,13 +17,14 @@ import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { IndividualFormField } from "@/components/interface/FormField"
+import { formType, IndividualFormField, FormField } from "@/components/interface/FormField" // Import FormFieldWithChildren
 import createCase from "../../utils/json/createCase.json"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
 import locateImage from "@/icons/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
+import caseTypeMock from "../../utils/json/caseType.json"
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -37,6 +38,7 @@ import Avatar from "../ui/avatar/Avatar"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
 import Comments from "../comment/Comment"
+import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 interface CaseDetailViewProps {
     onBack?: () => void
     caseData?: CaseItem
@@ -68,7 +70,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
     return (
         // The main div is set to h-full to fill its container, crucial for the fixed mobile view.
         // Width constraints like md:max-w-* are removed to allow the parent to control the size.
-        <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
             {/* Mobile-only header with a title and close button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
                 <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Customer Details</h3>
@@ -107,7 +109,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
                     } md:flex flex-col border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 md:max-h-80`}
             >
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-                    <div className="flex overflow-x-auto">
+                    <div className="flex overflow-x-auto custom-scrollbar">
                         {type === "edit" ? (
                             edittabs.map((tab) => (
                                 <button
@@ -258,7 +260,7 @@ interface TempCaseCardProps {
 }
 
 const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProps) => {
-    const [showComment,setShowComment]=useState<boolean>(false);
+    const [showComment, setShowComment] = useState<boolean>(false);
     const [editFormData, setEditFormData] = useState(false);
     const onChick = () => {
 
@@ -267,10 +269,10 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
 
     }
     const onChickComment = () => {
-        if(showComment==false){
-        setShowComment(true);
-        }else{
-        setShowComment(false);
+        if (showComment == false) {
+            setShowComment(true);
+        } else {
+            setShowComment(false);
         }
     }
     return (
@@ -353,8 +355,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={onChickComment} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                        {showComment? <ChevronUp size={20}/>:<ChevronDown size={20} />}
-                        <MessageSquare className="w-4 h-4 mr-2" size={20}/>
+                        {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        <MessageSquare className="w-4 h-4 mr-2" size={20} />
                         Comment
                     </Button>
                     <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
@@ -370,8 +372,8 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                     <span>Assign</span>
                 </Button>
             </div>
-            {showComment?
-            <Comments />:null}
+            {showComment ?
+                <Comments /> : null}
         </div>
     );
 };
@@ -467,11 +469,19 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
 
 export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps) {
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [caseType, setCaseType] = useState<string>('');
     const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
     const [showOfficersData, setShowOFFicersData] = useState<Officer | null>(null);
-    // State to control the visibility of the customer panel on mobile
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
+    const caseTypeOptions = Array.from(new Set(caseTypeMock.map((item: formType) => item.caseType)));
+    const [caseTypeData, setCaseTypeData] = useState<formType>();
+    const [formData, setFormData] = useState<FormField>();
+    // State to hold the current form data for saving and loading
+
+
+
+
 
     const handleSelectOfficer = (selectedOfficer: Officer) => {
         if (selectedOfficer.id == showOfficersData?.id) {
@@ -488,17 +498,58 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
         setShowAssignModal(false);
     };
 
+    // Updated to accept the form data from DynamicForm's onFormSubmit
     const handleFormSubmissionEdit = () => {
-        console.log("Data received from Edit DynamicForm");
-        setEditFormData(false);
+        console.log({ formData: formData, caseTypeData: caseTypeData });
     };
+
     const handleEditClick = () => {
         if (editFormData) {
             setEditFormData(false);
         }
         else { setEditFormData(true); }
     };
+    const handleCaseTypeChange = (newValue: string) => {
+        setCaseType(newValue);
+    };
+    const hadleonFormChange = (FormData: FormField) => {
+        setFormData(FormData)
+    }
+    const hadleGetType = useCallback((getTypeData: FormField) => {
+        setCaseTypeData(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(getTypeData)) {
+                return { ...getTypeData, caseType: caseType };
+            }
+            return prev;
+        });
+    }, [caseType]);
 
+    const GetCaseTypes: React.FC = () => {
+        return (
+            <div className=" text-white dark:text-gray-300 ">
+                <h3 className="mb-2 mx-3">
+                    Get Case Type
+                </h3>
+                <SearchableSelect
+                    options={caseTypeOptions}
+                    value={caseType}
+                    onChange={handleCaseTypeChange}
+                    placeholder={"Select a FormType"}
+                    disabled={!editFormData}
+                    className="m-3"
+                />
+                {caseType && (
+                    <DynamicForm
+                        initialForm={caseTypeMock.find(form => form.caseType === caseType)}
+                        edit={false}
+                        editFormData={true}
+                        enableFormTitle={false}
+                        onFormChange={hadleGetType}
+                    />
+                )}
+            </div>
+        );
+    };
     return (
         <div className="flex flex-col h-screen ">
             <PageMeta
@@ -525,7 +576,7 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                         </div>
                         {/* Button to open the customer panel, visible only on small screens */}
                         <div className="md:hidden ">
-                            <Button  className="mb-2"variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
+                            <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
                                 <User className="w-4 h-4 mr-2 " />
                                 View Customer
                             </Button>
@@ -534,17 +585,17 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl">
+            <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
                 <div className="flex flex-col md:flex-row h-full gap-1 w-full">
-                    <div className="overflow-y-auto  w-full md:w-2/3 lg:w-3/4">
+                    <div className="overflow-y-auto  w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
                         <div className="pr-0 md:pr-6 ">
                             <div className="px-4 pt-6">
-                            {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
-                            {(caseData && assignedOfficers.length > 0) && (
-                                <div className="mb-4 flex flex-wrap gap-2 items-center">
-                                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                                        Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
-                                    </span>
+                                {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
+                                {(caseData && assignedOfficers.length > 0) && (
+                                    <div className="mb-4 flex flex-wrap gap-2 items-center">
+                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                                            Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+                                        </span>
                                         {assignedOfficers.map(officer => (
                                             <button
                                                 key={officer.id}
@@ -571,21 +622,29 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                             </button>
                                         ))}
                                     </div>
-                            )}
-                            
+                                )}
 
-                            {showOfficersData ? <CommandInformation className=" my-2" /> : null}
+
+                                {showOfficersData ? <CommandInformation className="my-2" /> : null}
                             </div>
                             <div className="px-4 ">
-                            {editFormData ? <DynamicForm
-                                initialForm={caseData ? caseData.formData : createCase}
-                                edit={false}
-                                editFormData={true}
-                                onFormSubmit={editFormData ? handleFormSubmissionEdit : undefined}
-                                enableFormTitle={false}
-                                saveDraftsLocalStoreName={caseData?"":"CaseAdd"}
-                            /> : <FormFieldValueDisplay caseData={caseData} />}
-                        </div>
+
+                                {editFormData ? (
+                                    <>
+                                        <GetCaseTypes />
+                                        <DynamicForm
+                                            initialForm={caseData ? caseData.formData : createCase}
+                                            edit={false}
+                                            editFormData={true}
+                                            enableFormTitle={false}
+                                            onFormChange={hadleonFormChange}
+
+                                        /> <div className="flex justify-end mb-3"> 
+                                            <Button variant="info" onClick={handleFormSubmissionEdit}>
+                                                Submit
+                                            </Button>
+                                        </div></>) : <FormFieldValueDisplay caseData={caseData} />}
+                            </div>
                         </div>
                     </div>
 
@@ -597,16 +656,16 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                         md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
                         ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
                     `}>
-                        {caseData 
-                            ? <CustomerPanel type="edit" onClose={() => setIsCustomerPanelOpen(false)} /> 
+                        {caseData
+                            ? <CustomerPanel type="edit" onClose={() => setIsCustomerPanelOpen(false)} />
                             : <CustomerPanel type="add" onClose={() => setIsCustomerPanelOpen(false)} />}
                     </div>
                 </div>
             </div>
-            
+
             {/* Overlay to dim the background when the panel is open on mobile */}
             {isCustomerPanelOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/60 z-30 md:hidden"
                     onClick={() => setIsCustomerPanelOpen(false)}
                 ></div>

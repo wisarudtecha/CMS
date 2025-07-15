@@ -47,3 +47,7 @@ export interface FormManager extends FormField {
   createBy:string
   description:string;
 }
+
+export interface formType extends FormField {
+  caseType:string
+}

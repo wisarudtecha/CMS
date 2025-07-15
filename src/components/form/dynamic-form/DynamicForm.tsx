@@ -52,6 +52,7 @@ interface DynamicFormProps {
   enableFormTitle?: boolean;
   enableSelfBg?:boolean;
   saveDraftsLocalStoreName?:string;
+  onFormChange?: (data: FormField) => void;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -504,7 +505,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName=""}: DynamicFormProps) {
+export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName="",onFormChange}: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
@@ -594,7 +595,16 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
   const showAllCards = useCallback(() => {
     setHiddenCardIds(new Set());
   }, []);
-
+  const isSyncingWithInitialFormRef = useRef(false);
+  useEffect(() => {
+    if (onFormChange && currentForm) {
+      if (isSyncingWithInitialFormRef.current) {
+        isSyncingWithInitialFormRef.current = false;
+      } else {
+        onFormChange(currentForm);
+      }
+    }
+  }, [currentForm, onFormChange]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -1080,7 +1090,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     const handleSaveDrafts = ()=>{
       localStorage.setItem(saveDraftsLocalStoreName,JSON.stringify(currentForm))
     }
-    return (<div className="flex justify-end">
+    return (<div >
       <Button  variant="success" onClick={handleSaveDrafts}>Save Drafts</Button>
     </div>
     )
@@ -1654,7 +1664,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
                 className="w-full"
               />
             </div>
-            <ul className="max-h-60 overflow-auto">
+            <ul className="max-h-60 overflow-auto custom-scrollbar">
               {filteredOptions.map((option, index) => {
                 const optionValue = isDynamic ? option.value : option;
                 const optionKey = isDynamic ? option.value : `${option}-${index}`;
@@ -1856,7 +1866,7 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
             
             
             
-            overflow-y-auto 
+            overflow-y-auto custom-scrollbar
             
             /* === Styles for Medium and Larger Screens (md and up) === */
             md:sticky md:top-[100px] /* Revert to  positioning at the top */
@@ -1919,10 +1929,10 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
 
     
     <div className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
-      {saveDraftsLocalStoreName!=""? saveDrafts():null}
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}
+        {saveDraftsLocalStoreName!=""? saveDrafts():null}
         {onFormSubmit && currentForm.formFieldJson.length > 0 && <Button className="m-4" onClick={handleSend}>Submit</Button>}
       </div>
     </div>
