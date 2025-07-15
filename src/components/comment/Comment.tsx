@@ -31,7 +31,7 @@ export default function Comments() {
     }, [CommmentHistoryData])
     
     return <div>
-        <div className="bg-gray-300 dark:bg-gray-500 dark:text-gray-200 my-2 rounded-md overflow-y-auto " style={{ height: '10em' } } ref={commentsContainerRef} >
+        <div className="bg-gray-300 dark:bg-gray-500 dark:text-gray-200 my-2 rounded-md overflow-y-auto custom-scrollbar" style={{ height: '10em' } } ref={commentsContainerRef} >
         {CommmentHistoryData.map((comment: CommentsHistory) => (
                     <div key={comment.id} className="p-2 border-b border-gray-400 last:border-b-0 ">
                         <p className="text-sm font-semibold dark:text-gray-100">{comment.name} 

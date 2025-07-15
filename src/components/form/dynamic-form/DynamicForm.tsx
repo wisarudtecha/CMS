@@ -53,6 +53,7 @@ interface DynamicFormProps {
   enableSelfBg?:boolean;
   saveDraftsLocalStoreName?:string;
   onFormChange?: (data: FormField) => void;
+  returnFormAllFill?:(isFill:boolean)=> void;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -505,7 +506,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
-export default function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName="",onFormChange}: DynamicFormProps) {
+ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName="",onFormChange,returnFormAllFill}: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
@@ -605,6 +606,47 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
       }
     }
   }, [currentForm, onFormChange]);
+  const checkAllRequiredFields = useCallback((fields: IndividualFormFieldWithChildren[]): boolean => {
+    for (const field of fields) {
+      if (field.required) {
+        if (field.type === "InputGroup" && Array.isArray(field.value)) {
+          if (!checkAllRequiredFields(field.value)) return false;
+        } else if (field.type === "dynamicField") {
+          const selectedOption = field.options?.find(o => o.value === field.value);
+          if (!field.value) { 
+            return false;
+          }
+          if (selectedOption && Array.isArray(selectedOption.form) && !checkAllRequiredFields(selectedOption.form)) {
+            return false;
+          }
+        } else if (Array.isArray(field.value)) {
+          if (field.value.length === 0) return false;
+        } else if (typeof field.value === 'string') {
+          if (field.value.trim() === '') return false;
+        } else if (field.type === 'Integer') {
+          if (typeof field.value !== 'number' || isNaN(field.value) || field.value === null) return false;
+        } else if (field.value === null || field.value === undefined) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }, []);
+
+  useEffect(() => {
+    if (onFormChange && currentForm) {
+      if (isSyncingWithInitialFormRef.current) {
+        isSyncingWithInitialFormRef.current = false;
+      } else {
+        onFormChange(currentForm);
+      }
+    }
+    if(returnFormAllFill){
+      const allFilled = checkAllRequiredFields(currentForm.formFieldJson)
+      returnFormAllFill(allFilled)
+    }
+  }, [currentForm, checkAllRequiredFields]);
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -976,9 +1018,11 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
         };
         console.log("Sending Form Data:", submitData);
         onFormSubmit(submitData);
+        returnFormAllFill && returnFormAllFill(true)
       }
     } else {
       setShowToast(true)
+      returnFormAllFill && returnFormAllFill(false)
     }
   }, [currentForm, onFormSubmit, transformFieldForSubmission]);
 
@@ -1938,3 +1982,5 @@ export default function DynamicForm({ initialForm, edit = true, showDynamicForm,
     </div>
   );
 }
+
+export default React.memo(DynamicForm)

@@ -1,6 +1,8 @@
+// CaseDetailView.tsx - Refactored
+
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
     ArrowLeft,
     Clock,
@@ -17,14 +19,22 @@ import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { formType, IndividualFormField, FormField } from "@/components/interface/FormField" // Import FormFieldWithChildren
-import createCase from "../../utils/json/createCase.json"
+import { formType, IndividualFormField, FormField } from "@/components/interface/FormField"
+import createCaseJson from "../../utils/json/createCase.json" // Renamed to avoid conflict with function name
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
 import locateImage from "@/icons/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
 import caseTypeMock from "../../utils/json/caseType.json"
+import CaseHistory from "@/utils/json/caseHistory.json"
+import Avatar from "../ui/avatar/Avatar"
+import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
+import { CommandInformation } from "../assignOfficer/CommandInformation"
+import Comments from "../comment/Comment"
+import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
+import Toast from "../toast/Toast"
+
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -33,19 +43,12 @@ const mockOfficers: Officer[] = [
     { id: '4', name: 'Linda Davis', status: 'En-Route', department: 'Communications', location: 'Hill Valley', service: 'Fiber Optics', serviceProvider: 'ConnectFast', workload: 4, distance: 1.2 },
     { id: '5', name: 'Michael Miller', status: 'Available', department: 'Structural', location: 'Sector 4', service: 'Inspection', serviceProvider: 'BuildSafe', workload: 1, distance: 4.8 },
 ];
-import CaseHistory from "@/utils/json/caseHistory.json"
-import Avatar from "../ui/avatar/Avatar"
-import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { CommandInformation } from "../assignOfficer/CommandInformation"
-import Comments from "../comment/Comment"
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
-interface CaseDetailViewProps {
-    onBack?: () => void
-    caseData?: CaseItem
-}
 
+// --- Sub-component: CustomerPanel ---
+// BREAK 1: Extracted CustomerPanel into its own component.
+// This component handles the display of customer information and service history.
 interface CustomerPanelProps {
-    type: "edit" | "add"
+    type: "edit" | "add";
     onClose: () => void; // Added onClose handler for mobile view
 }
 
@@ -63,13 +66,11 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
         { id: "Location", label: "Location" },
         { id: "Knowledge Base", label: "Knowledge Base" },
         { id: "FAQ", label: "FAQ" },
-    ]
+    ];
 
-    const serviceHistory = CaseHistory
+    const serviceHistory = CaseHistory;
 
     return (
-        // The main div is set to h-full to fill its container, crucial for the fixed mobile view.
-        // Width constraints like md:max-w-* are removed to allow the parent to control the size.
         <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
             {/* Mobile-only header with a title and close button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
@@ -253,28 +254,44 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
     );
 };
 
-interface TempCaseCardProps {
+// --- Sub-component: CaseCard ---
+// BREAK 2: Renamed TempCaseCard to CaseCard for clarity and extracted it.
+// This component displays the main case details, progress, and actions.
+interface CaseCardProps {
     onAssignClick: () => void;
-    onEditChick?: () => void;
+    onEditClick?: () => void; // Corrected typo: onEditChick to onEditClick
     caseData: CaseItem;
 }
 
-const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProps) => {
+const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseData }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const [editFormData, setEditFormData] = useState(false);
-    const onChick = () => {
 
-        onEditChick && onEditChick();
+    // BREAK 3: Renamed onChick to handleEditToggle and onChickComment to handleCommentToggle for better naming conventions.
+    const handleEditToggle = () => {
+        onEditClick && onEditClick();
         setEditFormData(!editFormData);
+    };
 
-    }
-    const onChickComment = () => {
-        if (showComment == false) {
-            setShowComment(true);
-        } else {
-            setShowComment(false);
-        }
-    }
+    const handleCommentToggle = () => {
+        setShowComment(!showComment);
+    };
+
+    // Mock progress steps - ideally, this would come from caseData or be derived from its status
+    const progressSteps = [
+        { id: 1, title: "Received", description: "Request received", completed: true },
+        { id: 2, title: "Assigned", description: "Task assigned", completed: true },
+        { id: 3, title: "Acknowledged", description: "Assignment confirmed", completed: false, current: true },
+        { id: 4, title: "En Route", description: "Traveling to location", completed: false },
+        { id: 5, title: "On Site", description: "Arrived at service location", completed: false },
+        { id: 6, title: "Completed", description: "Service completed", completed: false }
+    ];
+
+    // Determine progress width based on current step
+    const currentStepIndex = progressSteps.findIndex(step => step.current);
+    const progressWidth = currentStepIndex !== -1 ? ((currentStepIndex + 1) / progressSteps.length) * 100 : 0;
+
+
     return (
         <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
@@ -301,22 +318,16 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                 </div>
             </div>
 
-            <div className="mb-4 overflow-x-auto">
+            {/* Progress Bar Section */}
+            <div className="mb-4 overflow-x-auto custom-scrollbar">
                 <div className="relative min-w-max-content">
                     <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
                     <div
                         className="absolute top-4 left-0 h-0.5 bg-blue-500 transition-all duration-300"
-                        style={{ width: "40%" }}
+                        style={{ width: `${progressWidth}%` }} // Dynamic width based on progress
                     ></div>
                     <div className="relative flex justify-between">
-                        {[
-                            { id: 1, title: "Received", description: "Request received", completed: true },
-                            { id: 2, title: "Assigned", description: "Task assigned", completed: true },
-                            { id: 3, title: "Acknowledged", description: "Assignment confirmed", completed: false, current: true },
-                            { id: 4, title: "En Route", description: "Traveling to location", completed: false },
-                            { id: 5, title: "On Site", description: "Arrived at service location", completed: false },
-                            { id: 6, title: "Completed", description: "Service completed", completed: false }
-                        ].map((step) => (
+                        {progressSteps.map((step) => (
                             <div key={step.id} className="flex flex-col items-center text-center px-1" style={{ width: "16.66%" }}>
                                 <div
                                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mb-2 transition-all duration-300 ${step.completed || step.current
@@ -354,7 +365,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                 <div className="flex flex-wrap gap-2">
-                    <Button onClick={onChickComment} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                    <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         <MessageSquare className="w-4 h-4 mr-2" size={20} />
                         Comment
@@ -363,7 +374,7 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                         <Paperclip className="w-4 h-4 mr-2" />
                         Attach File
                     </Button>
-                    <Button onClick={onChick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                    <Button onClick={handleEditToggle} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>
                 </div>
@@ -372,16 +383,14 @@ const TempCaseCard = ({ onAssignClick, onEditChick, caseData }: TempCaseCardProp
                     <span>Assign</span>
                 </Button>
             </div>
-            {showComment ?
-                <Comments /> : null}
+            {showComment && <Comments />}
         </div>
     );
 };
 
-interface Props {
-    caseData?: CaseItem;
-}
-
+// --- Helper function: renderField ---
+// BREAK 4: This helper function is fine as is, but keeping it outside of React components
+// ensures it's not recreated on every render and highlights its utility nature.
 const renderField = (field: IndividualFormField): Record<string, any> => {
     if (field.type === "InputGroup" && Array.isArray(field.value)) {
         return {
@@ -420,16 +429,21 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
     return { [field.label]: value };
 };
 
+// --- Sub-component: FormFieldValueDisplay ---
+// BREAK 5: Extracted the display logic for form field values.
+// This component is responsible for rendering the static details of the case.
+interface FormFieldValueDisplayProps {
+    caseData?: CaseItem;
+}
 
-
-const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
+const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData }) => {
     if (!caseData || !caseData.formData || !caseData.formData.formFieldJson) return null;
     const result = caseData.formData.formFieldJson.map(renderField);
 
     const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <div className="mb-2">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Service Type</span>
@@ -448,7 +462,6 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
                 <span className="text-xs text-gray-500 dark:text-gray-400">Location</span>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
-
                         <MapPin />
                         {Array.isArray(fieldMap["3. Service Location & Destination:"])
                             ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
@@ -457,7 +470,8 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
                                 ));
                             })
                             : (fieldMap["3. Service Location & Destination:"] ?? "-")}
-                    </div></div>
+                    </div>
+                </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Description</span>
@@ -467,104 +481,145 @@ const FormFieldValueDisplay: React.FC<Props> = ({ caseData }) => {
     );
 };
 
-export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps) {
+// --- Sub-component: CaseTypeFormSection ---
+// BREAK 6: Extracted the "Get Case Type" and DynamicForm logic into its own component.
+// This improves separation of concerns and makes the main component cleaner.
+interface CaseTypeFormSectionProps {
+    caseType: string;
+    handleCaseTypeChange: (newValue: string) => void;
+    handleGetTypeFormData: (getTypeData: FormField) => void;
+    hadleIsFillGetType: (isFill: boolean) => void;
+    selectedCaseTypeForm: FormField | undefined;
+    editFormData: boolean; // Prop to control if the form is editable
+}
+
+const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
+    caseType,
+    handleCaseTypeChange,
+    handleGetTypeFormData,
+    hadleIsFillGetType,
+    selectedCaseTypeForm,
+    editFormData
+}) => {
+    const caseTypeOptions = useMemo(() => Array.from(new Set(caseTypeMock.map((item: formType) => item.caseType))), []);
+
+    return (
+        <div className="text-white dark:text-gray-300">
+            <h3 className="mb-2 mx-3">Get Case Type : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+            <SearchableSelect
+                options={caseTypeOptions}
+                value={caseType}
+                onChange={handleCaseTypeChange}
+                placeholder={"Select a FormType"}
+                disabled={!editFormData}
+                className="m-3"
+            />
+            {caseType && (
+                <DynamicForm
+                    initialForm={selectedCaseTypeForm}
+                    edit={false}
+                    editFormData={true}
+                    enableFormTitle={false}
+                    onFormChange={handleGetTypeFormData}
+                    returnFormAllFill={hadleIsFillGetType}
+                />
+            )}
+        </div>
+    );
+};
+
+
+// --- Main Component: CaseDetailView ---
+export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseItem }) {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [caseType, setCaseType] = useState<string>('');
-    const [editFormData, setEditFormData] = useState<boolean>(caseData ? false : true);
+    // BREAK 7: Initialize editFormData based on caseData presence, but allow toggling.
+    const [editFormData, setEditFormData] = useState<boolean>(!caseData); // If no caseData, assume new case, so allow editing initially
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
     const [showOfficersData, setShowOFFicersData] = useState<Officer | null>(null);
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
-    const caseTypeOptions = Array.from(new Set(caseTypeMock.map((item: formType) => item.caseType)));
-    const [caseTypeData, setCaseTypeData] = useState<formType>();
-    const [formData, setFormData] = useState<FormField>();
-    // State to hold the current form data for saving and loading
+    const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(); // Explicitly define as FormField | undefined
+    const [formData, setFormData] = useState<FormField | undefined>(); // Explicitly define as FormField | undefined
+    const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
+    const [showToast, setShowToast] = useState(false);
 
+    // BREAK 8: Memoize selectedCaseTypeForm for performance
+    const selectedCaseTypeForm = useMemo(() => {
+        return caseTypeMock.find(form => form.caseType === caseType);
+    }, [caseType]);
 
+    // Handlers for state updates, wrapped in useCallback for performance
+    const handleSelectOfficer = useCallback((selectedOfficer: Officer) => {
+        setShowOFFicersData(prev => (prev?.id === selectedOfficer.id ? null : selectedOfficer));
+    }, []);
 
-
-
-    const handleSelectOfficer = (selectedOfficer: Officer) => {
-        if (selectedOfficer.id == showOfficersData?.id) {
-            setShowOFFicersData(null)
-        }
-        else {
-            setShowOFFicersData(selectedOfficer)
-        }
-    }
-
-    const handleAssignOfficers = (selectedOfficerIds: string[]) => {
+    const handleAssignOfficers = useCallback((selectedOfficerIds: string[]) => {
         const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
         setAssignedOfficers(selected);
         setShowAssignModal(false);
-    };
+    }, []);
 
-    // Updated to accept the form data from DynamicForm's onFormSubmit
-    const handleFormSubmissionEdit = () => {
-        console.log({ formData: formData, caseTypeData: caseTypeData });
-    };
-
-    const handleEditClick = () => {
-        if (editFormData) {
-            setEditFormData(false);
+    const handleFormSubmissionEdit = useCallback(() => {
+        // BREAK 9: Improved toast logic to be more specific.
+        if (!isValueFill.dynamicForm || !isValueFill.getType) {
+            setShowToast(true);
         }
-        else { setEditFormData(true); }
-    };
-    const handleCaseTypeChange = (newValue: string) => {
+        // TODO: Add actual form submission logic here
+        console.log("Form Data:", formData);
+        console.log("Case Type Data:", caseTypeData);
+        // If submission is successful, you might want to turn off edit mode:
+        // setEditFormData(false);
+    }, [isValueFill, formData, caseTypeData]);
+
+    const handleEditClick = useCallback(() => {
+        setEditFormData(prev => !prev);
+    }, []);
+
+    const handleCaseTypeChange = useCallback((newValue: string) => {
         setCaseType(newValue);
-    };
-    const hadleonFormChange = (FormData: FormField) => {
-        setFormData(FormData)
-    }
-    const hadleGetType = useCallback((getTypeData: FormField) => {
-        setCaseTypeData(prev => {
-            if (JSON.stringify(prev) !== JSON.stringify(getTypeData)) {
-                return { ...getTypeData, caseType: caseType };
-            }
-            return prev;
-        });
+    }, []);
+
+    const handleDynamicFormChange = useCallback((data: FormField) => {
+        setFormData(data);
+    }, []);
+
+    const handleIsFillGetType = useCallback((isFill: boolean) => {
+        setIsValueFill(prev => ({ ...prev, getType: isFill }));
+    }, []);
+
+    const handleIsFillDynamicForm = useCallback((isFill: boolean) => {
+        setIsValueFill(prev => ({ ...prev, dynamicForm: isFill }));
+    }, []);
+
+    const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
+        setCaseTypeData({ ...getTypeData, caseType: caseType });
     }, [caseType]);
 
-    const GetCaseTypes: React.FC = () => {
-        return (
-            <div className=" text-white dark:text-gray-300 ">
-                <h3 className="mb-2 mx-3">
-                    Get Case Type
-                </h3>
-                <SearchableSelect
-                    options={caseTypeOptions}
-                    value={caseType}
-                    onChange={handleCaseTypeChange}
-                    placeholder={"Select a FormType"}
-                    disabled={!editFormData}
-                    className="m-3"
-                />
-                {caseType && (
-                    <DynamicForm
-                        initialForm={caseTypeMock.find(form => form.caseType === caseType)}
-                        edit={false}
-                        editFormData={true}
-                        enableFormTitle={false}
-                        onFormChange={hadleGetType}
-                    />
-                )}
-            </div>
-        );
-    };
     return (
-        <div className="flex flex-col h-screen ">
+        <div className="flex flex-col h-screen">
             <PageMeta
                 title="Case Detail"
                 description="Case Detail Page"
             />
-            <div className="flex-shrink-0 ">
+            {showToast && (
+                <Toast
+                    message="Please enter all required data in the form."
+                    type="error"
+                    duration={3000} // Increased duration for better visibility
+                    onClose={() => setShowToast(false)}
+                />
+            )}
+            <div className="flex-shrink-0">
                 <PageBreadcrumb pageTitle="Create Case" />
-                <div className="px-4 sm:px-6 ">
+                <div className="px-4 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            {onBack ? <Button variant="ghost" size="sm" onClick={onBack}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
-                            </Button> : <></>}
+                            {onBack && (
+                                <Button variant="ghost" size="sm" onClick={onBack}>
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Back
+                                </Button>
+                            )}
                             <div className="flex items-center">
                                 <div className="flex">
                                     <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
@@ -575,9 +630,9 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                             </div>
                         </div>
                         {/* Button to open the customer panel, visible only on small screens */}
-                        <div className="md:hidden ">
+                        <div className="md:hidden">
                             <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
-                                <User className="w-4 h-4 mr-2 " />
+                                <User className="w-4 h-4 mr-2" />
                                 View Customer
                             </Button>
                         </div>
@@ -587,10 +642,10 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
 
             <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
                 <div className="flex flex-col md:flex-row h-full gap-1 w-full">
-                    <div className="overflow-y-auto  w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
-                        <div className="pr-0 md:pr-6 ">
+                    <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
+                        <div className="pr-0 md:pr-6">
                             <div className="px-4 pt-6">
-                                {caseData ? <TempCaseCard onAssignClick={() => setShowAssignModal(true)} onEditChick={handleEditClick} caseData={caseData} /> : <></>}
+                                {caseData && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={caseData} />}
                                 {(caseData && assignedOfficers.length > 0) && (
                                     <div className="mb-4 flex flex-wrap gap-2 items-center">
                                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
@@ -602,16 +657,16 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                                 className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
                                                 onClick={() => handleSelectOfficer(officer)}
                                             >
-                                                {showOfficersData?.id == officer.id ? <ChevronDown /> : <ChevronUp />}
+                                                {showOfficersData?.id === officer.id ? <ChevronUp /> : <ChevronDown />}
                                                 {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
                                                 {officer.name}
                                                 <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
                                                 <Button
-                                                    onClick={() =>
+                                                    onClick={() => { 
                                                         setAssignedOfficers(prev =>
                                                             prev.filter(o => o.id !== officer.id)
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     className="ml-2"
                                                     title="Remove"
                                                     variant="outline-no-transparent"
@@ -623,27 +678,36 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                                         ))}
                                     </div>
                                 )}
-
-
-                                {showOfficersData ? <CommandInformation className="my-2" /> : null}
+                                {showOfficersData && <CommandInformation className="my-2" />}
                             </div>
-                            <div className="px-4 ">
-
+                            <div className="px-4">
                                 {editFormData ? (
                                     <>
-                                        <GetCaseTypes />
+                                        <CaseTypeFormSection
+                                            caseType={caseType}
+                                            handleCaseTypeChange={handleCaseTypeChange}
+                                            handleGetTypeFormData={handleGetTypeFormData}
+                                            hadleIsFillGetType={handleIsFillGetType}
+                                            selectedCaseTypeForm={selectedCaseTypeForm}
+                                            editFormData={editFormData}
+                                        />
                                         <DynamicForm
-                                            initialForm={caseData ? caseData.formData : createCase}
+                                            initialForm={caseData?.formData || createCaseJson} // Use imported json directly
                                             edit={false}
                                             editFormData={true}
                                             enableFormTitle={false}
-                                            onFormChange={hadleonFormChange}
-
-                                        /> <div className="flex justify-end mb-3"> 
+                                            onFormChange={handleDynamicFormChange}
+                                            returnFormAllFill={handleIsFillDynamicForm}
+                                        />
+                                        <div className="flex justify-end mb-3">
                                             <Button variant="info" onClick={handleFormSubmissionEdit}>
                                                 Submit
                                             </Button>
-                                        </div></>) : <FormFieldValueDisplay caseData={caseData} />}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <FormFieldValueDisplay caseData={caseData} />
+                                )}
                             </div>
                         </div>
                     </div>
@@ -679,5 +743,5 @@ export default function CaseDetailView({ onBack, caseData }: CaseDetailViewProps
                 assignedOfficers={assignedOfficers}
             />
         </div>
-    )
+    );
 }
