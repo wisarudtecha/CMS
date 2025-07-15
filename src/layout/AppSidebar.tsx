@@ -188,11 +188,28 @@ const AppSidebar: React.FC = () => {
     },
   ], [t]);
 
+  const archivesItems: NavItem[] = [
+    {
+      icon: <BoxCubeIcon />,
+      name: "Case Management",
+      subItems: [
+        { name: "Case History", path: "/kanban", pro: false },
+      ],
+    },
+    {
+      icon: <BoxCubeIcon />,
+      name: "Workflow",
+      subItems: [
+        { name: "Workflow Builder v0.1.0", path: "/workflow/editor/v1", pro: false },
+      ],
+    },
+  ];
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "menu" | "others";
+    type: "main" | "menu" | "others" | "archives";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -207,8 +224,8 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "menu", "others"].forEach((menuType) => {
-      const items = menuType === "main" ?  mainItems : menuType === "menu" ? navItems : othersItems;
+    ["main", "menu", "others", "archives"].forEach((menuType) => {
+      const items = menuType === "main" ?  mainItems : menuType === "menu" ? navItems : menuType === "others" ? othersItems : archivesItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -242,7 +259,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "menu" | "others") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "menu" | "others" | "archives") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -264,7 +281,7 @@ const AppSidebar: React.FC = () => {
     }
   }
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "menu" | "others") => (
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "menu" | "others" | "archives") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
@@ -505,6 +522,22 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(othersItems, "others")}
+            </div>
+            <div className={`mb-6 ${menuDisplay}`}>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Archives"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(archivesItems, "archives")}
             </div>
           </div>
         </nav>
