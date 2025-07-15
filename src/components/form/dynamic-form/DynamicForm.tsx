@@ -544,6 +544,43 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
       }
   );
   
+  useEffect(() => {
+    if (initialForm) {
+      setCurrentForm({
+        ...initialForm,
+        formFieldJson: initialForm.formFieldJson.map(field => {
+          let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
+
+          if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
+            updatedField.value = updatedField.value as IndividualFormFieldWithChildren[];
+          } else if (updatedField.type === "dynamicField") {
+            updatedField.value = typeof updatedField.value === 'string' ? updatedField.value : "";
+            updatedField.options = updatedField.options?.map(option => ({
+              ...option,
+              form: Array.isArray(option.form) ? option.form as IndividualFormFieldWithChildren[] : []
+            }));
+          }
+
+          if (updatedField.type === "InputGroup" && updatedField.GroupColSpan === undefined) {
+            updatedField.GroupColSpan = 1;
+          }
+          if (updatedField.type === "dynamicField" && updatedField.DynamicFieldColSpan === undefined) {
+            updatedField.DynamicFieldColSpan = 1;
+          }
+
+          return updatedField;
+        })
+      });
+    } else {
+      setCurrentForm({
+        formId: uuidv4(),
+        formName: "New Dynamic Form",
+        formColSpan: 1,
+        formFieldJson: [],
+      });
+    }
+  }, [initialForm]);
+
   const [importJsonText, setImportJsonText] = useState(String);
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
   const [isImport, setImport] = useState(false);

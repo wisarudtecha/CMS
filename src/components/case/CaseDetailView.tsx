@@ -547,7 +547,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const selectedCaseTypeForm = useMemo(() => {
         return caseTypeMock.find(form => form.caseType === caseType);
     }, [caseType]);
-
     // Handlers for state updates, wrapped in useCallback for performance
     const handleSelectOfficer = useCallback((selectedOfficer: Officer) => {
         setShowOFFicersData(prev => (prev?.id === selectedOfficer.id ? null : selectedOfficer));
