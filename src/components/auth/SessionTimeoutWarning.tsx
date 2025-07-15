@@ -40,7 +40,8 @@ export const SessionTimeoutWarning: React.FC = () => {
           </p>
           <div className="flex space-x-3 justify-center">
             <Button
-              onClick={() => window.location.reload()}
+              // onClick={() => window.location.reload()}
+              onClick={() => window.location.replace("/")} // For development mode only
             >
               Stay Logged In
             </Button>
