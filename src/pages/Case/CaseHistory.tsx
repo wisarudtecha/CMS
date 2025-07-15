@@ -10,7 +10,7 @@
  * @metadata
  * Author: [Wisarud Techa]
  * First Created: [11-07-2025] v0.1.0
- * Last Updated: [11-07-2025] v0.1.0
+ * Last Updated: [15-07-2025] v0.1.1
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -47,5 +47,14 @@ export default CaseHistoryPage;
  * 
  * @version 0.1.0
  * @date    11-07-2025
+ * ----------------------------------------------------------------------------
+ * - Component Architecture Strategy.
+ * - Custom Preview Dialog Implementation.
+ * - Enhanced CRUD Integration.
+ * - Interactive Features & User Experience.
+ * - State Management Pattern.
+ * 
+ * @version 0.1.1
+ * @date    15-07-2025
  * ----------------------------------------------------------------------------
  */

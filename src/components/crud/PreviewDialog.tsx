@@ -7,8 +7,8 @@ import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import { 
   CloseIcon, 
-  AngleLeftIcon, 
-  AngleRightIcon, 
+  // AngleLeftIcon, 
+  // AngleRightIcon, 
   CopyIcon,
   CheckCircleIcon,
   // InfoIcon,
@@ -147,15 +147,15 @@ export const PreviewDialog = <T extends { id: string }>({
     >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className="xl:flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="xl:flex items-center gap-4 min-w-0 flex-1">
             {config.avatar && (
-              <div className="flex-shrink-0">
+              <div className="hidden xl:block flex-shrink-0">
                 {config.avatar(item)}
               </div>
             )}
-            <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
+            <div className="min-w-0 max-w-80 xl:max-w-full flex-1">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white xl:truncate">
                 {config.title(item)}
               </h2>
               {config.subtitle && (
@@ -170,7 +170,7 @@ export const PreviewDialog = <T extends { id: string }>({
             {/* Navigation */}
             {config.enableNavigation && (
               <>
-                <span className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                <span className="text-sm text-gray-500 dark:text-gray-400 pr-2">
                   {previewState.currentIndex + 1} of {previewState.totalItems}
                 </span>
                 <Button
@@ -180,7 +180,8 @@ export const PreviewDialog = <T extends { id: string }>({
                   size="sm"
                   title="Previous item (←)"
                 >
-                  <AngleLeftIcon className="w-4 h-4" />
+                  {/* <AngleLeftIcon className="w-4 h-4" /> */}
+                  {`<`}
                 </Button>
                 <Button
                   onClick={onNext}
@@ -189,19 +190,22 @@ export const PreviewDialog = <T extends { id: string }>({
                   size="sm"
                   title="Next item (→)"
                 >
-                  <AngleRightIcon className="w-4 h-4" />
+                  {/* <AngleRightIcon className="w-4 h-4" /> */}
+                  {`>`}
                 </Button>
               </>
             )}
             
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="sm"
-              title="Close (Esc)"
-            >
-              <CloseIcon className="w-4 h-4" />
-            </Button>
+            <div className="hidden xl:block">
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                title="Close (Esc)"
+              >
+                <CloseIcon className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -233,7 +237,7 @@ export const PreviewDialog = <T extends { id: string }>({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
           {currentTab.render ? (
             currentTab.render(item)
           ) : (
@@ -274,7 +278,7 @@ export const PreviewDialog = <T extends { id: string }>({
 
         {/* Actions */}
         {config.actions && config.actions.length > 0 && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="xl:flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
             {config.actions
               .filter(action => !action.condition || action.condition(item))
               .map(action => {
@@ -284,6 +288,7 @@ export const PreviewDialog = <T extends { id: string }>({
                     key={action.key}
                     onClick={() => action.onClick(item, onClose)}
                     variant={`${action.variant}`}
+                    className="w-full xl:w-auto mb-3 xl:mb-0"
                   >
                     {Icon && <Icon />}
                     {action.label}

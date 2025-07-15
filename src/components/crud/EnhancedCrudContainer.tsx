@@ -64,6 +64,7 @@ interface EnhancedCrudContainerProps<T> {
   keyboardShortcuts?: KeyboardShortcut[];
   enableDebug?: boolean;
   onItemAction?: (action: string, item: T) => void;
+  onItemClick?: (item: T) => void;
 }
 
 export const EnhancedCrudContainer = <T extends { id: string }>({
@@ -86,7 +87,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   advancedFilters = [],
   keyboardShortcuts = [],
   enableDebug = false,
-  onItemAction
+  onItemAction,
+  onItemClick
 }: EnhancedCrudContainerProps<T>) => {
   const [displayMode, setDisplayMode] = useState<"card" | "table">("card");
   const [searchInput, setSearchInput] = useState<string>("");
@@ -332,6 +334,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     }
   }, [previewConfig, openPreview, sortedData]);
 
+  const actualClickHandler = onItemClick || handleItemClick;
+
   // Default keyboard shortcuts
   const defaultShortcuts: KeyboardShortcut[] = [
     {
@@ -546,6 +550,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               <ClickableCard
                 key={item.id}
                 item={item}
+                // onClick={handleItemClick}
                 onClick={handleItemClick}
                 actions={enhancedActions}
                 selectedItems={selectedItems}
@@ -626,7 +631,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                       item={item}
                       columns={config.columns}
                       actions={enhancedActions}
-                      onClick={handleItemClick}
+                      // onClick={handleItemClick}
+                      onClick={actualClickHandler}
                       selectedItems={selectedItems}
                       onSelectItem={selectItem}
                       bulkSelectionEnabled={enabledFeatures.bulkActions}
@@ -674,15 +680,17 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
         {/* Preview Dialog */}
         {previewConfig && (
-          <PreviewDialog
-            previewState={previewState}
-            config={previewConfig}
-            onClose={closePreview}
-            onNext={nextItem}
-            onPrev={prevItem}
-            canGoNext={canGoNext}
-            canGoPrev={canGoPrev}
-          />
+          <>
+            <PreviewDialog
+              previewState={previewState}
+              config={previewConfig}
+              onClose={closePreview}
+              onNext={nextItem}
+              onPrev={prevItem}
+              canGoNext={canGoNext}
+              canGoPrev={canGoPrev}
+            />
+          </>
         )}
 
         {/* Debug Info (only in development) */}

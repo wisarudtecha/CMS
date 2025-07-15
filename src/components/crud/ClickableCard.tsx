@@ -56,7 +56,7 @@ export const ClickableCard = <T extends { id: string }>({
 
       {actions && actions.length > 0 && (
         <div className="xl:flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="xl:flex items-center gap-2">
+          <div className="lg:flex items-center gap-2 mb-4 lg:mb-0">
             {actions
               .filter(action => !action.condition || action.condition(item))
               .slice(0, 3)
@@ -68,7 +68,7 @@ export const ClickableCard = <T extends { id: string }>({
                     onClick={() => action.onClick(item)}
                     variant={action.variant}
                     size="xs"
-                    className="lg:block lg:w-full lg:mb-2"
+                    className="lg:block lg:w-full lg:mb-2 mr-2 lg:mr-0"
                   >
                     {Icon && <Icon />}
                     {action.label}

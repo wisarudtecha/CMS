@@ -2,10 +2,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import {
   AlertHexaIcon,
   CalenderIcon,
   ChatIcon,
+  // CheckLineIcon,
   CheckCircleIcon,
   ChevronUpIcon,
   FileIcon,
@@ -18,7 +21,10 @@ import {
 } from "@/icons";
 import { formatDate } from "@/utils/crud";
 import { PreviewConfig } from "@/types/enhanced-crud"
-import type { CaseEntity } from "@/types/case";
+import type {
+  CaseEntity,
+  // ProgressStep
+} from "@/types/case";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import caseHistoryList from "@/mocks/caseHistoryList.json";
@@ -184,6 +190,72 @@ const CaseHistoryComponent: React.FC = () => {
   // Preview Configuration
   // ===================================================================
 
+  // Generate progress steps based on case status
+  // const getProgressSteps = (caseItem: CaseEntity): ProgressStep[] => {
+  //   const steps: ProgressStep[] = [
+  //     { key: 'received', label: 'Received', completed: true, active: false, timestamp: caseItem.createdAt },
+  //     { key: 'assigned', label: 'Assigned', completed: false, active: false },
+  //     { key: 'acknowledged', label: 'Acknowledged', completed: false, active: false },
+  //     { key: 'en-route', label: 'En Route', completed: false, active: false },
+  //     { key: 'on-site', label: 'On Site', completed: false, active: false },
+  //     { key: 'completed', label: 'Completed', completed: false, active: false, timestamp: caseItem.resolvedAt }
+  //   ];
+  //   // Update steps based on current status
+  //   switch (caseItem.status) {
+  //     case 'open':
+  //       steps[0].completed = true;
+  //       steps[1].active = true;
+  //       break;
+  //     case 'in-progress':
+  //       steps[0].completed = true;
+  //       steps[1].completed = true;
+  //       steps[2].completed = true;
+  //       steps[3].active = true;
+  //       break;
+  //     case 'resolved':
+  //     case 'closed':
+  //       steps.forEach((step, index) => {
+  //         if (index < steps.length - 1) step.completed = true;
+  //         else if (index === steps.length - 1) {
+  //           step.completed = true;
+  //           step.active = false;
+  //         }
+  //       });
+  //       break;
+  //   }
+  //   return steps;
+  // };
+
+  const getPriorityConfig = (caseItem: CaseEntity) => {
+    const configs = {
+      'low': { color: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', label: 'Low' },
+      'medium': { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', label: 'Medium' },
+      'high': { color: 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100', label: 'High' },
+      'critical': { color: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', label: 'Critical' }
+    };
+    return configs[caseItem.priority as keyof typeof configs] || configs.medium;
+  };
+
+  const getStatusConfig = (caseItem: CaseEntity) => {
+    const configs = {
+      'open': { color: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100', label: 'Open' },
+      'in-progress': { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100', label: 'Pending Review' },
+      'resolved': { color: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', label: 'Resolved' },
+      'closed': { color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100', label: 'Closed' },
+      'escalated': { color: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100', label: 'Escalated' }
+    };
+    return configs[caseItem.status as keyof typeof configs] || configs.open;
+  };
+
+  const getTimelineSteps = (caseItem: CaseEntity) => {
+    const timelineSteps = CaseTimelineSteps(
+      caseItem.status,
+      caseItem.createdAt,
+      caseItem.resolvedAt
+    );
+    return timelineSteps;
+  };
+
   const previewConfig: PreviewConfig<CaseEntity> = {
     title: (caseItem: CaseEntity) => `${caseItem.caseNumber}: ${caseItem.title}`,
     subtitle: (caseItem: CaseEntity) => `${caseItem.category} • Assigned to ${caseItem.assignedTo}`,
@@ -210,123 +282,298 @@ const CaseHistoryComponent: React.FC = () => {
         key: "overview",
         label: "Overview",
         // icon: InfoIcon,
-        fields: [
-          {
-            key: "description",
-            label: "Description",
-            type: "text" as const
-          },
-          {
-            key: "status",
-            label: "Status",
-            type: "badge" as const,
-            render: (value: string) => {
-              // const statusConfig = {
-              //   "open": "bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100",
-              //   "in-progress": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-              //   "resolved": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-              //   "closed": "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100",
-              //   "escalated": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-              // }[value as keyof typeof statusConfig];
-              const statusConfigMap = {
-                "open": "bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100",
-                "in-progress": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-                "resolved": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-                "closed": "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100",
-                "escalated": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-              };
-              const statusConfig = statusConfigMap[value as keyof typeof statusConfigMap];
-              
-              return (
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig}`}>
-                  {value.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
-                </span>
-              );
-            }
-          },
-          {
-            key: "priority",
-            label: "Priority",
-            type: "badge" as const,
-            render: (value: string) => {
-              // const priorityConfig = {
-              //   "low": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-              //   "medium": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-              //   "high": "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-100",
-              //   "critical": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-              // }[value as keyof typeof priorityConfig];
-              const priorityConfigMap = {
-                "low": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-                "medium": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-                "high": "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-100",
-                "critical": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-              };
-              const priorityConfig = priorityConfigMap[value as keyof typeof priorityConfigMap];
-              
-              return (
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityConfig}`}>
-                  {value.charAt(0).toUpperCase() + value.slice(1)}
-                </span>
-              );
-            }
-          },
-          {
-            key: "category",
-            label: "Category",
-            type: "text" as const
-          },
-          {
-            key: "assignedTo",
-            label: "Assigned To",
-            type: "text" as const
-          },
-          {
-            key: "reporter",
-            label: "Reporter",
-            type: "text" as const
-          },
-          {
-            key: "caseNumber",
-            label: "Case Number",
-            type: "text" as const,
-            copyable: true
-          },
-          {
-            key: "createdAt",
-            label: "Created",
-            type: "date" as const
-          },
-          {
-            key: "updatedAt",
-            label: "Last Updated",
-            type: "date" as const
-          },
-          {
-            key: "dueDate",
-            label: "Due Date",
-            type: "date" as const
-          },
-          {
-            key: "resolvedAt",
-            label: "Resolved",
-            type: "date" as const
-          },
-          {
-            key: "tags",
-            label: "Tags",
-            type: "tags" as const
-          },
-          {
-            key: "location",
-            label: "Location",
-            type: "text" as const
-          },
-          {
-            key: "department",
-            label: "Department",
-            type: "text" as const
-          }
-        ]
+        render: (caseItem: CaseEntity) => (
+          <>
+            <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
+              {/* Progress Timeline and Progress Line */}
+              {/*
+              <div>
+                <div className="flex items-center justify-between relative">
+                  <div className="absolute top-6 left-6 right-6 h-0.5 bg-gray-600"></div>
+                  <div 
+                    className="absolute top-6 left-6 h-0.5 bg-blue-500 transition-all duration-500"
+                    style={{ 
+                      width: `${(getProgressSteps(caseItem).filter(s => s.completed).length / getProgressSteps(caseItem).length) * 100}%`
+                    }}
+                  ></div>
+                  {getProgressSteps(caseItem).map((step) => (
+                    <div key={step.key} className="flex flex-col items-center relative z-10 min-w-32">
+                      <div className={`
+                        w-12 h-12 rounded-full border-2 flex items-center justify-center mb-2
+                        ${step.completed 
+                          ? 'bg-blue-500 border-blue-500 text-white' 
+                          : step.active 
+                            ? 'bg-blue-100 border-blue-500 text-blue-600' 
+                            : 'bg-gray-600 border-gray-500 text-gray-400'
+                        }
+                      `}>
+                        {step.completed ? (
+                          <CheckLineIcon className="w-6 h-6" />
+                        ) : step.active ? (
+                          <TimeIcon className="w-6 h-6" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full bg-current"></div>
+                        )}
+                      </div>
+                      <span className={`text-xs font-medium ${
+                        step.completed || step.active ? 'text-white' : 'text-gray-400'
+                      }`}>
+                        {step.label}
+                      </span>
+                      <span className="text-xs text-gray-400 mt-1 min-h-4">
+                        {step.timestamp && formatDate(step.timestamp) || ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              */}
+
+              {/* Progress Timeline and Progress Line */}
+              <div className="hidden xl:block">
+                <ProgressTimeline
+                  steps={getTimelineSteps(caseItem)}
+                  orientation="horizontal"
+                  size="md"
+                  showTimestamps={false}
+                  showDescriptions={false}
+                  // className="mb-2"
+                />
+              </div>
+              <div className="block xl:hidden">
+                <ProgressTimeline
+                  steps={getTimelineSteps(caseItem)}
+                  orientation="vertical"
+                  size="sm"
+                  showTimestamps={false}
+                  showDescriptions={false}
+                  className="mb-2"
+                />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Service Information */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                    Service Information
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-gray-900 dark:text-white text-sm">Service Type:</span>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">{caseItem.category}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-900 dark:text-white text-sm">Priority:</span>
+                      <div className="mt-1">
+                        <Badge className={`${getPriorityConfig(caseItem).color} text-xs`}>
+                          {getPriorityConfig(caseItem).label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-900 dark:text-white text-sm">Status:</span>
+                      <div className="mt-1">
+                        <Badge className={`${getStatusConfig(caseItem).color} text-xs`}>
+                          {getStatusConfig(caseItem).label}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location */}
+                {caseItem.location && (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                      Location
+                    </h4>
+                    <div className="flex items-start gap-2">
+                      {/* <MapPinIcon className="w-4 h-4 text-red-500 mt-1 flex-shrink-0" /> */}
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                        {caseItem.location || "No location specified"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Customer Information */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                    Customer Information
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600 dark:text-gray-300">{caseItem.reporter}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* <PhoneIcon className="w-4 h-4 text-gray-400" /> */}
+                      <span className="text-blue-400">+66 89 123 4005</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Service Details */}
+                {(caseItem.description || caseItem.location) && (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                      Service Details
+                    </h4>
+                    <div className="flex items-start gap-2">
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                        {caseItem.description || caseItem.location || "No additional details provided"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Attachments Section */}
+              {caseItem.attachments.length && (
+                <div className="mt-6">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      {/* <FileIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" /> */}
+                      <h4 className="font-medium text-blue-500 dark:text-blue-400">
+                        Attachments ({caseItem.attachments.length})
+                      </h4>
+                    </div>
+                    
+                    {caseItem.attachments.length > 0 ? (
+                      <div className="space-y-2">
+                        {caseItem.attachments.map(attachment => (
+                          <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+                            <div className="flex items-center gap-3">
+                              <FileIcon className="w-4 h-4 text-gray-500" />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {attachment.filename}
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
+                                </div>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm">
+                              Download
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )
+        // fields: [
+        //   {
+        //     key: "description",
+        //     label: "Description",
+        //     type: "text" as const
+        //   },
+        //   {
+        //     key: "status",
+        //     label: "Status",
+        //     type: "badge" as const,
+        //     render: (value: string) => {
+        //       const statusConfigMap = {
+        //         "open": "bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100",
+        //         "in-progress": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
+        //         "resolved": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
+        //         "closed": "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100",
+        //         "escalated": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
+        //       };
+        //       const statusConfig = statusConfigMap[value as keyof typeof statusConfigMap];
+        //       return (
+        //         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig}`}>
+        //           {value.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
+        //         </span>
+        //       );
+        //     }
+        //   },
+        //   {
+        //     key: "priority",
+        //     label: "Priority",
+        //     type: "badge" as const,
+        //     render: (value: string) => {
+        //       const priorityConfigMap = {
+        //         "low": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
+        //         "medium": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
+        //         "high": "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-100",
+        //         "critical": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
+        //       };
+        //       const priorityConfig = priorityConfigMap[value as keyof typeof priorityConfigMap];
+        //       return (
+        //         <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityConfig}`}>
+        //           {value.charAt(0).toUpperCase() + value.slice(1)}
+        //         </span>
+        //       );
+        //     }
+        //   },
+        //   {
+        //     key: "category",
+        //     label: "Category",
+        //     type: "text" as const
+        //   },
+        //   {
+        //     key: "assignedTo",
+        //     label: "Assigned To",
+        //     type: "text" as const
+        //   },
+        //   {
+        //     key: "reporter",
+        //     label: "Reporter",
+        //     type: "text" as const
+        //   },
+        //   {
+        //     key: "caseNumber",
+        //     label: "Case Number",
+        //     type: "text" as const,
+        //     copyable: true
+        //   },
+        //   {
+        //     key: "createdAt",
+        //     label: "Created",
+        //     type: "date" as const
+        //   },
+        //   {
+        //     key: "updatedAt",
+        //     label: "Last Updated",
+        //     type: "date" as const
+        //   },
+        //   {
+        //     key: "dueDate",
+        //     label: "Due Date",
+        //     type: "date" as const
+        //   },
+        //   {
+        //     key: "resolvedAt",
+        //     label: "Resolved",
+        //     type: "date" as const
+        //   },
+        //   {
+        //     key: "tags",
+        //     label: "Tags",
+        //     type: "tags" as const
+        //   },
+        //   {
+        //     key: "location",
+        //     label: "Location",
+        //     type: "text" as const
+        //   },
+        //   {
+        //     key: "department",
+        //     label: "Department",
+        //     type: "text" as const
+        //   }
+        // ]
       },
       {
         key: "details",
@@ -395,64 +642,29 @@ const CaseHistoryComponent: React.FC = () => {
               )}
             </div>
 
-            {/* Attachments Section */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <FileIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <h4 className="font-medium text-gray-900 dark:text-white">
-                  Attachments ({caseItem.attachments.length})
-                </h4>
-              </div>
-              
-              {caseItem.attachments.length > 0 ? (
-                <div className="space-y-2">
-                  {caseItem.attachments.map(attachment => (
-                    <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border">
-                      <div className="flex items-center gap-3">
-                        <FileIcon className="w-4 h-4 text-gray-500" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {attachment.filename}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        Download
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
-              )}
-            </div>
-
             {/* Time Tracking */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-4">Time Tracking</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {caseItem.estimatedHours || 0}h
+            {caseItem.estimatedHours && caseItem.actualHours && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-4">Time Tracking</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {caseItem.estimatedHours || 0}h
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Estimated</div>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Estimated</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {caseItem.actualHours || 0}h
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {caseItem.actualHours || 0}h
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Actual</div>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Actual</div>
                 </div>
-              </div>
-              
-              {caseItem.estimatedHours && caseItem.actualHours && (
+
                 <div className="mt-4">
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Progress</span>
-                    <span>{Math.round((caseItem.actualHours / caseItem.estimatedHours) * 100)}%</span>
+                    <span className="text-gray-900 dark:text-white">Progress</span>
+                    <span className="text-gray-900 dark:text-white">{Math.round((caseItem.actualHours / caseItem.estimatedHours) * 100)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
@@ -461,8 +673,8 @@ const CaseHistoryComponent: React.FC = () => {
                     />
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )
       }
@@ -676,6 +888,7 @@ const CaseHistoryComponent: React.FC = () => {
               </div>
             )}
             */}
+
             {/*
             {caseItem.attachments.length > 0 && (
               <div className="xl:flex items-center gap-1">
@@ -684,12 +897,11 @@ const CaseHistoryComponent: React.FC = () => {
               </div>
             )}
             */}
-            {/* {caseItem.location && ( */}
-              <div className="xl:flex items-center gap-1 min-h-4">
-                {/* <MapPinIcon className="w-3 h-3" /> */}
-                <span>{caseItem.location || ""}</span>
-              </div>
-            {/* )} */}
+
+            <div className="xl:flex items-center gap-1 min-h-4">
+              {/* <MapPinIcon className="w-3 h-3" /> */}
+              <span>{caseItem.location || ""}</span>
+            </div>
           </div>
           
           {caseItem.dueDate && (
