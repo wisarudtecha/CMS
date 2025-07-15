@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useEffect } from "react" // Import useEffect
 import {
     ArrowLeft,
     Clock,
@@ -367,7 +367,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        <MessageSquare className="w-4 h-4 mr-2" size={20} />
+                        <MessageSquare className="w-4 h-4 mr-2" />
                         Comment
                     </Button>
                     <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
@@ -514,7 +514,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                 disabled={!editFormData}
                 className="m-3"
             />
-            {caseType && (
+            {selectedCaseTypeForm && ( // Changed from caseType && to selectedCaseTypeForm &&
                 <DynamicForm
                     initialForm={selectedCaseTypeForm}
                     edit={false}
@@ -532,7 +532,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 // --- Main Component: CaseDetailView ---
 export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseItem }) {
     const [showAssignModal, setShowAssignModal] = useState(false);
-    const [caseType, setCaseType] = useState<string>('');
+    const [caseType, setCaseType] = useState<string>(''); // Will be initialized by useEffect
     // BREAK 7: Initialize editFormData based on caseData presence, but allow toggling.
     const [editFormData, setEditFormData] = useState<boolean>(!caseData); // If no caseData, assume new case, so allow editing initially
     const [assignedOfficers, setAssignedOfficers] = useState<Officer[]>([]);
@@ -543,10 +543,24 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showToast, setShowToast] = useState(false);
 
-    // BREAK 8: Memoize selectedCaseTypeForm for performance
+    // Initialize caseType state when caseData changes
+    useEffect(() => {
+        if (caseData?.caseType?.caseType) {
+            setCaseType(caseData.caseType.caseType);
+        }
+    }, [caseData]);
+
+    // BREAK 8: Memoize selectedCaseTypeForm for performance and correct logic
     const selectedCaseTypeForm = useMemo(() => {
+        // If caseData exists and has a caseType, use it directly
+        if (caseData?.caseType?.caseType ===caseType) { // Use caseData.caseType directly as it's already a formType
+            return caseData.caseType;
+        }
+        // Otherwise, find from mock data based on current caseType state
         return caseTypeMock.find(form => form.caseType === caseType);
-    }, [caseType]);
+    }, [caseType, caseData]); // Add caseData to dependency array
+
+
     // Handlers for state updates, wrapped in useCallback for performance
     const handleSelectOfficer = useCallback((selectedOfficer: Officer) => {
         setShowOFFicersData(prev => (prev?.id === selectedOfficer.id ? null : selectedOfficer));
@@ -654,14 +668,14 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             <button
                                                 key={officer.id}
                                                 className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
-                                                onClick={() => handleSelectOfficer(officer)}
-                                            >
+                                            >   <div onClick={() => handleSelectOfficer(officer)}>
                                                 {showOfficersData?.id === officer.id ? <ChevronUp /> : <ChevronDown />}
+                                                </div>
                                                 {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
                                                 {officer.name}
                                                 <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
                                                 <Button
-                                                    onClick={() => { 
+                                                    onClick={() => {
                                                         setAssignedOfficers(prev =>
                                                             prev.filter(o => o.id !== officer.id)
                                                         );
@@ -691,7 +705,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             editFormData={editFormData}
                                         />
                                         <DynamicForm
-                                            initialForm={caseData?.formData || createCaseJson} // Use imported json directly
+                                            initialForm={caseData?.formData || createCaseJson}
                                             edit={false}
                                             editFormData={true}
                                             enableFormTitle={false}
@@ -699,7 +713,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             returnFormAllFill={handleIsFillDynamicForm}
                                         />
                                         <div className="flex justify-end mb-3">
-                                            <Button variant="info" onClick={handleFormSubmissionEdit}>
+                                            <Button variant="success" onClick={handleFormSubmissionEdit}>
                                                 Submit
                                             </Button>
                                         </div>

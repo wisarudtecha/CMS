@@ -4,7 +4,8 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -50,10 +51,10 @@ interface DynamicFormProps {
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
   onFormSubmit?: (data: FormField) => void;
   enableFormTitle?: boolean;
-  enableSelfBg?:boolean;
-  saveDraftsLocalStoreName?:string;
+  enableSelfBg?: boolean;
+  saveDraftsLocalStoreName?: string;
   onFormChange?: (data: FormField) => void;
-  returnFormAllFill?:(isFill:boolean)=> void;
+  returnFormAllFill?: (isFill: boolean) => void;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -341,19 +342,19 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
 
 // --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
-  { formType: "textInput", title: "Text", canBeChild: true ,property:["contain","maxLength","minLength"] },
-  { formType: "Integer", title: "Number", canBeChild: true ,property:["maxnumber","minnumber"]},
-  { formType: "textAreaInput", title: "Text Area", canBeChild: true ,property:["contain","maxLength","minLength"]},
-  { formType: "emailInput", title: "Email", canBeChild: true ,property:["validEmailFormat"]},
-  { formType: "option", title: "Multi-Checkbox", options: [], canBeChild: true ,property:["maxSelections","minSelections"] },
+  { formType: "textInput", title: "Text", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
+  { formType: "Integer", title: "Number", canBeChild: true, property: ["maxnumber", "minnumber"] },
+  { formType: "textAreaInput", title: "Text Area", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
+  { formType: "emailInput", title: "Email", canBeChild: true, property: ["validEmailFormat"] },
+  { formType: "option", title: "Multi-Checkbox", options: [], canBeChild: true, property: ["maxSelections", "minSelections"] },
   { formType: "select", title: "Single-Select", options: [], canBeChild: true },
-  { formType: "image", title: "Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes"]},
-  { formType: "dndImage", title: "DnD Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes"]},
-  { formType: "multiImage", title: "Multi-Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes","minFiles","maxFiles",]},
-  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true ,property: ["maxFileSize", "allowedFileTypes","minFiles","maxFiles",]},
-  { formType: "passwordInput", title: "Password", canBeChild: true ,property: ["minLength","maxLength","hasUppercase","hasLowercase","hasNumber","hasSpecialChar","noWhitespace",],},
-  { formType: "dateInput", title: "Date", canBeChild: true ,property: [ "minDate", "maxDate", "futureDateOnly", "pastDateOnly"]},
-  { formType: "dateLocal", title: "Date & Time", canBeChild: true ,property: [ "minDate", "maxDate", "futureDateOnly", "pastDateOnly"]},
+  { formType: "image", title: "Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
+  { formType: "dndImage", title: "DnD Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
+  { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles",] },
+  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles",] },
+  { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
+  { formType: "dateInput", title: "Date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
+  { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
   { formType: "radio", title: "Radio", options: [], canBeChild: true },
   { formType: "InputGroup", title: "Group", canBeChild: false },
   { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
@@ -428,7 +429,7 @@ function createDynamicFormField(
     newOptionText = "";
   }
 
-  if ([ "select", "dynamicField"].includes(configItem.formType)) {
+  if (["select", "dynamicField"].includes(configItem.formType)) {
     enableSearch = false;
   }
 
@@ -506,7 +507,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
- function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true ,enableSelfBg=false,saveDraftsLocalStoreName="",onFormChange,returnFormAllFill}: DynamicFormProps) {
+function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnFormAllFill }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
@@ -543,7 +544,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
         formFieldJson: [],
       }
   );
-  
+
   useEffect(() => {
     if (initialForm) {
       setCurrentForm({
@@ -650,7 +651,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
           if (!checkAllRequiredFields(field.value)) return false;
         } else if (field.type === "dynamicField") {
           const selectedOption = field.options?.find(o => o.value === field.value);
-          if (!field.value) { 
+          if (!field.value) {
             return false;
           }
           if (selectedOption && Array.isArray(selectedOption.form) && !checkAllRequiredFields(selectedOption.form)) {
@@ -678,7 +679,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
         onFormChange(currentForm);
       }
     }
-    if(returnFormAllFill){
+    if (returnFormAllFill) {
       const allFilled = checkAllRequiredFields(currentForm.formFieldJson)
       returnFormAllFill(allFilled)
     }
@@ -686,11 +687,22 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
 
   const getColSpanPercentage = (span: number, totalColumns: number = maxGridCol) => {
     if (span <= 0 || totalColumns <= 0) return '0%';
@@ -1160,19 +1172,19 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
         }
       } catch (error) {
         console.error("Failed to parse draft from localStorage:", error);
-        localStorage.removeItem(saveDraftsLocalStoreName); 
+        localStorage.removeItem(saveDraftsLocalStoreName);
       }
     }
   };
   useEffect(() => {
     getDrafts();
   }, [])
-  const saveDrafts = ()=>{
-    const handleSaveDrafts = ()=>{
-      localStorage.setItem(saveDraftsLocalStoreName,JSON.stringify(currentForm))
+  const saveDrafts = () => {
+    const handleSaveDrafts = () => {
+      localStorage.setItem(saveDraftsLocalStoreName, JSON.stringify(currentForm))
     }
     return (<div >
-      <Button  variant="success" onClick={handleSaveDrafts}>Save Drafts</Button>
+      <Button variant="success" onClick={handleSaveDrafts}>Save Drafts</Button>
     </div>
     )
   }
@@ -1524,7 +1536,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
               </div>
             )}
 
-            
+
 
             <div className="space-y-2">
               {(isInputGroup || isDynamicField) && !field.isChild && (
@@ -1778,7 +1790,13 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
       disabled: !editFormData,
     };
 
-    const labelComponent = field.showLabel && (<label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">{field.label} {field.required && <span className="text-red-500">*</span>}</label>);
+    const labelComponent = field.showLabel ? (
+      <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">
+        {field.label} {field.required && <span className="text-red-500">*</span>}
+      </label>
+    ) : (
+      field.required && <span className="text-red-500">*</span>
+    );
 
     switch (field.type) {
       case "textInput": case "emailInput": case "passwordInput":
@@ -1791,10 +1809,10 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
         return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> </>);
 
       case "dateLocal":
-        return (<> {labelComponent} <Input  type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100"/> </>);
+        return (<> {labelComponent} <Input type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> </>);
 
       case "textAreaInput":
-        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'} rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100` }></textarea> </>);
+        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'} rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100`}></textarea> </>);
 
       case "select":
         if (field.enableSearch) {
@@ -1890,7 +1908,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
               disabled={!editFormData}
               isDynamic={true}
             />
-            {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4">
               <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)} </div>))} </div>
             </div>)}
           </>;
@@ -1899,7 +1917,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
           <option value="" className="dark:bg-gray-800">Select an option</option>
           {field.options?.map((option: any) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option.value} value={option.value}>{option.value}</option>))}
         </select>
-          {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4">
             <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)}</div>))} </div>
           </div>)} </>);
 
@@ -1986,34 +2004,34 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
         )}
 
         <div className="grid grid-cols-1 gap-6">
-            <div hidden={isPreview}>
-              {FormEdit()}
-              <div className="flex justify-end sticky bottom-2 z-30 space-x-2 mt-6">
-                <Button onClick={() => setImport(true)} disabled={!editFormData}>Import</Button>
-                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
+          <div hidden={isPreview}>
+            {FormEdit()}
+            <div className="flex justify-end sticky bottom-2 z-30 space-x-2 mt-6">
+              <Button onClick={() => setImport(true)} disabled={!editFormData}>Import</Button>
+              <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
+            </div>
+          </div>
+          <div hidden={!isPreview} className={enableSelfBg ? " rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
+            {FormPreview()}
+            <div className="flex justify-between flex-wrap gap-2 mt-6">
+              <Button onClick={saveSchema} disabled={!editFormData}>Save Schema</Button>
+              <div className="flex gap-2">
+                <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
+                {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}
               </div>
             </div>
-            <div hidden={!isPreview} className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
-              {FormPreview()}
-              <div className="flex justify-between flex-wrap gap-2 mt-6">
-                <Button onClick={saveSchema} disabled={!editFormData}>Save Schema</Button>
-                <div className="flex gap-2">
-                  <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
-                  <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button>
-                </div>
-              </div>
-            </div>
+          </div>
         </div>
       </DndContext>
     </div>
   ) : (
 
-    
-    <div className={enableSelfBg?" rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12":undefined}>
+
+    <div className={enableSelfBg ? " rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
         {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}
-        {saveDraftsLocalStoreName!=""? saveDrafts():null}
+        {saveDraftsLocalStoreName != "" ? saveDrafts() : null}
         {onFormSubmit && currentForm.formFieldJson.length > 0 && <Button className="m-4" onClick={handleSend}>Submit</Button>}
       </div>
     </div>

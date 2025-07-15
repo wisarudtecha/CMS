@@ -1,155 +1,103 @@
 [
     {
-        "caseType": "type1",
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
-        "formColSpan": 2,
-        "formFieldJson": [
-            {
-                "id": "field_1750653108822_g4sqsdk",
-                "label": "6. Customer Phone:",
-                "type": "textInput",
-                "value": "213",
-                "required": true,
-                "colSpan": 1,
-                "showLabel": true,
-                "isChild": false,
-                "placeholder": "Customer Phone Number"
-            },
-            {
-                "id": "d5b39d08-542c-45de-bf67-a514e0c407a6",
-                "label": "Photos:",
-                "type": "dndMultiImage",
-                "showLabel": true,
-                "value": [],
-                "required": false,
-                "colSpan": 2,
-                "isChild": false
-            },
-            {
-                "id": "field_1750653567887_o6cg8nk",
-                "label": "7. Service Details: *",
-                "type": "textAreaInput",
-                "showLabel": true,
-                "value": "",
-                "required": false,
-                "colSpan": 2,
-                "isChild": false
-            }
-        ]
-    },
-    {
-    "formId": "l7m8n9o0-p1q2-r3s4-t5u6-v7w8x9y0z1a2",
-    "formName": "New User Registration",
-    "formColSpan": 6,
-     "caseType": "type2",
+    "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+    "formName": "ท่อเสีย",
+    "formColSpan": 2,
+    "caseType":"ท่อ",
     "formFieldJson": [
-      {
-        "id": "o1p2q3r4-s5t6-u7v8-w9x0-y1z2a3b4c5d6",
-        "label": "Username",
-        "type": "textInput",
-        "value": "user_123",
-        "placeholder": "Choose a unique username",
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      },
-      {
-        "id": "p2q3r4s5-t6u7-v8w9-x0y1-z2a3b4c5d6e7",
-        "label": "Password",
-        "type": "passwordInput",
-        "value": "StrongP@ssw0rd!",
-        "placeholder": "Create a strong password",
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      },
-      {
-        "id": "q3r4s5t6-u7v8-w9x0-y1z2-a3b4c5d6e7f8",
-        "label": "Confirm Password",
-        "type": "passwordInput",
-        "value": "StrongP@ssw0rd!",
-        "placeholder": "Re-enter your password",
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      },
-      {
-        "id": "r4s5t6u7-v8w9-x0y1-z2a3-b4c5d6e7f8g9",
-        "label": "Date of Registration",
-        "type": "dateLocal",
-        "value": "2025-07-04T11:45",
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      }
+        {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "ห้อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ห้อง"
+        },
+        {
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "ระดับความเสียหาย",
+            "type": "Integer",
+            "showLabel": true,
+            "value": null,
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ระดับความเสียหาย"
+        }
     ]
-  },
+},
     {
-    "formId": "k6l7m8n9-o0p1-q2r3-s4t5-u6v7w8x9y0z1",
-    "formName": "Loan Application",
-    "formColSpan": 7,
-    "caseType": "type3",
+    "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+    "formName": "กล่อง",
+    "formColSpan": 2,
+    "caseType":"กล่องเสีย",
     "formFieldJson": [
-      {
-        "id": "e1f2g3h4-i5j6-k7l8-m9n0-o1p2q3r4s5t6",
-        "label": "Loan Amount Desired",
-        "type": "Integer",
-        "value": 25000,
-        "placeholder": "e.g., 10000",
-        "required": true,
-        "colSpan": 6,
-        "isChild": false
-      },
-      {
-        "id": "f2g3h4i5-j6k7-l8m9-n0o1-p2q3r4s5t6u7",
-        "label": "Loan Purpose",
-        "type": "select",
-        "value": "Home Improvement",
-        "options": ["Home Improvement", "Debt Consolidation", "Car Purchase", "Education", "Other"],
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      },
-      {
-        "id": "g3h4i5j6-k7l8-m9n0-o1p2-q3r4s5t6u7v8",
-        "label": "Employment Status",
-        "type": "radio",
-        "value": "Employed",
-        "options": ["Employed", "Self-Employed", "Unemployed", "Student", "Retired"],
-        "required": true,
-        "colSpan": 6,
-        "isChild": false
-      },
-      {
-        "id": "h4i5j6k7-l8m9-n0o1-p2q3-r4s5t6u7v8w9",
-        "label": "Annual Income",
-        "type": "Integer",
-        "value": 60000,
-        "placeholder": "Your annual gross income",
-        "required": true,
-        "colSpan": 6,
-        "isChild": false
-      },
-      {
-        "id": "i5j6k7l8-m9n0-o1p2-q3r4-s5t6u7v8w9x0",
-        "label": "Credit Score (Approx.)",
-        "type": "Integer",
-        "value": 750,
-        "placeholder": "e.g., 700",
-        "required": false,
-        "colSpan": 6,
-        "isChild": false
-      },
-      {
-        "id": "j6k7l8m9-n0o1-p2q3-r4s5-t6u7v8w9x0y1",
-        "label": "Upload ID Proof",
-        "type": "image",
-        "value": null,
-        "required": true,
-        "colSpan": 12,
-        "isChild": false
-      }
+        {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขกล่อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขกล่อง"
+        },
+        {
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": null,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
+        }
     ]
-  }
+},
+    {
+    "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+    "formName": "คอมใช้งานไม่ได้",
+    "formColSpan": 2,
+    "caseType":"คอมใช้งานไม่ได้",
+    "formFieldJson": [
+        {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขคอมพิมเตอร์",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขคอมพิมเตอร์"
+        },
+        {
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": null,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
+        },
+        {
+            "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
+            "label": "การใช้งานก่อนหน้านี้",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false,
+            "placeholder": "การใช้งานก่อนหน้านี้"
+        }
+    ]
+}
 ]

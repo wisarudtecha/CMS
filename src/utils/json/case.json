@@ -13,178 +13,156 @@
       "categoryColor": "bg-blue-500",
       "priorityColor": "border-l-red-500",
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Maintenance",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Email",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-06",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Service Location",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Toyota Camry 2020",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "456 Oak Ave, Somewhere, Canada",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Engine assembly",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "Normal",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center2",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Alice Smith",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Email",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "customer@example.com",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Toyota Camry 2020",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Engine assembly",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "ท่อเสีย",
+        "formColSpan": 2,
+        "caseType": "ท่อ",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "ห้อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "3B",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ห้อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the system's performance.",
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "ระดับความเสียหาย",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 7,
             "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Checked components.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ระดับความเสียหาย"
           }
         ]
       }
@@ -202,178 +180,156 @@
       "categoryColor": "bg-purple-500",
       "priorityColor": "border-l-blue-500",
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Installation",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "101 Elm Blvd, Gotham City, Germany",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Phone number",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-18",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Destination Point",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Honda Civic 2022",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "101 Elm Blvd, Gotham City, Germany",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Brake system",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "High",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center1",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Bob Johnson",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0898765432",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Phone Number",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0898765432",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Honda Civic 2022",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Brake system",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "ท่อเสีย",
+        "formColSpan": 2,
+        "caseType": "ท่อ",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "ห้อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "Server Room 2",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ห้อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the device's functionality.",
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "ระดับความเสียหาย",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 3,
             "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Calibrated sensors.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ระดับความเสียหาย"
           }
         ]
       }
@@ -391,178 +347,156 @@
       "categoryColor": "bg-green-500",
       "priorityColor": "border-l-orange-500",
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Repair",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "202 Maple Dr, Star City, Australia",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Live Chat",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-28",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Service Location",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Tesla Model 3 2023",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "202 Maple Dr, Star City, Australia",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Suspension module",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "Low",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center2",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Charlie Brown",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0809876543",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Chat",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Tesla Model 3 2023",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Suspension module",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "ท่อเสีย",
+        "formColSpan": 2,
+        "caseType": "ท่อ",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "ห้อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "Maintenance Closet",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ห้อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the software bugs.",
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "ระดับความเสียหาย",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 10,
             "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Calibrated sensors.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "ระดับความเสียหาย"
           }
         ]
       }
@@ -581,183 +515,163 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-red-500",
       "priority": 2,
-      "assignee": [{
-        "name": "Mobile Users",
-        "color": "bg-blue-500"
-      }],
+      "assignee": [
+        {
+          "name": "Mobile Users",
+          "color": "bg-blue-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Maintenance",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "123 Main St, Anytown, USA",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Email",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-07",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Destination Point",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Ford F-150 2019",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "123 Main St, Anytown, USA",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Brake system",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "High",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center1",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Eve Adams",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Email",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "customer@example.com",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Ford F-150 2019",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Brake system",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "กล่อง",
+        "formColSpan": 2,
+        "caseType": "กล่องเสีย",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขกล่อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "BX-7890",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขกล่อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the software bugs.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Tightened bolts.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 2,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           }
         ]
       }
@@ -774,183 +688,163 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-orange-500",
       "priority": 5,
-      "assignee": [{
-        "name": "Alex Rivera",
-        "color": "bg-gray-500"
-      }],
+      "assignee": [
+        {
+          "name": "Alex Rivera",
+          "color": "bg-gray-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Installation",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "202 Maple Dr, Star City, Australia",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Phone number",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-27",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Service Location",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Toyota Camry 2020",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "202 Maple Dr, Star City, Australia",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Electrical wiring",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "Normal",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center2",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "David Kim",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Phone Number",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Toyota Camry 2020",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Electrical wiring",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "กล่อง",
+        "formColSpan": 2,
+        "caseType": "กล่องเสีย",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขกล่อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "Storage Unit A",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขกล่อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the system's performance.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Calibrated sensors.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 5,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           }
         ]
       }
@@ -969,183 +863,163 @@
       "categoryColor": "bg-gray-500",
       "priority": 4,
       "priorityColor": "border-l-blue-500",
-      "assignee": [{
-        "name": "Emma Davis",
-        "color": "bg-blue-500"
-      }],
+      "assignee": [
+        {
+          "name": "Emma Davis",
+          "color": "bg-blue-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Repair",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "789 Pine Ln, Metropolis, UK",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Live Chat",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-16",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Destination Point",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Honda Civic 2022",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "789 Pine Ln, Metropolis, UK",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Electrical wiring",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "Normal",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center1",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Alice Smith",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Chat",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Honda Civic 2022",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Electrical wiring",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "กล่อง",
+        "formColSpan": 2,
+        "caseType": "กล่องเสีย",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขกล่อง",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "Data Hub 12",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขกล่อง"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the device's functionality.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
-            "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Checked components.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 1,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           }
         ]
       }
@@ -1161,183 +1035,174 @@
       "categoryColor": "bg-red-500",
       "priorityColor": "border-l-red-500",
       "priority": 2,
-      "assignee": [{
-        "name": "Tom Wilson",
-        "color": "bg-green-500"
-      }],
+      "assignee": [
+        {
+          "name": "Tom Wilson",
+          "color": "bg-green-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Installation",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "123 Main St, Anytown, USA",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Phone number",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-29",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Service Location",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Tesla Model 3 2023",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "123 Main St, Anytown, USA",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Assembly procedure",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "High",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center2",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Diana Prince",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Phone Number",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Tesla Model 3 2023",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Assembly procedure",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "คอมใช้งานไม่ได้",
+        "formColSpan": 2,
+        "caseType": "คอมใช้งานไม่ได้",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขคอมพิมเตอร์",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "PC-001",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขคอมพิมเตอร์"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the system's performance.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 8,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           },
           {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
+            "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
+            "label": "การใช้งานก่อนหน้านี้",
             "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Checked components.",
+            "showLabel": true,
+            "value": "User reported blue screen during startup.",
             "required": false,
             "colSpan": 2,
-            "isChild": false
+            "isChild": false,
+            "placeholder": "การใช้งานก่อนหน้านี้"
           }
         ]
       }
@@ -1355,183 +1220,174 @@
       "categoryColor": "bg-pink-500",
       "priorityColor": "border-l-orange-500",
       "priority": 5,
-      "assignee": [{
-        "name": "Lisa Park",
-        "color": "bg-blue-500"
-      }],
+      "assignee": [
+        {
+          "name": "Lisa Park",
+          "color": "bg-blue-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Maintenance",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "456 Oak Ave, Somewhere, Canada",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Email",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-26",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Service Location",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Ford F-150 2019",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "456 Oak Ave, Somewhere, Canada",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Suspension module",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "Low",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center2",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Alice Smith",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Email",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "customer@example.com",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Ford F-150 2019",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Suspension module",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "คอมใช้งานไม่ได้",
+        "formColSpan": 2,
+        "caseType": "คอมใช้งานไม่ได้",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขคอมพิมเตอร์",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "LAPTOP-DELL-5",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขคอมพิมเตอร์"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the system's performance.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 4,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           },
           {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
+            "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
+            "label": "การใช้งานก่อนหน้านี้",
             "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Tightened bolts.",
+            "showLabel": true,
+            "value": "Device was working fine, then suddenly shut down and won't turn on.",
             "required": false,
             "colSpan": 2,
-            "isChild": false
+            "isChild": false,
+            "placeholder": "การใช้งานก่อนหน้านี้"
           }
         ]
       }
@@ -1548,183 +1404,174 @@
       "categoryColor": "bg-blue-500",
       "priorityColor": "border-l-blue-500",
       "priority": 7,
-      "assignee": [{
-        "name": "David Kim",
-        "color": "bg-purple-500"
-      }],
+      "assignee": [
+        {
+          "name": "David Kim",
+          "color": "bg-purple-500"
+        }
+      ],
       "formData": {
-        "formId": "form_1750652352497",
-        "formName": "Create Cese",
+        "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
+        "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
           {
-            "id": "field_1750652553625_ualtx7l",
-            "label": "1. Service Type:",
-            "type": "select",
-            "value": "Maintenance",
-            "options": [
-              "Maintenance",
-              "Repair",
-              "Installation"
-            ],
-            "newOptionText": "",
-            "required": true,
+            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
+            "label": "Location Information",
+            "type": "textAreaInput",
+            "showLabel": true,
+            "value": "101 Elm Blvd, Gotham City, Germany",
+            "required": false,
             "colSpan": 1,
             "isChild": false
           },
           {
-            "id": "field_1750652560678_m7lgawm",
-            "label": "Contact Method: ",
-            "type": "select",
-            "value": "Email",
-            "options": [
-              "Phone number",
-              "Email",
-              "Live Chat"
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652761342_apexdkb",
-            "label": "2. Request Service Date:",
-            "type": "dateLocal",
-            "value": "2025-07-24",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750652788237_gnpi53t",
-            "label": "3. Service Location & Destination:",
+            "id": "b1971615-1f39-408b-8383-273b06a4241c",
+            "label": "Group",
             "type": "InputGroup",
+            "showLabel": false,
             "value": [
               {
-                "id": "field_1750652791262_wx4b337",
-                "label": "Radio Button Form",
-                "type": "radio",
-                "value": "Destination Point",
-                "options": [
-                  "Service Location",
-                  "Destination Point"
-                ],
-                "newOptionText": "",
+                "id": "2b48a529-87e2-41df-b87a-e25d37740c17",
+                "label": "Vehicle Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Toyota Camry 2020",
                 "required": false,
-                "colSpan": 2,
+                "colSpan": 1,
                 "isChild": true
               },
               {
-                "id": "field_1750652794413_1xuasx4",
-                "label": "Text Area Form",
-                "type": "textAreaInput",
-                "value": "101 Elm Blvd, Gotham City, Germany",
+                "id": "21640d36-2460-4e69-b7dd-ad8e91ad546a",
+                "label": "Assembly Information",
+                "type": "textInput",
+                "showLabel": true,
+                "value": "Electrical wiring",
                 "required": false,
-                "colSpan": 2,
-                "isChild": true,
-                "placeholder": "Address"
+                "colSpan": 1,
+                "isChild": true
               }
             ],
             "required": false,
             "colSpan": 1,
-            "isChild": false
+            "isChild": false,
+            "GroupColSpan": 1
           },
           {
-            "id": "field_1750652936086_kr5etkw",
-            "label": "Priority Level:",
-            "type": "radio",
-            "value": "High",
-            "options": [
-              "Low",
-              "Normal",
-              "High"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653047006_ypfyff5",
-            "label": "4. Service Center:",
-            "type": "select",
-            "value": "Service Center1",
-            "options": [
-              "Service Center1",
-              "Service Center2"
-            ],
-            "newOptionText": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
-          {
-            "id": "field_1750653200552_jk2s6jm",
-            "label": "5. Customer Name:",
+            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
+            "label": "Customer Name",
             "type": "textInput",
+            "showLabel": true,
             "value": "Eve Adams",
             "required": true,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Customer full name"
+            "colSpan": 2,
+            "isChild": false
           },
           {
-            "id": "field_1750653108822_g4sqsdk",
-            "label": "6. Customer Phone:",
-            "type": "textInput",
-            "value": "0801234567",
+            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
+            "label": "Contact Method",
+            "type": "dynamicField",
+            "showLabel": true,
+            "value": "Email",
+            "enableSearch": false,
+            "options": [
+              {
+                "value": "Phone Number",
+                "form": [
+                  {
+                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
+                    "label": "Phone Number",
+                    "type": "textInput",
+                    "showLabel": true,
+                    "value": "0801234567",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Phone Number"
+                  }
+                ]
+              },
+              {
+                "value": "Chat",
+                "form": []
+              },
+              {
+                "value": "Iot Alert",
+                "form": []
+              },
+              {
+                "value": "Email",
+                "form": [
+                  {
+                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
+                    "label": "Email",
+                    "type": "emailInput",
+                    "showLabel": true,
+                    "value": "customer@example.com",
+                    "required": true,
+                    "colSpan": 1,
+                    "isChild": true,
+                    "placeholder": "Enter Email"
+                  }
+                ]
+              }
+            ],
+            "newOptionText": "",
             "required": true,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "placeholder": "Customer Phone Number"
+            "DynamicFieldColSpan": 1
           },
           {
-            "id": "field_1750653455160_0a66gqd",
-            "label": "8. Vehicle Information:",
-            "type": "textInput",
-            "value": "Toyota Camry 2020",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Vehicle Detail"
-          },
-          {
-            "id": "field_1750653455415_9mh0t5b",
-            "label": "9. Assembly Information:",
-            "type": "textInput",
-            "value": "Electrical wiring",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false,
-            "placeholder": "Assembly Detail"
-          },
-          {
-            "id": "field_1750653566064_s5uoack",
-            "label": "Photos:",
-            "type": "multiImage",
+            "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
+            "label": "Attachments",
+            "type": "dndMultiImage",
+            "showLabel": true,
             "value": [],
             "required": false,
             "colSpan": 2,
             "isChild": false
+          }
+        ]
+      },
+      "caseType": {
+        "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
+        "formName": "คอมใช้งานไม่ได้",
+        "formColSpan": 2,
+        "caseType": "คอมใช้งานไม่ได้",
+        "formFieldJson": [
+          {
+            "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
+            "label": "หมายเลขคอมพิมเตอร์",
+            "type": "textInput",
+            "showLabel": true,
+            "value": "WORKSTATION-B2",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "หมายเลขคอมพิมเตอร์"
           },
           {
-            "id": "field_1750653567887_o6cg8nk",
-            "label": "7. Service Details: *",
-            "type": "textAreaInput",
-            "value": "Customer reported an issue with the software bugs.",
-            "required": false,
-            "colSpan": 2,
-            "isChild": false
+            "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
+            "label": "อาการเสียที่พบ",
+            "type": "Integer",
+            "showLabel": true,
+            "value": 6,
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "อาการเสียที่พบ"
           },
           {
-            "id": "field_1750653568456_po50lv0",
-            "label": "10. Assembly Procedure:",
+            "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
+            "label": "การใช้งานก่อนหน้านี้",
             "type": "textAreaInput",
-            "value": "Step-by-step assembly procedure performed: Calibrated sensors.",
+            "showLabel": true,
+            "value": "Applications freezing frequently, especially during video editing.",
             "required": false,
             "colSpan": 2,
-            "isChild": false
+            "isChild": false,
+            "placeholder": "การใช้งานก่อนหน้านี้"
           }
         ]
       }
