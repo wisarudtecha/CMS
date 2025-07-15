@@ -975,7 +975,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   return (
     <>
       <div
-        className="flex bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700"
+        className="xl:flex bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700"
       >
         {/* Hidden file input */}
         <input
@@ -988,7 +988,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
         {/* Toolbar */}
         <div
-          className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl"
+          className="xl:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl rounded-r-2xl xl:rounded-r-none"
         >
           {/* Workflow Metadata */}
           <div className="mb-4">
@@ -1213,7 +1213,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
         {/* Canvas */}
         <div
-          className="flex-1 relative overflow-x-auto overflow-y-auto"
+          className="xl:flex-1 relative xl:overflow-x-auto xl:overflow-y-auto"
         >
           <div
             ref={canvasRef}
@@ -1227,7 +1227,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           >
             <svg
               ref={svgRef}
-              className="absolute inset-0 pointer-events-none"
+              className="xl:absolute inset-0 pointer-events-none"
               style={{ width: '2000px', height: '2000px', zIndex: 1 }}
             >
               {/* Grid Pattern */}
@@ -1439,7 +1439,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
         {/* Configuration Panel */}
         <div
-          className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl"
+          className="xl:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl rounded-l-2xl xl:rounded-l-none"
         >
           <div className="flex items-center gap-2 mb-2">
             <PencilIcon className="w-5 h-5 text-lg font-semibold text-gray-700 dark:text-gray-200" />
