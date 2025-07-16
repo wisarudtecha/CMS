@@ -9,6 +9,18 @@ export const formatDate = (dateString: string) => {
   });
 };
 
+export const formatLastLogin = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return `${Math.floor(diffDays / 30)} months ago`;
+};
+
 export const getUniqueValues = <T>(
   array: T[], 
   key: keyof T
@@ -37,3 +49,5 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
     timeout = setTimeout(() => func(...args), wait);
   };
 };
+
+

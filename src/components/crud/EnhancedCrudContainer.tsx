@@ -698,11 +698,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           // ""
           <div
             className="
-              fixed
-              bottom-12
-              right-12
-              xl:bottom-6
-              xl:right-3
               bg-gray-200
               dark:bg-gray-700
               text-gray-700
@@ -710,18 +705,25 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               border-gray-300
               dark:border-gray-600
               border
+              fixed
+              bottom-12
+              xl:bottom-6
+              right-12
+              xl:right-3
+              font-mono
+              h-9
+              active:h-auto
+              hover:h-auto
+              w-9
+              active:w-auto
+              hover:w-auto
+              max-w-sm
+              overflow-hidden
               p-2
               rounded-lg
               shadow-lg
-              max-w-sm
               text-xs
-              font-mono
-              z-40
-              h-9
-              hover:h-auto
-              w-9
-              hover:w-auto
-              overflow-hidden
+              z-99999
             "
           >
             <InfoIcon className="w-5 h-5" />
@@ -731,7 +733,9 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             <div>Selected Items: {getSelectedCount()}</div>
             <div>Display Mode: {displayMode}</div>
             <div>Actions Count: {enhancedActions?.length || 0}</div>
-            {/* <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div> */}
+
+            {/*
+            <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div>
             <div className="mt-2 pt-2 border-t border-gray-700 dark:border-gray-200">
               <div className="font-bold">Confirm Dialog</div>
               <div>Is Open: {confirmDialog.isOpen ? "YES" : "NO"}</div>
@@ -739,6 +743,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               <div>Entity: {confirmDialog.entityName}</div>
               <div>Has onConfirm: {confirmDialog.onConfirm ? "YES" : "NO"}</div>
             </div>
+            */}
           </div>
         )}
       </div>

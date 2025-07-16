@@ -9,7 +9,11 @@ export interface BulkAction<T> {
   key: string;
   label: string;
   icon?: React.ComponentType<unknown>;
-  variant: "primary" | "warning" | "error";
+  // variant: "primary" | "warning" | "error";
+  variant: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
+    | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
+    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
+    | "outline-no-transparent";
   onClick: (selectedItems: T[]) => Promise<void>;
   condition?: (selectedItems: T[]) => boolean;
   confirmationRequired?: boolean;

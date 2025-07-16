@@ -56,6 +56,9 @@ import WorkflowEditorPage from "./pages/Workflow/Editor";
 // Workflow (Archived Version) Imports
 import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 
+// User Management Imports
+import UserManagementPage from "./pages/Admin/UserManagement";
+
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
@@ -116,6 +119,9 @@ export default function App() {
             <Route path="/workflow/editor/v2/:id/edit" element={<WorkflowEditorPage />} />
             {/* Workflow Builder (Archived Version: v0.1.0) */}
             <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
+
+            {/* User Management */}
+            <Route path="/users" element={<UserManagementPage />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
