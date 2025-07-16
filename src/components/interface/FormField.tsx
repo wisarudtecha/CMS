@@ -51,3 +51,10 @@ export interface FormManager extends FormField {
 export interface formType extends FormField {
   caseType:string
 }
+
+export interface CustomerData {
+  customerName: string;
+  contractMethod: "Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
+  phoneNumber?: number;
+  email?: string; 
+}

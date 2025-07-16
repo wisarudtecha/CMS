@@ -3,7 +3,7 @@
     {
       "id": 1,
       "createBy": "Phanuphong",
-      "title": "003 - แจ้งขอความช่วยเหลือซ้อมคอมพิวเตอร์",
+      "title": "003 - \u0e41\u0e08\u0e49\u0e07\u0e02\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e22\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e0b\u0e49\u0e2d\u0e21\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e27\u0e40\u0e15\u0e2d\u0e23\u0e4c",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "15 minutes ago",
       "comments": 3,
@@ -60,69 +60,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Alice Smith",
+            "value": "2025-07-19T23:43",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Email",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "customer@example.com",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -138,38 +83,44 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "ท่อเสีย",
+        "formName": "\u0e17\u0e48\u0e2d\u0e40\u0e2a\u0e35\u0e22",
         "formColSpan": 2,
-        "caseType": "ท่อ",
+        "caseType": "\u0e17\u0e48\u0e2d",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "ห้อง",
+            "label": "\u0e2b\u0e49\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "3B",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ห้อง"
+            "placeholder": "\u0e2b\u0e49\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "ระดับความเสียหาย",
+            "label": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22",
             "type": "Integer",
             "showLabel": true,
             "value": 7,
             "required": false,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ระดับความเสียหาย"
+            "placeholder": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "John Smith",
+        "contractMethod": "Phone Number",
+        "phoneNumber": 7167742083
+      },
+      "serviceCenter": "Bankkok"
     },
     {
       "id": 2,
-      "title": "008 - แอร์ทำงานผิดปกติ",
+      "title": "008 - \u0e41\u0e2d\u0e23\u0e4c\u0e17\u0e33\u0e07\u0e32\u0e19\u0e1c\u0e34\u0e14\u0e1b\u0e01\u0e15\u0e34",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "5 hours ago",
       "comments": 1,
@@ -227,69 +178,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Bob Johnson",
+            "value": "2025-08-08T08:57",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Phone Number",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0898765432",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -305,38 +201,44 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "ท่อเสีย",
+        "formName": "\u0e17\u0e48\u0e2d\u0e40\u0e2a\u0e35\u0e22",
         "formColSpan": 2,
-        "caseType": "ท่อ",
+        "caseType": "\u0e17\u0e48\u0e2d",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "ห้อง",
+            "label": "\u0e2b\u0e49\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "Server Room 2",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ห้อง"
+            "placeholder": "\u0e2b\u0e49\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "ระดับความเสียหาย",
+            "label": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22",
             "type": "Integer",
             "showLabel": true,
             "value": 3,
             "required": false,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ระดับความเสียหาย"
+            "placeholder": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Elina Opasa",
+        "contractMethod": "Phone Number",
+        "phoneNumber": 2435133780
+      },
+      "serviceCenter": "Phisanulok"
     },
     {
       "id": 3,
-      "title": "705 - กล้องไม่ทำงาน",
+      "title": "705 - \u0e01\u0e25\u0e49\u0e2d\u0e07\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "1 hours ago",
       "comments": 5,
@@ -394,69 +296,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Charlie Brown",
+            "value": "2025-08-01T06:03",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Chat",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -472,40 +319,45 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "ท่อเสีย",
+        "formName": "\u0e17\u0e48\u0e2d\u0e40\u0e2a\u0e35\u0e22",
         "formColSpan": 2,
-        "caseType": "ท่อ",
+        "caseType": "\u0e17\u0e48\u0e2d",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "ห้อง",
+            "label": "\u0e2b\u0e49\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "Maintenance Closet",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ห้อง"
+            "placeholder": "\u0e2b\u0e49\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "ระดับความเสียหาย",
+            "label": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22",
             "type": "Integer",
             "showLabel": true,
             "value": 10,
             "required": false,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "ระดับความเสียหาย"
+            "placeholder": "\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e40\u0e2a\u0e35\u0e22\u0e2b\u0e32\u0e22"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Artra Yui",
+        "contractMethod": "Chat"
+      },
+      "serviceCenter": "Chiang mai"
     }
   ],
   "inProgress": [
     {
       "id": 4,
-      "title": "การแจ้งเตือนของระบบ iot ไม่ทำงาน",
+      "title": "\u0e01\u0e32\u0e23\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a iot \u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Today",
       "comments": 8,
@@ -569,69 +421,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Eve Adams",
+            "value": "2025-08-09T20:37",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Email",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "customer@example.com",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -647,38 +444,43 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "กล่อง",
+        "formName": "\u0e01\u0e25\u0e48\u0e2d\u0e07",
         "formColSpan": 2,
-        "caseType": "กล่องเสีย",
+        "caseType": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e40\u0e2a\u0e35\u0e22",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขกล่อง",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "BX-7890",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขกล่อง"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 2,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "John Smith",
+        "contractMethod": "Chat"
+      },
+      "serviceCenter": "Bankkok"
     },
     {
       "id": 5,
-      "title": "ไฟชั้น 2 ไม่ทำงาน",
+      "title": "\u0e44\u0e1f\u0e0a\u0e31\u0e49\u0e19 2 \u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Feb 1, 2024",
       "comments": 12,
@@ -742,69 +544,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "David Kim",
+            "value": "2025-08-13T01:25",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Phone Number",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -820,40 +567,45 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "กล่อง",
+        "formName": "\u0e01\u0e25\u0e48\u0e2d\u0e07",
         "formColSpan": 2,
-        "caseType": "กล่องเสีย",
+        "caseType": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e40\u0e2a\u0e35\u0e22",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขกล่อง",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "Storage Unit A",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขกล่อง"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 5,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Elina Opasa",
+        "contractMethod": "Iot Alert"
+      },
+      "serviceCenter": "Phisanulok"
     }
   ],
   "pendingReview": [
     {
       "id": 6,
-      "title": "การแจ้งทางอีเมลของระบบยืนยันตัวตนไม่ทำงาน",
+      "title": "\u0e01\u0e32\u0e23\u0e41\u0e08\u0e49\u0e07\u0e17\u0e32\u0e07\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e15\u0e31\u0e27\u0e15\u0e19\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Jan 25, 2024",
       "comments": 4,
@@ -917,69 +669,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Alice Smith",
+            "value": "2025-08-03T12:40",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Chat",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -995,38 +692,43 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "กล่อง",
+        "formName": "\u0e01\u0e25\u0e48\u0e2d\u0e07",
         "formColSpan": 2,
-        "caseType": "กล่องเสีย",
+        "caseType": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e40\u0e2a\u0e35\u0e22",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขกล่อง",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07",
             "type": "textInput",
             "showLabel": true,
             "value": "Data Hub 12",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขกล่อง"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e01\u0e25\u0e48\u0e2d\u0e07"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 1,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Artra Yui",
+        "contractMethod": "Chat"
+      },
+      "serviceCenter": "Chiang mai"
     },
     {
       "id": 7,
-      "title": "ระบบความปลอดภัยของเครือข่ายไม่ทำงาน",
+      "title": "\u0e23\u0e30\u0e1a\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e1b\u0e25\u0e2d\u0e14\u0e20\u0e31\u0e22\u0e02\u0e2d\u0e07\u0e40\u0e04\u0e23\u0e37\u0e2d\u0e02\u0e48\u0e32\u0e22\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Tomorrow",
       "comments": 2,
@@ -1089,69 +791,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Diana Prince",
+            "value": "2025-07-23T23:01",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Phone Number",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -1167,51 +814,57 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "คอมใช้งานไม่ได้",
+        "formName": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formColSpan": 2,
-        "caseType": "คอมใช้งานไม่ได้",
+        "caseType": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขคอมพิมเตอร์",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c",
             "type": "textInput",
             "showLabel": true,
             "value": "PC-001",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขคอมพิมเตอร์"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 8,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           },
           {
             "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
-            "label": "การใช้งานก่อนหน้านี้",
+            "label": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49",
             "type": "textAreaInput",
             "showLabel": true,
             "value": "User reported blue screen during startup.",
             "required": false,
             "colSpan": 2,
             "isChild": false,
-            "placeholder": "การใช้งานก่อนหน้านี้"
+            "placeholder": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "John Smith",
+        "contractMethod": "Phone Number",
+        "phoneNumber": 5272119493
+      },
+      "serviceCenter": "Bankkok"
     }
   ],
   "resolved": [
     {
       "id": 8,
-      "title": "Server iot ล้ม",
+      "title": "Server iot \u0e25\u0e49\u0e21",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Jan 10, 2024",
       "comments": 15,
@@ -1274,69 +927,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Alice Smith",
+            "value": "2025-07-06T04:32",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Email",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "customer@example.com",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -1352,49 +950,55 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "คอมใช้งานไม่ได้",
+        "formName": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formColSpan": 2,
-        "caseType": "คอมใช้งานไม่ได้",
+        "caseType": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขคอมพิมเตอร์",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c",
             "type": "textInput",
             "showLabel": true,
             "value": "LAPTOP-DELL-5",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขคอมพิมเตอร์"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 4,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           },
           {
             "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
-            "label": "การใช้งานก่อนหน้านี้",
+            "label": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49",
             "type": "textAreaInput",
             "showLabel": true,
             "value": "Device was working fine, then suddenly shut down and won't turn on.",
             "required": false,
             "colSpan": 2,
             "isChild": false,
-            "placeholder": "การใช้งานก่อนหน้านี้"
+            "placeholder": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Elina Opasa",
+        "contractMethod": "Phone Number",
+        "phoneNumber": 5797620244
+      },
+      "serviceCenter": "Phisanulok"
     },
     {
       "id": 9,
-      "title": "ไม่ได้รับข้อมูลจากเซ็นเซอร์",
+      "title": "\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e23\u0e31\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e08\u0e32\u0e01\u0e40\u0e0b\u0e47\u0e19\u0e40\u0e0b\u0e2d\u0e23\u0e4c",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "date": "Jan 8, 2024",
       "comments": 6,
@@ -1458,69 +1062,14 @@
             "GroupColSpan": 1
           },
           {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
-            "value": "Eve Adams",
+            "value": "2025-08-02T18:38",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-          },
-          {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "Email",
-            "enableSearch": false,
-            "options": [
-              {
-                "value": "Phone Number",
-                "form": [
-                  {
-                    "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                    "label": "Phone Number",
-                    "type": "textInput",
-                    "showLabel": true,
-                    "value": "0801234567",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Phone Number"
-                  }
-                ]
-              },
-              {
-                "value": "Chat",
-                "form": []
-              },
-              {
-                "value": "Iot Alert",
-                "form": []
-              },
-              {
-                "value": "Email",
-                "form": [
-                  {
-                    "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                    "label": "Email",
-                    "type": "emailInput",
-                    "showLabel": true,
-                    "value": "customer@example.com",
-                    "required": true,
-                    "colSpan": 1,
-                    "isChild": true,
-                    "placeholder": "Enter Email"
-                  }
-                ]
-              }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -1536,45 +1085,51 @@
       },
       "caseType": {
         "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
-        "formName": "คอมใช้งานไม่ได้",
+        "formName": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formColSpan": 2,
-        "caseType": "คอมใช้งานไม่ได้",
+        "caseType": "\u0e04\u0e2d\u0e21\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
         "formFieldJson": [
           {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
-            "label": "หมายเลขคอมพิมเตอร์",
+            "label": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c",
             "type": "textInput",
             "showLabel": true,
             "value": "WORKSTATION-B2",
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "หมายเลขคอมพิมเตอร์"
+            "placeholder": "\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e25\u0e02\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e40\u0e15\u0e2d\u0e23\u0e4c"
           },
           {
             "id": "ce657fbe-03ab-463e-8cd5-bb361047394e",
-            "label": "อาการเสียที่พบ",
+            "label": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a",
             "type": "Integer",
             "showLabel": true,
             "value": 6,
             "required": true,
             "colSpan": 1,
             "isChild": false,
-            "placeholder": "อาการเสียที่พบ"
+            "placeholder": "\u0e2d\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e35\u0e22\u0e17\u0e35\u0e48\u0e1e\u0e1a"
           },
           {
             "id": "2f222ab1-2f07-450c-ac95-2e71865bcab2",
-            "label": "การใช้งานก่อนหน้านี้",
+            "label": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49",
             "type": "textAreaInput",
             "showLabel": true,
             "value": "Applications freezing frequently, especially during video editing.",
             "required": false,
             "colSpan": 2,
             "isChild": false,
-            "placeholder": "การใช้งานก่อนหน้านี้"
+            "placeholder": "\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e35\u0e49"
           }
         ]
-      }
+      },
+      "customerData": {
+        "customerName": "Artra Yui",
+        "contractMethod": "Email",
+        "email": "artrayui@example.com"
+      },
+      "serviceCenter": "Chiang mai"
     }
   ]
 }

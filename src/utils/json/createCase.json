@@ -46,69 +46,14 @@
             "GroupColSpan": 1
         },
         {
-            "id": "3e752d8a-9816-4e60-b7f6-f529cbf218ae",
-            "label": "Customer Name",
-            "type": "textInput",
+            "id": "0779b27a-083d-4d58-8f7f-655814438442",
+            "label": "Request Service Date",
+            "type": "dateLocal",
             "showLabel": true,
             "value": "",
             "required": true,
-            "colSpan": 2,
+            "colSpan": 1,
             "isChild": false
-        },
-        {
-            "id": "fce9e6d0-dbfa-4117-bc15-93dc62f7f431",
-            "label": "Contact Method",
-            "type": "dynamicField",
-            "showLabel": true,
-            "value": "",
-            "enableSearch": false,
-            "options": [
-                {
-                    "value": "Phone Number",
-                    "form": [
-                        {
-                            "id": "ca4ddddb-3b58-46eb-b43e-ff4d44799c0e",
-                            "label": "Phone Number",
-                            "type": "textInput",
-                            "showLabel": true,
-                            "value": "",
-                            "required": true,
-                            "colSpan": 1,
-                            "isChild": true,
-                            "placeholder": "Enter Phone Number"
-                        }
-                    ]
-                },
-                {
-                    "value": "Chat",
-                    "form": []
-                },
-                {
-                    "value": "Iot Alert",
-                    "form": []
-                },
-                {
-                    "value": "Email",
-                    "form": [
-                        {
-                            "id": "60abd39b-8d8b-4736-b3ac-ccf6afb3959c",
-                            "label": "Email",
-                            "type": "emailInput",
-                            "showLabel": true,
-                            "value": "",
-                            "required": true,
-                            "colSpan": 1,
-                            "isChild": true,
-                            "placeholder": "Enter Email"
-                        }
-                    ]
-                }
-            ],
-            "newOptionText": "",
-            "required": true,
-            "colSpan": 2,
-            "isChild": false,
-            "DynamicFieldColSpan": 1
         },
         {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
