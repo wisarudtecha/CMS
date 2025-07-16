@@ -591,7 +591,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     onChange={handleCaseTypeChange}
                     placeholder={"Select a FormType"}
                     disabled={!editFormData}
-                    className="2xsm:mx-3"
+                    className=" 2xsm:mx-3 mb-2"
                 />
 
             </div>
@@ -705,7 +705,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         phoneNumber: undefined,
         email: undefined,
     });
-    
+
     const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     // Effect to initialize and reset form states when caseData changes
@@ -718,14 +718,16 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setServiceCenterData(caseData.serviceCenter || "");
             setCustomerData(caseData.customerData || { customerName: "", contractMethod: "" });
         }
+        
     }, [caseData]);
-    
+
     const selectedCaseTypeForm = useMemo(() => {
-        if (caseTypeData?.caseType === caseType) { 
+        if (caseTypeData?.caseType === caseType) {
             return caseTypeData;
         }
         return caseTypeMock.find(form => form.caseType === caseType);
-    }, [caseType, caseData,caseTypeData]);
+    }, [caseType, displayedCaseData]);
+
 
     // Handlers
     const handleSelectOfficer = useCallback((selectedOfficer: Officer) => {
@@ -747,7 +749,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         const updatedCaseData = {
             ...(displayedCaseData as CaseItem),
             formData: formData!,
-            caseType: caseTypeData! ,
+            caseType: caseTypeData!,
             customerData: customerData,
             serviceCenter: serviceCenterData,
         };
@@ -756,7 +758,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [isValueFill, formData, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
 
     const handleEditClick = useCallback(() => {
-        // If cancelling edit, reset form states to match the displayed data
         if (editFormData && displayedCaseData) {
             setCaseType(displayedCaseData.caseType?.caseType || '');
             setCaseTypeData(displayedCaseData.caseType);
@@ -792,7 +793,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             }
             return prevData;
         });
-        
+
     }, [caseType]);
     const handleSetServiceCenter = useCallback((data: string) => setServiceCenterData(data), []);
     const handleCustomerDataChange = useCallback((data: CustomerData) => setCustomerData(data), []);
@@ -801,7 +802,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         <div className="flex flex-col h-screen">
             <PageMeta title="Case Detail" description="Case Detail Page" />
             {showToast && <Toast message="Please enter all required data." type="error" duration={3000} onClose={() => setShowToast(false)} />}
-            
+
             <div className="flex-shrink-0">
                 <PageBreadcrumb pageTitle="Create Case" />
                 <div className="px-4 sm:px-6">
@@ -898,12 +899,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                         />
 
                                         <div className="flex justify-end mb-3 mr-3">
-                                            {caseData?<Button variant="success" onClick={handleSaveChanges}>
+                                            {caseData ? <Button variant="success" onClick={handleSaveChanges}>
                                                 Save Changes
-                                            </Button>:<Button variant="success" onClick={undefined}>
+                                            </Button> : <Button variant="success" onClick={undefined}>
                                                 Submit
                                             </Button>}
-                                            
+
                                         </div>
                                     </>
                                 ) : (
