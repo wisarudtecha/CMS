@@ -718,7 +718,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setServiceCenterData(caseData.serviceCenter || "");
             setCustomerData(caseData.customerData || { customerName: "", contractMethod: "" });
         }
-        
+
     }, [caseData]);
 
     const selectedCaseTypeForm = useMemo(() => {
@@ -851,7 +851,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                 {officer.name}
                                                 <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
                                                 <Button
-                                                    onClick={() => setAssignedOfficers(prev => prev.filter(o => o.id !== officer.id))}
+                                                    onClick={() => {
+
+                                                        setAssignedOfficers(prev => prev.filter(o => o.id !== officer.id));
+                                                        if (showOfficersData && showOfficersData.id === officer.id) {
+                                                            setShowOFFicersData(null)
+                                                        }
+                                                    }}
                                                     className="ml-2"
                                                     title="Remove"
                                                     variant="outline-no-transparent"
