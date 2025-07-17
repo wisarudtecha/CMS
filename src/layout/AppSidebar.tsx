@@ -21,6 +21,7 @@ import {
   TableIcon,
   TaskIcon,
   UserCircleIcon,
+  LockIcon
 } from "../icons";
 import {
   BoxIcon,
@@ -184,6 +185,16 @@ const AppSidebar: React.FC = () => {
         { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", pro: false },
         { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", pro: false },
         { name: "Authenticate Inspector", path: "/authenticate", pro: false },
+      ],
+    },
+    {
+      icon: <LockIcon />,
+      name: "Security & Error",
+      subItems: [
+        { name: "Error Boundaries", path: "/security/error-boundaries", pro: false },
+        { name: "Loading & Skeletons", path: "/security/loading-system", pro: false },
+        { name: "Security Alert", path: "/security/security-alerts", pro: false },
+        { name: "Offline Handling", path: "/security/offline-state", pro: false },
       ],
     },
   ], [t]);

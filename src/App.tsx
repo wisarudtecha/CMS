@@ -59,6 +59,12 @@ import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 // User Management Imports
 import UserManagementPage from "./pages/Admin/UserManagement";
 
+// Security & Error Handling Imports
+import ErrorBoundary from "./components/security/ErrorBoundary";
+import LoadingSystem from "./components/ui/loading/LoadingSystem";
+import SecurityAlerts from "./components/security/SecurityAlerts";
+import OfflineState from "./components/offline/OfflineManager";
+
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
@@ -122,6 +128,12 @@ export default function App() {
 
             {/* User Management */}
             <Route path="/users" element={<UserManagementPage />} />
+
+            {}{/* Security & Error Handling */}
+            <Route path="/security/error-boundaries" element={<ErrorBoundary />} />
+            <Route path="/security/loading-system" element={<LoadingSystem />} />
+            <Route path="/security/security-alerts" element={<SecurityAlerts />} />
+            <Route path="/security/offline-state" element={<OfflineState />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
