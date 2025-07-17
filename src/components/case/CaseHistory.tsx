@@ -982,13 +982,13 @@ const CaseHistoryComponent: React.FC = () => {
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            list: "/workflows",
-            create: "/workflows",
-            read: "/workflows/:id",
-            update: "/workflows/:id",
-            delete: "/workflows/:id",
-            bulkDelete: "/workflows/bulk",
-            export: "/workflows/export"
+            list: "/cases",
+            create: "/cases",
+            read: "/cases/:id",
+            update: "/cases/:id",
+            delete: "/cases/:id",
+            bulkDelete: "/cases/bulk",
+            export: "/cases/export"
           }
         }}
         enableDebug={true} // Enable debug mode to troubleshoot
