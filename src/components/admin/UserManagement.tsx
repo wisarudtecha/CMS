@@ -1,39 +1,30 @@
 // /src/components/admin/UserManagement.tsx
-import
-  React,
-  {
-    // useState,
-    useMemo,
-    // useCallback 
-  }
-from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import {
   CheckLineIcon,
+  ChevronUpIcon,
   CloseIcon,
-  TimeIcon
+  TimeIcon,
+  UserIcon
 } from "@/icons";
 import {
-  // formatDate,
   formatLastLogin 
 } from "@/utils/crud";
 import { PreviewConfig } from "@/types/enhanced-crud"
 import {
   UserEntity,
   Role,
-  // TemporaryRole,
-  // UserMetrics,
-  // FilterConfig,
   UserMeta,
-  UserAddress
+  UserAddress,
+  UserMetrics
 } from "@/types/user";
 // import Badge from "@/components/ui/badge/Badge";
 // import Button from "@/components/ui/button/Button";
 import roleList from "@/mocks/roleList.json";
-// import userList from "@/mocks/userList.json";
 import { mapUsersWithRoles } from "@/utils/mapUsersWithRoles";
-// import UserMetricsCard from "@/components/admin/UserMetricsCard";
+import UserMetricsCard from "@/components/admin/UserMetricsCard";
 import UserMetaCard from "@/components/UserProfile/UserMetaCard";
 import UserInfoCard from "@/components/UserProfile/UserInfoCard";
 import UserAddressCard from "@/components/UserProfile/UserAddressCard";
@@ -70,14 +61,13 @@ const UserManagementComponent: React.FC = () => {
         label: "User",
         sortable: true,
         render: (userItem: UserEntity) => (
-          <div className="flex items-center gap-3">
-            {/* <FolderIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" /> */}
+          <div className={`flex items-center gap-3 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
             {userItem.meta?.avatar ? (
               <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
                 <img src={userItem.meta?.avatar} alt="user" />
               </div>
             ) : (
-              <div className="w-5 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 {userItem.firstName[0]}{userItem.lastName[0]}
               </div>
             )}
@@ -102,7 +92,9 @@ const UserManagementComponent: React.FC = () => {
             // <Badge className={`${roleConfig?.color} text-white`}>
             //   {roleConfig?.name || "Guest"}
             // </Badge>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white`}>
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white ${userItem.status === "suspended" ? "opacity-50" : ""}`}
+            >
               {roleConfig?.name || "Guest"}
             </span>
           );
@@ -113,7 +105,7 @@ const UserManagementComponent: React.FC = () => {
         label: "Department",
         sortable: true,
         render: (userItem: UserEntity) => {
-          return userItem.department;
+          return (<span className={`${userItem.status === "suspended" ? "opacity-50" : ""}`}>{userItem.department}</span>);
         }
       },
       {
@@ -121,7 +113,7 @@ const UserManagementComponent: React.FC = () => {
         label: "Job Title",
         sortable: true,
         render: (userItem: UserEntity) => {
-          return userItem.jobTitle;
+          return (<span className={`${userItem.status === "suspended" ? "opacity-50" : ""}`}>{userItem.jobTitle}</span>);
         }
       },
       {
@@ -136,7 +128,7 @@ const UserManagementComponent: React.FC = () => {
           }[userItem.status];
           const Icon = statusConfig.icon;
           return (
-            <div className={`flex items-center gap-1 ${statusConfig.color}`}>
+            <div className={`flex items-center gap-1 ${statusConfig.color} ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
               <Icon className="w-4 h-4" />
               <span className="text-sm font-medium capitalize">{userItem.status}</span>
             </div>
@@ -148,38 +140,10 @@ const UserManagementComponent: React.FC = () => {
         label: "Last Login",
         sortable: true,
         render: (userItem: UserEntity) => (
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className={`text-sm text-gray-500 dark:text-gray-400 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
             {formatLastLogin(userItem.lastLogin)}
           </span>
         )
-      }
-    ],
-    filters: [
-      {
-        key: "role",
-        label: "Role",
-        type: "select" as const,
-        options: roles.map(role => ({ value: role.name, label: role.name }))
-      },
-      {
-        key: "department",
-        label: "Department",
-        type: "select" as const,
-        options: [
-          { value: "IT", label: "IT" },
-          { value: "Support", label: "Support" },
-          { value: "Operations", label: "Operations" }
-        ]
-      },
-      {
-        key: "status",
-        label: "Status",
-        type: "select" as const,
-        options: [
-          { value: "active", label: "Active" },
-          { value: "inactive", label: "Inactive" },
-          { value: "suspended", label: "Suspended" }
-        ]
       }
     ],
     actions: [
@@ -222,14 +186,16 @@ const UserManagementComponent: React.FC = () => {
         key: "profile",
         label: "Profile",
         // icon: InfoIcon,
-        render: (userItem: UserEntity) => (
-          // Content
-          <>
-            <UserMetaCard meta={userItem?.meta as UserMeta} />
-            <UserInfoCard info={userItem as UserEntity} editable={false} />
-            <UserAddressCard address={userItem?.address as UserAddress} editable={false} />
-          </>
-        )
+        render: (userItem: UserEntity) => {
+          return (
+            // Content
+            <>
+              <UserMetaCard meta={userItem?.meta as UserMeta} />
+              <UserInfoCard info={userItem as UserEntity} editable={false} />
+              <UserAddressCard address={userItem?.address as UserAddress} editable={false} />
+            </>
+          )
+        }
       },
       {
         key: "activity",
@@ -288,38 +254,35 @@ const UserManagementComponent: React.FC = () => {
 
   const advancedFilters = [
     {
-      key: "category",
-      label: "Category",
+      key: "roleId",
+      label: "Role",
+      type: "select" as const,
+      options: roles.map(role => ({ value: role.id, label: role.name }))
+    },
+    {
+      key: "department",
+      label: "Department",
       type: "select" as const,
       options: [
-        { value: "Technical Support", label: "Technical Support" },
-        { value: "Feature Request", label: "Feature Request" },
-        { value: "Security", label: "Security" },
-        { value: "Bug Report", label: "Bug Report" }
+        { value: "IT", label: "IT" },
+        { value: "Support", label: "Support" },
+        { value: "Operations", label: "Operations" }
       ]
     },
     {
-      key: "assignedTo",
-      label: "Assigned To",
+      key: "status",
+      label: "Status",
       type: "select" as const,
       options: [
-        { value: "John Smith", label: "John Smith" },
-        { value: "Alice Johnson", label: "Alice Johnson" },
-        { value: "Mike Davis", label: "Mike Davis" },
-        { value: "Security Team", label: "Security Team" }
+        { value: "active", label: "Active" },
+        { value: "inactive", label: "Inactive" },
+        { value: "suspended", label: "Suspended" }
       ]
     },
     {
-      key: "createdAt",
-      label: "Created Date",
+      key: "lastLogin",
+      label: "Last Login",
       type: "date-range" as const
-    },
-    {
-      key: "estimatedHours",
-      label: "Estimated Hours",
-      type: "number-range" as const,
-      min: 0,
-      max: 100
     }
   ];
 
@@ -391,25 +354,7 @@ const UserManagementComponent: React.FC = () => {
   // ===================================================================
 
   const renderCard = (userItem: UserEntity) => {
-    // const statusConfig = {
-    //   "open": { icon: FolderIcon, color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800", label: "Open" },
-    //   "in-progress": { icon: TimeIcon, color: "text-yellow-600 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-800", label: "In Progress" },
-    //   "resolved": { icon: CheckCircleIcon, color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800", label: "Resolved" },
-    //   "closed": { icon: CheckCircleIcon, color: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800", label: "Closed" },
-    //   "escalated": { icon: AlertHexaIcon, color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800", label: "Escalated" }
-    // }[userItem.status];
-
-    // const priorityConfig = {
-    //   "low": { color: "text-green-600", label: "Low" },
-    //   "medium": { color: "text-yellow-600", label: "Medium" },
-    //   "high": { color: "text-orange-600", label: "High" },
-    //   "critical": { color: "text-red-600", label: "Critical" }
-    // }[userItem.priority];
-
-    // const Icon = statusConfig.icon;
-
     const roleConfig = roles.find(r => r.id === userItem.roleId);
-
     const statusConfig = {
       "active": { color: "text-green-600 dark:text-green-400", icon: CheckLineIcon },
       "inactive": { color: "text-yellow-600 dark:text-yellow-400", icon: TimeIcon },
@@ -419,9 +364,8 @@ const UserManagementComponent: React.FC = () => {
 
     return (
       <>
-        <div className="xl:flex items-start justify-between mb-4">
+        <div className={`xl:flex items-start justify-between mb-4 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
           <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
-            {/* <Icon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 hidden xl:block" /> */}
             {userItem.meta?.avatar ? (
               <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
                 <img src={userItem.meta?.avatar} alt="user" />
@@ -444,7 +388,7 @@ const UserManagementComponent: React.FC = () => {
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white`}>
               {roleConfig?.name || "Guest"}
             </span>
-            <span className={`text-xs font-medium ${statusConfig.color}`}>
+            <span className={`text-xs font-medium ${statusConfig.color} capitalize`}>
               <Icon className="w-4 h-4 inline mr-1" />
               {userItem.status}
             </span>
@@ -452,7 +396,7 @@ const UserManagementComponent: React.FC = () => {
         </div>
 
         {/* Additional Info */}
-        <div className="xl:flex items-center justify-between">
+        <div className={`xl:flex items-center justify-between ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
           <div className="xl:flex items-center gap-4 text-xs ">
             <div className="xl:flex items-center gap-1 min-h-4">
               <span>{userItem.jobTitle}</span>
@@ -491,8 +435,45 @@ const UserManagementComponent: React.FC = () => {
   // Render Component
   // ===================================================================
 
+  const mockMetrics: UserMetrics = {
+    totalUsers: 4,
+    activeUsers: 2,
+    newThisMonth: 1,
+    suspendedUsers: 1,
+    lastMonthGrowth: 0.5
+  };
+
   return (
     <>
+      {/* Metrics Cards */}
+      <div className="xl:grid grid-cols-1 md:grid-cols-4 gap-6">
+        <UserMetricsCard
+          title="Total Users"
+          value={mockMetrics.totalUsers}
+          icon={<UserIcon className="w-6 h-6 text-blue-600" />}
+          color="blue"
+        />
+        <UserMetricsCard
+          title="Active Users"
+          value={mockMetrics.activeUsers}
+          icon={<CheckLineIcon className="w-6 h-6 text-green-600" />}
+          color="green"
+        />
+        <UserMetricsCard
+          title="New This Month"
+          value={mockMetrics.newThisMonth}
+          icon={<ChevronUpIcon className="w-6 h-6 text-purple-600" />}
+          trend={mockMetrics.lastMonthGrowth}
+          color="purple"
+        />
+        <UserMetricsCard
+          title="Suspended"
+          value={mockMetrics.suspendedUsers}
+          icon={<CloseIcon className="w-6 h-6 text-red-600" />}
+          color="red"
+        />
+      </div>
+
       <EnhancedCrudContainer
         data={data}
         config={config}
