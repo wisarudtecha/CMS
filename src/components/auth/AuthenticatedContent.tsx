@@ -4,20 +4,20 @@ import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { TokenManager } from "@/utils/tokenManager";
 import { JWTTokenInspector } from "@/components/auth/JWTTokenInspector";
-import Button from '@/components/ui/button/Button';
+import Button from "@/components/ui/button/Button";
 
 export const AuthenticatedContent: React.FC = () => {
   const { state } = useAuth();
   const [debugVisible, setDebugVisible] = useState(false);
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <>
       <div className="mb-6">
         <Button
           onClick={() => setDebugVisible(!debugVisible)}
           variant="outline"
         >
-          {debugVisible ? '🔒 Hide' : '🔧 Show'} Debug Info
+          {debugVisible ? "🔒 Hide" : "🔧 Show"} Debug Info
         </Button>
         
         {debugVisible && (
@@ -27,13 +27,13 @@ export const AuthenticatedContent: React.FC = () => {
                 <div>🔐 Auth State:</div>
                 <div>├─ isLoading: {String(state.isLoading)}</div>
                 <div>├─ isAuthenticated: {String(state.isAuthenticated)}</div>
-                <div>├─ user: {state.user ? '✅' : '❌'}</div>
-                <div>└─ token: {state.token ? '✅' : '❌'}</div>
+                <div>├─ user: {state.user ? "✅" : "❌"}</div>
+                <div>└─ token: {state.token ? "✅" : "❌"}</div>
               </div>
               <div>
                 <div>🎯 Storage:</div>
-                <div>├─ localStorage: {TokenManager.getToken() ? '✅' : '❌'}</div>
-                <div>├─ sessionStorage: {sessionStorage.getItem('cms_auth_token') ? '✅' : '❌'}</div>
+                <div>├─ localStorage: {TokenManager.getToken() ? "✅" : "❌"}</div>
+                <div>├─ sessionStorage: {sessionStorage.getItem("cms_auth_token") ? "✅" : "❌"}</div>
                 <div>└─ timestamp: {new Date().toLocaleTimeString()}</div>
               </div>
             </div>
@@ -80,7 +80,7 @@ export const AuthenticatedContent: React.FC = () => {
           <div className="flex space-x-2">
             <Button 
               onClick={() => {
-                console.log('🔄 Manual refresh triggered');
+                console.log("🔄 Manual refresh triggered");
                 window.location.reload();
               }}
               variant="primary"
@@ -89,7 +89,7 @@ export const AuthenticatedContent: React.FC = () => {
             </Button>
             <Button 
               onClick={() => {
-                console.log('🧹 Clearing tokens and refreshing');
+                console.log("🧹 Clearing tokens and refreshing");
                 TokenManager.clearTokens();
                 window.location.reload();
               }}
@@ -115,6 +115,6 @@ export const AuthenticatedContent: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

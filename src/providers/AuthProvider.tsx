@@ -199,7 +199,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Received invalid token from server');
       }
 
-      TokenManager.setTokens(token, refreshToken, credentials.rememberMe);
+      // TokenManager.setTokens(token, refreshToken, credentials.rememberMe);
+
+      // Updated: [17-07-2025] v0.1.2
+      const username = user?.username || "";
+      const organization = user?.organization || "";
+      const profile = { username, organization };
+      TokenManager.setTokens(token, refreshToken, credentials.rememberMe, JSON.stringify(profile));
+
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
       dispatch({ type: 'RESET_FAILED_ATTEMPTS' });
     }
@@ -214,7 +221,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { user, token, refreshToken } = await AuthService.register(data);
 
-      TokenManager.setTokens(token, refreshToken);
+      // TokenManager.setTokens(token, refreshToken);
+
+      // Updated: [17-07-2025] v0.1.2
+      TokenManager.setTokens(token, refreshToken, false, "");
+      
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
     }
     catch (error) {

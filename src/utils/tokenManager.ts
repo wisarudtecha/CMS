@@ -9,10 +9,16 @@ export class TokenManager {
   // Updated: [06-07-2025] v0.1.1
   // private static SECRET_KEY = 'my-secret-key'; // In production, this should be from environment
   
-  static setTokens(accessToken: string, refreshToken: string, rememberMe: boolean = false) {
+  static setTokens(
+    accessToken: string,
+    refreshToken: string,
+    rememberMe: boolean = false,
+    profile: string = "",
+  ) {
     if (rememberMe) {
       localStorage.setItem(this.STORAGE_KEY, accessToken);
       localStorage.setItem(this.REFRESH_KEY, refreshToken);
+      localStorage.setItem("profile", profile);
     }
     else {
       sessionStorage.setItem(this.STORAGE_KEY, accessToken);
@@ -133,14 +139,16 @@ export class TokenManager {
       if (result.isValid || (!result.isExpired && result.errors.length <= 1)) {
         result.user = {
           id: decoded.payload.sub,
-          email: decoded.payload.email,
+          username: decoded.payload.username || "admin",
+          // email: decoded.payload.email,
           name: decoded.payload.name || 'Unknown User',
           role: (["viewer", "admin", "manager", "agent"].includes(decoded.payload.role as string) 
             ? decoded.payload.role 
             : "viewer") as "viewer" | "admin" | "manager" | "agent",
           department: 'IT', // Default for demo
           lastLogin: new Date(),
-          permissions: decoded.payload.permissions || ['read']
+          permissions: decoded.payload.permissions || ['read'],
+          organization: decoded.payload.organization || "1",
         };
         
         result.expiresAt = new Date(decoded.payload.exp * 1000);

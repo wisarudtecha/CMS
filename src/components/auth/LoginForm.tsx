@@ -6,25 +6,31 @@ import
     EyeIcon
   }
 from "@/icons";
-import Label from "../form/Label";
-import Input from "../form/input/InputField";
-import Checkbox from "../form/input/Checkbox";
-import Button from "../ui/button/Button";
+import Label from "@/components/form/Label";
+import Input from "@/components/form/input/InputField";
+import Checkbox from "@/components/form/input/Checkbox";
+import Button from "@/components/ui/button/Button";
 import type { LoginCredentials } from "@/types/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { Autocomplete } from "@/components/form/form-elements/Autocomplete";
 
 export const LoginForm: React.FC = () => {
   const { state, login, clearError } = useAuth();
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: 'admin@cms.com',
-    password: 'admin123',
+    // Updated: [17-07-2025] v0.1.2
+    username: "admin",
+    // email: "admin@cms.com",
+    // Updated: [17-07-2025] v0.1.2
+    password: "P@ssw0rd",
+    // Updated: [17-07-2025] v0.1.2
+    organization: "skyai",
     rememberMe: true
   });
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Updated: [06-07-2025] v0.1.1
-  console.log('🔐 LoginForm rendered at:', new Date().toISOString(), {
+  console.log("🔐 LoginForm rendered at:", new Date().toISOString(), {
     isLoading: state.isLoading,
     isAuthenticated: state.isAuthenticated,
     error: state.error
@@ -32,19 +38,29 @@ export const LoginForm: React.FC = () => {
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
+
+    // Updated: [17-07-2025] v0.1.2
+    if (!credentials.username) {
+      errors.username = "Username is required";
+    }
     
-    if (!credentials.email) {
-      errors.email = 'Email is required';
-    }
-    else if (!/\S+@\S+\.\S+/.test(credentials.email)) {
-      errors.email = 'Email is invalid';
-    }
+    // if (!credentials.email) {
+    //   errors.email = "Email is required";
+    // }
+    // else if (!/\S+@\S+\.\S+/.test(credentials.email)) {
+    //   errors.email = "Email is invalid";
+    // }
     
     if (!credentials.password) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     }
     else if (credentials.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    // Updated: [17-07-2025] v0.1.2
+    if (!credentials.organization) {
+      errors.organization = "Organization is required";
     }
     
     setValidationErrors(errors);
@@ -63,7 +79,7 @@ export const LoginForm: React.FC = () => {
   const handleInputChange = (field: keyof LoginCredentials, value: string | boolean) => {
     setCredentials(prev => ({ ...prev, [field]: value }));
     if (validationErrors[field]) {
-      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+      setValidationErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -88,7 +104,9 @@ export const LoginForm: React.FC = () => {
                   Sign In
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Enter your email and password to sign in!
+                  {/* Enter your email and password to sign in! */}
+                  {/* Updated: [17-07-2025] v0.1.2 */}
+                  Enter your username, password, and organization to sign in!
                 </p>
               </div>
               <div>
@@ -114,23 +132,37 @@ export const LoginForm: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Email field */}
+                  {/* Username field */}
                   <div>
                     <Label>
                       Username <span className="text-error-500 dark:text-error-400">*</span>{" "}
                     </Label>
                     <Input
-                      type="email"
-                      value={credentials.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                      placeholder="Enter your email"
+                      // type="email"
+                      // value={credentials.email}
+                      // Updated: [17-07-2025] v0.1.2
+                      value={credentials.username}
+                      // onChange={(e) => handleInputChange("email", e.target.value)}
+                      // Updated: [17-07-2025] v0.1.2
+                      onChange={(e) => handleInputChange("username", e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                      // placeholder="Enter your email"
+                      // Updated: [17-07-2025] v0.1.2
+                      placeholder="Enter your username"
                       disabled={state.isLoading || state.isLocked}
                     />
                   </div>
+                  {/* 
                   {validationErrors.email && (
                     <div className="relative flex justify-center text-sm text-red-600 dark:text-red-300">
                       {validationErrors.email}
+                    </div>
+                  )}
+                  */}
+                  {/* Updated: [17-07-2025] v0.1.2 */}
+                  {validationErrors.username && (
+                    <div className="relative flex justify-center text-sm text-red-600 dark:text-red-300">
+                      {validationErrors.username}
                     </div>
                   )}
 
@@ -141,10 +173,10 @@ export const LoginForm: React.FC = () => {
                     </Label>
                     <div className="relative">
                       <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         value={credentials.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                         placeholder="Enter your password"
                         disabled={state.isLoading || state.isLocked}
                       />
@@ -166,13 +198,32 @@ export const LoginForm: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Updated: [17-07-2025] v0.1.2 */}
+                  {/* Organization field */}
+                  <div>
+                    <Label>
+                      Organization <span className="text-error-500 dark:text-error-400">*</span>{" "}
+                    </Label>
+                    <Autocomplete
+                      suggestions={["bma", "skyai"]}
+                      placeholder="Type an organization..."
+                      onSelect={(value) => handleInputChange("organization", value)}
+                      value={credentials.organization}
+                    />
+                  </div>
+                  {validationErrors.organization && (
+                    <div className="relative flex justify-center text-sm text-red-600 dark:text-red-300">
+                      {validationErrors.organization}
+                    </div>
+                  )}
+
                   {/* Remember me */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Checkbox
                         id="remember-me"
                         checked={credentials.rememberMe}
-                        onChange={(checked: boolean) => handleInputChange('rememberMe', checked)}
+                        onChange={(checked: boolean) => handleInputChange("rememberMe", checked)}
                         disabled={state.isLoading || state.isLocked}
                       />
                       <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-200">
@@ -192,14 +243,24 @@ export const LoginForm: React.FC = () => {
                     <p className="text-xs text-blue-700 dark:text-blue-200 mb-2">Demo credentials:</p>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-blue-600 dark:text-blue-300">Email: admin@cms.com</p>
-                        <p className="text-xs text-blue-600 dark:text-blue-300">Password: admin123</p>
+                        {/* Updated: [17-07-2025] v0.1.2 */}
+                        <p className="text-xs text-blue-600 dark:text-blue-300">Username: admin</p>
+                        {/* <p className="text-xs text-blue-600 dark:text-blue-300">Email: admin@cms.com</p> */}
+                        {/* Updated: [17-07-2025] v0.1.2 */}
+                        <p className="text-xs text-blue-600 dark:text-blue-300">Password: P@ssw0rd</p>
+                        {/* Updated: [17-07-2025] v0.1.2 */}
+                        <p className="text-xs text-blue-600 dark:text-blue-300">Organization: skyai</p>
                       </div>
                       <Button
                         onClick={() => {
                           setCredentials({
-                            email: 'admin@cms.com',
-                            password: 'admin123',
+                            // Updated: [17-07-2025] v0.1.2
+                            username: "admin",
+                            // email: "admin@cms.com",
+                            // Updated: [17-07-2025] v0.1.2
+                            password: "P@ssw0rd",
+                            // Updated: [17-07-2025] v0.1.2
+                            organization: "skyai",
                             rememberMe: true
                           });
                         }}

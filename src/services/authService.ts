@@ -6,7 +6,7 @@ import { TokenManager } from "@/utils/tokenManager";
 
 export class AuthService {
   // Updated: [06-07-2025] v0.1.1
-  // private static BASE_URL = '/api/auth';
+  // private static BASE_URL = "/api/auth";
 
   // Helper to create mock JWT tokens
   // private static createMockJWT(userId: string, email: string, role: string): string {
@@ -33,41 +33,72 @@ export class AuthService {
   static async login(credentials: LoginCredentials): Promise<{ user: User; token: string; refreshToken: string }> {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Updated: [17-07-2025] v0.1.2
+    // Mock organization mapping
+    const organizations = [
+      { label: "skyai", value: "1"},
+      { label: "bma", value: "2"},
+    ];
+    const organization = organizations?.find((o) => o.label === credentials.organization) || null;
     
     // Mock validation
-    if (credentials.email === 'admin@cms.com' && credentials.password === 'admin123') {
+    if (
+      // credentials.email === "admin@cms.com"
+      // Updated: [17-07-2025] v0.1.2
+      credentials.username === "admin"
+      &&
+      // credentials.password === "admin123"
+      // Updated: [17-07-2025] v0.1.2
+      credentials.password === "P@ssw0rd"
+      &&
+      // Updated: [17-07-2025] v0.1.2
+      (credentials.organization === "skyai" || credentials.organization === "bma")
+    ) {
       const mockUser: User = {
-        id: '1',
-        email: credentials.email,
-        name: 'Admin User',
-        role: 'admin',
-        department: 'IT',
+        id: "1",
+        // Updated: [17-07-2025] v0.1.2
+        username: credentials.username,
+        // email: credentials.email,
+        name: "Admin User",
+        role: "admin",
+        department: "IT",
         lastLogin: new Date(),
-        permissions: ['read', 'write', 'delete', 'admin']
+        permissions: ["read", "write", "delete", "admin"],
+        // Updated: [17-07-2025] v0.1.2
+        organization: organization?.value || "1"
       };
 
       // Updated: [06-07-2025] v0.1.1
       // Create proper JWT token using JWTUtils
       const token = JWTUtils.createToken({
         sub: mockUser.id,
-        email: mockUser.email,
+        // Updated: [17-07-2025] v0.1.2
+        username: mockUser.username,
+        // email: mockUser.email,
         name: mockUser.name,
         role: mockUser.role,
-        permissions: mockUser.permissions
+        permissions: mockUser.permissions,
+        // Updated: [17-07-2025] v0.1.2
+        organization: mockUser.organization
       }, 24); // 24 hours expiry
       
       // Updated: [06-07-2025] v0.1.1
       const refreshToken = JWTUtils.createToken({
         sub: mockUser.id,
-        email: mockUser.email,
-        role: 'refresh'
+        // Updated: [17-07-2025] v0.1.2
+        username: mockUser.username,
+        // email: mockUser.email,
+        role: "refresh",
+        // Updated: [17-07-2025] v0.1.2
+        organization: mockUser.organization
       }, 168); // 7 days expiry
       
       // Updated: [06-07-2025] v0.1.1
-      console.log('✅ Login successful - JWT token created:', {
+      console.log("✅ Login successful - JWT token created:", {
         user: mockUser.email,
         tokenLength: token.length,
-        hasValidStructure: token.split('.').length === 3
+        hasValidStructure: token.split(".").length === 3
       });
       
       return {
@@ -75,30 +106,34 @@ export class AuthService {
         // token: this.createMockJWT(mockUser.id, mockUser.email, mockUser.role),
         // Updated: [06-07-2025] v0.1.1
         token: token,
-        // refreshToken: this.createMockJWT(mockUser.id, mockUser.email, 'refresh')
+        // refreshToken: this.createMockJWT(mockUser.id, mockUser.email, "refresh")
         // Updated: [06-07-2025] v0.1.1
-        refreshToken: refreshToken
+        refreshToken: refreshToken,
       };
     }
     
-    throw new Error('Invalid credentials');
+    throw new Error("Invalid credentials");
   }
   
   static async register(data: RegisterData): Promise<{ user: User; token: string; refreshToken: string }> {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     if (data.password !== data.confirmPassword) {
-      throw new Error('Passwords do not match');
+      throw new Error("Passwords do not match");
     }
     
     const mockUser: User = {
       id: Date.now().toString(),
+      // Updated: [17-07-2025] v0.1.2
+      username: data.username,
       email: data.email,
       name: data.name,
       role: data.role as User["role"],
       department: data.department,
       lastLogin: new Date(),
-      permissions: ['read', 'write']
+      permissions: ["read", "write"],
+      // Updated: [17-07-2025] v0.1.2
+      organization: data.organization,
     };
 
     // Updated: [06-07-2025] v0.1.1
@@ -115,7 +150,7 @@ export class AuthService {
     const refreshToken = JWTUtils.createToken({
       sub: mockUser.id,
       email: mockUser.email,
-      role: 'refresh'
+      role: "refresh"
     }, 168);
     
     return {
@@ -123,7 +158,7 @@ export class AuthService {
       // token: this.createMockJWT(mockUser.id, mockUser.email, mockUser.role),
       // Updated: [06-07-2025] v0.1.1
       token: token,
-      // refreshToken: this.createMockJWT(mockUser.id, mockUser.email, 'refresh')
+      // refreshToken: this.createMockJWT(mockUser.id, mockUser.email, "refresh")
       // Updated: [06-07-2025] v0.1.1
       refreshToken: refreshToken
     };
@@ -135,8 +170,8 @@ export class AuthService {
     // console.log(refreshToken);
     
     // return {
-    //   token: this.createMockJWT('1', 'admin@cms.com', 'admin'),
-    //   refreshToken: this.createMockJWT('1', 'admin@cms.com', 'refresh')
+    //   token: this.createMockJWT("1", "admin@cms.com", "admin"),
+    //   refreshToken: this.createMockJWT("1", "admin@cms.com", "refresh")
     // };
 
     // Updated: [06-07-2025] v0.1.1
@@ -145,7 +180,7 @@ export class AuthService {
       const validation = TokenManager.validateToken(refreshToken);
       
       if (!validation.isValid || validation.isExpired) {
-        throw new Error('Invalid or expired refresh token');
+        throw new Error("Invalid or expired refresh token");
       }
       
       // Create new access token
@@ -161,10 +196,10 @@ export class AuthService {
       const newRefreshToken = JWTUtils.createToken({
         sub: validation.user!.id,
         email: validation.user!.email,
-        role: 'refresh'
+        role: "refresh"
       }, 168);
       
-      console.log('🔄 Token refreshed successfully');
+      console.log("🔄 Token refreshed successfully");
       
       return {
         token: newToken,
@@ -172,8 +207,8 @@ export class AuthService {
       };
     }
     catch (error) {
-      console.error('❌ Token refresh failed:', error);
-      throw new Error('Token refresh failed');
+      console.error("❌ Token refresh failed:", error);
+      throw new Error("Token refresh failed");
     }
   }
   

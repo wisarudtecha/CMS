@@ -44,10 +44,14 @@ export class JWTUtils {
     const now = Math.floor(Date.now() / 1000);
     const jwtPayload: JWTPayload = {
       sub: payload.sub || '1',
-      email: payload.email || 'admin@cms.com',
+      // Updated: [17-07-2025] v0.1.2
+      username: payload.username || "admin",
+      // email: payload.email || 'admin@cms.com',
       name: payload.name || 'Admin User',
       role: payload.role || 'admin',
       permissions: payload.permissions || ['read', 'write', 'delete', 'admin'],
+      // Updated: [17-07-2025] v0.1.2
+      organization: payload.organization || "1",
       iat: now,
       exp: now + (expiresInHours * 60 * 60),
       iss: 'cms-portal',

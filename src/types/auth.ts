@@ -1,12 +1,16 @@
 // /src/types/auth.ts
 export interface User {
   id: string;
-  email: string;
+  // Updated: [17-07-2025] v0.1.2
+  username: string;
+  email?: string;
   name: string;
-  role: 'admin' | 'manager' | 'agent' | 'viewer';
+  role: "admin" | "manager" | "agent" | "viewer";
   department: string;
   lastLogin: Date;
   permissions: string[];
+  // Updated: [17-07-2025] v0.1.2
+  organization: string;
 }
 
 export interface AuthState {
@@ -21,19 +25,27 @@ export interface AuthState {
 }
 
 export interface LoginCredentials {
-  email: string;
+  // Updated: [17-07-2025] v0.1.2
+  username: string;
+  email?: string;
   password: string;
+  // Updated: [17-07-2025] v0.1.2
+  organization?: string;
   rememberMe: boolean;
   captcha?: string;
 }
 
 export interface RegisterData {
   name: string;
+  // Updated: [17-07-2025] v0.1.2
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
   department: string;
   role: string;
+  // Updated: [17-07-2025] v0.1.2
+  organization: string;
 }
 
 // Updated: [04-07-2025] v0.1.1
@@ -47,10 +59,14 @@ export interface JWTHeader {
 // Updated: [04-07-2025] v0.1.1
 export interface JWTPayload {
   sub: string;
-  email: string;
+  // Updated: [17-07-2025] v0.1.2
+  username: string;
+  email?: string;
   name?: string;
   role?: string;
   permissions?: string[];
+  // Updated: [17-07-2025] v0.1.2
+  organization: string;
   iat: number;
   exp: number;
   iss?: string;
