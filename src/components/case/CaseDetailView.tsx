@@ -690,6 +690,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
     const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
+
 
     // State for the data currently being displayed
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
@@ -708,7 +711,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
-    // Effect to initialize and reset form states when caseData changes
     useEffect(() => {
         setDisplayedCaseData(caseData);
         if (caseData) {
@@ -717,9 +719,21 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setFormData(caseData.formData);
             setServiceCenterData(caseData.serviceCenter || "");
             setCustomerData(caseData.customerData || { customerName: "", contractMethod: "" });
-        }
 
+        } else {
+            const draft = localStorage.getItem("Create Case");
+            if (draft) {
+                const parsedDraft = JSON.parse(draft);
+                setCaseType(parsedDraft.caseType?.caseType || '');
+                setCaseTypeData(parsedDraft.caseType);
+                setFormData(parsedDraft.formData);
+                setServiceCenterData(parsedDraft.serviceCenter || "");
+                setCustomerData(parsedDraft.customerData || { customerName: "", contractMethod: "" });
+                setDisplayedCaseData(parsedDraft);
+            }
+        }
     }, [caseData]);
+
 
     const selectedCaseTypeForm = useMemo(() => {
         if (caseTypeData?.caseType === caseType) {
@@ -742,6 +756,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     const handleSaveChanges = useCallback(() => {
         if (!isValueFill.dynamicForm || !isValueFill.getType) {
+            setToastMessage("Please enter all required data.");
+            setToastType("error");
             setShowToast(true);
             return;
         }
@@ -754,11 +770,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             serviceCenter: serviceCenterData,
         };
         setDisplayedCaseData(updatedCaseData);
-        setEditFormData(false);
+        setEditFormData(false)
+        setToastMessage("Changes saved successfully!");
+        setToastType("success");
+        setShowToast(true);;
     }, [isValueFill, formDataChange, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
 
     const handleEditClick = useCallback(() => {
-        console.log(displayedCaseData)
         if (displayedCaseData) {
             setCaseType(displayedCaseData.caseType?.caseType || '');
             setCaseTypeData(displayedCaseData.caseType);
@@ -796,11 +814,32 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [caseType]);
     const handleSetServiceCenter = useCallback((data: string) => setServiceCenterData(data), []);
     const handleCustomerDataChange = useCallback((data: CustomerData) => setCustomerData(data), []);
+    const handleSaveDrafts = () => {
+        const updatedCaseDataForDraft: CaseItem = {
+            ...(displayedCaseData || {} as CaseItem),
+            formData: formDataChange || formData!,
+            caseType: caseTypeData!,
+            customerData: customerData,
+            serviceCenter: serviceCenterData,
+        };
+        setDisplayedCaseData(updatedCaseDataForDraft);
+        localStorage.setItem("Create Case", JSON.stringify(updatedCaseDataForDraft));
+        setToastMessage("Draft saved successfully!");
+        setToastType("info");
+        setShowToast(true);
 
+    };
     return (
         <div className="flex flex-col h-screen">
             <PageMeta title="Case Detail" description="Case Detail Page" />
-            {showToast && <Toast message="Please enter all required data." type="error" duration={3000} onClose={() => setShowToast(false)} />}
+            {showToast && (
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    duration={3000}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
 
             <div className="flex-shrink-0">
                 <PageBreadcrumb pageTitle="Create Case" />
@@ -833,7 +872,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
                         <div className="pr-0">
                             <div className="px-4 pt-6">
-                                {displayedCaseData && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData} editFormData={editFormData} />}
+                                {(caseData && displayedCaseData) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData} editFormData={editFormData} />}
                                 {(caseData && assignedOfficers.length > 0) && (
                                     <div className="mb-4 flex flex-wrap gap-2 items-center">
                                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
@@ -875,7 +914,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                     <>
                                         {
                                             !caseData &&
-                                            <div className="flex justify-end"><Button className="justify-end">Save Draft</Button></div>
+                                            <div className="flex justify-end"><Button onClick={handleSaveDrafts} className="justify-end">Save Draft</Button></div>
                                         }
                                         <CaseTypeFormSection
                                             caseType={caseType}
