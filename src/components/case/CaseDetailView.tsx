@@ -693,7 +693,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     // State for the data currently being displayed
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
-
+    const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
     // States for form inputs
     const [caseType, setCaseType] = useState<string>('');
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
@@ -748,17 +748,18 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
         const updatedCaseData = {
             ...(displayedCaseData as CaseItem),
-            formData: formData!,
+            formData: formDataChange!,
             caseType: caseTypeData!,
             customerData: customerData,
             serviceCenter: serviceCenterData,
         };
         setDisplayedCaseData(updatedCaseData);
         setEditFormData(false);
-    }, [isValueFill, formData, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+    }, [isValueFill, formDataChange, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
 
     const handleEditClick = useCallback(() => {
-        if (editFormData && displayedCaseData) {
+        console.log(displayedCaseData)
+        if (displayedCaseData) {
             setCaseType(displayedCaseData.caseType?.caseType || '');
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
@@ -773,13 +774,11 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, []);
 
     const handleDynamicFormChange = useCallback((data: FormField) => {
-        setFormData(prevData => {
-            // By comparing the stringified versions, we prevent a state update
-            // if the new data is structurally identical to the old, breaking the loop.
+        setFormDataChange(prevData => {
             if (JSON.stringify(prevData) !== JSON.stringify(data)) {
                 return data;
             }
-            return prevData; // Return the old state to prevent a re-render
+            return prevData;
         });
     }, []);
     const handleIsFillGetType = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
@@ -874,6 +873,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                             <div className="px-4">
                                 {editFormData ? (
                                     <>
+                                        {
+                                            !caseData &&
+                                            <div className="flex justify-end"><Button className="justify-end">Save Draft</Button></div>
+                                        }
                                         <CaseTypeFormSection
                                             caseType={caseType}
                                             handleCaseTypeChange={handleCaseTypeChange}
