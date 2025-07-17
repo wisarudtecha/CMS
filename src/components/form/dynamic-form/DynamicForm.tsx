@@ -226,7 +226,7 @@ const DndImageUploader: React.FC<{
 
 const DndMultiImageUploader: React.FC<{
   onFilesSelect: (files: File[]) => void;
-  existingFiles: File[];
+  existingFiles: (File | { name: string; url: string; [key: string]: any })[]; // Updated type for existingFiles
   handleRemoveFile: (fileName: string) => void;
   disabled?: boolean;
 }> = ({ onFilesSelect, existingFiles, handleRemoveFile, disabled }) => {
@@ -279,10 +279,9 @@ const DndMultiImageUploader: React.FC<{
       fileInputRef.current?.click();
     }
   };
-
+ 
   return (
     <div>
-
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -303,17 +302,32 @@ const DndMultiImageUploader: React.FC<{
           disabled={disabled}
         />
         <ImageIcon className="w-12 h-12 text-gray-400" />
-
         <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Drag & drop images here, or click to select</p>
       </div>
       {existingFiles.length > 0 && (
         <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
-          {existingFiles.map((file: File, index: number) => (
-            <div key={`${file.name}-${index}`} className="relative group aspect-square">
-              <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-full object-cover rounded border border-gray-300 dark:border-gray-600" />
-              <Button onClick={() => handleRemoveFile(file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
-            </div>
-          ))}
+          {existingFiles.map((file, index: number) => { // 'file' can now be File or an object
+            let imageUrl: string = "";
+            if (file instanceof File || file instanceof Blob) {
+              imageUrl = URL.createObjectURL(file);
+            } else if (typeof file === 'object' && file !== null && 'url' in file && typeof file.url === 'string') {
+              imageUrl = file.url;
+            } else {
+              console.warn("Unexpected file format in existingFiles, cannot determine image URL:", file);
+              imageUrl = ""; 
+            }
+
+            return (
+              <div key={`${file.name}-${index}`} className="relative group aspect-square">
+                <img
+                  src={imageUrl}
+                  alt={`Upload ${index + 1}`}
+                  className="w-full h-full object-cover rounded border border-gray-300 dark:border-gray-600"
+                />
+                <Button onClick={() => handleRemoveFile(file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -328,16 +342,6 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
   }, [title, description]);
   return null;
 };
-
-// const PageBreadcrumb: React.FC<{ pageTitle: string }> = ({ pageTitle }) => {
-//   return (
-//     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-//       <h2 className="text-title-md2 font-semibold text-gray-900 dark:text-white">
-//         {pageTitle}
-//       </h2>
-//     </div>
-//   );
-// };
 
 
 // --- Main DynamicForm Component ---
