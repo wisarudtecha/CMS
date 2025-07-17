@@ -35,6 +35,7 @@ import Comments from "../comment/Comment"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
+import FormViewer from "../form/dynamic-form/FormViewValue"
 
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
@@ -436,6 +437,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     <span className="text-md text-gray-500 dark:text-gray-400">Sevice Types : {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType}</div>
                 </div>
+                {caseData.caseType&&<FormViewer formData={caseData.caseType} />}
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">

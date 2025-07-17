@@ -344,6 +344,8 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
 };
 
 
+
+
 // --- Main DynamicForm Component ---
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
@@ -457,7 +459,7 @@ function createDynamicFormField(
 }
 
 const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
-  const commonClasses = "shadow-sm appearance-none border rounded w-full py-1 px-2 text-gray-700 leading-tight bg-gray-200 dark:bg-gray-700 dark:border-gray-600 pointer-events-none opacity-70";
+  const commonClasses = "appearance-none border rounded w-full py-1 px-2 text-gray-700 leading-tight border-gray-300 bg-gray-200 dark:bg-gray-900 dark:border-gray-700 pointer-events-none opacity-70 dark:text-gray-400 rounded-md ";
 
   switch (field.type) {
     case 'textInput':
@@ -468,7 +470,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
     case 'dateLocal':
       return <Input type="text" className={commonClasses} disabled placeholder={field.placeholder} />;
     case 'textAreaInput':
-      return <textarea className={`${commonClasses} h-12`} disabled placeholder={field.placeholder} />;
+      return <textarea className={`${commonClasses} `} disabled placeholder={field.placeholder} />;
     case 'select':
     case 'dynamicField':
       return (
@@ -485,7 +487,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
       );
     case 'radio':
       return (
-        <div className="flex flex-col gap-1 text-xs text-gray-500 p-2 border rounded bg-gray-200 dark:bg-gray-700 dark:border-gray-600">
+        <div className={commonClasses}>
           {(field.options && field.options.length > 0) ? field.options.slice(0, 3).map(opt => <div key={opt} className="truncate"><Circle size={12} className="inline-block mr-1" />{opt}</div>) : <span className="italic">No options</span>}
           {field.options && field.options.length > 3 && <span className="italic">...and more</span>}
         </div>
@@ -1431,7 +1433,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       handleChildContainerColSpanChange(e, field.id, "dynamicField");
     }, [field.id, handleChildContainerColSpanChange]);
 
-    const showPlaceholderInput = ["textInput", "Integer", "textAreaInput", "emailInput", "passwordInput"].includes(field.type);
+    const showPlaceholderInput = ["textInput", "Integer","select","dynamicField", "textAreaInput", "emailInput", "passwordInput"].includes(field.type);
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
     const isInputGroup = field.type === "InputGroup";
     const isDynamicField = field.type === "dynamicField";
@@ -1832,7 +1834,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           </>;
         }
         return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : ' dark:bg-gray-900 bg-transparent'}`}>
-          <option value="" className="dark:bg-gray-800">Select an option</option>
+          <option value="" >{field.placeholder || "Select an option"}</option>
           {field.options?.map((option) => (<option className="text-gray-700  dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
         </select> </>);
 
@@ -1918,7 +1920,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           </>;
         }
         return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} bg-white dark:bg-gray-800 disabled:opacity-50`}>
-          <option value="" className="dark:bg-gray-800">Select an option</option>
+          <option value="" className="dark:bg-gray-800">{field.placeholder || "Select an option"}</option>
           {field.options?.map((option: any) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option.value} value={option.value}>{option.value}</option>))}
         </select>
           {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4">
