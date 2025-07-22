@@ -58,6 +58,8 @@ import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 
 // User Management Imports
 import UserManagementPage from "./pages/Admin/UserManagement";
+// Role Management Imports
+import RoleManagementPage from "./pages/Admin/RoleManagement";
 
 // Security & Error Handling Imports
 import ErrorBoundary from "./components/security/ErrorBoundary";
@@ -128,6 +130,9 @@ export default function App() {
 
             {/* User Management */}
             <Route path="/users" element={<UserManagementPage />} />
+            {/* Role Management */}
+            <Route path="/roles" element={<RoleManagementPage />} />
+
 
             {}{/* Security & Error Handling */}
             <Route path="/security/error-boundaries" element={<ErrorBoundary />} />

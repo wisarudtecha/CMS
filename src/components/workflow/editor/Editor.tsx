@@ -1,101 +1,15 @@
 // /src/components/workflow/editor/Editor.tsx
-import
-  React,
-  {
-    useCallback,
-    useEffect,
-    useRef,
-    useState
-  }
-from 'react';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Modal } from "@/components/ui/modal";
+import { AngleLeftIcon, AngleRightIcon, BoxCubeIcon, CheckLineIcon, CloseIcon, CopyIcon, DownloadIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select";
 import TextArea from "@/components/form/input/TextArea";
+import Select from "@/components/form/Select";
 import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
-import { Modal } from "@/components/ui/modal";
-import {
-  AngleLeftIcon,
-  AngleRightIcon,
-  BoxCubeIcon,
-  CheckLineIcon,
-  CloseIcon,
-  CopyIcon,
-  DownloadIcon,
-  FileIcon,
-  PencilIcon,
-  TrashBinIcon
-} from "@/icons";
-
-import workflowData from '@/mocks/workflowData.json';
-// import workflowForm from '@/mocks/workflowForm.json';
-import workflowFormV02 from '@/mocks/workflowFormV02.json';
-
-// TypeScript interfaces
-interface Position {
-  x: number;
-  y: number;
-}
-
-interface WorkflowNode {
-  id: string;
-  type: 'start' | 'process' | 'decision' | 'end';
-  position: Position;
-  data: {
-    label: string;
-    description?: string;
-    config?: Record<string, unknown>;
-  };
-}
-
-interface Connection {
-  id: string;
-  source: string;
-  target: string;
-  sourceHandle?: string;
-  targetHandle?: string;
-  label?: string; // For Yes/No labels
-}
-
-interface WorkflowData {
-  nodes: WorkflowNode[];
-  connections: Connection[];
-  metadata: {
-    title: string;
-    description: string;
-    status: 'draft' | 'active' | 'inactive' | 'testing';
-    createdAt?: string;
-    updatedAt?: string;
-    // Case Management System fields
-    casePriority?: string;
-    caseCategory?: string;
-    targetCaseStatus?: string;
-  };
-}
-
-interface WorkflowEditorComponentProps {
-  initialData?: WorkflowData;
-  workflowId?: string; // For loading from URL
-  onSave?: (data: WorkflowData) => void;
-}
-
-type NodeType = {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    description: string;
-    config?: Record<string, unknown>;
-  };
-};
-
-type ConnectionType = {
-  id: string;
-  source: string;
-  target: string;
-  label?: string;
-};
+import workflowData from "@/mocks/workflowData.json";
+import workflowFormV02 from "@/mocks/workflowFormV02.json";
 
 // Grid configuration
 const GRID_SIZE = 20;
@@ -104,18 +18,18 @@ const NODE_HEIGHT = 64; // 16 * 4 (h-16)
 
 // Workflow status options
 const workflowStatuses = [
-  { value: 'draft', label: 'Draft', color: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800' },
-  { value: 'active', label: 'Active', color: 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800' },
-  { value: 'inactive', label: 'Inactive', color: 'text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800' },
-  { value: 'testing', label: 'Testing', color: 'text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800' }
+  { value: "draft", label: "Draft", color: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800" },
+  { value: "active", label: "Active", color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800" },
+  { value: "inactive", label: "Inactive", color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800" },
+  { value: "testing", label: "Testing", color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800" }
 ] as const;
 
 // Node type configurations
 const nodeTypes = {
-  start: { button: 'bg-success-500 text-white dark:text-white hover:bg-success-600', color: 'bg-success-500 dark:bg-success-400', label: 'Start' },
-  process: { button: 'bg-brand-500 text-white dark:text-white hover:bg-brand-600', color: 'bg-brand-500 dark:bg-brand-400', label: 'Process' },
-  decision: { button: 'bg-warning-500 text-white dark:text-white hover:bg-warning-600', color: 'bg-warning-500 dark:bg-warning-400', label: 'Decision' },
-  end: { button: 'bg-error-500 text-white dark:text-white hover:bg-error-600', color: 'bg-error-500 dark:bg-error-400', label: 'End' }
+  start: { button: "bg-success-500 text-white dark:text-white hover:bg-success-600", color: "bg-success-500 dark:bg-success-400", label: "Start" },
+  process: { button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600", color: "bg-brand-500 dark:bg-brand-400", label: "Process" },
+  decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
+  end: { button: "bg-error-500 text-white dark:text-white hover:bg-error-600", color: "bg-error-500 dark:bg-error-400", label: "End" }
 };
 
 const actionOptions = [
@@ -202,13 +116,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     nodes: [],
     connections: [],
     metadata: {
-      title: 'Untitled Workflow',
-      description: '',
-      status: 'draft',
+      title: "Untitled Workflow",
+      description: "",
+      status: "draft",
       createdAt: new Date().toISOString(),
-      casePriority: '',
-      caseCategory: '',
-      // targetCaseStatus: ''
+      casePriority: "",
+      caseCategory: "",
+      // targetCaseStatus: ""
     }
   },
   workflowId,
@@ -223,15 +137,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   const [tempConnection, setTempConnection] = useState<Position | null>(null);
   const [showJsonPreview, setShowJsonPreview] = useState<boolean>(false);
   const [workflowMetadata, setWorkflowMetadata] = useState(initialData.metadata);
-  const [connectingFrom, setConnectingFrom] = useState<'yes' | 'no' | null>(null);
+  const [connectingFrom, setConnectingFrom] = useState<"yes" | "no" | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
   const [showComponentsPreview, setShowComponentsPreview] = useState<boolean>(false);
-  const [importJsonText, setImportJsonText] = useState<string>('');
-  const [draggedNodeType, setDraggedNodeType] = useState<WorkflowNode['type'] | null>(null);
+  const [importJsonText, setImportJsonText] = useState<string>("");
+  const [draggedNodeType, setDraggedNodeType] = useState<WorkflowNode["type"] | null>(null);
   // Enhanced state for Components Preview
-  const [decisionSelections, setDecisionSelections] = useState<Record<string, 'yes' | 'no'>>({});
+  const [decisionSelections, setDecisionSelections] = useState<Record<string, "yes" | "no">>({});
   // const [currentPath, setCurrentPath] = useState<string[]>([]);
   
   const svgRef = useRef<SVGSVGElement>(null);
@@ -246,7 +160,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Load workflow data from URL if workflowId is provided
   useEffect(() => {
-    if (workflowId && workflowId !== 'new') {
+    if (workflowId && workflowId !== "new") {
       // Mock API call - replace with actual API
       const loadWorkflowFromUrl = async () => {
         try {
@@ -267,17 +181,17 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           setNodes(
             nodes.map((n) => ({
               ...n,
-              type: n.type as WorkflowNode['type'],
+              type: n.type as WorkflowNode["type"],
             }))
           );
           setConnections(connections);
           setWorkflowMetadata({
             ...metadata,
-            status: metadata.status as WorkflowData['metadata']['status'],
+            status: metadata.status as WorkflowData["metadata"]["status"],
           });
         }
         catch (error) {
-          console.error('Failed to load workflow:', error);
+          console.error("Failed to load workflow:", error);
         }
       };
       
@@ -291,15 +205,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   const validateWorkflow = useCallback((): string[] => {
     const errors: string[] = [];
     
-    const hasStartNode = nodes.some(node => node.type === 'start');
-    const hasEndNode = nodes.some(node => node.type === 'end');
+    const hasStartNode = nodes.some(node => node.type === "start");
+    const hasEndNode = nodes.some(node => node.type === "end");
     
     if (!hasStartNode) {
-      errors.push('Workflow must have at least one Start node');
+      errors.push("Workflow must have at least one Start node");
     }
     
     if (!hasEndNode) {
-      errors.push('Workflow must have at least one End node');
+      errors.push("Workflow must have at least one End node");
     }
     
     // Validate connection limits
@@ -311,10 +225,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     
     nodes.forEach(node => {
       const count = connectionCounts[node.id] || 0;
-      if ((node.type === 'start' || node.type === 'process' || node.type === 'end') && count > 1) {
+      if ((node.type === "start" || node.type === "process" || node.type === "end") && count > 1) {
         errors.push(`${node.data.label} can only have 1 outgoing connection`);
       }
-      if (node.type === 'decision' && count > 2) {
+      if (node.type === "decision" && count > 2) {
         errors.push(`${node.data.label} can only have 2 outgoing connections (Yes/No)`);
       }
     });
@@ -367,7 +281,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, []);
 
   // Enhanced path traversal for Components Preview
-  const getWorkflowPath = useCallback((startNodeId: string, decisions: Record<string, 'yes' | 'no'>): string[] => {
+  const getWorkflowPath = useCallback((startNodeId: string, decisions: Record<string, "yes" | "no">): string[] => {
     const path: string[] = [];
     const visited = new Set<string>();
     
@@ -384,14 +298,14 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       
       path.push(nodeId);
       
-      if (node.type === 'end') {
+      if (node.type === "end") {
         return;
       }
       
       const outgoingConnections = connections.filter(c => c.source === nodeId);
       
-      if (node.type === 'decision') {
-        const selectedPath = decisions[nodeId] || 'yes'; // Default to yes
+      if (node.type === "decision") {
+        const selectedPath = decisions[nodeId] || "yes"; // Default to yes
         const connection = outgoingConnections.find(c => c.label === selectedPath);
         if (connection) {
           traverse(connection.target);
@@ -430,7 +344,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Generate components preview based on workflow path
   const generateComponentsPreview = useCallback(() => {
-    const startNodes = nodes.filter(n => n.type === 'start');
+    const startNodes = nodes.filter(n => n.type === "start");
     if (startNodes.length === 0) {
       return [];
     }
@@ -440,7 +354,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     type PreviewComponent =
       | {
           id: string;
-          type: 'start';
+          type: "start";
           label: string;
           description?: string;
           continueFromWorkflow?: boolean;
@@ -449,7 +363,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
       | {
           id: string;
-          type: 'form';
+          type: "form";
           label: string;
           form: string;
           formConfig: ReturnType<typeof getFormComponentConfig>;
@@ -458,13 +372,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         }
       | {
           id: string;
-          type: 'decision';
+          type: "decision";
           label: string;
           condition?: string;
         }
       | {
           id: string;
-          type: 'end';
+          type: "end";
           label: string;
           description?: string;
           allowContinuation?: boolean;
@@ -479,46 +393,46 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         return;
       }
 
-      if (node.type === 'start') {
+      if (node.type === "start") {
         components.push({
           id: node.id,
-          type: 'start',
+          type: "start",
           label: node.data.label,
           description: node.data.description,
           continueFromWorkflow: node.data.config?.continueFromWorkflow === true,
-          sourceWorkflowId: typeof node.data.config?.sourceWorkflowId === 'string' ? node.data.config.sourceWorkflowId : undefined
+          sourceWorkflowId: typeof node.data.config?.sourceWorkflowId === "string" ? node.data.config.sourceWorkflowId : undefined
         });
       }
-      else if (node.type === 'process' && node.data.config?.form) {
+      else if (node.type === "process" && node.data.config?.form) {
         const formConfig = getFormComponentConfig(
-          typeof node.data.config?.form === 'string' ? node.data.config.form : ''
+          typeof node.data.config?.form === "string" ? node.data.config.form : ""
         );
         components.push({
           id: node.id,
-          type: 'form',
+          type: "form",
           label: node.data.label,
-          form: typeof node.data.config?.form === 'string' ? node.data.config.form : '',
+          form: typeof node.data.config?.form === "string" ? node.data.config.form : "",
           formConfig,
-          sla: typeof node.data.config?.sla === 'string' || typeof node.data.config?.sla === 'number' ? node.data.config.sla : undefined,
-          pic: typeof node.data.config?.pic === 'string' ? node.data.config.pic : undefined
+          sla: typeof node.data.config?.sla === "string" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
+          pic: typeof node.data.config?.pic === "string" ? node.data.config.pic : undefined
         });
       }
-      else if (node.type === 'decision') {
+      else if (node.type === "decision") {
         components.push({
           id: node.id,
-          type: 'decision',
+          type: "decision",
           label: node.data.label,
-          condition: typeof node.data.config?.condition === 'string' ? node.data.config.condition : undefined
+          condition: typeof node.data.config?.condition === "string" ? node.data.config.condition : undefined
         });
       }
-      else if (node.type === 'end') {
+      else if (node.type === "end") {
         components.push({
           id: node.id,
-          type: 'end',
+          type: "end",
           label: node.data.label,
           description: node.data.description,
           allowContinuation: node.data.config?.allowContinuation === true,
-          nextWorkflowId: typeof node.data.config?.nextWorkflowId === 'string' ? node.data.config.nextWorkflowId : undefined
+          nextWorkflowId: typeof node.data.config?.nextWorkflowId === "string" ? node.data.config.nextWorkflowId : undefined
         });
       }
     });
@@ -532,7 +446,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   ]);
 
   // Handle decision toggle in Components Preview
-  const handleDecisionToggle = useCallback((nodeId: string, decision: 'yes' | 'no') => {
+  const handleDecisionToggle = useCallback((nodeId: string, decision: "yes" | "no") => {
     setDecisionSelections(prev => ({
       ...prev,
       [nodeId]: decision
@@ -540,7 +454,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, []);
 
   // Add new node with dynamic grid positioning
-  const addNode = useCallback((type: WorkflowNode['type'], position?: Position) => {
+  const addNode = useCallback((type: WorkflowNode["type"], position?: Position) => {
     // Calculate dynamic grid position if not provided
     let nodePosition = position;
     if (!nodePosition) {
@@ -584,16 +498,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
     // Initialize config based on node type
     let initialConfig = {};
-    if (type === 'start') {
+    if (type === "start") {
       initialConfig = {
         continueFromWorkflow: false,
-        sourceWorkflowId: ''
+        sourceWorkflowId: ""
       };
     }
-    else if (type === 'end') {
+    else if (type === "end") {
       initialConfig = {
         allowContinuation: false,
-        nextWorkflowId: ''
+        nextWorkflowId: ""
       };
     }
 
@@ -603,7 +517,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       position: nodePosition,
       data: {
         label: `${nodeTypes[type].label} ${nodes.filter(n => n.type === type).length + 1}`,
-        description: '',
+        description: "",
         config: initialConfig
       }
     };
@@ -616,16 +530,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, [nodes, snapToGrid]);
 
   // Handle drag start from node palette
-  const handleDragStart = useCallback((e: React.DragEvent, nodeType: WorkflowNode['type']) => {
+  const handleDragStart = useCallback((e: React.DragEvent, nodeType: WorkflowNode["type"]) => {
     setDraggedNodeType(nodeType);
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/plain', nodeType);
+    e.dataTransfer.effectAllowed = "copy";
+    e.dataTransfer.setData("text/plain", nodeType);
   }, []);
 
   // Handle drag over canvas
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = "copy";
   }, [
 
   ]);
@@ -683,26 +597,26 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
       // Check connection limits
       const outgoingConnections = connections.filter(conn => conn.source === nodeId);
-      const maxConnections = node.type === 'decision' ? 2 : 1;
+      const maxConnections = node.type === "decision" ? 2 : 1;
       
       if (outgoingConnections.length >= maxConnections) {
-        alert(`${node.type === 'decision' ? 'Decision' : 'This'} node already has maximum connections`);
+        alert(`${node.type === "decision" ? "Decision" : "This"} node already has maximum connections`);
         return;
       }
       
       // For decision nodes, determine Yes/No connection
-      if (node.type === 'decision') {
-        const hasYes = outgoingConnections.some(conn => conn.label === 'yes');
-        const hasNo = outgoingConnections.some(conn => conn.label === 'no');
+      if (node.type === "decision") {
+        const hasYes = outgoingConnections.some(conn => conn.label === "yes");
+        const hasNo = outgoingConnections.some(conn => conn.label === "no");
         
         if (!hasYes) {
-          setConnectingFrom('yes');
+          setConnectingFrom("yes");
         }
         else if (!hasNo) {
-          setConnectingFrom('no');
+          setConnectingFrom("no");
         }
         else {
-          alert('Decision node already has both Yes and No connections');
+          alert("Decision node already has both Yes and No connections");
           return;
         }
       }
@@ -766,11 +680,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   // Handle mouse up
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (isConnecting) {
-      // Check if we're over a node
+      // Check if we"re over a node
       const target = e.target as Element;
-      const nodeElement = target.closest('[data-node-id]');
+      const nodeElement = target.closest("[data-node-id]");
       if (nodeElement) {
-        const targetNodeId = nodeElement.getAttribute('data-node-id');
+        const targetNodeId = nodeElement.getAttribute("data-node-id");
         if (targetNodeId && targetNodeId !== isConnecting) {
           // Validate connection
           const targetNode = nodes.find(n => n.id === targetNodeId);
@@ -778,8 +692,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           
           if (targetNode && sourceNode) {
             // Check if target can accept connections (start nodes cannot be targets)
-            if (targetNode.type === 'start') {
-              alert('Cannot connect to Start node');
+            if (targetNode.type === "start") {
+              alert("Cannot connect to Start node");
               setIsConnecting(null);
               setConnectingFrom(null);
               setTempConnection(null);
@@ -792,7 +706,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             );
             
             if (existingConnection) {
-              alert('Connection already exists');
+              alert("Connection already exists");
               setIsConnecting(null);
               setConnectingFrom(null);
               setTempConnection(null);
@@ -831,7 +745,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, [selectedNode]);
 
   // Update node data
-  const updateNodeData = useCallback((nodeId: string, updates: Partial<WorkflowNode['data']>) => {
+  const updateNodeData = useCallback((nodeId: string, updates: Partial<WorkflowNode["data"]>) => {
     setNodes(prev => prev.map(node => 
       node.id === nodeId 
         ? { ...node, data: { ...node.data, ...updates } }
@@ -849,20 +763,20 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       
       // Validate imported data structure
       if (!workflowData.nodes || !workflowData.connections || !workflowData.metadata) {
-        throw new Error('Invalid workflow format');
+        throw new Error("Invalid workflow format");
       }
       
       setNodes(workflowData.nodes);
       setConnections(workflowData.connections);
       setWorkflowMetadata(workflowData.metadata);
-      setImportJsonText('');
+      setImportJsonText("");
       setShowImportDialog(false);
       
-      console.log('Workflow imported successfully');
+      console.log("Workflow imported successfully");
     }
     catch (error) {
-      alert('Invalid JSON format. Please check your input.');
-      console.error('Import error:', error);
+      alert("Invalid JSON format. Please check your input.");
+      console.error("Import error:", error);
     }
   }, [importJsonText]);
 
@@ -891,12 +805,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     };
     
     const jsonString = JSON.stringify(workflowData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${workflowMetadata.title.replace(/\s+/g, '_').toLowerCase()}_workflow.json`;
+    a.download = `${workflowMetadata.title.replace(/\s+/g, "_").toLowerCase()}_workflow.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -920,7 +834,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       setTimeout(() => setCopiedJson(false), 2000);
     }
     catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+      console.error("Failed to copy to clipboard:", err);
     }
   }, [nodes, connections, workflowMetadata]);
 
@@ -930,7 +844,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     setValidationErrors(errors);
 
     if (errors.length > 0) {
-      return; // Don't save if there are validation errors
+      return; // Don"t save if there are validation errors
     }
 
     const workflowData: WorkflowData = {
@@ -943,7 +857,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     };
     onSave?.(workflowData);
     setShowJsonPreview(false);
-    console.log('Workflow saved:', workflowData);
+    console.log("Workflow saved:", workflowData);
   }, [
     nodes,
     connections,
@@ -1029,7 +943,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               </label>
               <Select
                 value={workflowMetadata.status}
-                onChange={(value) => updateWorkflowMetadata({ status: (value as WorkflowData['metadata']['status']) })}
+                onChange={(value) => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
                 options={workflowStatusesOptions}
                 placeholder="Select Status"
               />
@@ -1039,7 +953,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">Current Status:</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800'
+                workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"
               }`}>
                 {workflowStatuses.find(s => s.value === workflowMetadata.status)?.label}
               </span>
@@ -1055,8 +969,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   <div
                     key={type}
                     draggable
-                    onDragStart={(e) => handleDragStart(e, type as WorkflowNode['type'])}
-                    onClick={() => addNode(type as WorkflowNode['type'])}
+                    onDragStart={(e) => handleDragStart(e, type as WorkflowNode["type"])}
+                    onClick={() => addNode(type as WorkflowNode["type"])}
                     // className={`flex items-center gap-2 p-2 border rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
                     className={`flex items-center gap-2 p-2 rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
                     title={`Click to add or drag to canvas: ${config.label}`}
@@ -1081,7 +995,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 Case Priority
               </label>
               <Select
-                value={workflowMetadata.casePriority || ''}
+                value={workflowMetadata.casePriority || ""}
                 onChange={(value) => updateWorkflowMetadata({ casePriority: value })}
                 options={casePriorityOptions}
                 placeholder="Select Priority"
@@ -1095,7 +1009,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 Case Type
               </label>
               <Select
-                value={workflowMetadata.caseCategory || ''}
+                value={workflowMetadata.caseCategory || ""}
                 onChange={(value) => updateWorkflowMetadata({ caseCategory: value })}
                 options={caseCategoryOptions}
                 // placeholder="Select Category"
@@ -1110,7 +1024,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 Target Case Status
               </label>
               <Select
-                value={workflowMetadata.targetCaseStatus || ''}
+                value={workflowMetadata.targetCaseStatus || ""}
                 onChange={(value) => updateWorkflowMetadata({ targetCaseStatus: value })}
                 options={targetCaseStatusOptions}
                 placeholder="Select Target Status"
@@ -1127,24 +1041,24 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <div className="text-xs text-blue-700 dark:text-blue-200 space-y-1">
                 <div>
                   Priority: <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    workflowMetadata.casePriority === 'urgent' || workflowMetadata.casePriority === 'critical' 
-                      ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                      : workflowMetadata.casePriority === 'high'
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
-                      : workflowMetadata.casePriority === 'medium'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
-                      : workflowMetadata.casePriority === 'low'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                    workflowMetadata.casePriority === "urgent" || workflowMetadata.casePriority === "critical" 
+                      ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                      : workflowMetadata.casePriority === "high"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
+                      : workflowMetadata.casePriority === "medium"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                      : workflowMetadata.casePriority === "low"
+                      ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
                   }`}>
-                    {casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label || 'Not Set'}
+                    {casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label || "Not Set"}
                   </span>
                 </div>
                 <div>
-                  Category: <strong>{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label || 'Not Set'}</strong>
+                  Category: <strong>{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label || "Not Set"}</strong>
                 </div>
                 <div>
-                  Target Status: <strong>{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label || 'Not Set'}</strong>
+                  Target Status: <strong>{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label || "Not Set"}</strong>
                 </div>
               </div>
             </div>
@@ -1228,7 +1142,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             <svg
               ref={svgRef}
               className="xl:absolute inset-0 pointer-events-none"
-              style={{ width: '2000px', height: '2000px', zIndex: 1 }}
+              style={{ width: "2000px", height: "2000px", zIndex: 1 }}
             >
               {/* Grid Pattern */}
               <defs>
@@ -1307,7 +1221,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           fill="#374151"
                           fontWeight="bold"
                         >
-                          {connection.label === 'yes' ? 'Y' : 'N'}
+                          {connection.label === "yes" ? "Y" : "N"}
                         </text>
                       </g>
                     )}
@@ -1362,16 +1276,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             {nodes.map(node => {
               const nodeConfig = nodeTypes[node.type];
               const isSelected = selectedNode?.id === node.id;
-              const isContinueFromWorkflow = node.type === 'start' && node.data.config?.continueFromWorkflow;
-              const isAllowContinuation = node.type === 'end' && node.data.config?.allowContinuation;
+              const isContinueFromWorkflow = node.type === "start" && node.data.config?.continueFromWorkflow;
+              const isAllowContinuation = node.type === "end" && node.data.config?.allowContinuation;
               
               return (
                 <div
                   key={node.id}
                   data-node-id={node.id}
                   className={`absolute pointer-events-auto select-none transition-all rounded-lg ${
-                    isSelected ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0' : ''
-                  } ${isDragging === node.id ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    isSelected ? "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
+                  } ${isDragging === node.id ? "cursor-grabbing" : "cursor-grab"}`}
                   style={{
                     left: node.position.x,
                     top: node.position.y,
@@ -1379,7 +1293,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   }}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                 >
-                  {node.type === 'decision' ? (
+                  {node.type === "decision" ? (
                     // Diamond shape for decision nodes
                     <div className="relative w-24 h-16 flex items-center justify-center">
                       <svg width="96" height="64" className="absolute inset-0">
@@ -1476,7 +1390,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   Description
                 </label>
                 <TextArea
-                  value={selectedNode.data.description || ''}
+                  value={selectedNode.data.description || ""}
                   onChange={(value) => updateNodeData(selectedNode.id, { description: value })}
                   rows={3}
                   placeholder="Enter description..."
@@ -1544,7 +1458,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               </div>
 
               {/* Type-specific configuration */}
-              {selectedNode.type === 'start' && (
+              {selectedNode.type === "start" && (
                 <>
                   <div>
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -1555,7 +1469,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           config: { 
                             ...selectedNode.data.config, 
                             continueFromWorkflow: e.target.checked,
-                            sourceWorkflowId: e.target.checked ? (selectedNode.data.config?.sourceWorkflowId || '') : ''
+                            sourceWorkflowId: e.target.checked ? (selectedNode.data.config?.sourceWorkflowId || "") : ""
                           }
                         })}
                         className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-300 focus:ring-blue-500 dark:focus:ring-blue-400"
@@ -1571,7 +1485,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       </label>
                       <Input
                         type="text"
-                        value={typeof selectedNode.data.config?.sourceWorkflowId === 'string' ? selectedNode.data.config.sourceWorkflowId : ''}
+                        value={typeof selectedNode.data.config?.sourceWorkflowId === "string" ? selectedNode.data.config.sourceWorkflowId : ""}
                         onChange={(e) => updateNodeData(selectedNode.id, { 
                           config: { ...selectedNode.data.config, sourceWorkflowId: e.target.value }
                         })}
@@ -1585,7 +1499,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 </>
               )}
 
-              {selectedNode.type === 'end' && (
+              {selectedNode.type === "end" && (
                 <>
                   <div>
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -1596,7 +1510,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           config: { 
                             ...selectedNode.data.config, 
                             allowContinuation: e.target.checked,
-                            nextWorkflowId: e.target.checked ? (selectedNode.data.config?.nextWorkflowId || '') : ''
+                            nextWorkflowId: e.target.checked ? (selectedNode.data.config?.nextWorkflowId || "") : ""
                           }
                         })}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -1612,7 +1526,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       </label>
                       <Input
                         type="text"
-                        value={typeof selectedNode.data.config?.nextWorkflowId === 'string' ? selectedNode.data.config.nextWorkflowId : ''}
+                        value={typeof selectedNode.data.config?.nextWorkflowId === "string" ? selectedNode.data.config.nextWorkflowId : ""}
                         onChange={(e) => updateNodeData(selectedNode.id, { 
                           config: { ...selectedNode.data.config, nextWorkflowId: e.target.value }
                         })}
@@ -1627,14 +1541,14 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               )}
 
               {/* Type-specific configuration */}
-              {selectedNode.type === 'decision' && (
+              {selectedNode.type === "decision" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Condition
                   </label>
                   <Input
                     type="text"
-                    value={typeof selectedNode.data.config?.condition === 'string' ? selectedNode.data.config.condition : ''}
+                    value={typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
                     onChange={(e) => updateNodeData(selectedNode.id, { 
                       config: { ...(selectedNode.data.config ?? {}), condition: e.target.value }
                     })}
@@ -1643,14 +1557,14 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 </div>
               )}
 
-              {selectedNode.type === 'process' && (
+              {selectedNode.type === "process" && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Action
                     </label>
                     <Select
-                      value={typeof selectedNode.data.config?.action === 'string' ? selectedNode.data.config.action : ''}
+                      value={typeof selectedNode.data.config?.action === "string" ? selectedNode.data.config.action : ""}
                       onChange={(value) => updateNodeData(selectedNode.id, {
                         config: { ...selectedNode.data.config, action: value }
                       })}
@@ -1665,7 +1579,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       Form
                     </label>
                     <Select
-                      value={typeof selectedNode.data.config?.form === 'string' ? selectedNode.data.config.form : ''}
+                      value={typeof selectedNode.data.config?.form === "string" ? selectedNode.data.config.form : ""}
                       onChange={(value) => updateNodeData(selectedNode.id, { 
                         config: { ...selectedNode.data.config, form: value }
                       })}
@@ -1682,7 +1596,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     </label>
                     <Input
                       type="number"
-                      value={typeof selectedNode.data.config?.sla === 'string' || typeof selectedNode.data.config?.sla === 'number' ? selectedNode.data.config.sla : ''}
+                      value={typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
                       onChange={(e) => updateNodeData(selectedNode.id, { 
                         config: { ...selectedNode.data.config, sla: e.target.value }
                       })}
@@ -1698,7 +1612,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       PIC (Person in Charge)
                     </label>
                     <Select
-                      value={typeof selectedNode.data.config?.pic === 'string' ? selectedNode.data.config.pic : ''}
+                      value={typeof selectedNode.data.config?.pic === "string" ? selectedNode.data.config.pic : ""}
                       onChange={(value) => updateNodeData(selectedNode.id, { 
                         config: { ...selectedNode.data.config, pic: value }
                       })}
@@ -1716,8 +1630,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>
                     Outgoing: {connections.filter(c => c.source === selectedNode.id).length}
-                    {selectedNode.type === 'decision' && ' / 2 (Yes/No)'}
-                    {selectedNode.type !== 'decision' && ' / 1'}
+                    {selectedNode.type === "decision" && " / 2 (Yes/No)"}
+                    {selectedNode.type !== "decision" && " / 1"}
                   </div>
                   <div>Incoming: {connections.filter(c => c.target === selectedNode.id).length}</div>
                 </div>
@@ -1736,15 +1650,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
               <div>Title: <span className="font-medium">{workflowMetadata.title}</span></div>
               <div>Status: <span className={`px-1 py-0.5 rounded text-xs ${
-                  workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900'
+                  workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900"
                 }`}>
                   {workflowStatuses.find(s => s.value === workflowMetadata.status)?.label}
                 </span>
               </div>
               <div>Nodes: {nodes.length}</div>
               <div>Connections: {connections.length}</div>
-              <div>Start Nodes: {nodes.filter(n => n.type === 'start').length}</div>
-              <div>End Nodes: {nodes.filter(n => n.type === 'end').length}</div>
+              <div>Start Nodes: {nodes.filter(n => n.type === "start").length}</div>
+              <div>End Nodes: {nodes.filter(n => n.type === "end").length}</div>
 
               {/* Case Management Stats */}
               {(
@@ -1807,12 +1721,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 onClick={copyJsonToClipboard}
                 variant={`${
                   copiedJson 
-                    ? 'success'
-                    : 'outline'
+                    ? "success"
+                    : "outline"
                 }`}
               >
                 {copiedJson ? <CheckLineIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                {copiedJson ? 'Copied!' : 'Copy'}
+                {copiedJson ? "Copied!" : "Copy"}
               </Button>
 
               <Button
@@ -1828,8 +1742,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 disabled={validationErrors.length > 0}
                 variant={`${
                   validationErrors.length > 0
-                    ? 'outline'
-                    : 'primary'
+                    ? "outline"
+                    : "primary"
                 }`}
               >
                 <DownloadIcon className="w-4 h-4" />
@@ -1884,8 +1798,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 disabled={!importJsonText.trim()}
                 variant={`${
                   !importJsonText.trim()
-                    ? 'outline'
-                    : 'success'
+                    ? "outline"
+                    : "success"
                 }`}
               >
                 <FileIcon className="w-4 h-4" />
@@ -1921,13 +1835,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     <span className="font-medium text-blue-800 dark:text-blue-100">📋 Case Management:</span>
                     {workflowMetadata.casePriority && (
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        workflowMetadata.casePriority === 'urgent' || workflowMetadata.casePriority === 'critical' 
-                          ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                          : workflowMetadata.casePriority === 'high'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
-                          : workflowMetadata.casePriority === 'medium'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
-                          : 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                        workflowMetadata.casePriority === "urgent" || workflowMetadata.casePriority === "critical" 
+                          ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                          : workflowMetadata.casePriority === "high"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
+                          : workflowMetadata.casePriority === "medium"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                          : "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                       }`}>
                         {casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label}
                       </span>
@@ -1962,22 +1876,22 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{component.label}</h4>
 
                         {/* Component Type Badge */}
-                        {component.type === 'start' && (
+                        {component.type === "start" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
                             Start
                           </span>
                         )}
-                        {component.type === 'form' && (
+                        {component.type === "form" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
                             Form: {component.form}
                           </span>
                         )}
-                        {component.type === 'decision' && (
+                        {component.type === "decision" && (
                           <span className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs font-medium px-2 py-1 rounded-full">
                             Decision
                           </span>
                         )}
-                        {component.type === 'end' && (
+                        {component.type === "end" && (
                           <span className="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 text-xs font-medium px-2 py-1 rounded-full">
                             End
                           </span>
@@ -1985,7 +1899,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       </div>
 
                       {/* Start Component */}
-                      {component.type === 'start' && (
+                      {component.type === "start" && (
                         <div className="bg-green-100 dark:bg-green-800 p-4 rounded-lg border border-green-200 dark:border-green-700">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium text-green-800 dark:text-green-100">Workflow Start</span>
@@ -2010,7 +1924,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       )}
                       
                       {/* Form Component */}
-                      {component.type === 'form' && (
+                      {component.type === "form" && (
                         <div>
                           {component.sla && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
@@ -2019,7 +1933,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           )}
                           {component.pic && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>PIC:</strong> {component.pic.replace('_', ' ').toUpperCase()}
+                              <strong>PIC:</strong> {component.pic.replace("_", " ").toUpperCase()}
                             </div>
                           )}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2033,17 +1947,17 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                   {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
                                 </label>
-                                {field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number' ? (
+                                {field.type === "text" || field.type === "email" || field.type === "tel" || field.type === "number" ? (
                                   <Input
                                     type={field.type}
                                     placeholder={`Enter ${field.label.toLowerCase()}...`}
                                   />
-                                ) : field.type === 'textarea' ? (
+                                ) : field.type === "textarea" ? (
                                   <TextArea
                                     rows={2}
                                     placeholder={`Enter ${field.label.toLowerCase()}...`}
                                   />
-                                ) : field.type === 'select' ? (
+                                ) : field.type === "select" ? (
                                   <Select
                                     options={
                                       (field.options ?? []).map((option: string) => ({
@@ -2054,7 +1968,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                                     placeholder={`Select ${field.label.toLowerCase()}...`}
                                     onChange={() => {}}
                                   />
-                                ) : field.type === 'radio' ? (
+                                ) : field.type === "radio" ? (
                                   <div className="space-y-1">
                                     {field.options?.map((option: string, optIndex: number) => (
                                       <label key={optIndex} className="flex items-center gap-2">
@@ -2067,7 +1981,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                                       </label>
                                     ))}
                                   </div>
-                                ) : field.type === 'checkbox' ? (
+                                ) : field.type === "checkbox" ? (
                                   <div className="space-y-1">
                                     {field.options?.map((option: string, optIndex: number) => (
                                       <label key={optIndex} className="flex items-center gap-2">
@@ -2087,10 +2001,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       )}
                       
                       {/* Decision Component */}
-                      {component.type === 'decision' && (
+                      {component.type === "decision" && (
                         <div className="bg-yellow-100 dark:bg-yellow-800 p-3 rounded border">
                           <div className="text-sm text-gray-700 dark:text-gray-200">
-                            <strong>Condition:</strong> {component.condition || 'No condition specified'}
+                            <strong>Condition:</strong> {component.condition || "No condition specified"}
                           </div>
 
                           {/* Interactive Toggle Buttons */}
@@ -2100,16 +2014,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                             </label>
                             <div className="flex gap-2">
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, 'yes')}
-                                variant={decisionSelections[component.id] === 'yes' ? 'success' : 'outline-success'}
+                                onClick={() => handleDecisionToggle(component.id, "yes")}
+                                variant={decisionSelections[component.id] === "yes" ? "success" : "outline-success"}
                                 size="xs"
                               >
                                 <CheckLineIcon className="w-4 h-4" />
                                 YES
                               </Button>
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, 'no')}
-                                variant={decisionSelections[component.id] === 'no' ? 'error' : 'outline-error'}
+                                onClick={() => handleDecisionToggle(component.id, "no")}
+                                variant={decisionSelections[component.id] === "no" ? "error" : "outline-error"}
                                 size="xs"
                               >
                                 <CloseIcon className="w-4 h-4" />
@@ -2120,13 +2034,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
                           {/* Current Selection Display */}
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            Current path: <strong>{decisionSelections[component.id] || 'yes'}</strong>
+                            Current path: <strong>{decisionSelections[component.id] || "yes"}</strong>
                           </div>
                         </div>
                       )}
 
                       {/* End Component */}
-                      {component.type === 'end' && (
+                      {component.type === "end" && (
                         <div className="bg-red-100 dark:bg-red-800 p-4 rounded-lg border border-red-200 dark:border-red-700">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium text-red-800 dark:text-red-100">Workflow End</span>
@@ -2176,7 +2090,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     Decisions: {Object.entries(decisionSelections).map(([id, decision]) => {
                       const node = nodes.find(n => n.id === id);
                       return `${node?.data.label}: ${decision.toUpperCase()}`;
-                    }).join(', ')}
+                    }).join(", ")}
                   </span>
                 )}
               </div>

@@ -1,164 +1,164 @@
 // /src/components/crud/EnhancedCrudContainer.tsx
 import React, { useState, useCallback, useMemo } from "react";
-import Button from "@/components/ui/button/Button";
-import { SearchBar } from "./SearchBar";
-import { FilterBar } from "./FilterBar";
-import { DisplayModeToggle } from "./DisplayModeToggle";
-// import { EnhancedDataTable } from "./EnhancedDataTable";
-// import { EnhancedCardGrid } from "./EnhancedCardGrid";
-import { Pagination } from "./Pagination";
-import { ToastContainer } from "./ToastContainer";
-import { ConfirmModal } from "./ConfirmModal";
-import { BulkActionBar } from "./BulkActionBar";
-import { ExportMenu } from "./ExportMenu";
-import { AdvancedFilterPanel } from "./AdvancedFilterPanel";
-import { KeyboardShortcuts } from "./KeyboardShortcuts";
-import { PreviewDialog } from "./PreviewDialog";
-import { ClickableCard } from "./ClickableCard";
-import { ClickableTableRow } from "./ClickableTableRow";
-import { usePagination } from "@/hooks/usePagination";
-import { useSort } from "@/hooks/useSort";
-import { useFilter } from "@/hooks/useFilter";
-import { useToast } from "@/hooks/useToast";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog";
-import { useBulkSelection } from "@/hooks/useBulkSelection";
-import { usePreview } from "@/hooks/usePreview";
+import {
+  // ChevronDownIcon,
+  // ChevronUpIcon,
+  InfoIcon
+} from "@/icons";
+// import { RoleHierarchyView } from "@/components/admin/HierarchyView";
+// import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
+import { TableView } from "@/components/admin/TableView";
+import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
+import { BulkActionBar } from "@/components/crud/BulkActionBar";
+import { ClickableCard } from "@/components/crud/ClickableCard";
+// import { ClickableTableRow } from "@/components/crud/ClickableTableRow";
+import { ConfirmModal } from "@/components/crud/ConfirmModal";
+import { DisplayModeToggle } from "@/components/crud/DisplayModeToggle";
+import { ExportMenu } from "@/components/crud/ExportMenu";
+import { FilterBar } from "@/components/crud/FilterBar";
+import { KeyboardShortcuts } from "@/components/crud/KeyboardShortcuts";
+import { Pagination } from "@/components/crud/Pagination";
+import { PreviewDialog } from "@/components/crud/PreviewDialog";
+import { SearchBar } from "@/components/crud/SearchBar";
+import { ToastContainer } from "@/components/crud/ToastContainer";
+// import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useApi } from "@/hooks/useApi";
+import { useBulkSelection } from "@/hooks/useBulkSelection";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { useFilter } from "@/hooks/useFilter";
+import { usePagination } from "@/hooks/usePagination";
+import { usePreview } from "@/hooks/usePreview";
 import { useRealTimeUpdates } from "@/hooks/useRealTimeUpdates";
+import { useSort } from "@/hooks/useSort";
+import { useToast } from "@/hooks/useToast";
+import { apiService } from "@/services/api";
+import type { CrudConfig } from "@/types/crud";
+import type { AdvancedFilter, ApiConfig, BulkAction, CrudFeatures, ExportOption, KeyboardShortcut, PreviewConfig } from "@/types/enhanced-crud";
+// import type { Permission, Role } from "@/types/role";
+// import Checkbox from "@/components/form/input/Checkbox";
+import Button from "@/components/ui/button/Button";
+// import allPermissions from "@/mocks/allPermissions.json";
+// import roles from "@/mocks/roles.json";
 import {
   // exportToCSV,
   exportToJSON
 } from "@/utils/export";
-import { apiService } from "@/services/api";
-import { InfoIcon, ChevronDownIcon, ChevronUpIcon } from "@/icons";
-import type { 
-  BulkAction, 
-  ExportOption, 
-  AdvancedFilter,
-  KeyboardShortcut,
-  CrudFeatures,
-  ApiConfig,
-  PreviewConfig
-} from "@/types/enhanced-crud";
-import type { CrudConfig } from "@/types/crud";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import Checkbox from "@/components/form/input/Checkbox"; 
+
 interface EnhancedCrudContainerProps<T> {
-  data: T[];
-  config: CrudConfig<T>;
-  features?: Partial<CrudFeatures>;
-  previewConfig?: PreviewConfig<T>;
-  apiConfig?: ApiConfig;
-  loading?: boolean;
-  error?: string | null;
-  onRefresh?: () => void;
-  onCreate?: () => void;
-  onUpdate?: (item: T) => void;
-  onDelete?: (id: string) => void;
-  renderCard?: (item: T) => React.ReactNode;
-  customFilterFunction?: (item: T, filters: unknown) => boolean;
-  searchFields?: (keyof T)[];
-  bulkActions?: BulkAction<T>[];
-  exportOptions?: ExportOption[];
   advancedFilters?: AdvancedFilter[];
-  keyboardShortcuts?: KeyboardShortcut[];
+  apiConfig?: ApiConfig;
+  bulkActions?: BulkAction<T>[];
+  config: CrudConfig<T>;
+  data: T[];
+  displayModes?: ("card" | "table" | "matrix" | "hierarchy")[];
   enableDebug?: boolean;
+  error?: string | null;
+  exportOptions?: ExportOption[];
+  features?: Partial<CrudFeatures>;
+  keyboardShortcuts?: KeyboardShortcut[];
+  loading?: boolean;
+  previewConfig?: PreviewConfig<T>;
+  searchFields?: (keyof T)[];
+  customFilterFunction?: (item: T, filters: unknown) => boolean;
+  onCreate?: () => void;
+  onDelete?: (id: string) => void;
   onItemAction?: (action: string, item: T) => void;
   onItemClick?: (item: T) => void;
+  onRefresh?: () => void;
+  onUpdate?: (item: T) => void;
+  renderCard?: (item: T) => React.ReactNode;
+  renderHierarchy?: (item: T) => React.ReactNode;
+  renderMatrix?: () => React.ReactNode;
 }
 
 export const EnhancedCrudContainer = <T extends { id: string }>({
-  data,
-  config,
-  previewConfig,
-  features = {},
-  apiConfig,
-  loading = false,
-  error = null,
-  onRefresh,
-  onCreate,
-  onUpdate,
-  onDelete,
-  renderCard,
-  customFilterFunction,
-  searchFields = ["name", "description", "title"] as (keyof T)[],
-  bulkActions = [],
-  exportOptions = [],
   advancedFilters = [],
-  keyboardShortcuts = [],
+  apiConfig,
+  bulkActions = [],
+  config,
+  data,
+  displayModes = ["card", "table", "matrix", "hierarchy"],
   enableDebug = false,
+  error = null,
+  exportOptions = [],
+  features = {},
+  keyboardShortcuts = [],
+  loading = false,
+  previewConfig,
+  searchFields = ["name", "description", "title"] as (keyof T)[],
+  customFilterFunction,
+  onCreate,
+  onDelete,
   onItemAction,
-  onItemClick
+  onItemClick,
+  onRefresh,
+  onUpdate,
+  renderCard,
+  renderHierarchy,
+  renderMatrix
 }: EnhancedCrudContainerProps<T>) => {
-  const [displayMode, setDisplayMode] = useState<"card" | "table">("card");
+  const [displayMode, setDisplayMode] = useState<"card" | "table" | "matrix" | "hierarchy">("card");
   const [searchInput, setSearchInput] = useState<string>("");
 
-  // Feature flags with defaults
+  // ===================================================================
+  // Feature Flags with Defaults
+  // ===================================================================
+
   const enabledFeatures: CrudFeatures = {
-    search: true,
-    sorting: true,
-    filtering: true,
-    pagination: true,
     bulkActions: true,
+    dragAndDrop: false,
     export: true,
+    filtering: true,
+    keyboardShortcuts: true,
+    pagination: true,
     // preview: true,
     realTimeUpdates: false,
-    dragAndDrop: false,
-    keyboardShortcuts: true,
+    search: true,
+    sorting: true,
     ...features
   };
 
-  // Custom hooks
-  const { filterConfig, filteredData, handleFilter, clearFilters, hasActiveFilters } = 
-    useFilter(data, customFilterFunction, searchFields);
-  
-  const { sortConfig, handleSort, sortedData } = useSort(filteredData);
-  
-  const { 
-    pagination, 
-    totalPages, 
-    startEntry, 
-    endEntry, 
-    goToPage, 
-    changePageSize 
-  } = usePagination(sortedData.length);
+  // ===================================================================
+  // Custom Hooks
+  // ===================================================================
 
+  const { confirmDialog, closeConfirmDialog, handleConfirm, openConfirmDialog } = useConfirmDialog();
+  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
+  const { sortConfig, sortedData, handleSort } = useSort(filteredData);
+  const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(sortedData.length);
   const { toasts, addToast, removeToast } = useToast();
-  const { confirmDialog, openConfirmDialog, closeConfirmDialog, handleConfirm } = useConfirmDialog();
-  
-  // Debug the confirmDialog state changes
-  React.useEffect(() => {
-    console.log("EnhancedCrudContainer: confirmDialog state changed:", confirmDialog);
-  }, [confirmDialog]);
-
   const {
-    selectedItems,
-    // isSelected,
     isAllSelected,
     // isPartialSelected,
+    selectedItems,
+    deselectAll,
+    getSelectedCount,
+    // isSelected,
     selectItem,
     selectAll,
-    deselectAll,
-    toggleSelectAll,
-    getSelectedCount
+    toggleSelectAll
   } = useBulkSelection(sortedData);
 
   // Preview functionality
-  const {
-    previewState,
-    openPreview,
-    closePreview,
-    nextItem,
-    prevItem,
-    canGoNext,
-    canGoPrev
-  } = usePreview<T>();
+  const { canGoNext, canGoPrev, previewState, closePreview, nextItem, openPreview, prevItem } = usePreview<T>();
 
-  // API hooks
-  const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
+  // API functionality
   const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
+  const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
+  
+  // ===================================================================
+  // Debug
+  // ===================================================================
 
-  // Real-time updates
+  // Debug the confirmDialog state changes
+  // React.useEffect(() => {
+  //   console.log("EnhancedCrudContainer: confirmDialog state changed:", confirmDialog);
+  // }, [confirmDialog]);
+
+  // ===================================================================
+  // Real Time Updates
+  // ===================================================================
+
   useRealTimeUpdates<T>({
     endpoint: config.entityNamePlural.toLowerCase(),
     onUpdate: (updatedItem) => {
@@ -176,94 +176,19 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     enabled: enabledFeatures.realTimeUpdates
   });
 
-  // Paginated data
-  const startIndex = enabledFeatures.pagination 
-    ? (pagination.page - 1) * pagination.pageSize 
-    : 0;
-  const endIndex = enabledFeatures.pagination 
-    ? startIndex + pagination.pageSize 
-    : sortedData.length;
+  // ===================================================================
+  // Paginated Data
+  // ===================================================================
+
+  const startIndex = enabledFeatures.pagination ? (pagination.page - 1) * pagination.pageSize : 0;
+  const endIndex = enabledFeatures.pagination ? startIndex + pagination.pageSize : sortedData.length;
   const paginatedData = sortedData.slice(startIndex, endIndex);
 
+  // ===================================================================
   // Handlers
-  const handleSearch = () => {
-    handleFilter("search", searchInput.trim());
-  };
+  // ===================================================================
 
-  const handleClearSearch = () => {
-    setSearchInput("");
-    handleFilter("search", "");
-  };
-
-  const handleDeleteItem = useCallback(async (item: T) => {
-    console.log("handleDeleteItem called for item:", item);
-    
-    openConfirmDialog({
-      type: "delete",
-      entityId: item.id,
-      entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
-      onConfirm: async () => {
-        console.log("Delete confirmed for item:", item.id);
-        try {
-          if (apiConfig) {
-            await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
-          }
-          if (onDelete) onDelete(item.id);
-          addToast("success", `${config.entityName} deleted successfully`);
-        } catch (error) {
-          console.error("Delete failed:", error);
-          addToast("error", `Failed to delete ${config.entityName.toLowerCase()}`);
-        }
-      }
-    });
-  }, [
-    config,
-    deleteApi,
-    onDelete,
-    addToast,
-    openConfirmDialog,
-    apiConfig
-  ]);
-
-  // Handle item actions with special handling for delete
-  const handleItemAction = useCallback((actionKey: string, item: T) => {
-    console.log("handleItemAction called:", { actionKey, itemId: item.id });
-    
-    if (actionKey === "delete") {
-      console.log("Delete action detected, calling handleDeleteItem");
-      handleDeleteItem(item);
-      return;
-    }
-
-    // Find the action in config and execute it
-    const action = config.actions?.find(a => a.key === actionKey);
-    if (action) {
-      console.log("Executing action from config:", action.key);
-      action.onClick(item);
-    } else {
-      console.warn("Action not found in config:", actionKey);
-    }
-
-    // Call custom action handler if provided
-    if (onItemAction) {
-      onItemAction(actionKey, item);
-    }
-  }, [
-    handleDeleteItem,
-    config.actions,
-    onItemAction
-  ]);
-
-  // Create enhanced actions with proper delete handling
-  const enhancedActions = useMemo(() => {
-    if (!config.actions) return undefined;
-
-    return config.actions.map(action => ({
-      ...action,
-      onClick: (item: T) => handleItemAction(action.key, item)
-    }));
-  }, [config.actions, handleItemAction]);
-
+  // Handle bulk actions
   const handleBulkAction = useCallback(async (action: BulkAction<T>) => {
     if (action.confirmationRequired) {
       openConfirmDialog({
@@ -279,24 +204,61 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             await action.onClick(selectedItems);
             deselectAll();
             addToast("success", `${action.label} completed successfully`);
-          } catch (error) {
+          }
+          catch (error) {
             addToast("error", `${action.label} failed`);
             console.error(error);
           }
         }
       });
-    } else {
+    }
+    else {
       try {
         await action.onClick(selectedItems);
         deselectAll();
         addToast("success", `${action.label} completed successfully`);
-      } catch (error) {
+      }
+      catch (error) {
         addToast("error", `${action.label} failed`);
         console.error(error);
       }
     }
-  }, [selectedItems, getSelectedCount, deselectAll, addToast, openConfirmDialog]);
+  }, [selectedItems, addToast, deselectAll, getSelectedCount, openConfirmDialog]);
 
+  // Handle clear search
+  const handleClearSearch = () => {
+    setSearchInput("");
+    handleFilter("search", "");
+  };
+
+  // Handle delete item
+  const handleDeleteItem = useCallback(async (item: T) => {
+    console.log("handleDeleteItem called for item:", item);
+    
+    openConfirmDialog({
+      type: "delete",
+      entityId: item.id,
+      entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
+      onConfirm: async () => {
+        console.log("Delete confirmed for item:", item.id);
+        try {
+          if (apiConfig) {
+            await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
+          }
+          if (onDelete) {
+            onDelete(item.id);
+          }
+          addToast("success", `${config.entityName} deleted successfully`);
+        }
+        catch (error) {
+          console.error("Delete failed:", error);
+          addToast("error", `Failed to delete ${config.entityName.toLowerCase()}`);
+        }
+      }
+    });
+  }, [apiConfig, config, deleteApi, addToast, onDelete, openConfirmDialog]);
+
+  // Handle export
   const handleExport = useCallback(async (option: ExportOption, exportData: T[]) => {
     try {
       const filename = `${config.entityNamePlural.toLowerCase()}_${new Date().toISOString().split("T")[0]}`;
@@ -321,20 +283,102 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       }
       
       addToast("success", `Data exported as ${option.format.toUpperCase()}`);
-    } catch (error) {
+    }
+    catch (error) {
       addToast("error", `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       throw error;
     }
   }, [config.entityNamePlural, addToast]);
+
+  // Handle item actions with special handling for delete
+  const handleItemAction = useCallback((actionKey: string, item: T) => {
+    console.log("handleItemAction called:", { actionKey, itemId: item.id });
+    
+    if (actionKey === "delete") {
+      console.log("Delete action detected, calling handleDeleteItem");
+      handleDeleteItem(item);
+      return;
+    }
+
+    // Find the action in config and execute it
+    const action = config.actions?.find(a => a.key === actionKey);
+    if (action) {
+      console.log("Executing action from config:", action.key);
+      action.onClick(item);
+    }
+    else {
+      console.warn("Action not found in config:", actionKey);
+    }
+
+    // Call custom action handler if provided
+    if (onItemAction) {
+      onItemAction(actionKey, item);
+    }
+  }, [config.actions, handleDeleteItem, onItemAction]);
 
   // Handle item click for preview
   const handleItemClick = useCallback((item: T) => {
     if (previewConfig) {
       openPreview(item, sortedData);
     }
-  }, [previewConfig, openPreview, sortedData]);
+  }, [previewConfig, sortedData, openPreview]);
 
   const actualClickHandler = onItemClick || handleItemClick;
+
+  // Handle search
+  const handleSearch = () => {
+    handleFilter("search", searchInput.trim());
+  };
+
+  // ===================================================================
+  // Utility Functions
+  // ===================================================================
+
+  // Create enhanced actions with proper delete handling
+  const enhancedActions = useMemo(() => {
+    if (!config.actions) return undefined;
+
+    return config.actions.map(action => ({
+      ...action,
+      onClick: (item: T) => handleItemAction(action.key, item)
+    }));
+  }, [config.actions, handleItemAction]);
+
+  // Default bulk actions
+  const defaultBulkActions: BulkAction<T>[] = [
+    {
+      key: "delete",
+      label: "Delete Selected",
+      variant: "error",
+      onClick: async (items) => {
+        const ids = items.map(item => item.id);
+        if (apiConfig) {
+          await bulkDeleteApi.execute(apiConfig.endpoints.bulkDelete, ids);
+        }
+        ids.forEach(id => onDelete && onDelete(id));
+      },
+      confirmationRequired: true,
+      confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural.toLowerCase()}? This action cannot be undone.`
+    }
+  ];
+
+  const allBulkActions = [...defaultBulkActions, ...bulkActions];
+
+  // Default export options
+  const defaultExportOptions: ExportOption[] = [
+    {
+      key: "csv",
+      label: "CSV File",
+      format: "csv"
+    },
+    {
+      key: "json",
+      label: "JSON File",
+      format: "json"
+    }
+  ];
+
+  const allExportOptions = [...defaultExportOptions, ...exportOptions];
 
   // Default keyboard shortcuts
   const defaultShortcuts: KeyboardShortcut[] = [
@@ -365,42 +409,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   const allShortcuts = [...defaultShortcuts, ...keyboardShortcuts];
 
-  // Default export options
-  const defaultExportOptions: ExportOption[] = [
-    {
-      key: "csv",
-      label: "CSV File",
-      format: "csv"
-    },
-    {
-      key: "json",
-      label: "JSON File",
-      format: "json"
-    }
-  ];
-
-  const allExportOptions = [...defaultExportOptions, ...exportOptions];
-
-  // Default bulk actions
-  const defaultBulkActions: BulkAction<T>[] = [
-    {
-      key: "delete",
-      label: "Delete Selected",
-      variant: "error",
-      onClick: async (items) => {
-        const ids = items.map(item => item.id);
-        if (apiConfig) {
-          await bulkDeleteApi.execute(apiConfig.endpoints.bulkDelete, ids);
-        }
-        ids.forEach(id => onDelete && onDelete(id));
-      },
-      confirmationRequired: true,
-      confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural.toLowerCase()}? This action cannot be undone.`
-    }
-  ];
-
-  const allBulkActions = [...defaultBulkActions, ...bulkActions];
-
   return (
     <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
       <div className="mx-auto w-full">
@@ -416,10 +424,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               {/* Controls */}
               <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
                 <div className="xl:flex items-center gap-4">
+                  {/* Display Modes (Card / Default:Table / Matrix / Hierarchy) */}
                   <div className="mb-2 xl:mb-0">
-                    <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+                    <DisplayModeToggle mode={displayMode} list={displayModes} onChange={setDisplayMode} />
                   </div>
 
+                  {/* Search Bar */}
                   {enabledFeatures.search && (
                     <div className="mb-2 xl:mb-0">
                       <SearchBar
@@ -445,6 +455,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                     </div>
                   )}
 
+                  {/* Advanced Filters */}
                   {advancedFilters.length > 0 && (
                     <div className="mb-2 xl:mb-0">
                       <AdvancedFilterPanel
@@ -459,6 +470,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                     </div>
                   )}
 
+                  {/* Export Button */}
                   {enabledFeatures.export && allExportOptions.length > 0 && (
                     <div className="mb-2 xl:mb-0">
                       <ExportMenu
@@ -468,19 +480,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                       />
                     </div>
                   )}
-
-                  {/*
-                  {previewConfig && (
-                    <div className="mb-2 xl:mb-0">
-                      <span className="text-sm text-blue-600 dark:text-blue-400">
-                        (Click items to preview)
-                      </span>
-                    </div>
-                  )}
-                  */}
                 </div>
               </div>
             </div>
+
+            {/* Create Button */}
             {onCreate && (
               <Button onClick={onCreate} variant="primary" className="h-11">
                 Create {config.entityName}
@@ -505,10 +509,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
         {/* Content */}
         {loading ? (
+          // Loading State
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400">Loading...</div>
           </div>
         ) : error ? (
+          // Error
           <div className="text-center py-12">
             <div className="text-red-500 dark:text-red-400 mb-4">{error}</div>
             {onRefresh && (
@@ -518,16 +524,16 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             )}
           </div>
         ) : paginatedData.length === 0 ? (
+          // No Data
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">
               No {config.entityNamePlural.toLowerCase()} found
             </div>
+
             <p className="text-gray-400 dark:text-gray-500 mb-4">
-              {hasActiveFilters
-                ? "Try adjusting your filters or search terms"
-                : `Create your first ${config.entityName.toLowerCase()} to get started`
-              }
+              {hasActiveFilters ? "Try adjusting your filters or search terms" : `Create your first ${config.entityName.toLowerCase()} to get started`}
             </p>
+
             {hasActiveFilters && (
               <Button onClick={clearFilters} variant="primary">
                 Clear Filters
@@ -535,122 +541,65 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             )}
           </div>
         ) : displayMode === "card" && renderCard ? (
-          // <EnhancedCardGrid
-          //   data={paginatedData}
-          //   renderCard={renderCard}
-          //   actions={enhancedActions}
-          //   selectedItems={selectedItems}
-          //   onSelectItem={selectItem}
-          //   bulkSelectionEnabled={enabledFeatures.bulkActions}
-          //   className="mb-8"
-          // />
-
+          // Card View
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8">
             {paginatedData.map((item) => (
               <ClickableCard
                 key={item.id}
                 item={item}
-                // onClick={handleItemClick}
-                onClick={handleItemClick}
                 actions={enhancedActions}
-                selectedItems={selectedItems}
-                onSelectItem={selectItem}
                 bulkSelectionEnabled={enabledFeatures.bulkActions}
+                selectedItems={selectedItems}
+                onClick={handleItemClick}
+                onSelectItem={selectItem}
               >
                 {renderCard(item)}
               </ClickableCard>
             ))}
           </div>
-        ) : (
-          // <EnhancedDataTable
-          //   data={paginatedData}
-          //   columns={config.columns}
-          //   sortConfig={sortConfig}
-          //   onSort={handleSort}
-          //   actions={enhancedActions}
-          //   selectedItems={selectedItems}
-          //   onSelectItem={selectItem}
-          //   onSelectAll={toggleSelectAll}
-          //   isAllSelected={isAllSelected}
-          //   isPartialSelected={isPartialSelected}
-          //   bulkSelectionEnabled={enabledFeatures.bulkActions}
-          //   className="mb-8"
-          // />
-
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
-            <div className="overflow-x-auto">
-              <Table className="w-full">
-                <TableHeader className="bg-gray-50 dark:bg-gray-800">
-                  <TableRow>
-                    {enabledFeatures.bulkActions && (
-                      <TableCell isHeader className="px-6 py-3 text-left w-12">
-                        <Checkbox
-                          checked={isAllSelected}
-                          // ref={(input) => {
-                          //   if (input) input.indeterminate = isPartialSelected;
-                          // }}
-                          onChange={toggleSelectAll}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </TableCell>
-                    )}
-                    
-                    {config.columns.map((column) => (
-                      <TableCell isHeader key={column.key as string} className="px-6 py-3 text-left">
-                        {column.sortable ? (
-                          <button
-                            onClick={() => handleSort(column.key as keyof T)}
-                            className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                          >
-                            {column.label}
-                            {sortConfig.key === column.key && (
-                              sortConfig.direction === "asc" 
-                                ? <ChevronUpIcon className="w-4 h-4" /> 
-                                : <ChevronDownIcon className="w-4 h-4" />
-                            )}
-                          </button>
-                        ) : (
-                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            {column.label}
-                          </span>
-                        )}
-                      </TableCell>
-                    ))}
-                    
-                    {enhancedActions && enhancedActions.length > 0 && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                  {paginatedData.map((item) => (
-                    <ClickableTableRow
-                      key={item.id}
-                      item={item}
-                      columns={config.columns}
-                      actions={enhancedActions}
-                      // onClick={handleItemClick}
-                      onClick={actualClickHandler}
-                      selectedItems={selectedItems}
-                      onSelectItem={selectItem}
-                      bulkSelectionEnabled={enabledFeatures.bulkActions}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+        ) : displayMode === "matrix" && renderMatrix ? (
+          // Matrix View
+          <>{renderMatrix()}</>
+        ) 
+        : displayMode === "hierarchy" && renderHierarchy ? (
+          // Hierarchy View
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8">
+            {/* <RoleHierarchyView /> */}
           </div>
+        ) : (
+          // Table View (Default)
+          config?.columns ? (
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
+              <div className="overflow-x-auto">
+                <TableView
+                  data={paginatedData}
+                  columns={config.columns}
+                  sortConfig={sortConfig as { key: keyof T; direction: "asc" | "desc" }}
+                  onSort={handleSort}
+                  onClickItem={actualClickHandler}
+                  actions={enhancedActions}
+                  selectedItems={selectedItems}
+                  selectItem={selectItem}
+                  isAllSelected={isAllSelected}
+                  toggleSelectAll={toggleSelectAll}
+                  bulkSelectionEnabled={enabledFeatures.bulkActions}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-gray-500 dark:text-gray-400">No columns defined for this entity</div>
+            </div>
+          )
         )}
 
         {/* Pagination */}
-        {enabledFeatures.pagination && (
+        {enabledFeatures.pagination && displayMode !== "matrix" && displayMode !== "hierarchy" && (
           <Pagination
-            pagination={{ ...pagination, total: sortedData.length }}
-            totalPages={totalPages}
-            startEntry={startEntry}
             endEntry={endEntry}
+            pagination={{ ...pagination, total: sortedData.length }}
+            startEntry={startEntry}
+            totalPages={totalPages}
             onPageChange={goToPage}
             onPageSizeChange={changePageSize}
           />
@@ -667,9 +616,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             onAction={handleBulkAction}
           />
         )}
-
-        {/* Toast Notifications */}
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Confirmation Dialog */}
         <ConfirmModal
@@ -693,9 +639,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           </>
         )}
 
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+
         {/* Debug Info (only in development) */}
         {enableDebug && (
-          // ""
           <div
             className="
               bg-gray-200

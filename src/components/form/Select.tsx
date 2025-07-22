@@ -1,9 +1,4 @@
-import
-  {
-    useEffect,
-    useState
-  }
-from "react";
+import { useEffect, useState } from "react";
 
 interface Option {
   value: string;
@@ -13,12 +8,14 @@ interface Option {
 interface SelectProps {
   options: Option[];
   placeholder?: string;
-  onChange: (value: string) => void;
+  // onChange: (value: string) => void;
+  onChange: (value: string | string[]) => void;
   // onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Changed: now passes the event
   className?: string;
   // defaultValue?: string;
-  value?: string;
+  value?: string | string[];
   disabled?: boolean;
+  multiple?: boolean;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -29,21 +26,32 @@ const Select: React.FC<SelectProps> = ({
   // defaultValue = "",
   value = "",
   disabled = false,
+  multiple = false
 }) => {
   // Manage the selected value
   // const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
 
-   // Use controlled component pattern - sync with external value
-  const [selectedValue, setSelectedValue] = useState<string>(value);
+  // Use controlled component pattern - sync with external value
+  // const [selectedValue, setSelectedValue] = useState<string>(value);
+  const [selectedValue, setSelectedValue] = useState<string | string[]>(
+    multiple ? ([] as string[]) : ""
+  );
 
   // Update internal state when external value changes
   useEffect(() => {
-    setSelectedValue(value);
-  }, [value]);
+    // setSelectedValue(value);
+    setSelectedValue(value ?? (multiple ? [] : ""));
+  }, [
+    value,
+    multiple
+  ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     // const value = e.target.value;
-    const newValue = e.target.value;
+    // const newValue = e.target.value;
+    const newValue = multiple
+      ? Array.from(e.target.selectedOptions, (option) => option.value)
+      : e.target.value;
     // setSelectedValue(value);
     setSelectedValue(newValue);
     // onChange(value); // Trigger parent handler
@@ -57,11 +65,12 @@ const Select: React.FC<SelectProps> = ({
         selectedValue
           ? "text-gray-800 dark:text-white/90"
           : "text-gray-400 dark:text-gray-400"
-      } ${className}`}
+        } ${multiple ? "min-h-64" : "h-11"} ${className}`}
       value={selectedValue}
       onChange={handleChange}
       // defaultValue={defaultValue}
       disabled={disabled}
+      multiple={multiple}
     >
       {/* Placeholder option */}
       <option

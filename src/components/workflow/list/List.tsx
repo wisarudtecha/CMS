@@ -1,38 +1,21 @@
 // /src/components/workflow/list/List.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-// import { CrudContainer } from "@/components/crud/CrudContainer";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import {
-  BoltIcon,
-  ListIcon,
-  TimeIcon,
-  VideoIcon
-} from "@/icons";
+import { BoltIcon, ListIcon, TimeIcon, VideoIcon } from "@/icons";
 import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Workflow } from "@/types/workflow";
 import Badge from "@/components/ui/badge/Badge";
 import workflowList from "@/mocks/workflowList.json";
-
-interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "draft" | "testing";
-  createdAt: string;
-  lastRun?: string;
-  runCount: number;
-  category?: string;
-  tags?: string[];
-  author?: string;
-  version?: string;
-  config?: unknown;
-}
 
 const WorkflowListComponent: React.FC = () => {
   const navigate = useNavigate();
 
-  // Mock data
+  // ===================================================================
+  // Mock Data
+  // ===================================================================
+
   const data: Workflow[] = workflowList as Workflow[];
 
   // ===================================================================
@@ -501,37 +484,8 @@ const WorkflowListComponent: React.FC = () => {
   // ===================================================================
 
   return (
-    // <CrudContainer
-    //   data={data}
-    //   config={config}
-    //   onCreate={() => navigate("/workflow/editor/v2")}
-    //   renderCard={renderCard}
-    //   searchFields={["name", "description", "category"]}
-    // />
-
     <>
       <EnhancedCrudContainer
-        data={data}
-        config={config}
-        previewConfig={previewConfig}
-        features={{
-          search: true,
-          sorting: true,
-          filtering: true,
-          pagination: true,
-          bulkActions: true,
-          export: true,
-          realTimeUpdates: false, // Disabled for demo
-          keyboardShortcuts: true
-        }}
-        onCreate={() => navigate("/workflow/editor/v2")}
-        onRefresh={() => window.location.reload()}
-        onDelete={handleDelete}
-        onItemAction={handleAction}
-        renderCard={renderCard}
-        searchFields={["name", "description", "category"]}
-        bulkActions={bulkActions}
-        exportOptions={exportOptions}
         advancedFilters={advancedFilters}
         apiConfig={{
           baseUrl: "/api",
@@ -545,7 +499,35 @@ const WorkflowListComponent: React.FC = () => {
             export: "/workflows/export"
           }
         }}
+        bulkActions={bulkActions}
+        config={config}
+        data={data}
+        displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
+        // error={null}
+        exportOptions={exportOptions}
+        features={{
+          search: true,
+          sorting: true,
+          filtering: true,
+          pagination: true,
+          bulkActions: true,
+          export: true,
+          realTimeUpdates: false, // Disabled for demo
+          keyboardShortcuts: true
+        }}
+        // keyboardShortcuts={[]}
+        // loading={false}
+        previewConfig={previewConfig}
+        searchFields={["name", "description", "category"]}
+        // customFilterFunction={() => true}
+        onCreate={() => navigate("/workflow/editor/v2")}
+        onDelete={handleDelete}
+        onItemAction={handleAction}
+        // onItemClick={(item) => navigate(`/role/${item.id}`)}
+        onRefresh={() => window.location.reload()}
+        // onUpdate={() => {}}
+        renderCard={renderCard}
       />
     </>
   );

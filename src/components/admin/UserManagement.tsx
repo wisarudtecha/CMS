@@ -2,41 +2,36 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import {
-  CheckLineIcon,
-  ChevronUpIcon,
-  CloseIcon,
-  TimeIcon,
-  UserIcon
-} from "@/icons";
-import {
-  formatLastLogin 
-} from "@/utils/crud";
-import { PreviewConfig } from "@/types/enhanced-crud"
-import {
-  UserEntity,
-  Role,
-  UserMeta,
-  UserAddress,
-  UserMetrics
-} from "@/types/user";
-// import Badge from "@/components/ui/badge/Badge";
-// import Button from "@/components/ui/button/Button";
-import roleList from "@/mocks/roleList.json";
+import { CheckLineIcon, ChevronUpIcon, CloseIcon, TimeIcon, UserIcon } from "@/icons";
+import { UserCard } from "@/components/admin/UserCard";
+import { formatLastLogin } from "@/utils/crud";
 import { mapUsersWithRoles } from "@/utils/mapUsersWithRoles";
-import UserMetricsCard from "@/components/admin/UserMetricsCard";
-import UserMetaCard from "@/components/UserProfile/UserMetaCard";
-import UserInfoCard from "@/components/UserProfile/UserInfoCard";
+import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { UserEntity, Role, UserMetrics, UserMeta, UserAddress } from "@/types/user";
+import AuditTrailViewer from "@/components/admin/AuditTrailViewer";
+import MetricsView from "@/components/admin/MetricsView";
 import UserAddressCard from "@/components/UserProfile/UserAddressCard";
+import UserInfoCard from "@/components/UserProfile/UserInfoCard";
+import UserMetaCard from "@/components/UserProfile/UserMetaCard";
+import roleList from "@/mocks/roleList.json";
 
-// Main Component
 const UserManagementComponent: React.FC = () => {
   const navigate = useNavigate();
 
-  // Mock Role Data
+  // ===================================================================
+  // Mock Data
+  // ===================================================================
+
+  const mockMetrics: UserMetrics = {
+    totalUsers: 4,
+    activeUsers: 2,
+    newThisMonth: 1,
+    suspendedUsers: 1,
+    lastMonthGrowth: 0.5
+  };
+
   const roles: Role[] = roleList as Role[];
   
-  // Mock User Data
   const data: UserEntity[] = useMemo(() => mapUsersWithRoles(), []);
 
   // ===================================================================
@@ -61,7 +56,7 @@ const UserManagementComponent: React.FC = () => {
         label: "User",
         sortable: true,
         render: (userItem: UserEntity) => (
-          <div className={`flex items-center gap-3 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
+          <div className={`flex items-center gap-3 ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}>
             {userItem.meta?.avatar ? (
               <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
                 <img src={userItem.meta?.avatar} alt="user" />
@@ -93,7 +88,7 @@ const UserManagementComponent: React.FC = () => {
             //   {roleConfig?.name || "Guest"}
             // </Badge>
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white ${userItem.status === "suspended" ? "opacity-50" : ""}`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
             >
               {roleConfig?.name || "Guest"}
             </span>
@@ -105,7 +100,7 @@ const UserManagementComponent: React.FC = () => {
         label: "Department",
         sortable: true,
         render: (userItem: UserEntity) => {
-          return (<span className={`${userItem.status === "suspended" ? "opacity-50" : ""}`}>{userItem.department}</span>);
+          return (<span className={`text-gray-900 dark:text-white ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}>{userItem.department}</span>);
         }
       },
       {
@@ -113,7 +108,7 @@ const UserManagementComponent: React.FC = () => {
         label: "Job Title",
         sortable: true,
         render: (userItem: UserEntity) => {
-          return (<span className={`${userItem.status === "suspended" ? "opacity-50" : ""}`}>{userItem.jobTitle}</span>);
+          return (<span className={`text-gray-900 dark:text-white ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}>{userItem.jobTitle}</span>);
         }
       },
       {
@@ -128,7 +123,7 @@ const UserManagementComponent: React.FC = () => {
           }[userItem.status];
           const Icon = statusConfig.icon;
           return (
-            <div className={`flex items-center gap-1 ${statusConfig.color} ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
+            <div className={`flex items-center gap-1 ${statusConfig.color} ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}>
               <Icon className="w-4 h-4" />
               <span className="text-sm font-medium capitalize">{userItem.status}</span>
             </div>
@@ -140,7 +135,7 @@ const UserManagementComponent: React.FC = () => {
         label: "Last Login",
         sortable: true,
         render: (userItem: UserEntity) => (
-          <span className={`text-sm text-gray-500 dark:text-gray-400 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
+          <span className={`text-sm text-gray-500 dark:text-gray-400 ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}>
             {formatLastLogin(userItem.lastLogin)}
           </span>
         )
@@ -209,8 +204,9 @@ const UserManagementComponent: React.FC = () => {
         key: "auditLog",
         label: "Audit Log",
         // icon: FileIcon,
-        render: (userItem: UserEntity) => (
-          <pre>{JSON.stringify(userItem, null, 2)}</pre>
+        render: () => (
+          // <pre>{JSON.stringify(userItem, null, 2)}</pre>
+          <AuditTrailViewer isOpen={true} />
         )
       }
     ],
@@ -241,7 +237,7 @@ const UserManagementComponent: React.FC = () => {
         // icon: CheckLineIcon,
         variant: "error",
         onClick: (userItem: UserEntity, closePreview: () => void) => {
-          console.log("Closing case:", userItem.id);
+          console.log("Delete user:", userItem.id);
           closePreview();
         }
       }
@@ -355,64 +351,7 @@ const UserManagementComponent: React.FC = () => {
 
   const renderCard = (userItem: UserEntity) => {
     const roleConfig = roles.find(r => r.id === userItem.roleId);
-    const statusConfig = {
-      "active": { color: "text-green-600 dark:text-green-400", icon: CheckLineIcon },
-      "inactive": { color: "text-yellow-600 dark:text-yellow-400", icon: TimeIcon },
-      "suspended": { color: "text-red-600 dark:text-red-400", icon: CloseIcon }
-    }[userItem.status];
-    const Icon = statusConfig.icon;
-
-    return (
-      <>
-        <div className={`xl:flex items-start justify-between mb-4 ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
-          <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
-            {userItem.meta?.avatar ? (
-              <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-                <img src={userItem.meta?.avatar} alt="user" />
-              </div>
-            ) : (
-              <div className="w-5 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {userItem.firstName[0]}{userItem.lastName[0]}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                {userItem.firstName} {userItem.lastName}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                {userItem.email}
-              </p>
-            </div>
-          </div>
-          <div className="xl:flex flex-col gap-1 items-end flex-shrink-0">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleConfig?.color} mr-2 xl:mr-0 text-white`}>
-              {roleConfig?.name || "Guest"}
-            </span>
-            <span className={`text-xs font-medium ${statusConfig.color} capitalize`}>
-              <Icon className="w-4 h-4 inline mr-1" />
-              {userItem.status}
-            </span>
-          </div>
-        </div>
-
-        {/* Additional Info */}
-        <div className={`xl:flex items-center justify-between ${userItem.status === "suspended" ? "opacity-50" : ""}`}>
-          <div className="xl:flex items-center gap-4 text-xs ">
-            <div className="xl:flex items-center gap-1 min-h-4">
-              <span>{userItem.jobTitle}</span>
-            </div>
-          </div>
-          
-          {userItem.lastLogin && (
-            <div className="flex items-center gap-1 text-xs">
-              <span className="text-gray-500 dark:text-gray-400">
-                Last Login {formatLastLogin(userItem.lastLogin)}
-              </span>
-            </div>
-          )}
-        </div>
-      </>
-    );
+    return <UserCard user={userItem as UserEntity} role={roleConfig as Role} />
   };
 
   // ===================================================================
@@ -435,67 +374,18 @@ const UserManagementComponent: React.FC = () => {
   // Render Component
   // ===================================================================
 
-  const mockMetrics: UserMetrics = {
-    totalUsers: 4,
-    activeUsers: 2,
-    newThisMonth: 1,
-    suspendedUsers: 1,
-    lastMonthGrowth: 0.5
-  };
+  const attrMetrics = [
+    { key: "totalUsers", title: "Total Users", icon: UserIcon, color: "blue", className: "text-blue-600" },
+    { key: "activeUsers", title: "Active Users", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "newThisMonth", title: "New This Month", icon: ChevronUpIcon, color: "purple", className: "text-purple-600", trend: mockMetrics.lastMonthGrowth },
+    { key: "suspendedUsers", title: "Suspended Users", icon: CloseIcon, color: "red", className: "text-red-600" },
+  ];
 
   return (
     <>
-      {/* Metrics Cards */}
-      <div className="xl:grid grid-cols-1 md:grid-cols-4 gap-6">
-        <UserMetricsCard
-          title="Total Users"
-          value={mockMetrics.totalUsers}
-          icon={<UserIcon className="w-6 h-6 text-blue-600" />}
-          color="blue"
-        />
-        <UserMetricsCard
-          title="Active Users"
-          value={mockMetrics.activeUsers}
-          icon={<CheckLineIcon className="w-6 h-6 text-green-600" />}
-          color="green"
-        />
-        <UserMetricsCard
-          title="New This Month"
-          value={mockMetrics.newThisMonth}
-          icon={<ChevronUpIcon className="w-6 h-6 text-purple-600" />}
-          trend={mockMetrics.lastMonthGrowth}
-          color="purple"
-        />
-        <UserMetricsCard
-          title="Suspended"
-          value={mockMetrics.suspendedUsers}
-          icon={<CloseIcon className="w-6 h-6 text-red-600" />}
-          color="red"
-        />
-      </div>
+      <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} />
 
       <EnhancedCrudContainer
-        data={data}
-        config={config}
-        previewConfig={previewConfig}
-        features={{
-          search: true,
-          sorting: true,
-          filtering: true,
-          pagination: true,
-          bulkActions: true,
-          export: true,
-          realTimeUpdates: false, // Disabled for demo
-          keyboardShortcuts: true
-        }}
-        onCreate={() => navigate("/user/create")}
-        onRefresh={() => window.location.reload()}
-        onDelete={handleDelete}
-        onItemAction={handleAction}
-        renderCard={renderCard}
-        searchFields={["firstName", "lastName", "email", "department", "jobTitle"]}
-        bulkActions={bulkActions}
-        exportOptions={exportOptions}
         advancedFilters={advancedFilters}
         apiConfig={{
           baseUrl: "/api",
@@ -509,7 +399,35 @@ const UserManagementComponent: React.FC = () => {
             export: "/users/export"
           }
         }}
+        bulkActions={bulkActions}
+        config={config}
+        data={data}
+        displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
+        // error={null}
+        exportOptions={exportOptions}
+        features={{
+          search: true,
+          sorting: true,
+          filtering: true,
+          pagination: true,
+          bulkActions: true,
+          export: true,
+          realTimeUpdates: false, // Disabled for demo
+          keyboardShortcuts: true
+        }}
+        // keyboardShortcuts={[]}
+        // loading={false}
+        previewConfig={previewConfig}
+        searchFields={["firstName", "lastName", "email", "department", "jobTitle"]}
+        // customFilterFunction={() => true}
+        onCreate={() => navigate("/user/create")}
+        onDelete={handleDelete}
+        onItemAction={handleAction}
+        // onItemClick={(item) => navigate(`/role/${item.id}`)}
+        onRefresh={() => window.location.reload()}
+        // onUpdate={() => {}}
+        renderCard={renderCard}
       />
     </>
   );

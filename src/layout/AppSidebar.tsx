@@ -99,7 +99,7 @@ const AppSidebar: React.FC = () => {
       name: "System Configuration", // System Configuration
       subItems: [
         { name: "User Management", path: "/users", pro: false },  // User Management
-        { name: "Roles & Privileges", path: "/role", pro: false },  // Roles & Privileges
+        { name: "Roles & Privileges", path: "/roles", pro: false },  // Roles & Privileges
         { name: "Organization Management", path: "/organization", pro: false },  // Organization Management
         { name: "Unit Management", path: "/unit", pro: false },  // Unit Management
         { name: "Service Management", path: "/service", pro: false },  // Service Management

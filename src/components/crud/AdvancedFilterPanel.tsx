@@ -30,6 +30,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   const [localValues, setLocalValues] = useState<FilterConfig>(values);
 
   const handleFilterChange = (key: string, value: unknown) => {
+    console.log(value);
     setLocalValues(prev => ({ ...prev, [key]: value }));
   };
 
@@ -52,10 +53,11 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
       case "select":
         return (
           <Select
-            value={value as string || ""}
+            value={value as string | string[] || ""}
             onChange={(newValue) => handleFilterChange(filter.key, newValue)}
             options={filter.options || []}
             placeholder={filter.placeholder}
+            multiple={filter.multiple}
           />
         );
 

@@ -2,29 +2,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import { AlertHexaIcon, CalenderIcon, ChatIcon, CheckCircleIcon, ChevronUpIcon, FileIcon, FolderIcon, TimeIcon, UserIcon } from "@/icons";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
-import {
-  AlertHexaIcon,
-  CalenderIcon,
-  ChatIcon,
-  // CheckLineIcon,
-  CheckCircleIcon,
-  ChevronUpIcon,
-  FileIcon,
-  FolderIcon,
-  // InfoIcon,
-  // PencilIcon,
-  // PieChartIcon,
-  TimeIcon,
-  UserIcon,
-} from "@/icons";
 import { formatDate } from "@/utils/crud";
-import { PreviewConfig } from "@/types/enhanced-crud"
-import type {
-  CaseEntity,
-  // ProgressStep
-} from "@/types/case";
+import type { CaseEntity } from "@/types/case";
+import type { PreviewConfig } from "@/types/enhanced-crud";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import caseHistoryList from "@/mocks/caseHistoryList.json";
@@ -32,7 +15,10 @@ import caseHistoryList from "@/mocks/caseHistoryList.json";
 const CaseHistoryComponent: React.FC = () => {
   const navigate = useNavigate();
 
-  // Mock Case Data
+  // ===================================================================
+  // Mock Data
+  // ===================================================================
+
   const data: CaseEntity[] = caseHistoryList as CaseEntity[];
 
   // ===================================================================
@@ -190,42 +176,6 @@ const CaseHistoryComponent: React.FC = () => {
   // Preview Configuration
   // ===================================================================
 
-  // Generate progress steps based on case status
-  // const getProgressSteps = (caseItem: CaseEntity): ProgressStep[] => {
-  //   const steps: ProgressStep[] = [
-  //     { key: 'received', label: 'Received', completed: true, active: false, timestamp: caseItem.createdAt },
-  //     { key: 'assigned', label: 'Assigned', completed: false, active: false },
-  //     { key: 'acknowledged', label: 'Acknowledged', completed: false, active: false },
-  //     { key: 'en-route', label: 'En Route', completed: false, active: false },
-  //     { key: 'on-site', label: 'On Site', completed: false, active: false },
-  //     { key: 'completed', label: 'Completed', completed: false, active: false, timestamp: caseItem.resolvedAt }
-  //   ];
-  //   // Update steps based on current status
-  //   switch (caseItem.status) {
-  //     case 'open':
-  //       steps[0].completed = true;
-  //       steps[1].active = true;
-  //       break;
-  //     case 'in-progress':
-  //       steps[0].completed = true;
-  //       steps[1].completed = true;
-  //       steps[2].completed = true;
-  //       steps[3].active = true;
-  //       break;
-  //     case 'resolved':
-  //     case 'closed':
-  //       steps.forEach((step, index) => {
-  //         if (index < steps.length - 1) step.completed = true;
-  //         else if (index === steps.length - 1) {
-  //           step.completed = true;
-  //           step.active = false;
-  //         }
-  //       });
-  //       break;
-  //   }
-  //   return steps;
-  // };
-
   const getPriorityConfig = (caseItem: CaseEntity) => {
     const configs = {
       'low': { color: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100', label: 'Low' },
@@ -285,50 +235,6 @@ const CaseHistoryComponent: React.FC = () => {
         render: (caseItem: CaseEntity) => (
           <>
             <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
-              {/* Progress Timeline and Progress Line */}
-              {/*
-              <div>
-                <div className="flex items-center justify-between relative">
-                  <div className="absolute top-6 left-6 right-6 h-0.5 bg-gray-600"></div>
-                  <div 
-                    className="absolute top-6 left-6 h-0.5 bg-blue-500 transition-all duration-500"
-                    style={{ 
-                      width: `${(getProgressSteps(caseItem).filter(s => s.completed).length / getProgressSteps(caseItem).length) * 100}%`
-                    }}
-                  ></div>
-                  {getProgressSteps(caseItem).map((step) => (
-                    <div key={step.key} className="flex flex-col items-center relative z-10 min-w-32">
-                      <div className={`
-                        w-12 h-12 rounded-full border-2 flex items-center justify-center mb-2
-                        ${step.completed 
-                          ? 'bg-blue-500 border-blue-500 text-white' 
-                          : step.active 
-                            ? 'bg-blue-100 border-blue-500 text-blue-600' 
-                            : 'bg-gray-600 border-gray-500 text-gray-400'
-                        }
-                      `}>
-                        {step.completed ? (
-                          <CheckLineIcon className="w-6 h-6" />
-                        ) : step.active ? (
-                          <TimeIcon className="w-6 h-6" />
-                        ) : (
-                          <div className="w-3 h-3 rounded-full bg-current"></div>
-                        )}
-                      </div>
-                      <span className={`text-xs font-medium ${
-                        step.completed || step.active ? 'text-white' : 'text-gray-400'
-                      }`}>
-                        {step.label}
-                      </span>
-                      <span className="text-xs text-gray-400 mt-1 min-h-4">
-                        {step.timestamp && formatDate(step.timestamp) || ""}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              */}
-
               {/* Progress Timeline and Progress Line */}
               <div className="hidden xl:block">
                 <ProgressTimeline
@@ -472,108 +378,6 @@ const CaseHistoryComponent: React.FC = () => {
             </div>
           </>
         )
-        // fields: [
-        //   {
-        //     key: "description",
-        //     label: "Description",
-        //     type: "text" as const
-        //   },
-        //   {
-        //     key: "status",
-        //     label: "Status",
-        //     type: "badge" as const,
-        //     render: (value: string) => {
-        //       const statusConfigMap = {
-        //         "open": "bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100",
-        //         "in-progress": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-        //         "resolved": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-        //         "closed": "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100",
-        //         "escalated": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-        //       };
-        //       const statusConfig = statusConfigMap[value as keyof typeof statusConfigMap];
-        //       return (
-        //         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig}`}>
-        //           {value.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
-        //         </span>
-        //       );
-        //     }
-        //   },
-        //   {
-        //     key: "priority",
-        //     label: "Priority",
-        //     type: "badge" as const,
-        //     render: (value: string) => {
-        //       const priorityConfigMap = {
-        //         "low": "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100",
-        //         "medium": "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100",
-        //         "high": "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-100",
-        //         "critical": "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100"
-        //       };
-        //       const priorityConfig = priorityConfigMap[value as keyof typeof priorityConfigMap];
-        //       return (
-        //         <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityConfig}`}>
-        //           {value.charAt(0).toUpperCase() + value.slice(1)}
-        //         </span>
-        //       );
-        //     }
-        //   },
-        //   {
-        //     key: "category",
-        //     label: "Category",
-        //     type: "text" as const
-        //   },
-        //   {
-        //     key: "assignedTo",
-        //     label: "Assigned To",
-        //     type: "text" as const
-        //   },
-        //   {
-        //     key: "reporter",
-        //     label: "Reporter",
-        //     type: "text" as const
-        //   },
-        //   {
-        //     key: "caseNumber",
-        //     label: "Case Number",
-        //     type: "text" as const,
-        //     copyable: true
-        //   },
-        //   {
-        //     key: "createdAt",
-        //     label: "Created",
-        //     type: "date" as const
-        //   },
-        //   {
-        //     key: "updatedAt",
-        //     label: "Last Updated",
-        //     type: "date" as const
-        //   },
-        //   {
-        //     key: "dueDate",
-        //     label: "Due Date",
-        //     type: "date" as const
-        //   },
-        //   {
-        //     key: "resolvedAt",
-        //     label: "Resolved",
-        //     type: "date" as const
-        //   },
-        //   {
-        //     key: "tags",
-        //     label: "Tags",
-        //     type: "tags" as const
-        //   },
-        //   {
-        //     key: "location",
-        //     label: "Location",
-        //     type: "text" as const
-        //   },
-        //   {
-        //     key: "department",
-        //     label: "Department",
-        //     type: "text" as const
-        //   }
-        // ]
       },
       {
         key: "details",
@@ -880,24 +684,6 @@ const CaseHistoryComponent: React.FC = () => {
         {/* Additional Info */}
         <div className="xl:flex items-center justify-between">
           <div className="xl:flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-            {/*
-            {caseItem.comments.length > 0 && (
-              <div className="flex items-center gap-1">
-                <ChatIcon className="w-3 h-3" />
-                <span>{caseItem.comments.length}</span>
-              </div>
-            )}
-            */}
-
-            {/*
-            {caseItem.attachments.length > 0 && (
-              <div className="xl:flex items-center gap-1">
-                <FileIcon className="w-3 h-3" />
-                <span>{caseItem.attachments.length}</span>
-              </div>
-            )}
-            */}
-
             <div className="xl:flex items-center gap-1 min-h-4">
               {/* <MapPinIcon className="w-3 h-3" /> */}
               <span>{caseItem.location || ""}</span>
@@ -913,23 +699,6 @@ const CaseHistoryComponent: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/*
-        {caseItem.tags.length > 0 && (
-          <div className="xl:flex flex-wrap gap-1 mt-3">
-            {caseItem.tags.slice(0, 3).map(tag => (
-              <span key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded">
-                {tag}
-              </span>
-            ))}
-            {caseItem.tags.length > 3 && (
-              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs rounded">
-                +{caseItem.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-        */}
       </>
     );
   };
@@ -957,27 +726,6 @@ const CaseHistoryComponent: React.FC = () => {
   return (
     <>
       <EnhancedCrudContainer
-        data={data}
-        config={config}
-        previewConfig={previewConfig}
-        features={{
-          search: true,
-          sorting: true,
-          filtering: true,
-          pagination: true,
-          bulkActions: true,
-          export: true,
-          realTimeUpdates: false, // Disabled for demo
-          keyboardShortcuts: true
-        }}
-        onCreate={() => navigate("/case/creation")}
-        onRefresh={() => window.location.reload()}
-        onDelete={handleDelete}
-        onItemAction={handleAction}
-        renderCard={renderCard}
-        searchFields={["caseNumber", "title", "description", "assignedTo", "reporter"]}
-        bulkActions={bulkActions}
-        exportOptions={exportOptions}
         advancedFilters={advancedFilters}
         apiConfig={{
           baseUrl: "/api",
@@ -991,7 +739,35 @@ const CaseHistoryComponent: React.FC = () => {
             export: "/cases/export"
           }
         }}
+        bulkActions={bulkActions}
+        config={config}
+        data={data}
+        displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
+        // error={null}
+        exportOptions={exportOptions}
+        features={{
+          search: true,
+          sorting: true,
+          filtering: true,
+          pagination: true,
+          bulkActions: true,
+          export: true,
+          realTimeUpdates: false, // Disabled for demo
+          keyboardShortcuts: true
+        }}
+        // keyboardShortcuts={[]}
+        // loading={false}
+        previewConfig={previewConfig}
+        searchFields={["caseNumber", "title", "description", "assignedTo", "reporter"]}
+        // customFilterFunction={() => true}
+        onCreate={() => navigate("/case/creation")}
+        onDelete={handleDelete}
+        onItemAction={handleAction}
+        // onItemClick={(item) => navigate(`/role/${item.id}`)}
+        onRefresh={() => window.location.reload()}
+        // onUpdate={() => {}}
+        renderCard={renderCard}
       />
     </>
   );

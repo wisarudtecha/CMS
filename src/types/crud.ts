@@ -62,6 +62,20 @@ export interface TableColumn<T> {
   className?: string;
 }
 
+export interface TableViewProps<T> {
+  actions?: CrudAction<T>[];
+  bulkSelectionEnabled: boolean;
+  columns: TableColumn<T>[];
+  data: T[];
+  isAllSelected: boolean;
+  selectedItems: T[];
+  sortConfig: { key: string | keyof T; direction: "asc" | "desc" };
+  onClickItem: (item: T) => void;
+  onSort: (key: keyof T) => void;
+  selectItem: (item: T) => void;
+  toggleSelectAll: () => void;
+}
+
 export interface FilterDefinition {
   key: string;
   label: string;

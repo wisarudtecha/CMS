@@ -1,7 +1,7 @@
-// /src/components/admin/UserMetrictsCard.tsx
+// /src/components/admin/MetricsCard.tsx
 import { PieChartIcon } from "@/icons";
 
-const UserMetricsCard: React.FC<{ 
+const MetricsCard: React.FC<{ 
   title: string; 
   value: number | string; 
   icon: React.ReactNode; 
@@ -35,4 +35,4 @@ const UserMetricsCard: React.FC<{
   </div>
 );
 
-export default UserMetricsCard;
+export default MetricsCard;

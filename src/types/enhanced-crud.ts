@@ -36,6 +36,10 @@ export interface AdvancedFilter {
   placeholder?: string;
   min?: number;
   max?: number;
+  multiple?: boolean;
+  searchable?: boolean;
+  clearable?: boolean;
+  maxSelections?: number;
 }
 
 export interface KeyboardShortcut {
