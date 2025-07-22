@@ -9,11 +9,11 @@ interface SelectProps {
   options: Option[];
   placeholder?: string;
   // onChange: (value: string) => void;
-  onChange: (value: string | string[]) => void;
+  onChange: (value: string) => void;
   // onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Changed: now passes the event
   className?: string;
   // defaultValue?: string;
-  value?: string | string[];
+  value?: string;
   disabled?: boolean;
   multiple?: boolean;
 }
@@ -56,7 +56,7 @@ const Select: React.FC<SelectProps> = ({
     setSelectedValue(newValue);
     // onChange(value); // Trigger parent handler
     // onChange(e); // Changed: pass the entire event object instead of just value
-    onChange(newValue); // Pass the value directly to parent
+    onChange(newValue as string); // Pass the value directly to parent
   };
 
   return (

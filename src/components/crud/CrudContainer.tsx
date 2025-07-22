@@ -17,29 +17,31 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import type { CrudConfig } from "@/types/crud";
 
 interface CrudContainerProps<T> {
-  data: T[];
   config: CrudConfig<T>;
-  loading?: boolean;
+  data: T[];
+  displayModes?: ("card" | "table" | "matrix" | "hierarchy")[];
   error?: string | null;
-  onRefresh?: () => void;
-  onCreate?: () => void;
-  renderCard?: (item: T) => React.ReactNode;
-  customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
+  loading?: boolean;
   searchFields?: (keyof T)[];
+  customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
+  onCreate?: () => void;
+  onRefresh?: () => void;
+  renderCard?: (item: T) => React.ReactNode;
 }
 
 export const CrudContainer = <T extends { id: string }>({
-  data,
   config,
-  loading = false,
+  data,
+  displayModes = ["card", "table", "matrix", "hierarchy"],
   error = null,
-  onRefresh,
-  onCreate,
-  renderCard,
-  customFilterFunction,
+  loading = false,
   searchFields = ['name', 'description', 'title'] as (keyof T)[],
+  customFilterFunction,
+  onCreate,
+  onRefresh,
+  renderCard
 }: CrudContainerProps<T>) => {
-  const [displayMode, setDisplayMode] = useState<"card" | "table">("card");
+  const [displayMode, setDisplayMode] = useState<"card" | "table" | "matrix" | "hierarchy">("card");
   const [searchInput, setSearchInput] = useState<string>("");
 
   // Custom hooks
@@ -112,7 +114,7 @@ export const CrudContainer = <T extends { id: string }>({
             <div>
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                 {/* Controls */}
-                <DisplayModeToggle mode={displayMode} onChange={setDisplayMode} />
+                <DisplayModeToggle mode={displayMode} list={displayModes} onChange={setDisplayMode} />
                 <SearchBar
                   value={searchInput}
                   onChange={setSearchInput}
