@@ -5,10 +5,11 @@
       "createBy": "Phanuphong",
       "title": "003 - \u0e41\u0e08\u0e49\u0e07\u0e02\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e22\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e0b\u0e49\u0e2d\u0e21\u0e04\u0e2d\u0e21\u0e1e\u0e34\u0e27\u0e40\u0e15\u0e2d\u0e23\u0e4c",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "15 minutes ago",
+      "date": "2025-07-19T23:43",
       "comments": 3,
       "priority": 7,
       "category": "New",
+      "location":"Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
       "status": "New",
       "categoryColor": "bg-blue-500",
       "priorityColor": "border-l-red-500",
@@ -17,16 +18,6 @@
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -55,20 +46,11 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
+            "GroupColSpan": 2
           },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-07-19T23:43",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
+          
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
             "label": "Attachments",
@@ -122,7 +104,7 @@
       "id": 2,
       "title": "008 - \u0e41\u0e2d\u0e23\u0e4c\u0e17\u0e33\u0e07\u0e32\u0e19\u0e1c\u0e34\u0e14\u0e1b\u0e01\u0e15\u0e34",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "5 hours ago",
+      "date": "2025-08-08T08:57",
       "comments": 1,
       "createBy": "Phanuphong",
       "category": "New",
@@ -130,21 +112,12 @@
       "status": "New",
       "categoryColor": "bg-purple-500",
       "priorityColor": "border-l-blue-500",
+      "location":"101 Elm Blvd, Gotham City, Germany",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "101 Elm Blvd, Gotham City, Germany",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -173,19 +146,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-08T08:57",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -240,7 +203,7 @@
       "id": 3,
       "title": "705 - \u0e01\u0e25\u0e49\u0e2d\u0e07\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "1 hours ago",
+      "date": "2025-08-01T06:03",
       "comments": 5,
       "createBy": "Phanuphong",
       "category": "New",
@@ -248,21 +211,12 @@
       "status": "New",
       "categoryColor": "bg-green-500",
       "priorityColor": "border-l-orange-500",
+      "location":"202 Maple Dr, Star City, Australia",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "202 Maple Dr, Star City, Australia",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -291,19 +245,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-01T06:03",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -359,7 +303,7 @@
       "id": 4,
       "title": "\u0e01\u0e32\u0e23\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a iot \u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Today",
+      "date": "2025-08-09T20:37",
       "comments": 8,
       "createBy": "Phanuphong",
       "category": "In Progress",
@@ -373,21 +317,12 @@
           "color": "bg-blue-500"
         }
       ],
+      "location":"123 Main St, Anytown, USA",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "123 Main St, Anytown, USA",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -416,20 +351,11 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
+            "GroupColSpan": 2
           },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-09T20:37",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
+          
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
             "label": "Attachments",
@@ -482,7 +408,7 @@
       "id": 5,
       "title": "\u0e44\u0e1f\u0e0a\u0e31\u0e49\u0e19 2 \u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Feb 1, 2024",
+      "date": "2025-08-13T01:25",
       "comments": 12,
       "createBy": "Phanuphong",
       "category": "In Progress",
@@ -496,21 +422,12 @@
           "color": "bg-gray-500"
         }
       ],
+      "location":"202 Maple Dr, Star City, Australia",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "202 Maple Dr, Star City, Australia",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -539,19 +456,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-13T01:25",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -607,7 +514,7 @@
       "id": 6,
       "title": "\u0e01\u0e32\u0e23\u0e41\u0e08\u0e49\u0e07\u0e17\u0e32\u0e07\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e15\u0e31\u0e27\u0e15\u0e19\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Jan 25, 2024",
+      "date": "2025-08-03T12:40",
       "comments": 4,
       "category": "Pending",
       "status": "Pending",
@@ -621,21 +528,12 @@
           "color": "bg-blue-500"
         }
       ],
+      "location":"789 Pine Ln, Metropolis, UK",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "789 Pine Ln, Metropolis, UK",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -664,19 +562,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-03T12:40",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -730,7 +618,7 @@
       "id": 7,
       "title": "\u0e23\u0e30\u0e1a\u0e1a\u0e04\u0e27\u0e32\u0e21\u0e1b\u0e25\u0e2d\u0e14\u0e20\u0e31\u0e22\u0e02\u0e2d\u0e07\u0e40\u0e04\u0e23\u0e37\u0e2d\u0e02\u0e48\u0e32\u0e22\u0e44\u0e21\u0e48\u0e17\u0e33\u0e07\u0e32\u0e19",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Tomorrow",
+      "date": "2025-07-23T23:01",
       "comments": 2,
       "category": "Pending",
       "status": "Pending",
@@ -743,21 +631,12 @@
           "color": "bg-green-500"
         }
       ],
+      "location":"123 Main St, Anytown, USA",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "123 Main St, Anytown, USA",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -786,19 +665,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-07-23T23:01",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
@@ -866,7 +735,7 @@
       "id": 8,
       "title": "Server iot \u0e25\u0e49\u0e21",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Jan 10, 2024",
+      "date": "2025-07-06T04:32",
       "comments": 15,
       "category": "resolved",
       "status": "resolved",
@@ -879,21 +748,12 @@
           "color": "bg-blue-500"
         }
       ],
+      "location":"456 Oak Ave, Somewhere, Canada",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "456 Oak Ave, Somewhere, Canada",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -922,20 +782,11 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
+            "GroupColSpan": 2
           },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-07-06T04:32",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
-          },
+          
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
             "label": "Attachments",
@@ -1000,7 +851,7 @@
       "id": 9,
       "title": "\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e23\u0e31\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e08\u0e32\u0e01\u0e40\u0e0b\u0e47\u0e19\u0e40\u0e0b\u0e2d\u0e23\u0e4c",
       "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
-      "date": "Jan 8, 2024",
+      "date": "2025-08-02T18:38",
       "comments": 6,
       "createBy": "Phanuphong",
       "category": "resolved",
@@ -1014,21 +865,13 @@
           "color": "bg-purple-500"
         }
       ],
+      "location":"101 Elm Blvd, Gotham City, Germany",
       "formData": {
         "formId": "31e070da-4a45-4ec4-996b-f59d8d67a138",
         "formName": "Create Case",
         "formColSpan": 2,
         "formFieldJson": [
-          {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "101 Elm Blvd, Gotham City, Germany",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-          },
+         
           {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
@@ -1057,19 +900,9 @@
               }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-          },
-          {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "2025-08-02T18:38",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
           },
           {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",

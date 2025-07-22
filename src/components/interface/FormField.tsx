@@ -27,6 +27,8 @@ export interface FormField {
   formFieldJson: IndividualFormField[];
 }
 
+
+
 export interface FormFieldWithChildren extends FormField {
   formFieldJson: IndividualFormFieldWithChildren[];
 }
@@ -50,6 +52,7 @@ export interface FormManager extends FormField {
 
 export interface formType extends FormField {
   caseType:string
+  priority: number;
 }
 
 export interface CustomerData {

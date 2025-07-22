@@ -20,4 +20,6 @@ export interface CaseItem {
   caseType?: formType
   serviceCenter?:string
   customerData?:CustomerData
+  location?:string
+  attachFile?:File[]
 }
