@@ -13,15 +13,13 @@ export class TokenManager {
     accessToken: string,
     refreshToken: string,
     rememberMe: boolean = false,
-
-    //comment by Delta 22/7
-    // profile: string = "",
+    profile: string = "",
     
   ) {
     if (rememberMe) {
       localStorage.setItem(this.STORAGE_KEY, accessToken);
       localStorage.setItem(this.REFRESH_KEY, refreshToken);
-      // localStorage.setItem("profile", profile);
+      localStorage.setItem("profile", profile);
     }
     else {
       sessionStorage.setItem(this.STORAGE_KEY, accessToken);

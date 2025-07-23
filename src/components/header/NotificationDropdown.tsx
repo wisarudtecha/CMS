@@ -64,7 +64,7 @@ export default function NotificationDropdown() {
 
   // Get profile from localStorage
   const getProfile = () => {
-    const profile = localStorage.getItem("profile");
+    const profile = localStorage.getItem("profile_data");
     if (profile) {
       try {
         return JSON.parse(profile);

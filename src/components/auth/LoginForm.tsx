@@ -88,7 +88,7 @@ export const LoginForm: React.FC = () => {
       email:"pattaradanai.jer@sky.ao.co.th",
        fullName: `${firstName} ${middleName} ${lastName}`
     });
-    localStorage.setItem("profile", profile);
+    localStorage.setItem("profile_data", profile);
     localStorage.setItem("access_token", accessToken);
   };
   

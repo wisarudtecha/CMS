@@ -414,7 +414,7 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
   useEffect(() => {
-    const profileStr = localStorage.getItem("profile"); 
+    const profileStr = localStorage.getItem("profile_data"); 
     if (profileStr) {
       try {
         const profile = JSON.parse(profileStr);
