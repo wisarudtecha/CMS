@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 // import { Link } from "react-router";
@@ -8,12 +8,393 @@ import { useAuth } from "@/hooks/useAuth";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
+// const NOTIFICATION_TYPES = [
+//   "broadcast", "cancel dispatch", "canceled", "assigned", "pending", "dispatched", "accepted", "en route", "arrived", "closed", "delayed", "delay dispatch", "delay arrival", "delay ack", "delay close"
+// ];
+
+// const DEFAULT_CHANNELS = ["Browser", "Email", "Line", "Discord"];
+
+const AUTO_DELETE_OPTIONS = [1, 3, 5, 7, 15, 30];
+
+const getInitialPreferences = () => {
+  const saved = localStorage.getItem("notificationPreferences");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        popupEnabled: typeof parsed.popupEnabled === "boolean" ? parsed.popupEnabled : true,
+        // eventsEnabled: typeof parsed.eventsEnabled === "boolean" ? parsed.eventsEnabled : true,
+        // types: Array.isArray(parsed.types)
+        //   ? parsed.types
+        //   : NOTIFICATION_TYPES.map(type => ({
+        //       notificationType: type,
+        //       enabled: true,
+        //       channels: [...DEFAULT_CHANNELS],
+        //     })),
+        soundEnabled: typeof parsed.soundEnabled === "boolean" ? parsed.soundEnabled : true,
+        sound: typeof parsed.sound === "string" ? parsed.sound : "default",
+        pushEnabled: typeof parsed.pushEnabled === "boolean" ? parsed.pushEnabled : false,
+        autoDelete: typeof parsed.autoDelete === "boolean" ? parsed.autoDelete : false,
+        hideRead: typeof parsed.hideRead === "boolean" ? parsed.hideRead : false,
+        autoDeleteDays: typeof parsed.autoDeleteDays === "number" ? parsed.autoDeleteDays : 7, // Default to 7 days
+      };
+    } catch {}
+  }
+  return {
+    popupEnabled: true,
+    // eventsEnabled: true,
+    // types: NOTIFICATION_TYPES.map(type => ({
+    //   notificationType: type,
+    //   enabled: true,
+    //   channels: [...DEFAULT_CHANNELS],
+    // })),
+    soundEnabled: true,
+    sound: "default",
+    pushEnabled: false,
+    autoDelete: false,
+    hideRead: false,
+    autoDeleteDays: 7, // Default to 7 days
+  };
+};
+
+interface PreferencesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// function getNotiTypeIcon(type: string) {
+//   switch (type.toLowerCase()) {
+//     case "broadcast": return "🔊";
+//     case "cancel dispatch": return "❌";
+//     case "canceled": return "🚫";
+//     case "assigned": return "📌";
+//     case "pending": return "⏳";
+//     case "dispatched": return "🚓";
+//     case "accepted": return "✅";
+//     case "en route": return "🚗";
+//     case "arrived": return "📍";
+//     case "closed": return "🔒";
+//     case "delayed": return "⏰";
+//     case "delay dispatch": return "🐢";
+//     case "delay arrival": return "🐌";
+//     case "delay ack": return "🕒";
+//     case "delay close": return "⌛";
+//     default: return "🔔";
+//   }
+// }
+
+const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose }) => {
+  const [preferences, setPreferences] = useState(getInitialPreferences());
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Add autoDeleteDays to state if missing
+  useEffect(() => {
+    if (isOpen) {
+      const initial = getInitialPreferences();
+      setPreferences({
+        ...initial,
+        autoDeleteDays: initial.autoDeleteDays || 7,
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPreferences(getInitialPreferences());
+    }
+  }, [isOpen]);
+
+  const handleTogglePopup = () => {
+    setPreferences(prev => ({ ...prev, popupEnabled: !prev.popupEnabled }));
+  };
+
+  // const handleToggleEvents = () => {
+  //   setPreferences(prev => ({ ...prev, eventsEnabled: !prev.eventsEnabled }));
+  // };
+
+  // const handleToggleEnabled = (type: string) => {
+  //   setPreferences(prev => ({
+  //     ...prev,
+  //     types: prev.types.map((p: any) =>
+  //       p.notificationType === type ? { ...p, enabled: !p.enabled } : p
+  //     ),
+  //   }));
+  // };
+
+  // const handleToggleChannel = (type: string, channel: string) => {
+  //   setPreferences(prev => ({
+  //     ...prev,
+  //     types: prev.types.map((p: any) => {
+  //       if (p.notificationType !== type) return p;
+  //       const hasChannel = p.channels.includes(channel);
+  //       return {
+  //         ...p,
+  //         channels: hasChannel
+  //           ? p.channels.filter((c: string) => c !== channel)
+  //           : [...p.channels, channel],
+  //       };
+  //     }),
+  //   }));
+  // };
+
+  const handleToggleSound = () => {
+    setPreferences(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }));
+  };
+
+  const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSound = e.target.value;
+  
+    setPreferences((prev) => ({
+      ...prev,
+      sound: selectedSound,
+    }));
+  
+    const audio = new Audio(`/sounds/${selectedSound}.mp3`);
+    audio.play().catch((err) => {
+      console.warn("🔇 Sound preview failed:", err);
+    });
+  };
+
+  // Handler for autoDeleteDays dropdown
+  const handleAutoDeleteDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPreferences(prev => ({ ...prev, autoDeleteDays: Number(e.target.value) }));
+  };
+
+  const handleSave = () => {
+    localStorage.setItem("notificationPreferences", JSON.stringify(preferences));
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+  return (
+    <div
+      ref={dropdownRef}
+      className="absolute right-0 mt-[17px] min-w-[360px] w-[360px] rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark z-50 max-h-[90vh] overflow-y-auto"
+    >
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="font-semibold text-lg text-gray-700 dark:text-gray-200">Notification Preferences</h2>
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+            <path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Section: Push Notifications + Popup */}
+      <div className="mb-6 rounded-xl bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-yellow-500 text-xl">🔔</span>
+          <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-200">Push Notifications</h3>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Enable browser push notifications</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={preferences.pushEnabled || false}
+              onChange={() => setPreferences(prev => ({ ...prev, pushEnabled: !prev.pushEnabled }))
+              }
+            />
+            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer transition-all duration-200 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+            <div className="absolute left-1 top-1 bg-white dark:bg-gray-800 w-4 h-4 rounded-full shadow transition-transform duration-200 peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Enable Notification Pop Up</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={preferences.popupEnabled || false}
+              onChange={handleTogglePopup}
+            />
+            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer transition-all duration-200 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+            <div className="absolute left-1 top-1 bg-white dark:bg-gray-800 w-4 h-4 rounded-full shadow transition-transform duration-200 peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+      </div>
+
+      {/* Section: Notification Events */}
+      {/* <div className="mb-6 rounded-xl bg-gray-50 dark:bg-gray-900 p-4"> */}
+        {/* <div className="flex items-center gap-2 mb-3">
+          <span className="text-blue-500 text-xl">📅</span>
+          <h3 className="font-semibold text-md text-gray-700 dark:text-gray-200">Notification Events</h3>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Manage which events trigger notifications</span>
+          <button
+            type="button"
+            onClick={handleToggleEvents}
+            className={`flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow ${preferences.eventsEnabled ? 'bg-blue-50 text-blue-700 border-blue-400' : ''}`}
+            aria-haspopup="listbox"
+            aria-expanded={preferences.eventsEnabled}
+          >
+            <svg className={`w-5 h-5 transition-transform ${preferences.eventsEnabled ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div> */}
+        {/* {preferences.eventsEnabled && (
+          <div className="space-y-4 max-h-48 overflow-y-auto pr-2 custom-scrollbar w-full" style={{minHeight: '0'}}>
+          
+            {preferences.types.map((pref: any) => (
+              <div key={pref.notificationType} className="border-b pb-3 last:border-b-0 last:pb-0 border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                    {getNotiTypeIcon(pref.notificationType)} {pref.notificationType}
+                  </span>
+                  <label className="flex items-center cursor-pointer">
+                    <input type="checkbox" checked={pref.enabled} onChange={() => handleToggleEnabled(pref.notificationType)} className="form-checkbox h-4 w-4 text-blue-600" />
+                    <span className="ml-2 text-xs text-gray-500">Enabled</span>
+                  </label>
+                </div>
+                {/* Show channels only if this type is enabled */}
+                {/* {pref.enabled && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {DEFAULT_CHANNELS.map((channel) => (
+                      <button
+                        key={channel}
+                        type="button"
+                        onClick={() => handleToggleChannel(pref.notificationType, channel)}
+                        className={`px-2 py-1 rounded text-xs border focus:outline-none ${pref.channels.includes(channel) ? "bg-blue-50 border-blue-400 text-blue-700" : "bg-gray-50 border-gray-300 text-gray-400"}`}
+                      >
+                        {channel}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}*/} 
+      {/* </div>  */}
+
+      {/* Section: Notification Sound */}
+      <div className="mb-6 rounded-xl bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-purple-500 text-xl">🔊</span>
+          <h3 className="font-semibold text-md text-gray-700 dark:text-gray-200">Notification Sound</h3>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Enable notification sound</span>
+          <button
+            type="button"
+            onClick={handleToggleSound}
+            className={`relative w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${preferences.soundEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}
+            aria-label="Toggle Notification Sound"
+          >
+            <span
+              className={`absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-800 rounded-full shadow transition-transform duration-200 ${preferences.soundEnabled ? 'translate-x-4' : ''}`}
+            />
+          </button>
+        </div>
+        {preferences.soundEnabled && (
+          <select
+            value={preferences.sound}
+            onChange={handleSoundChange}
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200"
+          >
+            <option value="default">🔔 Default</option>
+            <option value="ding">🎵 Ding</option>
+            <option value="alert">🚨 Alert</option>
+            <option value="soft">🌙 Soft</option>
+          </select>
+        )}
+      </div>
+
+      {/* Section: History Settings */}
+      <div className="mb-6 rounded-xl bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-green-500 text-xl">🗒️</span>
+          <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-200">History Settings</h3>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Auto-delete old notifications</span>
+          <select
+            className="w-24 border border-gray-300 dark:border-gray-700 rounded-lg p-1 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200"
+            value={preferences.autoDeleteDays || 7}
+            onChange={handleAutoDeleteDaysChange}
+            disabled={!preferences.autoDelete}
+          >
+            {AUTO_DELETE_OPTIONS.map(day => (
+              <option key={day} value={day}>{day} {day === 1 ? 'day' : 'days'}</option>
+            ))}
+          </select>
+          <label className="relative inline-flex items-center cursor-pointer ml-2">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={preferences.autoDelete || false}
+              onChange={() => setPreferences(prev => ({ ...prev, autoDelete: !prev.autoDelete }))
+              }
+            />
+            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer transition-all duration-200 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+            <div className="absolute left-1 top-1 bg-white dark:bg-gray-800 w-4 h-4 rounded-full shadow transition-transform duration-200 peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-700 dark:text-gray-200">Hide read notifications</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={preferences.hideRead || false}
+              onChange={() => setPreferences(prev => ({ ...prev, hideRead: !prev.hideRead }))}
+            />
+            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer transition-all duration-200 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+            <div className="absolute left-1 top-1 bg-white dark:bg-gray-800 w-4 h-4 rounded-full shadow transition-transform duration-200 peer-checked:translate-x-5"></div>
+          </label>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          Close
+        </button>
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+
 export default function UserDropdown() {
   const { t } = useTranslation();
   const { state, logout } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
-
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [photo, setPhoto] = useState("");
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
@@ -21,17 +402,43 @@ export default function UserDropdown() {
   function closeDropdown() {
     setIsOpen(false);
   }
+
+  function openPreferencesModal() {
+    setShowPreferences(true);
+    setIsOpen(false); 
+  }
+
+  function closePreferencesModal() {
+    setShowPreferences(false);
+    // Do NOT reopen user dropdown when closed by click outside
+    setIsOpen(false);
+  }
+  useEffect(() => {
+    const profileStr = localStorage.getItem("profile"); 
+    if (profileStr) {
+      try {
+        const profile = JSON.parse(profileStr);
+        setDisplayName(profile.displayName || "Musharof");
+        setFullName(profile.fullName || "Musharof Chowdhury");
+        setEmail(profile.email || "randomuser@pimjo.com");
+        setPhoto(profile.photo || "/images/user/owner.jpg");
+      } catch (err) {
+        console.error("Error parsing profile from localStorage", err);
+      }
+    }
+  }, []);
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
-        </span>
+      <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+  <img src={photo || "/images/notification/user.jpg"} alt="User" />
+</span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+
+        <span className="block mr-1 font-medium text-theme-sm">{displayName}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -59,10 +466,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
+          {fullName}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+          {email}
           </span>
         </div>
 
@@ -123,9 +530,8 @@ export default function UserDropdown() {
           </li>
           <li>
             <DropdownItem
-              onItemClick={closeDropdown}
-              tag="a"
-              to="/"
+              onItemClick={openPreferencesModal}
+              tag="button"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
@@ -138,7 +544,7 @@ export default function UserDropdown() {
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
-                  d="M10.75 2.29248C10.75 1.87827 10.4143 1.54248 10 1.54248C9.58583 1.54248 9.25004 1.87827 9.25004 2.29248V2.83613C6.08266 3.20733 3.62504 5.9004 3.62504 9.16748V14.4591H3.33337C2.91916 14.4591 2.58337 14.7949 2.58337 15.2091C2.58337 15.6234 2.91916 15.9591 3.33337 15.9591H4.37504H15.625H16.6667C17.0809 15.9591 17.4167 15.6234 17.4167 15.2091C17.4167 14.7949 17.0809 14.4591 16.6667 14.4591H16.375V9.16748C16.375 5.9004 13.9174 3.20733 10.75 2.83613V2.29248ZM14.875 14.4591V9.16748C14.875 6.47509 12.6924 4.29248 10 4.29248C7.30765 4.29248 5.12504 6.47509 5.12504 9.16748V14.4591H14.875ZM8.00004 17.7085C8.00004 18.1228 8.33583 18.4585 8.75004 18.4585H11.25C11.6643 18.4585 12 18.1228 12 17.7085C12 17.2943 11.6643 16.9585 11.25 16.9585H8.75004C8.33583 16.9585 8.00004 17.2943 8.00004 17.7085Z"
+                  d="M10.75 2.29248C10.75 1.87827 10.4143 1.54248 10 1.54248C9.58583 1.54248 9.25004 1.87827 9.25004 2.29248V2.83613C6.08266 3.20733 3.62504 5.9004 3.62504 9.16748V14.4591H3.33337C2.91916 14.4591 2.58337 14.7949 2.58337 15.2091C2.58337 15.6234 2.91916 15.9591 3.33337 15.9591H4.37504H15.625H16.6667C17.0809 15.9591 17.4167 15.6234 17.4167 15.2091C17.4167 14.7949 17.0809 14.4591 16.6667 14.4591H16.375V9.16748C16.375 5.9004 14.875 3.20733 10.75 2.83613V2.29248ZM14.875 14.4591V9.16748C14.875 6.47509 12.6924 4.29248 10 4.29248C7.30765 4.29248 5.12504 6.47509 5.12504 9.16748V14.4591H14.875ZM8.00004 17.7085C8.00004 18.1228 8.33583 18.4585 8.75004 18.4585H11.25C11.6643 18.4585 12 18.1228 12 17.7085C12 17.2943 11.6643 16.9585 11.25 16.9585H8.75004C8.33583 16.9585 8.00004 17.2943 8.00004 17.7085Z"
                   fill="currentColor"
                 />
               </svg>
@@ -170,7 +576,7 @@ export default function UserDropdown() {
           {t("navigation.topbar.profile.sign_out")}
         </Link>
         */}
-        {state.user &&
+        {state.user && (
           <button
             className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             onClick={logout}
@@ -187,13 +593,17 @@ export default function UserDropdown() {
                 fillRule="evenodd"
                 clipRule="evenodd"
                 d="M15.1007 19.247C14.6865 19.247 14.3507 18.9112 14.3507 18.497L14.3507 14.245H12.8507V18.497C12.8507 19.7396 13.8581 20.747 15.1007 20.747H18.5007C19.7434 20.747 20.7507 19.7396 20.7507 18.497L20.7507 5.49609C20.7507 4.25345 19.7433 3.24609 18.5007 3.24609H15.1007C13.8581 3.24609 12.8507 4.25345 12.8507 5.49609V9.74501L14.3507 9.74501V5.49609C14.3507 5.08188 14.6865 4.74609 15.1007 4.74609L18.5007 4.74609C18.9149 4.74609 19.2507 5.08188 19.2507 5.49609L19.2507 18.497C19.2507 18.9112 18.9149 19.247 18.5007 19.247H15.1007ZM3.25073 11.9984C3.25073 12.2144 3.34204 12.4091 3.48817 12.546L8.09483 17.1556C8.38763 17.4485 8.86251 17.4487 9.15549 17.1559C9.44848 16.8631 9.44863 16.3882 9.15583 16.0952L5.81116 12.7484L16.0007 12.7484C16.4149 12.7484 16.7507 12.4127 16.7507 11.9984C16.7507 11.5842 16.4149 11.2484 16.0007 11.2484L5.81528 11.2484L9.15585 7.90554C9.44864 7.61255 9.44847 7.13767 9.15547 6.84488C8.86248 6.55209 8.3876 6.55226 8.09481 6.84525L3.52309 11.4202C3.35673 11.5577 3.25073 11.7657 3.25073 11.9984Z"
-                fill=""
-              />
-            </svg>
-            {t("navigation.topbar.profile.sign_out")}
+              fill=""
+            />
+          </svg>
+          {t("navigation.topbar.profile.sign_out")}
           </button>
-        }
+        )}
       </Dropdown>
+      <PreferencesDropdown
+        isOpen={showPreferences}
+        onClose={closePreferencesModal}
+      />
     </div>
   );
 }

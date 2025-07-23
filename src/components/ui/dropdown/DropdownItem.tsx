@@ -1,10 +1,11 @@
 import type React from "react";
-import { Link } from "react-router";
+import { Link } from "react-router"; 
 
 interface DropdownItemProps {
-  tag?: "a" | "button";
+
+  tag?: "a" | "button" | "div";
   to?: string;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent | React.KeyboardEvent) => void;
   onItemClick?: () => void;
   baseClassName?: string;
   className?: string;
@@ -12,7 +13,8 @@ interface DropdownItemProps {
 }
 
 export const DropdownItem: React.FC<DropdownItemProps> = ({
-  tag = "button",
+
+  tag = "div", 
   to,
   onClick,
   onItemClick,
@@ -22,12 +24,17 @@ export const DropdownItem: React.FC<DropdownItemProps> = ({
 }) => {
   const combinedClasses = `${baseClassName} ${className}`.trim();
 
-  const handleClick = (event: React.MouseEvent) => {
-    if (tag === "button") {
-      event.preventDefault();
-    }
-    if (onClick) onClick();
+  const handleClick = (event: React.MouseEvent | React.KeyboardEvent) => {
+    if (onClick) onClick(event);
     if (onItemClick) onItemClick();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick(event);
+    }
   };
 
   if (tag === "a" && to) {
@@ -38,9 +45,23 @@ export const DropdownItem: React.FC<DropdownItemProps> = ({
     );
   }
 
+  if (tag === "button") {
+    return (
+      <button type="button" onClick={handleClick} className={combinedClasses}>
+        {children}
+      </button>
+    );
+  }
+
   return (
-    <button onClick={handleClick} className={combinedClasses}>
+    <div
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      className={combinedClasses}
+      role="button"
+      tabIndex={0}
+    >
       {children}
-    </button>
+    </div>
   );
 };

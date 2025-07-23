@@ -71,10 +71,27 @@ export const LoginForm: React.FC = () => {
     if (!validateForm()) {
       return;
     }
-    
+  
     clearError();
     await login(credentials);
+  
+    //Mock up User by Delta 22/7 เเทนที่ด้วยข้อมูลจริงจาก API 
+    const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTMyNTk4MDIsIm9yZ0lkIjoiNDM0YzBmMTYtYjdlYS00YTdiLWE3NGItZTJlMGY4NTlmNTQ5IiwidXNlcm5hbWUiOiJwYXR0YXJhZGFuYWkuamVyIn0.1H-vR9fLbCZp_UhAiXdLOoe1JtkAeJ7n4JdvtL6Sc-Y";
+    const firstName = "Pattaradanai";
+    const middleName = "D.";
+    const lastName = "Jermpinitpoca";
+    const profile = JSON.stringify({
+      username: "pattaradanai.jer",
+      orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+      photo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf3hbXeK8w0ezCgtk3DLsksnNnxnRTrvqc4A&s",
+      displayName:"Pattaradanai Je",
+      email:"pattaradanai.jer@sky.ao.co.th",
+       fullName: `${firstName} ${middleName} ${lastName}`
+    });
+    localStorage.setItem("profile", profile);
+    localStorage.setItem("access_token", accessToken);
   };
+  
 
   const handleInputChange = (field: keyof LoginCredentials, value: string | boolean) => {
     setCredentials(prev => ({ ...prev, [field]: value }));
@@ -205,7 +222,7 @@ export const LoginForm: React.FC = () => {
                       Organization <span className="text-error-500 dark:text-error-400">*</span>{" "}
                     </Label>
                     <Autocomplete
-                      // suggestions={["bma", "skyai"]}
+                      suggestions={["bma", "skyai"]}
                       placeholder="Type an organization..."
                       onSelect={(value) => handleInputChange("organization", value)}
                       value={credentials.organization}
