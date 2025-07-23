@@ -222,7 +222,7 @@ export const LoginForm: React.FC = () => {
                       Organization <span className="text-error-500 dark:text-error-400">*</span>{" "}
                     </Label>
                     <Autocomplete
-                      suggestions={["bma", "skyai"]}
+                      // suggestions={["bma", "skyai"]}
                       placeholder="Type an organization..."
                       onSelect={(value) => handleInputChange("organization", value)}
                       value={credentials.organization}
