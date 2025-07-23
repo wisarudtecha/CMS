@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useCallback, useMemo, useState, useEffect, ChangeEvent } from "react" // Import useEffect
+import { useCallback, useMemo, useState, useEffect, ChangeEvent, useRef } from "react" // Import useEffect
 import {
     ArrowLeft,
     Clock,
@@ -32,11 +32,15 @@ import Avatar from "../ui/avatar/Avatar"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
 import Comments from "../comment/Comment"
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
+// Corrected import path
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
 import FormViewer from "../form/dynamic-form/FormViewValue"
-
+import DateStringToDateFormat, { TodayDate } from "../date/DateToString"
+import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
+import { Modal } from "../ui/modal"
+import ProgressStepPreview from "../progress/ProgressBar"
+const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -258,17 +262,17 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
 interface CaseCardProps {
     onAssignClick: () => void;
     onEditClick: () => void;
+    setDisplayCaseData?: React.Dispatch<React.SetStateAction<CaseItem | undefined>>;
     caseData: CaseItem;
     editFormData: boolean;
 }
 
-const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseData, editFormData }) => {
+const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseData, editFormData, setDisplayCaseData }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
 
     const handleCommentToggle = () => {
         setShowComment(!showComment);
     };
-    // Mock progress steps
     const progressSteps = [
         { id: 1, title: "Received", completed: true },
         { id: 2, title: "Assigned", completed: true },
@@ -278,8 +282,32 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
         { id: 6, title: "Completed", completed: false }
     ];
 
-    const currentStepIndex = progressSteps.findIndex(step => step.current);
-    const progressWidth = currentStepIndex !== -1 ? ((currentStepIndex) / (progressSteps.length - 1)) * 100 : 0;
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const newFilesArray = Array.from(files); // Convert FileList to File[]
+
+            setDisplayCaseData?.((prev) => {
+                if (!prev) return prev;
+
+                const currentFiles = prev.attachFile ?? [];
+
+                return {
+                    ...prev,
+                    attachFile: [...currentFiles, ...newFilesArray], // Allow duplicates
+                };
+            });
+            e.target.value = '';
+        }
+    };
 
 
     return (
@@ -290,7 +318,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Create Date: {caseData.date}</span>
+                            <span>Create Date: {DateStringToDateFormat(caseData.date)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User className="w-4 h-4" />
@@ -309,38 +337,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
             </div>
 
             {/* Progress Bar Section */}
-            <div className="mb-4 overflow-x-auto custom-scrollbar">
-                <div className="relative pt-4">
-                    <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
-                    <div
-                        className="absolute top-1/2 -translate-y-1/2 left-0 h-0.5 bg-blue-500 transition-all duration-300"
-                        style={{ width: `${progressWidth}%` }}
-                    ></div>
-                    <div className="relative flex justify-between">
-                        {progressSteps.map((step) => (
-                            <div key={step.id} className="flex flex-col items-center text-center group" style={{ width: "16.66%" }}>
-                                <div
-                                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mb-2 transition-all duration-300 relative ${step.completed || step.current
-                                        ? "bg-blue-500 border-blue-500"
-                                        : "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                                        }`}
-                                >
-                                    {step.completed ? (
-                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                                    ) : step.current ? (
-                                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                                    ) : (
-                                        <div className="w-3 h-3 bg-gray-100 dark:bg-gray-800 rounded-full border-2 border-gray-300 dark:border-gray-600"></div>
-                                    )}
-                                </div>
-                                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
-                                    {step.title}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <ProgressStepPreview progressSteps={progressSteps} />
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                 <div className="flex flex-wrap gap-2">
@@ -349,10 +346,25 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Comment
                     </Button>
-                    <Button size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                        <Paperclip className="w-4 h-4 mr-2" />
-                        Attach File
-                    </Button>
+                    <div>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                            onClick={handleButtonClick}
+                        >
+                            <Paperclip className="w-4 h-4 mr-2" />
+                            Attach File
+                        </Button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            multiple
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                        />
+                    </div>
                     <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>
@@ -432,24 +444,24 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
+                <span className=" text-md text-blue-500 dark:text-blue-400 " >Service Information</span>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Sevice Types : {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType}</div>
                 </div>
-                {caseData.caseType&&<FormViewer formData={caseData.caseType} />}
+                {caseData.caseType && <FormViewer formData={caseData.caseType} />}
+                <div className="mb-2">
+                    <span className="text-md text-gray-500 dark:text-gray-400">Service Detail {requireElements}</span>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">
+                        {caseData.description}
+
+                    </div>
+                </div>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {fieldMap["Request Service Date"] ?
-                            new Date(fieldMap["Request Service Date"]).toLocaleString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: 'numeric',
-                                minute: 'numeric',
-                                hour12: true
-                            }) :
+                        {caseData.date != "" ?
+                            DateStringToDateFormat(caseData.date) :
                             "-"
                         }
                     </div>
@@ -478,7 +490,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                                         <div key={idx + "-" + i}>{String(val)}</div>
                                     ));
                                 })
-                                : (fieldMap["Location Information"] ?? "-")}
+                                : (caseData.location ?? "-")}
                         </div>
 
                     </div>
@@ -512,6 +524,12 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                         {caseData.customerData?.customerName || "-"}
                     </div>
                 </div>
+
+                <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
+                <div className="text-md font-medium text-gray-900 dark:text-white">
+                    {caseData.customerData?.phoneNumber || "-"}
+                </div>
+
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
@@ -524,13 +542,8 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                                 {caseData.customerData?.email || "-"}
                             </div>
                         </> : null}
-                    {caseData.customerData?.contractMethod == "Phone Number" ?
-                        <>
-                            <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
-                            <div className="text-md font-medium text-gray-900 dark:text-white">
-                                {caseData.customerData?.phoneNumber || "-"}
-                            </div>
-                        </> : null}
+
+
                 </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
@@ -569,7 +582,7 @@ interface CaseTypeFormSectionProps {
     handleCaseTypeChange: (newValue: string) => void;
     handleGetTypeFormData: (getTypeData: FormField) => void;
     hadleIsFillGetType: (isFill: boolean) => void;
-    selectedCaseTypeForm: FormField | undefined;
+    selectedCaseTypeForm: formType | undefined;
     editFormData: boolean; // Prop to control if the form is editable
 }
 
@@ -586,7 +599,15 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     return (
         <>
             <div className="text-white dark:text-gray-300">
-                <h3 className="mb-2 m-3 block text-gray-900 dark:text-gray-400">Service Type :{requireElements}</h3>
+                <div className="flex justify-between m-3 text-gray-900 dark:text-gray-400">
+                    <h3 className="mb-2  block text-gray-900 dark:text-gray-400">Service Type :{requireElements}</h3>
+                    {selectedCaseTypeForm && (
+                        <div className="flex">
+                            <span className="mr-2">Priority</span>
+                            <div className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(selectedCaseTypeForm.priority)} rounded-lg`}></div>
+                        </div>
+                    )}
+                </div>
                 <SearchableSelect
                     options={caseTypeOptions}
                     value={caseType}
@@ -598,16 +619,95 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 
             </div>
             {selectedCaseTypeForm && (
-                <DynamicForm
-                    initialForm={selectedCaseTypeForm}
-                    edit={false}
-                    editFormData={true}
-                    enableFormTitle={false}
-                    onFormChange={handleGetTypeFormData}
-                    returnFormAllFill={hadleIsFillGetType}
-                />
+                <>
+                    <DynamicForm
+                        initialForm={selectedCaseTypeForm}
+                        edit={false}
+                        editFormData={true}
+                        enableFormTitle={false}
+                        onFormChange={handleGetTypeFormData}
+                        returnFormAllFill={hadleIsFillGetType}
+                    />
+
+                </>
             )}
         </>
+    );
+};
+
+
+interface PreviewDataBeforeSubmitProps {
+    caseData?: CaseItem;
+    submitButton?: () => void;
+}
+
+const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
+    caseData,
+    submitButton
+}) => {
+    // const progressSteps = [
+    //     { id: 1, title: "Received", completed: true },
+    //     { id: 2, title: "Assigned", completed: true },
+    //     { id: 3, title: "Acknowledged", completed: false, current: true },
+    //     { id: 4, title: "En Route", completed: false },
+    //     { id: 5, title: "On Site", completed: false },
+    //     { id: 6, title: "Completed", completed: false }
+    // ];
+    return (
+        <div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+                <div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData?.title}</h2>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center space-x-1">
+                            <Clock className="w-4 h-4" />
+                            <span>Create Date: {caseData && DateStringToDateFormat(caseData?.date)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2 text-center mt-3 mr-[10%] sm:mt-0">
+                    {caseData &&
+                        <Badge color={`${getTextPriority(caseData?.priority).color}`}>
+                            {getTextPriority(caseData?.priority).level} Priority
+                        </Badge>}
+                    {caseData?.status &&
+                        <Badge variant="outline" >
+                            {caseData?.status}
+                        </Badge>}
+                </div>
+            </div>
+            {/* <ProgressStepPreview progressSteps={progressSteps} className="border-t-1 border-b-1 p-2 dark:border-gray-500" /> */}
+            {(caseData?.attachFile && caseData) && (
+                <>
+                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                        Attach File :
+                    </span>
+
+                    {Array.isArray(caseData.attachFile) && caseData.attachFile.length > 0 && (
+                        <div className="mt-2 mb-3">
+                            <div className="grid grid-cols-3 gap-2">
+                                {caseData.attachFile.map((file: File, index: number) => (
+                                    <div key={file.name + index} className="relative group">
+                                        <img
+                                            src={URL.createObjectURL(file)}
+                                            alt={`Upload ${index + 1}`}
+                                            className="w-full h-20 object-cover rounded border border-gray-600"
+                                        />
+
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+            <FormFieldValueDisplay caseData={caseData} />
+            {submitButton &&
+                <div className="flex justify-end ">
+                    <Button onClick={submitButton}>Submit</Button>
+                </div>
+            }
+        </div>
     );
 };
 
@@ -621,11 +721,11 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     customerData,
     handleCustomerDataChange,
 }) => {
-    const customerMock = ["John Smith", "Elina Opasa", "Artra Yui"];
-    const contractMethodMock = ["Phone Number", "Iot Alert", "Chat", "Email"];
+    const contractMethodMock = ["Iot Alert", "Chat", "Email"];
 
-    const handleCustomerDataNameChange = (data: string) => {
-        handleCustomerDataChange({ ...customerData, customerName: data });
+    const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value === "" ? "" : e.target.value;
+        handleCustomerDataChange({ ...customerData, customerName: value });
     };
 
     const handleCustomerDataContractMethodeChange = (data: any) => {
@@ -640,43 +740,50 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         const value = e.target.value === "" ? undefined : e.target.value;
         handleCustomerDataChange({ ...customerData, email: value });
     };
+
     return (
         <div className=" text-gray-900 dark:text-gray-400 mx-3">
-            <h3 className="mb-2 md:ml-3">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-            <SearchableSelect
-                options={customerMock}
-                value={customerData.customerName}
-                onChange={handleCustomerDataNameChange}
-                className="sm:my-3 md:ml-3"
-                placeholder={"Enter Customer Name"}
-            />
-            <h3 className="mb-2 md:ml-3">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-            <SearchableSelect
-                options={contractMethodMock}
-                className="sm:my-3 md:ml-3"
-                value={customerData.contractMethod}
-                onChange={handleCustomerDataContractMethodeChange}
-            />
-            {customerData.contractMethod === "Phone Number" &&
-                <div className="w-auto md:mr-4 ">
-                    <h3 className="mb-2 md:ml-3 ">Customer Phone Number : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                    <Input
-                        type="number"
-                        value={customerData.phoneNumber}
-                        onChange={handleCustomerDataPhoneChange}
-                        placeholder="Enter Phone Number"
-                        className="md:ml-3  shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700" />
-                </div>
-            }
+            <div className="w-auto md:mr-2">
+                <h3 className="mb-2 ">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+                <Input
+                    value={customerData.customerName}
+                    onChange={(e) => { handleCustomerDataNameChange(e) }}
+                    className={`  ${commonInputCss}`}
+                    placeholder={"Enter Customer Name"}
+                    required={true} // Added required attribute
+                />
+            </div>
+            <div className="w-auto md:mr-2">
+                <h3 className="my-2 ">Phone Number : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+                <Input
+                    value={customerData?.phoneNumber || ""}
+                    onChange={(e) => { handleCustomerDataPhoneChange(e) }}
+                    className={`${commonInputCss}`}
+                    placeholder={"Enter Customer Phone Number"}
+                    required={true}
+                />
+            </div>
+            <div className="w-auto md:mr-2">
+                <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+                <SearchableSelect
+                    options={contractMethodMock}
+                    className="sm:my-3"
+                    value={customerData.contractMethod}
+                    onChange={(e) => handleCustomerDataContractMethodeChange(e)}
+
+                />
+            </div>
             {customerData.contractMethod === "Email" &&
-                <div className="w-auto md:mr-4  ">
-                    <h3 className="mb-2 md:ml-3">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+                <div className="w-auto md:mr-2  ">
+                    <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                     <Input
                         type="email"
                         onChange={handleCustomerEmailChange}
                         value={customerData.email}
                         placeholder="Enter Email"
-                        className="md:ml-3 md:mr-3 shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 " />
+                        className="shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 "
+                        required={true} // Added required attribute
+                    />
                 </div>
             }
         </div>
@@ -692,15 +799,16 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
     const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showToast, setShowToast] = useState(false);
+    const [showPreviewData, setShowPreviewData] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
-
+    const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
 
     // State for the data currently being displayed
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
     const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
     // States for form inputs
-    const [caseType, setCaseType] = useState<string>('');
+    const [caseType, setCaseType] = useState<{ caseType: string, priority: number }>({ caseType: "", priority: 0 });
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
     const [formData, setFormData] = useState<FormField | undefined>();
     const [serviceCenterData, setServiceCenterData] = useState<string>("");
@@ -716,7 +824,11 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     useEffect(() => {
         setDisplayedCaseData(caseData);
         if (caseData) {
-            setCaseType(caseData.caseType?.caseType || '');
+            const newCaseType = caseData.caseType ?
+                { caseType: caseData.caseType.caseType || "", priority: caseData.caseType.priority || 0 } :
+                { caseType: "", priority: 0 };
+
+            setCaseType(newCaseType);
             setCaseTypeData(caseData.caseType);
             setFormData(caseData.formData);
             setServiceCenterData(caseData.serviceCenter || "");
@@ -738,10 +850,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
 
     const selectedCaseTypeForm = useMemo(() => {
-        if (caseTypeData?.caseType === caseType) {
+        if (caseTypeData?.caseType === caseType.caseType) {
             return caseTypeData;
         }
-        return caseTypeMock.find(form => form.caseType === caseType);
+        return caseTypeMock.find(form => form.caseType === caseType.caseType);
     }, [caseType, displayedCaseData]);
 
 
@@ -757,13 +869,42 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, []);
 
     const handleSaveChanges = useCallback(() => {
-        if (!isValueFill.dynamicForm || !isValueFill.getType) {
-            setToastMessage("Please enter all required data.");
+        setShowPreviewData(false)
+        let errorMessage = "";
+        if (!caseType.caseType) {
+            errorMessage = "Please select a Service Type.";
+        } else if (!displayedCaseData?.description?.trim()) {
+            errorMessage = "Please enter Service Details.";
+        } else if (!displayedCaseData?.date) {
+            errorMessage = "Please select a Request Service Date.";
+        } else if (!customerData.customerName?.trim()) {
+            errorMessage = "Please enter Customer Name.";
+        } else if (!customerData.phoneNumber) {
+            errorMessage = "Please enter Customer Phone Number.";
+        } else if (!customerData.contractMethod?.trim()) {
+            errorMessage = "Please select a Contact Method.";
+        } else if (customerData.contractMethod === "Email" && !customerData.email?.trim()) {
+            errorMessage = "Please enter Customer Email.";
+        } else if (!isValueFill.dynamicForm || !isValueFill.getType) {
+            errorMessage = "Please ensure all dynamic form fields are filled.";
+        }
+
+        if (errorMessage) {
+            setToastMessage(errorMessage);
             setToastType("error");
             setShowToast(true);
             return;
         }
 
+
+        setDisplayedCaseData(updateCaseData);
+        setEditFormData(false)
+        setToastMessage("Changes saved successfully!");
+        setToastType("success");
+        setShowToast(true);;
+    }, [isValueFill, formDataChange, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+
+    useEffect(() => {
         const updatedCaseData = {
             ...(displayedCaseData as CaseItem),
             formData: formDataChange!,
@@ -771,16 +912,21 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             customerData: customerData,
             serviceCenter: serviceCenterData,
         };
-        setDisplayedCaseData(updatedCaseData);
-        setEditFormData(false)
-        setToastMessage("Changes saved successfully!");
-        setToastType("success");
-        setShowToast(true);;
-    }, [isValueFill, formDataChange, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+        setUpdateCaseData(updatedCaseData)
+    }, [formDataChange, caseTypeData, customerData, serviceCenterData, caseType])
+
+    const handlePreviewShow = () => {
+        setShowPreviewData(true)
+    }
 
     const handleEditClick = useCallback(() => {
         if (displayedCaseData) {
-            setCaseType(displayedCaseData.caseType?.caseType || '');
+            const newCaseType = displayedCaseData.caseType ?
+                { caseType: displayedCaseData.caseType.caseType || "", priority: displayedCaseData.caseType.priority || 0 } :
+                { caseType: "", priority: 0 }; // Default object if caseData.caseType is missing
+
+
+            setCaseType(newCaseType || '');
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
             setServiceCenterData(displayedCaseData.serviceCenter || "");
@@ -790,8 +936,42 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [editFormData, displayedCaseData]);
 
     const handleCaseTypeChange = useCallback((newValue: string) => {
-        setCaseType(newValue);
+        setCaseType(prevCaseType => ({
+            ...prevCaseType,
+            caseType: newValue
+        }));
     }, []);
+
+    const handleLocationChange = useCallback((data: string) => {
+        setDisplayedCaseData((prevDisplayedCaseData) => ({
+            ...(prevDisplayedCaseData as CaseItem),
+            location: data
+        }));
+    }, []);
+
+    const handleDetailChange = useCallback((data: string) => {
+        setDisplayedCaseData((prevDisplayedCaseData) => ({
+            ...(prevDisplayedCaseData as CaseItem),
+            description: data
+        }));
+    }, []);
+
+    const handleServiceDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value === "" ? "" : e.target.value;
+        setDisplayedCaseData((prevDisplayedCaseData) => ({
+            ...(prevDisplayedCaseData as CaseItem),
+            date: value
+        }));
+    };
+    const handleServiceDateChangeDefault = (date: string) => {
+        const value = date;
+        setDisplayedCaseData((prevDisplayedCaseData) => ({
+            ...(prevDisplayedCaseData as CaseItem),
+            date: value
+        }));
+        return date
+    };
+
 
     const handleDynamicFormChange = useCallback((data: FormField) => {
         setFormDataChange(prevData => {
@@ -804,7 +984,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleIsFillGetType = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
     const handleIsFillDynamicForm = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, dynamicForm: isFill })), []);
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
-        const newData = { ...getTypeData, caseType: caseType };
+        const newData = { ...getTypeData, caseType: caseType.caseType, priority: caseType.priority };
         setCaseTypeData(prevData => {
             // Same logic here to prevent loops from the other DynamicForm
             if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
@@ -831,6 +1011,22 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setShowToast(true);
 
     };
+    const handleRemoveFile = (fileNameToRemove: string) => {
+        setUpdateCaseData?.((prev) => {
+            if (!prev) return prev;
+
+            // Filter out the file to remove by name
+            const updatedFiles = (prev.attachFile ?? []).filter(
+                (file) => file.name !== fileNameToRemove
+            );
+
+            return {
+                ...prev,
+                attachFile: updatedFiles,
+            };
+        });
+    };
+
     return (
         <div className="flex flex-col h-screen">
             <PageMeta title="Case Detail" description="Case Detail Page" />
@@ -874,14 +1070,45 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
                         <div className="pr-0">
                             <div className="px-4 pt-6">
-                                {(caseData && displayedCaseData) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData} editFormData={editFormData} />}
+                                {(caseData && displayedCaseData) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData} editFormData={editFormData} setDisplayCaseData={setDisplayedCaseData} />}
+                                {(displayedCaseData?.attachFile && displayedCaseData) && (
+                                    <div className="mx-3">
+                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                                            Attach File :
+                                        </span>
+
+                                        {Array.isArray(displayedCaseData.attachFile) && displayedCaseData.attachFile.length > 0 && (
+                                            <div className="mt-2 mb-3">
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {displayedCaseData.attachFile.map((file: File, index: number) => (
+                                                        <div key={file.name + index} className="relative group">
+                                                            <img
+                                                                src={URL.createObjectURL(file)}
+                                                                alt={`Upload ${index + 1}`}
+                                                                className="w-full h-20 object-cover rounded border border-gray-600"
+                                                            />
+                                                            <Button
+                                                                onClick={() => handleRemoveFile(file.name)}
+                                                                className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                size="sm"
+                                                                variant="error"
+                                                            >
+                                                                ×
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 {(caseData && assignedOfficers.length > 0) && (
                                     <div className="mb-4 flex flex-wrap gap-2 items-center">
                                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                                             Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
                                         </span>
                                         {assignedOfficers.map(officer => (
-                                            <button
+                                            <div
                                                 key={officer.id}
                                                 className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
                                             >   <div onClick={() => handleSelectOfficer(officer)}>
@@ -905,7 +1132,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                 >
                                                     Cancel
                                                 </Button>
-                                            </button>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
@@ -914,21 +1141,28 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                             <div className="px-4">
                                 {editFormData ? (
                                     <>
-                                        {
-                                            !caseData &&
-                                            <div className="flex justify-end"><Button onClick={handleSaveDrafts} className="justify-end">Save Draft</Button></div>
-                                        }
+
                                         <CaseTypeFormSection
-                                            caseType={caseType}
+                                            caseType={caseType.caseType}
                                             handleCaseTypeChange={handleCaseTypeChange}
                                             handleGetTypeFormData={handleGetTypeFormData}
                                             hadleIsFillGetType={handleIsFillGetType}
                                             selectedCaseTypeForm={selectedCaseTypeForm}
                                             editFormData={editFormData}
                                         />
-                                        <div className=" sm:grid grid-cols-2">
-                                            <div>
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
+                                        <div className="pr-7">
+                                            <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Service Details: {requireElements}</h3>
+                                            <textarea
+                                                onChange={(e) => handleDetailChange(e.target.value)}
+                                                value={displayedCaseData?.description}
+                                                placeholder="Enter Location"
+                                                className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                                                required={true} // Added required attribute
+                                            ></textarea>
+                                        </div>
+                                        <div className="sm:grid grid-cols-2">
+                                            <div >
+                                                <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
                                                 <SearchableSelect
                                                     options={serviceCenterMock}
                                                     value={serviceCenterData}
@@ -936,6 +1170,25 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     placeholder={"Select a Service Center"}
                                                     className="2xsm:m-3"
                                                 />
+                                                <div className="pr-6">
+                                                    <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Location Infomation : </h3>
+                                                    <textarea
+                                                        onChange={(e) => handleLocationChange(e.target.value)}
+                                                        value={displayedCaseData?.location}
+                                                        placeholder="Enter Location"
+                                                        className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                                                    ></textarea>
+                                                </div>
+                                                <div className="px-3">
+                                                    <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Request Service Date : {requireElements}</h3>
+                                                    <Input
+                                                        required={true}
+                                                        type="datetime-local"
+                                                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                                                        onChange={(e) => handleServiceDateChange(e)}
+                                                        value={displayedCaseData?.date || handleServiceDateChangeDefault(TodayDate())}
+                                                    ></Input>
+                                                </div>
                                             </div>
                                             <CustomerInput handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
                                         </div>
@@ -949,11 +1202,16 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                         />
 
                                         <div className="flex justify-end mb-3 mr-3">
-                                            {caseData ? <Button variant="success" onClick={handleSaveChanges}>
+                                            {caseData ? <Button variant="success" onClick={handlePreviewShow}>
                                                 Save Changes
-                                            </Button> : <Button variant="success" onClick={undefined}>
-                                                Submit
-                                            </Button>}
+                                            </Button> :
+                                                <div className="flex justify-end">
+                                                    <div className="mx-3"><Button onClick={handleSaveDrafts} className="justify-end">Save As Draft</Button></div>
+                                                    <Button variant="success" onClick={handlePreviewShow}> {/* Changed onClick to handleSaveChanges */}
+                                                        Submit
+                                                    </Button>
+
+                                                </div>}
 
                                         </div>
                                     </>
@@ -984,6 +1242,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     onClick={() => setIsCustomerPanelOpen(false)}
                 ></div>
             )}
+
+            <Modal isOpen={showPreviewData} onClose={() => setShowPreviewData(false)} className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar">
+                <PreviewDataBeforeSubmit caseData={updateCaseData} submitButton={handleSaveChanges}></PreviewDataBeforeSubmit>
+            </Modal>
 
             <AssignOfficerModal
                 open={showAssignModal}

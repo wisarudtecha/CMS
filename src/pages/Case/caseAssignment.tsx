@@ -16,6 +16,7 @@ import CaseDetailView from "../../components/case/CaseDetailView"
 import { CaseItem } from "@/components/interface/CaseItem"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
+import DateStringToDateFormat from "@/components/date/DateToString"
 const statusColumns = [
   { title: "new" },
   { title: "in-progress" },
@@ -104,7 +105,7 @@ export default function CasesView() {
           c.description.toLowerCase().includes(generalSearchTerm) ||
           c.category.toLowerCase().includes(generalSearchTerm) ||
           assigneeName.includes(generalSearchTerm) ||
-          c.date.toLowerCase().includes(generalSearchTerm); // Added date to general search
+          DateStringToDateFormat(c.date).toLowerCase().includes(generalSearchTerm); // Added date to general search
 
       // Advanced filter conditions
       let priorityCondition = true;
@@ -138,7 +139,7 @@ export default function CasesView() {
 
       const dateSearchCondition = 
         advancedFilters.dateSearch === '' || 
-        c.date.toLowerCase().includes(advancedFilters.dateSearch.toLowerCase());
+        DateStringToDateFormat(c.date).toLowerCase().includes(advancedFilters.dateSearch.toLowerCase());
 
       return generalSearchCondition && priorityCondition && categoryCondition && titleSearchCondition && descriptionSearchCondition && dateSearchCondition;
     })
@@ -268,7 +269,7 @@ export default function CasesView() {
         </div>
       </div>
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-gray-500 font-medium">{caseItem.date}</span>
+          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.date)}</span>
           <Badge>{caseItem.category}</Badge>
         </div>
 
@@ -338,7 +339,7 @@ export default function CasesView() {
           )}
         </div>
           <div className="col-span-1 flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.date}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.date)}</span>
           </div>
           <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
             <MessageCircle className="w-3 h-3" />

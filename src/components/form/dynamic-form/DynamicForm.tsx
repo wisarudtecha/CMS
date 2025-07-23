@@ -923,10 +923,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           );
 
           if (filesToAdd.length > 0) {
-            const uniqueNewFiles = filesToAdd.filter(
-              (newFile) => !currentFiles.some((existingFile: File) => existingFile.name === newFile.name && existingFile.size === newFile.size)
-            );
-            return { ...field, value: [...currentFiles, ...uniqueNewFiles] };
+            // const uniqueNewFiles = filesToAdd.filter(
+            //   (newFile) => !currentFiles.some((existingFile: File) => existingFile.name === newFile.name && existingFile.size === newFile.size)
+            // );
+            return { ...field, value: [...currentFiles, ...filesToAdd] };
           }
 
           return { ...field, value: newValue };
@@ -1873,7 +1873,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         </div></>);
 
       case "multiImage":
-        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => {handleFieldChange(field.id, e.target.files) 
+          e.target.value=""}} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
           {Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
             <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
             <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">

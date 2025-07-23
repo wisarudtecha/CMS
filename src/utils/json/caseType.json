@@ -4,6 +4,7 @@
     "formName": "ท่อเสีย",
     "formColSpan": 2,
     "caseType":"ท่อ",
+    "priority": 9,
     "formFieldJson": [
         {
             "id": "f3c10c43-29fd-459e-b04a-61e502bcacd0",
@@ -33,6 +34,7 @@
     "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
     "formName": "กล่อง",
     "formColSpan": 2,
+    "priority": 5,
     "caseType":"กล่องเสีย",
     "formFieldJson": [
         {
@@ -63,6 +65,7 @@
     "formId": "53c93c4f-5dc6-4145-a710-9b37ced9c716",
     "formName": "คอมใช้งานไม่ได้",
     "formColSpan": 2,
+    "priority": 1,
     "caseType":"คอมใช้งานไม่ได้",
     "formFieldJson": [
         {

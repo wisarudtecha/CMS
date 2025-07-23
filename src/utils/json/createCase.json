@@ -4,16 +4,6 @@
     "formColSpan": 2,
     "formFieldJson": [
         {
-            "id": "7b777af3-7561-4f3a-aede-a775268e1e8c",
-            "label": "Location Information",
-            "type": "textAreaInput",
-            "showLabel": true,
-            "value": "",
-            "required": false,
-            "colSpan": 1,
-            "isChild": false
-        },
-        {
             "id": "b1971615-1f39-408b-8383-273b06a4241c",
             "label": "Group",
             "type": "InputGroup",
@@ -41,19 +31,9 @@
                 }
             ],
             "required": false,
-            "colSpan": 1,
+            "colSpan": 2,
             "isChild": false,
-            "GroupColSpan": 1
-        },
-        {
-            "id": "0779b27a-083d-4d58-8f7f-655814438442",
-            "label": "Request Service Date",
-            "type": "dateLocal",
-            "showLabel": true,
-            "value": "",
-            "required": true,
-            "colSpan": 1,
-            "isChild": false
+            "GroupColSpan": 2
         },
         {
             "id": "b9dea0d5-0a1f-428a-8d58-38f8d84887a9",
