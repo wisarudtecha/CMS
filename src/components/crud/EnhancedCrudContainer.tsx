@@ -49,6 +49,7 @@ interface EnhancedCrudContainerProps<T> {
   apiConfig?: ApiConfig;
   bulkActions?: BulkAction<T>[];
   config: CrudConfig<T>;
+  // config: CrudConfig<{ id: string; }>;
   data: T[];
   displayModes?: ("card" | "table" | "matrix" | "hierarchy")[];
   enableDebug?: boolean;
@@ -58,7 +59,8 @@ interface EnhancedCrudContainerProps<T> {
   keyboardShortcuts?: KeyboardShortcut[];
   loading?: boolean;
   previewConfig?: PreviewConfig<T>;
-  searchFields?: (keyof T)[];
+  // searchFields?: (keyof T)[];
+  searchFields?: unknown;
   customFilterFunction?: (item: T, filters: unknown) => boolean;
   onCreate?: () => void;
   onDelete?: (id: string) => void;
@@ -85,7 +87,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   keyboardShortcuts = [],
   loading = false,
   previewConfig,
-  searchFields = ["name", "description", "title"] as (keyof T)[],
+  // searchFields = ["name", "description", "title"] as (keyof T)[],
+  searchFields,
   customFilterFunction,
   onCreate,
   onDelete,
@@ -123,7 +126,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // ===================================================================
 
   const { confirmDialog, closeConfirmDialog, handleConfirm, openConfirmDialog } = useConfirmDialog();
-  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
+  // const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
+  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields as unknown as (keyof T)[]);
   const { sortConfig, sortedData, handleSort } = useSort(filteredData);
   const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(sortedData.length);
   const { toasts, addToast, removeToast } = useToast();

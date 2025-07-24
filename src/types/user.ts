@@ -1,4 +1,8 @@
 // /src/types/user.ts
+
+// ===================================================================
+// Mockup
+// ===================================================================
 export interface UserEntity {
   id: string;
   email: string;
@@ -66,3 +70,131 @@ export interface UserAddress {
   postalCode?: string;
   taxId?: string;
 }
+
+// ===================================================================
+// API
+// ===================================================================
+
+export interface SystemMetadata {
+  id: string;
+  orgId: string;
+  empId: string;
+  userType: string; // Consider enum
+  roleId: string;
+  deptId: string;
+  commId: string;
+  stnId: string;
+}
+
+export interface PersonalInfo {
+  title: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  displayName: string;
+  citizenId: string;
+  bod: string; // ISO Date string
+  gender: string; // Consider enum
+  blood: string; // Consider enum
+  mobileNo: string;
+  email: string;
+  photo: string | null;
+}
+
+export interface Address {
+  street: string;
+  floor: string;
+  room: string;
+  building: string;
+  road: string;
+  subDistrict: string;
+  district: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  lat: string;
+  lon: string;
+}
+
+export interface AuthInfo {
+  username: string;
+  password: string;
+  activationToken: string | null;
+  lastActivationRequest: string | null;
+  lostPasswordRequest: string | null;
+  islogin: boolean;
+}
+
+export interface TimestampInfo {
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  signupStamp: string | null;
+}
+
+export interface AuditInfo {
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface StatusInfo {
+  active: boolean;
+}
+
+export interface Department {
+  id: string;
+  deptId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface UserProfile {
+  // system: SystemMetadata;
+  // personal: PersonalInfo;
+  // address: Address;
+  // auth: AuthInfo;
+  // timestamps: TimestampInfo;
+  // audit: AuditInfo;
+  // status: StatusInfo;
+  id: string;
+  orgId: string;
+  displayName: string;
+  title: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  citizenId: string;
+  bod: string; // ISO date string
+  blood: string;
+  gender: string; // Consider enum e.g., "1" | "2"
+  mobileNo: string;
+  address: Address;
+  photo: string | null;
+  username: string;
+  password: string;
+  email: string;
+  roleId: string;
+  userType: string; // Could be enum
+  empId: string;
+  deptId: string;
+  commId: string;
+  stnId: string;
+  active: boolean;
+  activationToken: string | null;
+  lastActivationRequest: string | null;
+  lostPasswordRequest: string | null;
+  signupStamp: string | null;
+  islogin: boolean;
+  lastLogin: string; // ISO date string
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  createdBy: string;
+  updatedBy: string;
+}
+

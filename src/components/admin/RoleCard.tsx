@@ -1,6 +1,6 @@
 // /src/components/admin/RoleCard.tsx
 import React, { useMemo, useState } from "react";
-import { mapPermissionsWithCategories } from "@/utils/mapPermsWithCats";
+import { mapPermissionsWithCategories } from "@/utils/dataMappers";
 import { LockIcon, PencilIcon } from "@/icons";
 import type { Permission, Role } from "@/types/role";
 import Button from "@/components/ui/button/Button";
