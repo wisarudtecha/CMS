@@ -23,7 +23,7 @@ export const APP_CONFIG = {
     return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
-  WS_URL: import.meta.env.VITE_WS_URL || "ws://localhost:8080",
+  WS_URL: import.meta.env.VITE_WS_URL || "ws://cmsapi-production-488d.up.railway.app",
 } as const;
 
 // Development configuration

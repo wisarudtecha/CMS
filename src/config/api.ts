@@ -9,7 +9,7 @@ const getApiBaseUrl = (): string => {
   }
   
   // Production API - replace with actual API URL
-  return "https://localhost:8080/api/v1"; // Local development API
+  return "https://cmsapi-production-488d.up.railway.app/api/v1"; // Local development API
 };
 
 export const API_CONFIG = {
