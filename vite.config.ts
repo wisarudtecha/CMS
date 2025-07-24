@@ -110,5 +110,6 @@ export default defineConfig({
   define: {
     // Define environment variables
     __DEV__: JSON.stringify(process.env.NODE_ENV === "development"),
+    __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL),
   },
 });
