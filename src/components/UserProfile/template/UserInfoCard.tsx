@@ -1,16 +1,148 @@
+import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import axios from "axios";
+
+interface UserProfile {
+  id: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNo: string;
+  photo: string;
+  address: string | null;
+  bio?: string;
+  // Social links
+  facebook?: string;
+  twitter?: string;
+  linkedin?: string;
+  instagram?: string;
+}
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [formData, setFormData] = useState<Partial<UserProfile>>({});
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: "",
+    twitter: "",
+    linkedin: "",
+    instagram: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const API = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const profileString = localStorage.getItem("profile_data");
+        const token = localStorage.getItem("access_token");
+
+        if (!profileString || !token) {
+          setError("ไม่พบข้อมูลผู้ใช้หรือ Token ในระบบ");
+          setLoading(false);
+          return;
+        }
+
+        const profile = JSON.parse(profileString);
+        const username = profile?.username;
+
+        if (!username) {
+          setError("ไม่พบ Username ในข้อมูล Profile");
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API}/api/v1/users/username/${username}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'accept': 'application/json' },
+        });
+        
+        if (response.data && response.data.data) {
+          const user = response.data.data;
+          setUserData(user);
+          setFormData(user);
+          
+          // Set social links from user data
+          setSocialLinks({
+            facebook: user.facebook || "https://www.facebook.com/(example)Del'pattaradanai",
+            twitter: user.twitter || "https://x.com/(example)Del'pattaradanai",
+            linkedin: user.linkedin || "https://www.linkedin.com/company/(example)Del'pattaradanai",
+            instagram: user.instagram || "https://instagram.com/(example)Del'pattaradanai"
+          });
+  
+        } else {
+          setError("ไม่พบข้อมูลผู้ใช้จาก API");
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+        setError("เกิดข้อผิดพลาดในการดึงข้อมูล");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [API]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSocialLinks(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const profileString = localStorage.getItem("profile_data");
+      const token = localStorage.getItem("access_token");
+      
+      if (!profileString || !token) {
+        alert("Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+        return;
+      }
+
+      const profile = JSON.parse(profileString);
+      const username = profile?.username;
+
+      const updateData = {
+        ...formData,
+        ...socialLinks
+      };
+
+      await axios.patch(`${API}/api/v1/users/username/${username}`, updateData, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+
+      setUserData(prev => ({ ...prev, ...updateData } as UserProfile));
+      console.log("Personal information saved successfully");
+      closeModal();
+    } catch (err) {
+      console.error("Error updating user data:", err);
+      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    }
+  };
+
+  if (loading) {
+    return <div className="p-5 text-center">Loading user data...</div>;
+  }
+
+  if (error) {
+    return <div className="p-5 text-center text-red-500">{error}</div>;
+  }
+
+  if (!userData) {
+    return <div className="p-5 text-center">No user data available.</div>;
+  }
+
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -25,7 +157,7 @@ export default function UserInfoCard() {
                 First Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
+                {userData.firstName || "Not specified"}
               </p>
             </div>
 
@@ -34,7 +166,7 @@ export default function UserInfoCard() {
                 Last Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
+                {userData.lastName || "Not specified"}
               </p>
             </div>
 
@@ -43,7 +175,7 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+                {userData.email}
               </p>
             </div>
 
@@ -52,16 +184,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
+                {userData.mobileNo || "Not specified"}
               </p>
             </div>
           </div>
@@ -100,7 +223,7 @@ export default function UserInfoCard() {
               Update your details to keep your profile up-to-date.
             </p>
           </div>
-          <form className="flex flex-col">
+          <form className="flex flex-col" onSubmit={(e) => e.preventDefault()}>
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div>
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
@@ -112,29 +235,48 @@ export default function UserInfoCard() {
                     <Label>Facebook</Label>
                     <Input
                       type="text"
-                      value="https://www.facebook.com/PimjoHQ"
+                      name="facebook"
+                      value={socialLinks.facebook}
+                      onChange={handleSocialChange}
+                      placeholder="https://www.facebook.com/username"
                     />
                   </div>
 
                   <div>
                     <Label>X.com</Label>
-                    <Input type="text" value="https://x.com/PimjoHQ" />
+                    <Input 
+                      type="text" 
+                      name="twitter"
+                      value={socialLinks.twitter}
+                      onChange={handleSocialChange}
+                      placeholder="https://x.com/username"
+                    />
                   </div>
 
                   <div>
                     <Label>Linkedin</Label>
                     <Input
                       type="text"
-                      value="https://www.linkedin.com/company/pimjo"
+                      name="linkedin"
+                      value={socialLinks.linkedin}
+                      onChange={handleSocialChange}
+                      placeholder="https://www.linkedin.com/in/username"
                     />
                   </div>
 
                   <div>
                     <Label>Instagram</Label>
-                    <Input type="text" value="https://instagram.com/PimjoHQ" />
+                    <Input 
+                      type="text" 
+                      name="instagram"
+                      value={socialLinks.instagram}
+                      onChange={handleSocialChange}
+                      placeholder="https://instagram.com/username"
+                    />
                   </div>
                 </div>
               </div>
+              
               <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                   Personal Information
@@ -143,27 +285,57 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>First Name</Label>
-                    <Input type="text" value="Musharof" />
+                    <Input 
+                      type="text" 
+                      name="firstName"
+                      value={formData.firstName || ''} 
+                      onChange={handleInputChange}
+                      placeholder="Enter first name"
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
+                    <Input 
+                      type="text" 
+                      name="lastName"
+                      value={formData.lastName || ''} 
+                      onChange={handleInputChange}
+                      placeholder="Enter last name"
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com" />
+                    <Input 
+                      type="email" 
+                      name="email"
+                      value={formData.email || ''} 
+                      onChange={handleInputChange}
+                      placeholder="Enter email address"
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46" />
+                    <Input 
+                      type="text" 
+                      name="mobileNo"
+                      value={formData.mobileNo || ''} 
+                      onChange={handleInputChange}
+                      placeholder="Enter phone number"
+                    />
                   </div>
 
                   <div className="col-span-2">
                     <Label>Bio</Label>
-                    <Input type="text" value="Team Manager" />
+                    <Input 
+                      type="text" 
+                      name="bio"
+                      value={formData.bio || ''} 
+                      onChange={handleInputChange}
+                      placeholder="Enter bio or job title"
+                    />
                   </div>
                 </div>
               </div>
