@@ -4,16 +4,20 @@ import Input from "@/components/form/input/InputField";
 
 type AutocompleteProps = {
   // suggestions: string[];
-  placeholder?: string;
-  onSelect: (value: string) => void;
   value?: string;
+  onSelect: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
 };
 
 export const Autocomplete: React.FC<AutocompleteProps> = ({
   // suggestions,
-  placeholder = "Start typing...",
+  value = "",
   onSelect,
-  value = ""
+  placeholder = "Start typing...",
+  disabled,
+  required,
 }) => {
   // const [query, setQuery] = useState("");
   const [query, setQuery] = useState(value);
@@ -24,7 +28,12 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   const listRef = useRef<HTMLUListElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeWaiting = 3; // Second
-  const suggestions = ["bma", "skyai"];
+  // const suggestions = ["bma", "skyai"];
+  const suggestions = ["BMA", "SKY-AI"];
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -119,6 +128,8 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         }}
         onKeyDown={handleKeyDown}
         onFocus={() => query && setShowList(true)}
+        disabled={disabled}
+        required={required}
       />
       {showList && filtered.length > 0 && (
         <ul

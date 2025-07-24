@@ -1,92 +1,109 @@
 // /src/providers/AuthProvider.tsx
-import React, { useReducer, useEffect, useState } from "react";
-import type {
-  // User,
-  LoginCredentials,
-  RegisterData
-} from "@/types/auth";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { AuthService } from "@/services/authService";
-import { TokenManager } from "@/utils/tokenManager";
 import { authReducer } from "@/hooks/useAuthContext";
-// Updated: [06-07-2025] v0.1.1
-import type { AuthState } from "@/types/auth";
+import { AuthService } from "@/utils/authService";
+import { TokenManager } from "@/utils/tokenManager";
+import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Updated: [06-07-2025] v0.1.1
   const getInitialAuthState = (): AuthState => {
-    console.log('🔍 Pre-checking auth state...');
+    // console.log("🔍 Initializing auth state...");
+
     const token = TokenManager.getToken();
-    
-    if (token) {
-      const validation = TokenManager.validateToken(token);
-      console.log('🔍 Token validation result:', validation);
-      
-      if (validation.isValid && !validation.isExpired && validation.user) {
-        console.log('✅ Valid token found during initialization');
-        return {
-          user: validation.user,
-          token: token,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          sessionTimeout: null,
-          failedAttempts: 0,
-          isLocked: false
-        };
-      }
-      else {
-        console.log('❌ Invalid or expired token found:', validation.errors);
-        TokenManager.clearTokens();
-      }
+    const user = TokenManager.getStoredUser();
+
+    if (token && user && !TokenManager.isTokenExpired(token)) {
+      // console.log("✅ Valid session found during initialization");
+      return {
+        user,
+        token,
+        refreshToken: TokenManager.getRefreshToken(),
+        isAuthenticated: true,
+        isLoading: false,
+        isRefreshing: false,
+        error: null,
+        sessionTimeout: null,
+        failedAttempts: 0,
+        isLocked: false,
+        networkStatus: navigator.onLine ? "online" : "offline",
+        lastActivity: Date.now()
+      };
     }
     else {
-      console.log('❌ No token found during initialization');
+      // console.log("❌ No valid session found during initialization");
+      if (token) {
+        TokenManager.clearTokens();
+      }
+      return {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isRefreshing: false,
+        error: null,
+        sessionTimeout: null,
+        failedAttempts: 0,
+        isLocked: false,
+        networkStatus: navigator.onLine ? "online" : "offline",
+        lastActivity: Date.now()
+      };
     }
-    
-    return {
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
-      sessionTimeout: null,
-      failedAttempts: 0,
-      isLocked: false
-    };
   };
 
-  // const [state, dispatch] = useReducer(authReducer, {
-  //   user: null,
-  //   token: null,
-  //   isAuthenticated: false,
-  //   isLoading: true, // Start with loading true to check stored tokens
-  //   error: null,
-  //   sessionTimeout: null,
-  //   failedAttempts: 0,
-  //   isLocked: false
-  // });
-
-  // Updated: [06-07-2025] v0.1.1
   const [state, dispatch] = useReducer(authReducer, getInitialAuthState());
-
   const [sessionTimer, setSessionTimer] = useState<NodeJS.Timeout | null>(null);
+  const [refreshTimer, setRefreshTimer] = useState<NodeJS.Timeout | null>(null);
+
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => dispatch({ type: "SET_NETWORK_STATUS", payload: "online" });
+    const handleOffline = () => dispatch({ type: "SET_NETWORK_STATUS", payload: "offline" });
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Activity tracking
+  useEffect(() => {
+    const updateActivity = () => dispatch({ type: "UPDATE_LAST_ACTIVITY" });
+    
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart", "click"];
+    events.forEach(event => {
+      document.addEventListener(event, updateActivity, true);
+    });
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, updateActivity, true);
+      });
+    };
+  }, []);
 
   const logout = React.useCallback(async () => {
     try {
-      await AuthService.logout();
+      // await AuthService.logout();
     }
     catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
     finally {
       TokenManager.clearTokens();
-      dispatch({ type: 'LOGOUT' });
+      dispatch({ type: "LOGOUT" });
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
     }
-  }, [sessionTimer]);
+  }, [sessionTimer, refreshTimer]);
 
   // Session timeout management
   useEffect(() => {
@@ -96,13 +113,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const timer = setTimeout(() => {
-        dispatch({ type: 'SET_SESSION_TIMEOUT', payload: Date.now() + 60000 }); // 1 minute warning
+        dispatch({ type: "SET_SESSION_TIMEOUT", payload: Date.now() + 60000 }); // 1 minute warning
 
         setTimeout(() => {
           logout();
         }, 60000);
       },
-      // 15 * 60 * 1000); // 15 minutes
       60 * 60 * 1000); // 60 minutes
 
       setSessionTimer(timer);
@@ -113,164 +129,145 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return () => {
-      if (sessionTimer) clearTimeout(sessionTimer);
+      if (sessionTimer) {
+        clearTimeout(sessionTimer);
+      }
     };
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     state.isAuthenticated,
-    // logout,
-    // sessionTimer
+    state.lastActivity
   ]);
 
-  // Initialize auth state from stored tokens
-  // useEffect(() => {
-  //   const initializeAuth = async () => {
-  //     try {
-  //       const token = TokenManager.getToken();
-
-  //       if (token && !TokenManager.isTokenExpired(token)) {
-  //         // In real app, validate token with server
-  //         // For demo, we'll simulate server validation
-  //         await new Promise(resolve => setTimeout(resolve, 100)); // Simulate API call
-
-  //         const mockUser: User = {
-  //           id: '1',
-  //           email: 'admin@cms.com',
-  //           name: 'Admin User',
-  //           role: 'admin',
-  //           department: 'IT',
-  //           lastLogin: new Date(),
-  //           permissions: ['read', 'write', 'delete', 'admin']
-  //         };
-
-  //         dispatch({ type: 'LOGIN_SUCCESS', payload: { user: mockUser, token } });
-  //       }
-  //       else {
-  //         // Token doesn't exist or is expired
-  //         TokenManager.clearTokens();
-  //       }
-  //     }
-  //     catch (error) {
-  //       console.error('Auth initialization error:', error);
-  //       TokenManager.clearTokens();
-  //     }
-  //     finally {
-  //       // Always complete initialization
-  //       dispatch({ type: 'INIT_COMPLETE' });
-  //     }
-  //   };
-
-  //   initializeAuth();
-  // }, []);
-
-  // Auto token refresh when about to expire
+  // Token refresh management
   useEffect(() => {
-    let refreshInterval: NodeJS.Timeout;
+    const setupTokenRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      
+      if (!state.token) return;
+
+      const expiryTime = TokenManager.getTokenExpiryTime(state.token);
+      if (!expiryTime) return;
+
+      // Refresh token 5 minutes before expiry
+      const refreshTime = expiryTime - Date.now() - (5 * 60 * 1000);
+      
+      if (refreshTime > 0) {
+        const timer = setTimeout(() => {
+          refreshToken();
+        }, refreshTime);
+        
+        setRefreshTimer(timer);
+      }
+    };
 
     if (state.isAuthenticated && state.token) {
-      refreshInterval = setInterval(() => {
-        const token = TokenManager.getToken();
-        if (token && TokenManager.shouldRefreshToken(token)) {
-          console.log('🔄 Token about to expire, refreshing...');
-          refreshToken();
-        }
-      }, 60000); // Check every minute
+      setupTokenRefresh();
     }
 
     return () => {
-      if (refreshInterval) clearInterval(refreshInterval);
+      if (refreshTimer) clearTimeout(refreshTimer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    state.isAuthenticated
-  ]);
+  }, [state.token, state.isAuthenticated]);
 
   const login = async (credentials: LoginCredentials) => {
-    dispatch({ type: 'LOGIN_START' });
+    dispatch({ type: "LOGIN_START" });
 
     try {
-      const { user, token, refreshToken } = await AuthService.login(credentials);
+      const response = await AuthService.login(credentials);
 
-      // Updated: [06-07-2025] v0.1.1
-      // Validate the received token
-      const validation = TokenManager.validateToken(token);
-      if (!validation.isValid) {
-        throw new Error('Received invalid token from server');
-      }
+      TokenManager.setTokens(
+        response.accessToken, 
+        response.refreshToken || response.accessToken, 
+        credentials.rememberMe,
+        response.user
+      );
 
-      // TokenManager.setTokens(token, refreshToken, credentials.rememberMe);
+      dispatch({ 
+        type: "LOGIN_SUCCESS", 
+        payload: { 
+          user: response.user, 
+          token: response.accessToken,
+          refreshToken: response.refreshToken
+        }
+      });
 
-      // Updated: [17-07-2025] v0.1.2
-      const username = user?.username || "";
-      const organization = user?.organization || "";
-      const profile = { username, organization };
-      TokenManager.setTokens(token, refreshToken, credentials.rememberMe, JSON.stringify(profile));
-
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
-      dispatch({ type: 'RESET_FAILED_ATTEMPTS' });
+      dispatch({ type: "RESET_FAILED_ATTEMPTS" });
     }
     catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: (error as Error).message });
+      const message = error instanceof Error ? error.message : "Login failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: message });
     }
   };
 
   const register = async (data: RegisterData) => {
-    dispatch({ type: 'LOGIN_START' });
+    dispatch({ type: "LOGIN_START" });
 
     try {
-      const { user, token, refreshToken } = await AuthService.register(data);
-
-      // TokenManager.setTokens(token, refreshToken);
-
-      // Updated: [17-07-2025] v0.1.2
-      TokenManager.setTokens(token, refreshToken, false, "");
+      const response = await AuthService.register(data);
       
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+      TokenManager.setTokens(
+        response.accessToken, 
+        response.refreshToken, 
+        false,
+        response.user
+      );
+      
+      dispatch({ 
+        type: "LOGIN_SUCCESS", 
+        payload: { 
+          user: response.user, 
+          token: response.accessToken,
+          refreshToken: response.refreshToken
+        } 
+      });
     }
     catch (error) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: (error as Error).message });
+      const message = error instanceof Error ? error.message : "Registration failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: message });
     }
   };
 
-  const refreshToken = async () => {
-    const refreshToken = TokenManager.getRefreshToken();
-    if (!refreshToken) {
-      // Updated: [06-07-2025] v0.1.1
-      console.log('❌ No refresh token available');
-
-      logout();
+  const refreshToken = useCallback(async () => {
+    const currentRefreshToken = TokenManager.getRefreshToken();
+    if (!currentRefreshToken || state.isRefreshing) {
       return;
     }
 
+    dispatch({ type: "REFRESH_START" });
+
     try {
-      const { token: newToken, refreshToken: newRefreshToken } = await AuthService.refreshToken(refreshToken);
-
-      // Updated: [06-07-2025] v0.1.1
-      // Validate new token
-      const validation = TokenManager.validateToken(newToken);
-      if (!validation.isValid || !validation.user) {
-        throw new Error('Received invalid token during refresh');
-      }
-
-      TokenManager.setTokens(newToken, newRefreshToken);
-
-      // Updated: [06-07-2025] v0.1.1
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: validation.user, token: newToken } });
+      const response = await AuthService.refreshToken(currentRefreshToken);
       
-      // Updated: [06-07-2025] v0.1.1
-      console.log('✅ Token refreshed successfully');
+      TokenManager.setTokens(response.accessToken, response.refreshToken);
+      dispatch({ 
+        type: "REFRESH_SUCCESS", 
+        payload: { 
+          token: response.accessToken,
+          refreshToken: response.refreshToken
+        } 
+      });
     }
     catch (error) {
-      // console.error(error);
-      // Updated: [06-07-2025] v0.1.1
-      console.error('❌ Token refresh failed:', error);
+      console.error("Token refresh failed:", error);
+      dispatch({ type: "REFRESH_FAILURE" });
       logout();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.isRefreshing]);
+
+  const forgotPassword = async (email: string) => {
+    try {
+      await AuthService.forgotPassword(email);
+    }
+    catch (error) {
+      console.error(error);
     }
   };
 
   const clearError = () => {
-    dispatch({ type: 'CLEAR_ERROR' });
+    dispatch({ type: "CLEAR_ERROR" });
   };
 
   return (
@@ -280,6 +277,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register,
       logout,
       refreshToken,
+      forgotPassword,
       clearError
     }}>
       {children}

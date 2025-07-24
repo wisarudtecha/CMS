@@ -33,7 +33,7 @@ export const AuthenticatedContent: React.FC = () => {
               <div>
                 <div>🎯 Storage:</div>
                 <div>├─ localStorage: {TokenManager.getToken() ? "✅" : "❌"}</div>
-                <div>├─ sessionStorage: {sessionStorage.getItem("cms_auth_token") ? "✅" : "❌"}</div>
+                <div>├─ sessionStorage: {sessionStorage.getItem("access_token") ? "✅" : "❌"}</div>
                 <div>└─ timestamp: {new Date().toLocaleTimeString()}</div>
               </div>
             </div>

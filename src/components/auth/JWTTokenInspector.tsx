@@ -1,10 +1,9 @@
 // /src/components/auth/JWTTokenInspector.tsx
-// Updated: [06-07-2025] v0.1.1
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { TokenManager } from '@/utils/tokenManager';
-import type { DecodedJWT, TokenValidationResult } from '@/types/auth';
-import Button from '@/components/ui/button/Button';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { TokenManager } from "@/utils/tokenManager";
+import type { DecodedJWT, TokenValidationResult } from "@/types/auth";
+import Button from "@/components/ui/button/Button";
 
 export const JWTTokenInspector: React.FC = () => {
   const { state } = useAuth();
@@ -23,8 +22,9 @@ export const JWTTokenInspector: React.FC = () => {
         setDecodedToken(decoded);
         setValidation(validationResult);
         setExpiry(expiryInfo);
-      } catch (error) {
-        console.error('Failed to decode token:', error);
+      }
+      catch (error) {
+        console.error("Failed to decode token:", error);
         setDecodedToken(null);
         setValidation(null);
         setExpiry(null);
@@ -33,7 +33,7 @@ export const JWTTokenInspector: React.FC = () => {
   }, [state.token, inspectorVisible]);
 
   const formatTimeLeft = (milliseconds: number): string => {
-    if (milliseconds <= 0) return 'Expired';
+    if (milliseconds <= 0) return "Expired";
     
     const seconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -63,7 +63,7 @@ export const JWTTokenInspector: React.FC = () => {
           onClick={() => setInspectorVisible(!inspectorVisible)}
           variant="outline"
         >
-          {inspectorVisible ? 'Hide Details' : 'Show Details'}
+          {inspectorVisible ? "Hide Details" : "Show Details"}
         </Button>
       </div>
 
@@ -71,22 +71,22 @@ export const JWTTokenInspector: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div className="bg-white dark:bg-gray-900 p-3 rounded border">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Status</div>
-          <div className={`font-medium ${validation?.isValid ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>
-            {validation?.isValid ? '✅ Valid' : '❌ Invalid'}
+          <div className={`font-medium ${validation?.isValid ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+            {validation?.isValid ? "✅ Valid" : "❌ Invalid"}
           </div>
         </div>
         
         <div className="bg-white dark:bg-gray-900 p-3 rounded border">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Expires</div>
-          <div className={`font-medium ${expiry?.isExpired ? 'text-red-600 dark:text-red-300' : 'text-blue-600 dark:text-blue-300'}`}>
-            {expiry ? formatTimeLeft(expiry.timeLeft) : 'Unknown'}
+          <div className={`font-medium ${expiry?.isExpired ? "text-red-600 dark:text-red-300" : "text-blue-600 dark:text-blue-300"}`}>
+            {expiry ? formatTimeLeft(expiry.timeLeft) : "Unknown"}
           </div>
         </div>
         
         <div className="bg-white dark:bg-gray-900 p-3 rounded border">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Auto Refresh</div>
-          <div className={`font-medium ${TokenManager.shouldRefreshToken(state.token) ? 'text-orange-600 dark:text-orange-300' : 'text-green-600 dark:text-green-300'}`}>
-            {TokenManager.shouldRefreshToken(state.token) ? '🔄 Soon' : '✅ Good'}
+          <div className={`font-medium ${TokenManager.shouldRefreshToken(state.token) ? "text-orange-600 dark:text-orange-300" : "text-green-600 dark:text-green-300"}`}>
+            {TokenManager.shouldRefreshToken(state.token) ? "🔄 Soon" : "✅ Good"}
           </div>
         </div>
       </div>
@@ -134,11 +134,11 @@ export const JWTTokenInspector: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status</div>
-                  <div className={`text-sm ${validation.isValid ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>
-                    {validation.isValid ? '✅ Token is valid' : '❌ Token is invalid'}
+                  <div className={`text-sm ${validation.isValid ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+                    {validation.isValid ? "✅ Token is valid" : "❌ Token is invalid"}
                   </div>
-                  <div className={`text-sm ${validation.isExpired ? 'text-red-600 dark:text-red-300' : 'text-green-600 dark:text-green-300'}`}>
-                    {validation.isExpired ? '❌ Token is expired' : '✅ Token is not expired'}
+                  <div className={`text-sm ${validation.isExpired ? "text-red-600 dark:text-red-300" : "text-green-600 dark:text-green-300"}`}>
+                    {validation.isExpired ? "❌ Token is expired" : "✅ Token is not expired"}
                   </div>
                 </div>
                 
@@ -203,7 +203,7 @@ export const JWTTokenInspector: React.FC = () => {
                 onClick={() => {
                   if (state.token) {
                     navigator.clipboard.writeText(state.token);
-                    alert('Token copied to clipboard!');
+                    alert("Token copied to clipboard!");
                   }
                 }}
                 variant="primary"
@@ -214,7 +214,7 @@ export const JWTTokenInspector: React.FC = () => {
               <Button
                 onClick={() => {
                   const url = `https://jwt.io/#debugger-io?token=${state.token}`;
-                  window.open(url, '_blank');
+                  window.open(url, "_blank");
                 }}
                 variant="success"
               >
@@ -228,7 +228,7 @@ export const JWTTokenInspector: React.FC = () => {
                   }
                   const validation = TokenManager.validateToken(state.token);
                   setValidation(validation);
-                  alert('Token re-validated!');
+                  alert("Token re-validated!");
                 }}
                 variant="outline"
               >

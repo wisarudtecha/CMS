@@ -1,13 +1,13 @@
 // /src/components/auth/ProtectedRoute.tsx
 import React from "react";
-import type { User } from "@/types/auth";
+import { AlertIcon } from "@/icons";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/hooks/useAuth";
-import { LoginForm } from "./LoginForm";
-import { Loader2, AlertCircle } from "lucide-react";
+import type { User } from "@/types/auth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: User['role'][];
+  requiredRole?: User["role"][];
   requiredPermissions?: string[];
   fallback?: React.ComponentType;
 }
@@ -20,30 +20,21 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { state } = useAuth();
 
-  // Updated: [06-07-2025] v0.1.1
-  console.log('🛡️ ProtectedRoute - Auth State:', {
-    isLoading: state.isLoading,
-    isAuthenticated: state.isAuthenticated,
-    user: !!state.user,
-    token: !!state.token
-  });
-
-  if (state.isLoading) {
+  if (state.isLoading || state.isRefreshing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
         <div className="text-center">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600 dark:text-indigo-300 mx-auto" />
-          <p className="mt-2 text-gray-600 dark:text-gray-300">Loading...</p>
-          <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Checking authentication status</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            {state.isRefreshing ? "Refreshing session..." : "Authenticating..."}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">Please wait</p>
         </div>
       </div>
     );
   }
 
   if (!state.isAuthenticated) {
-    // Updated: [06-07-2025] v0.1.1
-    console.log('🔐 Showing LoginForm - user not authenticated');
-    
     return <LoginForm />;
   }
 
@@ -54,9 +45,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     ) : (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+          <AlertIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Access Denied</h2>
-          <p className="text-gray-600 dark:text-gray-300">You don't have permission to access this page.</p>
+          <p className="text-gray-600 dark:text-gray-300">You don"t have permission to access this page.</p>
         </div>
       </div>
     );
@@ -74,9 +65,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       ) : (
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+            <AlertIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Insufficient Permissions</h2>
-            <p className="text-gray-600 dark:text-gray-300">You don't have the required permissions for this action.</p>
+            <p className="text-gray-600 dark:text-gray-300">You don"t have the required permissions for this action.</p>
           </div>
         </div>
       );
