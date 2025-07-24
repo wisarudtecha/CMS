@@ -5,12 +5,13 @@ const getApiBaseUrl = (): string => {
   const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
   
   if (isDevelopment) {
+    console.log("Local development API: /api/v1");
     return "/api/v1"; // Local development API
   }
   
   // Production API - replace with actual API URL
-  return "/api/v1";
-  // return "https://cmsapi-production-488d.up.railway.app/api/v1"; // Local development API
+  console.log("Production API: https://cmsapi-production-488d.up.railway.app/api/v1");
+  return "https://cmsapi-production-488d.up.railway.app/api/v1"; // Local development API
 };
 
 export const API_CONFIG = {

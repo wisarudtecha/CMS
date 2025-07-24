@@ -13,13 +13,16 @@ export const APP_CONFIG = {
     // Development: Use proxy or direct URL
     if (import.meta.env.DEV) {
       // Option 1: Use Vite proxy (recommended)
-      // return "/api/v1";
+      console.log("Option 1: Use Vite proxy: /api/v1");
+      return "/api/v1";
       
       // Option 2: Direct URL (requires server CORS configuration)
-      // return "http://localhost:8080/api/v1";
+      console.log("Option 2: Direct URL: http://localhost:8080/api/v1");
+      return "http://localhost:8080/api/v1";
     }
     
     // Production: Use production API URL
+    console.log("Production: Use production API URL:", import.meta.env.VITE_API_BASE_URL || "/api/v1");
     return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
