@@ -9,7 +9,7 @@ const getApiBaseUrl = (): string => {
   }
   
   // Production API - replace with actual API URL
-  return "http://localhost:8080/api/v1"; // Local development API
+  return "https://localhost:8080/api/v1"; // Local development API
 };
 
 export const API_CONFIG = {
