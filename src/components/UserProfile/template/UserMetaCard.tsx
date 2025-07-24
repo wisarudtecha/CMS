@@ -41,7 +41,7 @@ export default function UserMetaCard() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const profileString = localStorage.getItem("profile_data");
+        const profileString = localStorage.getItem("profile");
         const token = localStorage.getItem("access_token");
 
         if (!profileString || !token) {
@@ -94,7 +94,7 @@ export default function UserMetaCard() {
 
   const handleSave = async () => {
     try {
-        const profileString = localStorage.getItem("profile_data");
+        const profileString = localStorage.getItem("profile");
         const token = localStorage.getItem("access_token");
         if (!profileString || !token) {
             alert("Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");

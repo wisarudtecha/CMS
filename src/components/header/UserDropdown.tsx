@@ -17,7 +17,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 const AUTO_DELETE_OPTIONS = [1, 3, 5, 7, 15, 30];
 
 const getInitialPreferences = () => {
-  const saved = localStorage.getItem("notificationPreferences");
+  const saved = localStorage.getItem("notification_preferences");
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
@@ -161,7 +161,7 @@ const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose 
   };
 
   const handleSave = () => {
-    localStorage.setItem("notificationPreferences", JSON.stringify(preferences));
+    localStorage.setItem("notificatio_preferences", JSON.stringify(preferences));
     onClose();
   };
 
@@ -414,7 +414,7 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
   useEffect(() => {
-    const profileStr = localStorage.getItem("profile_data"); 
+    const profileStr = localStorage.getItem("profile"); 
     if (profileStr) {
       try {
         const profile = JSON.parse(profileStr);
@@ -427,6 +427,33 @@ export default function UserDropdown() {
       }
     }
   }, []);
+  const handleLogoutClick = () => {
+    removeData();  
+    logout();     
+  };
+  
+  //Remove localStorge Profile || Notification || Token Data
+  const removeData = () => {
+    try {
+      const profileData = localStorage.getItem("profile");
+      if (profileData) {
+        const parsed = JSON.parse(profileData);
+        const username = parsed.username;
+  
+        if (username) {
+          localStorage.removeItem(`notifications`);
+        }
+      }
+  
+      // ลบข้อมูลหลักอื่น ๆ
+      localStorage.removeItem("profile");
+      localStorage.removeItem("access_token");
+    } catch (error) {
+      console.error("Remove data failed:", error);
+    }
+  };
+  
+
   return (
     <div className="relative">
       <button
@@ -579,7 +606,7 @@ export default function UserDropdown() {
         {state.user && (
           <button
             className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            onClick={logout}
+            onClick={handleLogoutClick}
           >
             <svg
               className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"

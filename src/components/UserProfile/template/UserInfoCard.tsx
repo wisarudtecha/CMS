@@ -41,7 +41,7 @@ export default function UserInfoCard() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const profileString = localStorage.getItem("profile_data");
+        const profileString = localStorage.getItem("profile");
         const token = localStorage.getItem("access_token");
 
         if (!profileString || !token) {
@@ -102,7 +102,7 @@ export default function UserInfoCard() {
 
   const handleSave = async () => {
     try {
-      const profileString = localStorage.getItem("profile_data");
+      const profileString = localStorage.getItem("profile");
       const token = localStorage.getItem("access_token");
       
       if (!profileString || !token) {

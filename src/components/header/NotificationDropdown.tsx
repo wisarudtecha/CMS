@@ -64,7 +64,7 @@ export default function NotificationDropdown() {
 
   // Get profile from localStorage
   const getProfile = () => {
-    const profile = localStorage.getItem("profile_data");
+    const profile = localStorage.getItem("profile");
     if (profile) {
       try {
         return JSON.parse(profile);
@@ -168,7 +168,7 @@ export default function NotificationDropdown() {
           sound: "default",
         };
     
-        const saved = localStorage.getItem("notificationPreferences");
+        const saved = localStorage.getItem("notification_preferences");
         if (saved) {
           try {
             return { ...defaultPreferences, ...JSON.parse(saved) };
@@ -185,7 +185,7 @@ export default function NotificationDropdown() {
         const updatedNotifications = notifications.map((n) => ({ ...n, read: true }));
         setNotifications(updatedNotifications);
     
-        const key = `notifications_${profile.username}`;
+        const key = `notifications`;
         localStorage.setItem(key, JSON.stringify(updatedNotifications));
       };
     
@@ -199,7 +199,7 @@ export default function NotificationDropdown() {
     
         setNotifications(updatedNotifications);
     
-        const key = `notifications_${profile.username}`;
+        const key = `notifications`;
         localStorage.setItem(key, JSON.stringify(updatedNotifications));
       };
   const profile = getProfile();
@@ -250,7 +250,7 @@ export default function NotificationDropdown() {
         console.log(`Auto-deleted ${notifications.length - filtered.length} notifications older than ${autoDeleteDays} days.`);
         setNotifications(filtered);
         if (profile) {
-          localStorage.setItem(`notifications_${profile.username}`, JSON.stringify(filtered));
+          localStorage.setItem(`notifications`, JSON.stringify(filtered));
         }
       }
   
@@ -316,7 +316,7 @@ export default function NotificationDropdown() {
   //     setNotifications((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
 
   //     if (profile) {
-  //       const key = `notifications_${profile.username}`;
+  //       const key = `notifications`;
   //       const current = localStorage.getItem(key);
   //       if (current) {
   //         const parsed = JSON.parse(current);
@@ -339,7 +339,7 @@ export default function NotificationDropdown() {
     }
 
     if (profile) {
-      const key = `notifications_${profile.username}`;
+      const key = `notifications`;
       const existing = localStorage.getItem(key);
       if (existing === null) {
         localStorage.setItem(key, JSON.stringify(notifications));
@@ -417,7 +417,7 @@ export default function NotificationDropdown() {
             const updated = [{ ...data, read: false }, ...prev];
             if (profile) {
               localStorage.setItem(
-                `notifications_${profile.username}`,
+                `notifications`,
                 JSON.stringify(updated)
               );
             }
@@ -480,7 +480,7 @@ export default function NotificationDropdown() {
       
       // --- START of MODIFICATION ---
   
-      const key = `notifications_${profile.username}`;
+      const key = `notifications`;
       const saved = localStorage.getItem(key);
   
       if (saved) {
