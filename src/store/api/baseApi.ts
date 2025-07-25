@@ -115,6 +115,7 @@ export const baseApi = createApi({
     "User",
     "Ticket",
     "Workflow",
+    "Form and Workflow",
     "Notification",
     "SOP",
     "Dashboard",

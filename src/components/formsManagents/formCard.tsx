@@ -14,7 +14,7 @@ interface FormCardProps {
   formatDate: (dateString: string) => string;
   handleOnEdit?: () => void;
   handleOnView?: () => void;
-  onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['status']) => void; // Add this line
+  onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['active']) => void; // Add this line
 }
 
 
@@ -27,7 +27,7 @@ const FormCard: React.FC<FormCardProps> = ({
   onSetStatusInactive, // Destructure the new prop
 }) => {
 
-  const config = statusConfig[form.status];
+  const config = statusConfig[form.active===true?"active":"inactive"];
 
   return (
     <div
@@ -43,10 +43,13 @@ const FormCard: React.FC<FormCardProps> = ({
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
               {config.label}
             </span>
+            {form.versions=="draft"&&<span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig["draft"].color}`}>
+              draft
+            </span>}
           </div>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{form.description}</p>
+        {/* <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{form.description}</p> */}
 
         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
           <div className="flex items-center gap-1">
@@ -57,13 +60,13 @@ const FormCard: React.FC<FormCardProps> = ({
       </div>
       
       <div className="mt-auto pt-4">
-        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>Create By : {getAvatarIconFromString(form.createBy,"bg-blue-600 dark:bg-blue-700 mx-1")}{form.createBy}</div>
+        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>Create By : {getAvatarIconFromString(form.createdBy,"bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
         <ButtonAction
           type="button"
           form={form}
           handleOnEdit={handleOnEdit}
           handleOnView={handleOnView}
-          onSetStatusInactive={onSetStatusInactive}
+          onSetStatusChange={onSetStatusInactive}
         />
       </div>
     </div>

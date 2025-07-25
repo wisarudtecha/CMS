@@ -43,11 +43,12 @@ export interface FormConfigItem {
 
 
 export interface FormManager extends FormField {
-  status: "active" | "inactive" | "draft" ;
+  active:boolean;
+  publish:boolean;
+  versions: string;
   createdAt: string;
   type:string;
-  createBy:string
-  description:string;
+  createdBy:string
 }
 
 export interface formType extends FormField {

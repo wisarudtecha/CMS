@@ -7,7 +7,7 @@ interface TableRowActionsProps {
   handleOnEdit?: (form: FormField) => void;
   handleOnView?: () => void;
   type?: "button" | "list";
-  onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['status']) => void;
+  onSetStatusChange: (formId: string, formName: string, newStatus: boolean) => void;
 }
 
 const ButtonAction: React.FC<TableRowActionsProps> = ({
@@ -15,14 +15,15 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
   type = "list",
   handleOnEdit,
   handleOnView,
-  onSetStatusInactive,
+  onSetStatusChange,
 }) => {
 
   const style = type === "list" ? "ghost" : "outline";
 
-  const handleOnDel = () => {
-    form.status!="inactive"?onSetStatusInactive(form.formId, form.formName, 'inactive'):
-    onSetStatusInactive(form.formId, form.formName, 'active');
+  // Handles toggling the active status of the form
+  const handleToggleStatus = () => {
+ 
+    onSetStatusChange(form.formId, form.formName, !form.active);
   };
 
   return (
@@ -41,17 +42,25 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
       >
         Edit
       </Button>
-      {form.status!="inactive"?<Button
-        onClick={handleOnDel}
-        variant={`${style}-error`}
-      >
-        Inactive
-      </Button>:<Button
-        onClick={handleOnDel}
-        variant={`${style}-success`}
-      >
-        Active
-      </Button>}
+      
+      {/* Conditionally render the status button based on the 'active' property */}
+      {form.active ? (
+        <Button
+          onClick={handleToggleStatus}
+          variant={`${style}-error`}
+          title="Set to Inactive"
+        >
+          Inactive
+        </Button>
+      ) : (
+        <Button
+          onClick={handleToggleStatus}
+          variant={`${style}-success`}
+          title="Set to Active"
+        >
+          Active
+        </Button>
+      )}
     </div>
   );
 };
