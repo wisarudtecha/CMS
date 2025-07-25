@@ -249,13 +249,24 @@ const FormListComponent: React.FC = () => {
       addToast('error', `Failed to update Flow status, ${err}`);
     }
   };
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
 
   // Filter and sort forms
   const filteredAndSortedFormManagers = useMemo(() => {
     const filtered = forms.filter(form => {
       const matchesSearch = !filterConfig.search ||
-        form.formName.toLowerCase().includes(filterConfig.search.toLowerCase());
+        form.formName.toLowerCase().includes(filterConfig.search.toLowerCase())||
+        formatDate(form.createdAt!).toLowerCase().includes(filterConfig.search.toLowerCase());
+        ;
 
       const matchesStatus = filterConfig.status === undefined || form.active === filterConfig.status; // Check for undefined to not filter if no status is selected
       const matchesDraft = filterConfig.isDraft === undefined || (form.versions === "draft" && filterConfig.isDraft) || (form.versions !== "draft" && !filterConfig.isDraft); // Assuming 'publish' being false means it's a draft
@@ -291,16 +302,7 @@ const FormListComponent: React.FC = () => {
   const endEntry = Math.min(pagination.page * pagination.pageSize, filteredAndSortedFormManagers.length);
 
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
+  
   // const getUniqueCategories = () => {
   //   return [...new Set(forms.map(w => w.type).filter(Boolean))];
   // };
