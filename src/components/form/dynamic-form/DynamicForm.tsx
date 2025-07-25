@@ -43,6 +43,8 @@ import { Modal } from "@/components/ui/modal";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren } from "@/components/interface/FormField";
 // --- Interface Definitions ---
 import Toast from "@/components/toast/Toast";
+import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
+import { useNavigate } from "react-router";
 
 interface DynamicFormProps {
   initialForm?: FormField;
@@ -516,6 +518,10 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnFormAllFill }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [updateFormData] = useUpdateFormMutation();
+  const [createFormData] = useCreateFormMutation();
+  const navigate = useNavigate();
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
       {
@@ -900,8 +906,38 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   }, [updateFieldRecursively]);
 
 
-  const saveSchema = () => {
-    console.log("Saved Form Schema:", currentForm);
+  const saveSchema = async() => {
+    let response
+    if (initialForm) {
+      response=await updateFormData({
+        formId:currentForm.formId,
+        formColSpan:currentForm.formColSpan,
+        formFieldJson:currentForm.formFieldJson,
+        formName:currentForm.formName,
+        locks:false,
+        publish:false,
+        active: true,
+      }).unwrap();
+
+    }else{
+      response=await createFormData({
+        active: true,
+        formColSpan:currentForm.formColSpan,
+        formFieldJson:currentForm.formFieldJson,
+        formName:currentForm.formName,
+        locks:false,
+        publish:false,
+      }).unwrap();
+      
+    }
+    console.log(response)
+    if(response.msg==="Success"){
+        navigate(0);
+      }else{
+        setShowToast(true)
+        setToastMessage("Save Error")
+      }
+  
   }
 
   const handleFieldChange = useCallback((id: string, newValue: any) => {
@@ -1952,10 +1988,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       {showToast && (
         <Toast
-          message="Please enter all data."
+          message={toastMessage?toastMessage:"Please enter all data."}
           type="error"
           duration={1000}
-          onClose={() => setShowToast(false)}
+          onClose={() => {setShowToast(false); toastMessage??setToastMessage("")}}
         />
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -2021,7 +2057,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           <div hidden={!isPreview} className={enableSelfBg ? " rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
             {FormPreview()}
             <div className="flex justify-between flex-wrap gap-2 mt-6">
-              <Button onClick={saveSchema} disabled={!editFormData}>Save Schema</Button>
+              <Button onClick={saveSchema} disabled={!editFormData}>{initialForm?"Save Change":"Save Schema"}</Button>
               <div className="flex gap-2">
                 <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
                 {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}

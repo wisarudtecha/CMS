@@ -1,6 +1,6 @@
-import { ApiResponse } from "@/types";
+import { ApiResponse} from "@/types";
 import { baseApi } from "./baseApi";
-import { FormManager } from "@/components/interface/FormField";
+import { FormManager, IndividualFormField } from "@/components/interface/FormField";
 
 export interface UpdataStatusResponse {
     status: string;
@@ -8,6 +8,12 @@ export interface UpdataStatusResponse {
     desc: string;
 }
 
+export interface UpdataFormResponse {
+    status: string;
+    msg: string;
+    desc: string;
+    data:any;
+}
 export const formApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ticket CRUD operations
@@ -25,6 +31,53 @@ export const formApi = baseApi.injectEndpoints({
                 url: "/forms/active",
                 method: "PATCH",
                 body: { formId, active }, 
+            }),
+            invalidatesTags: ["Form and Workflow"], 
+        }),
+
+        updateForm: builder.mutation<UpdataFormResponse, { //
+            formId: string;
+            active: boolean; 
+            formColSpan:number;
+            formFieldJson:IndividualFormField[];
+            formName:string;
+            locks:boolean;
+            publish:boolean;
+        }>({
+            query: ({ formId, active, formColSpan, formFieldJson, formName, locks, publish }) => ({ //
+                url: `/forms/${formId}`,
+                method: "PATCH",
+                body: { 
+                    active, 
+                    formColSpan, 
+                    formFieldJson, 
+                    formName, 
+                    locks, 
+                    publish 
+                }, 
+            }),
+            invalidatesTags: ["Form and Workflow"], 
+        }),
+
+        createForm: builder.mutation<UpdataFormResponse, { //
+            active: boolean; 
+            formColSpan:number;
+            formFieldJson:IndividualFormField[];
+            formName:string;
+            locks:boolean;
+            publish:boolean;
+        }>({
+            query: ({  active, formColSpan, formFieldJson, formName, locks, publish }) => ({ //
+                url: `/forms`,
+                method: "POST",
+                body: { 
+                    active, 
+                    formColSpan, 
+                    formFieldJson, 
+                    formName, 
+                    locks, 
+                    publish 
+                }, 
             }),
             invalidatesTags: ["Form and Workflow"], 
         }),
@@ -217,5 +270,7 @@ export const formApi = baseApi.injectEndpoints({
 export const {
     useGetAllFormsQuery,
     useUpdateStatusMutation,
+    useUpdateFormMutation,
+    useCreateFormMutation,
 } = formApi;
 
