@@ -142,17 +142,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Token refresh management
   useEffect(() => {
     const setupTokenRefresh = () => {
-      if (refreshTimer) clearTimeout(refreshTimer);
+      if (refreshTimer) {
+        // console.log("🔄 Clearing existing refresh timer.", refreshTimer);
+        clearTimeout(refreshTimer);
+      }
       
-      if (!state.token) return;
+      if (!state.token) {
+        console.log("🔄 No token to refresh.");
+        return;
+      }
 
       const expiryTime = TokenManager.getTokenExpiryTime(state.token);
-      if (!expiryTime) return;
+      if (!expiryTime) {
+        console.log("🔄 Token has no expiry time.");
+        return;
+      }
+      // console.log(`🔄 Token expires in: ${((expiryTime - Date.now()) / 1000 / 60).toFixed(2)} minutes`);
 
       // Refresh token 5 minutes before expiry
       const refreshTime = expiryTime - Date.now() - (5 * 60 * 1000);
+
+      // Refresh token 1 minute before expiry
+      // const refreshTime = expiryTime - Date.now() - (1 * 60 * 1000);
       
       if (refreshTime > 0) {
+        // console.log("🔄 Refreshing token in:", (refreshTime / 1000 / 60).toFixed(2), "minutes");
         const timer = setTimeout(() => {
           refreshToken();
         }, refreshTime);
@@ -162,11 +176,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     if (state.isAuthenticated && state.token) {
+      // console.log("🔄 Setting up token refresh.", state?.isAuthenticated);
       setupTokenRefresh();
     }
 
     return () => {
-      if (refreshTimer) clearTimeout(refreshTimer);
+      if (refreshTimer) {
+        // console.log("🔄 Clearing refresh timer.", refreshTimer);
+        clearTimeout(refreshTimer);
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.token, state.isAuthenticated]);
@@ -232,8 +250,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshToken = useCallback(async () => {
     const currentRefreshToken = TokenManager.getRefreshToken();
     if (!currentRefreshToken || state.isRefreshing) {
+      console.log("🔄 Token refresh already in progress.");
       return;
     }
+    console.log("🔄 Refreshing token...");
 
     dispatch({ type: "REFRESH_START" });
 

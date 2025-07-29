@@ -14,10 +14,7 @@ export class HttpClient {
     return HttpClient.instance;
   }
 
-  private async makeRequest<T>(
-    url: string, 
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
+  private async makeRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const fullUrl = `${API_CONFIG.BASE_URL}${url}`;
     
     // Cancel previous request if still pending
@@ -63,7 +60,8 @@ export class HttpClient {
           if (refreshed) {
             // Retry original request with new token
             return this.makeRequest(url, options);
-          } else {
+          }
+          else {
             throw new Error("Authentication failed");
           }
         }
@@ -74,7 +72,8 @@ export class HttpClient {
 
       const data = await response.json();
       return data;
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         throw new Error("Request cancelled");
       }
@@ -110,7 +109,8 @@ export class HttpClient {
       }
       
       return false;
-    } catch {
+    }
+    catch {
       return false;
     }
   }

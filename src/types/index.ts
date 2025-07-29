@@ -360,11 +360,14 @@ export interface WidgetFilter extends Filter {
 
 // API Response Types
 export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
+  success?: boolean;
+  status?: boolean;
   message?: string;
-  pagination?: PaginationInfo;
+  msg?: string;
+  data?: T;
   errors?: Record<string, string[]>;
+  desc?: string;
+  pagination?: PaginationInfo;
   meta?: {
     timestamp: string;
     requestId: string;

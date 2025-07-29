@@ -16,9 +16,7 @@ export class AuthService {
       role: role as User["role"],
       department: "IT",
       lastLogin: new Date(),
-      permissions: role === "admin" 
-        ? ["read", "write", "delete", "admin"] 
-        : ["read", "write"],
+      permissions: role === "admin" ? ["read", "write", "delete", "admin"] : ["read", "write"],
       organization: "SKY-AI",
       avatar: undefined,
       isEmailVerified: true,
@@ -39,7 +37,7 @@ export class AuthService {
   }
 
   static async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    console.log("🔐 Attempting login for:", credentials.email);
+    // console.log("🔐 Attempting login for:", credentials.username);
     
     try {
       if (API_CONFIG.DEMO_MODE) {
@@ -64,36 +62,32 @@ export class AuthService {
         }
       }
       else {
-        const queryParams = new URLSearchParams({
+        // Real API mode
+        const params = {
           username: credentials.username,
           password: credentials.password,
           organization: String(credentials.organization),
           rememberMe: String(credentials.rememberMe),
           twoFactorCode: credentials.twoFactorCode || "",
           captcha: credentials.captcha || ""
-        }).toString();
+        };
 
-        const response = await this.httpClient.get<LoginResponse>(
-          `${API_CONFIG.ENDPOINTS.LOGIN}?${queryParams}`
-        );
-
-        // Real API mode
-        // const response = await this.httpClient.post<LoginResponse>(
-        //   API_CONFIG.ENDPOINTS.LOGIN,
-        //   {
-        //     username: credentials.username,
-        //     password: credentials.password,
-        //     rememberMe: credentials.rememberMe,
-        //     twoFactorCode: credentials.twoFactorCode,
-        //     captcha: credentials.captcha
-        //   }
+        // METHOD GET (suspended)
+        // const queryParams = new URLSearchParams(params).toString();
+        // const response = await this.httpClient.get<LoginResponse>(
+        //   `${API_CONFIG.ENDPOINTS.LOGIN}?${queryParams}`
         // );
+
+        // METHOD POST
+        const response = await this.httpClient.post<LoginResponse>(
+          API_CONFIG.ENDPOINTS.LOGIN, params
+        );
 
         if (!response.data) {
           throw new Error(response.message || "Login failed");
         }
 
-        console.log("✅ API login successful");
+        // console.log("✅ API login successful");
         return response.data;
       }
     }
@@ -183,7 +177,7 @@ export class AuthService {
           { refreshToken }
         );
 
-        if (!response.success || !response.data) {
+        if (!response.status || !response.data) {
           throw new Error(response.message || "Token refresh failed");
         }
 

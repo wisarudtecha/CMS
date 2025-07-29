@@ -27,12 +27,7 @@ export class TokenManager {
     }
   }
   
-  static setTokens(
-    accessToken: string,
-    refreshToken: string,
-    rememberMe: boolean = false,
-    profile?: unknown,
-  ) {
+  static setTokens(accessToken: string, refreshToken: string, rememberMe: boolean = false, profile?: unknown) {
     this.clearTokens();
 
     const storage = rememberMe ? localStorage : sessionStorage;
