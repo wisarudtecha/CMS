@@ -1827,7 +1827,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     const commonProps = {
       id: field.id,
       className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
-      placeholder: field.placeholder || `Enter ${field.label.toLowerCase()}`,
+      placeholder: field.placeholder || field.label&&`Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
     };
