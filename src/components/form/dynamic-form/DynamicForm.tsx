@@ -228,7 +228,7 @@ const DndImageUploader: React.FC<{
 
 const DndMultiImageUploader: React.FC<{
   onFilesSelect: (files: File[]) => void;
-  existingFiles: (File | { name: string; url: string; [key: string]: any })[]; // Updated type for existingFiles
+  existingFiles: (File | { name: string; url: string;[key: string]: any })[]; // Updated type for existingFiles
   handleRemoveFile: (fileName: string) => void;
   disabled?: boolean;
 }> = ({ onFilesSelect, existingFiles, handleRemoveFile, disabled }) => {
@@ -281,7 +281,7 @@ const DndMultiImageUploader: React.FC<{
       fileInputRef.current?.click();
     }
   };
- 
+
   return (
     <div>
       <div
@@ -316,7 +316,7 @@ const DndMultiImageUploader: React.FC<{
               imageUrl = file.url;
             } else {
               console.warn("Unexpected file format in existingFiles, cannot determine image URL:", file);
-              imageUrl = ""; 
+              imageUrl = "";
             }
 
             return (
@@ -906,38 +906,48 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   }, [updateFieldRecursively]);
 
 
-  const saveSchema = async() => {
+  const saveSchema = async () => {
     let response
-    if (initialForm) {
-      response=await updateFormData({
-        formId:currentForm.formId,
-        formColSpan:currentForm.formColSpan,
-        formFieldJson:currentForm.formFieldJson,
-        formName:currentForm.formName,
-        locks:false,
-        publish:false,
-        active: true,
-      }).unwrap();
+    try {
+      if (initialForm) {
+        response = await updateFormData({
+          formId: currentForm.formId,
+          formColSpan: currentForm.formColSpan,
+          formFieldJson: currentForm.formFieldJson,
+          formName: currentForm.formName,
+          locks: false,
+          publish: false,
+          active: true,
+        }).unwrap();
 
-    }else{
-      response=await createFormData({
-        active: true,
-        formColSpan:currentForm.formColSpan,
-        formFieldJson:currentForm.formFieldJson,
-        formName:currentForm.formName,
-        locks:false,
-        publish:false,
-      }).unwrap();
-      
-    }
-    console.log(response)
-    if(response.msg==="Success"){
-        navigate(0);
-      }else{
-        setShowToast(true)
-        setToastMessage("Save Error")
+      } else {
+        if (currentForm.formFieldJson.length != 0) {
+          response = await createFormData({
+            active: true,
+            formColSpan: currentForm.formColSpan,
+            formFieldJson: currentForm.formFieldJson,
+            formName: currentForm.formName,
+            locks: false,
+            publish: false,
+          }).unwrap();
+        }
+        else {
+          setToastMessage("There are no element in form.")
+          setShowToast(true)
+          return
+        }
       }
-  
+      if (response.msg === "Success") {
+        navigate(0);
+      } else {
+        setToastMessage(response.desc)
+        setShowToast(true)
+        console.log("error")
+      }
+    } catch (e:any) {
+      setToastMessage(e.data.desc)
+      setShowToast(true)
+    }
   }
 
   const handleFieldChange = useCallback((id: string, newValue: any) => {
@@ -1469,7 +1479,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       handleChildContainerColSpanChange(e, field.id, "dynamicField");
     }, [field.id, handleChildContainerColSpanChange]);
 
-    const showPlaceholderInput = ["textInput", "Integer","select","dynamicField", "textAreaInput", "emailInput", "passwordInput"].includes(field.type);
+    const showPlaceholderInput = ["textInput", "Integer", "select", "dynamicField", "textAreaInput", "emailInput", "passwordInput"].includes(field.type);
     const colSpanOptions = Array.from({ length: overallFormColSpan }, (_, i) => i + 1);
     const isInputGroup = field.type === "InputGroup";
     const isDynamicField = field.type === "dynamicField";
@@ -1827,7 +1837,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     const commonProps = {
       id: field.id,
       className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
-      placeholder: field.placeholder || field.label&&`Enter ${field.label.toLowerCase()}`,
+      placeholder: field.placeholder || field.label && `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
     };
@@ -1909,8 +1919,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         </div></>);
 
       case "multiImage":
-        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => {handleFieldChange(field.id, e.target.files) 
-          e.target.value=""}} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => {
+          handleFieldChange(field.id, e.target.files)
+          e.target.value = ""
+        }} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
           {Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
             <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
             <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">
@@ -1988,10 +2000,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       {showToast && (
         <Toast
-          message={toastMessage?toastMessage:"Please enter all data."}
+          message={toastMessage ? toastMessage : "Please enter all data."}
           type="error"
           duration={1000}
-          onClose={() => {setShowToast(false); toastMessage??setToastMessage("")}}
+          onClose={() => { setShowToast(false); toastMessage ?? setToastMessage("") }}
         />
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -2057,7 +2069,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           <div hidden={!isPreview} className={enableSelfBg ? " rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
             {FormPreview()}
             <div className="flex justify-between flex-wrap gap-2 mt-6">
-              <Button onClick={saveSchema} disabled={!editFormData}>{initialForm?"Save Change":"Save Schema"}</Button>
+              <Button onClick={saveSchema} disabled={!editFormData}>{initialForm ? "Save Change" : "Save Schema"}</Button>
               <div className="flex gap-2">
                 <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
                 {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}
