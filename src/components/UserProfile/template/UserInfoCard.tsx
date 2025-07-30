@@ -59,7 +59,7 @@ export default function UserInfoCard() {
           return;
         }
 
-        const response = await axios.get(`${API}/api/v1/users/username/${username}`, {
+        const response = await axios.get(`${API}/users/username/${username}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'accept': 'application/json' },
         });
         
@@ -118,7 +118,7 @@ export default function UserInfoCard() {
         ...socialLinks
       };
 
-      await axios.patch(`${API}/api/v1/users/username/${username}`, updateData, {
+      await axios.patch(`${API}/users/username/${username}`, updateData, {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
 

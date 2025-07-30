@@ -59,7 +59,7 @@ export default function UserMetaCard() {
           return;
         }
 
-        const response = await axios.get(`${API}/api/v1/users/username/${username}`, {
+        const response = await axios.get(`${API}/users/username/${username}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'accept': 'application/json' },
         });
         
@@ -104,7 +104,7 @@ export default function UserMetaCard() {
         const profile = JSON.parse(profileString);
         const username = profile?.username;
 
-        await axios.patch(`${API}/api/v1/users/username/${username}`, formData, {
+        await axios.patch(`${API}/users/username/${username}`, formData, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
 

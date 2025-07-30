@@ -507,7 +507,7 @@ export default function NotificationDropdown() {
       }
   
       try {
-        const url = `${API}/api/v1/notifications/${profile.orgId}/${profile.username}`;
+        const url = `${API}/notifications/${profile.orgId}/${profile.username}`;
         const headers = getAuthHeaders();
       
         console.log("🌐 Fetching from API:", url);
