@@ -27,6 +27,7 @@ export interface User extends BaseEntity {
   permissions: Permission[];
   lastLogin?: Date;
   isActive: boolean;
+  photo:string;
   preferences: UserPreferences;
 }
 

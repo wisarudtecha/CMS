@@ -9,33 +9,26 @@ import {
     User as User_Icon,
     MessageSquare,
     Paperclip,
-    MapPin,
     ChevronDown,
     ChevronUp,
-    X // Added for the close button
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { formType, IndividualFormField, FormField } from "@/components/interface/FormField"
+import { formType, FormField } from "@/components/interface/FormField"
 import createCaseJson from "../../utils/json/createCase.json" // Renamed to avoid conflict with function name
 import Badge from "@/components/ui/badge/Badge"
-import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
-import locateImage from "@/icons/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
 import caseTypeMock from "../../utils/json/caseType.json"
-import CaseHistory from "@/utils/json/caseHistory.json"
-import Avatar from "../ui/avatar/Avatar"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
 import Comments from "../comment/Comment"
 // Corrected import path
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
-import FormViewer from "../form/dynamic-form/FormViewValue"
 import DateStringToDateFormat, { TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
@@ -45,8 +38,10 @@ import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi"
 import { useGetUsersQuery } from "@/store/api/userApi"
 import type { Custommer, User } from "@/types";
 import React from "react"
+import CustomerInput from "./CaseCustomerInput"
+import CustomerPanel from "./CaseCustomerPanel"
+import FormFieldValueDisplay from "./CaseDisplay"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
-// Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
     { id: '2', name: 'Patricia Williams', status: 'On-Site', department: 'Plumbing', location: 'Downtown', service: 'Water Main', serviceProvider: 'Aqua Services', workload: 8, distance: 12.1 },
@@ -56,10 +51,7 @@ const mockOfficers: Officer[] = [
 ];
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
-interface CustomerPanelProps {
-    type: "edit" | "add";
-    onClose: () => void; // Added onClose handler for mobile view
-}
+
 
 function mergeCaseTypeAndSubType(
     caseTypes: CaseType[],
@@ -92,7 +84,6 @@ function mergeCaseTypeAndSubType(
     return mergedList;
 }
 
-
 const getTypeSupType = () => {
 
     try {
@@ -109,211 +100,6 @@ const getTypeSupType = () => {
     }
 
 }
-
-
-
-
-const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
-    const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
-    const [activeTab, setActiveTab] = useState("customer-info");
-    const edittabs = [
-        { id: "customer-info", label: "Info" },
-        { id: "Location", label: "Location" },
-        { id: "Knowledge Base", label: "Knowledge Base" },
-    ];
-    const addTab = [
-        { id: "customer-info", label: "Info" },
-        { id: "Location", label: "Location" },
-        { id: "Knowledge Base", label: "Knowledge Base" },
-        { id: "FAQ", label: "FAQ" },
-    ];
-
-    const serviceHistory = CaseHistory;
-
-    return (
-        <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
-            {/* Mobile-only header with a title and close button */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
-                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Customer Details</h3>
-                <Button variant="ghost" onClick={onClose}>
-                    <X className="w-5 h-5" />
-                </Button>
-            </div>
-
-            {/* Mobile/Tablet Tabs for switching between Customer Info and Service History */}
-            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-                <div className="flex">
-                    <button
-                        onClick={() => setActiveRightPanel("customer")}
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeRightPanel === "customer"
-                            ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
-                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                            }`}
-                    >
-                        Customer Info
-                    </button>
-                    <button
-                        onClick={() => setActiveRightPanel("cases")}
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeRightPanel === "cases"
-                            ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
-                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                            }`}
-                    >
-                        Service History
-                    </button>
-                </div>
-            </div>
-
-            {/* Customer Info Section */}
-            <div
-                className={`${activeRightPanel === "customer" ? "flex" : "hidden"
-                    } md:flex flex-col border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 md:max-h-80`}
-            >
-                <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-                    <div className="flex overflow-x-auto custom-scrollbar">
-                        {type === "edit" ? (
-                            edittabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab.id
-                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))
-                        ) : (
-                            addTab.slice(0, 4).map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab.id
-                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))
-                        )}
-                    </div>
-                </div>
-
-                <ScrollArea className="flex-1">
-                    <div className="p-3 space-y-3">
-                        {activeTab === "customer-info" ? (
-                            <>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
-                                        Customer Information
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <div className="flex flex-wrap gap-3 items-center">
-                                        <Avatar
-                                            src={
-                                                type === "edit"
-                                                    ? "/images/user/user-01.jpg"
-                                                    : "/images/user/unknow user.png"
-                                            }
-                                            size="xxlarge"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                                                {type === "edit" ? "John Smith" : "-"}
-                                            </h3>
-                                            {type === "edit" && (
-                                                <>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        Business ID: 123456789
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Level: Premium
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-2 text-xs">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">DOB</div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {type === "edit" ? "Jan 15, 1985" : "-"}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Insurance</div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {type === "edit" ? "INS-789-456" : "-"}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-
-                        ) : activeTab === "Location" ? (
-                            <div className="text-center py-4">
-                                <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
-                            </div>
-                        ) : (
-                            <div className="text-center py-4">
-                                <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
-                            </div>
-                        )}
-                    </div>
-                </ScrollArea>
-            </div>
-
-            {/* Service History Section */}
-            <div className={`${activeRightPanel === "cases" ? "flex" : "hidden"} md:flex flex-1 flex-col`}>
-                <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Service History</h3>
-                        <Button variant="ghost" size="sm" className="p-1 text-xs">Filter</Button>
-                    </div>
-                </div>
-                <ScrollArea className="flex-1">
-                    <div className="p-3 space-y-3">
-                        {type == "edit" ? serviceHistory.map((historyItem) => (
-                            <div
-                                key={historyItem.id}
-                                className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(historyItem.priority)} group`}
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center space-x-2 mb-2">
-                                            <div className={`w-2 h-2 ${getPriorityColorClass(historyItem.priority)} rounded-full flex-shrink-0`}></div>
-                                            <span className="text-xs text-gray-600 dark:text-gray-500 font-mono">#{historyItem.id}</span>
-                                            <span className="text-xs text-gray-600 dark:text-gray-500">{historyItem.date}</span>
-                                        </div>
-                                        <h4 className="text-sm font-medium text-gray-900 dark:text-white leading-tight mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                                            {historyItem.title}
-                                        </h4>
-                                        <div className="flex items-center justify-between">
-                                            <Badge >
-                                                {historyItem.status}
-                                            </Badge>
-                                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                                                {Array.isArray(historyItem.assignee)
-                                                    ? historyItem.assignee.map((a: { name: string }) => a.name).join(", ")
-                                                    : ((historyItem.assignee as { name?: string })?.name || "-")}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )) : <></>}
-                    </div>
-                </ScrollArea>
-            </div>
-        </div>
-    );
-};
-
 
 interface CaseCardProps {
     onAssignClick: () => void;
@@ -349,7 +135,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
         const files = e.target.files;
 
         if (files && files.length > 0) {
-            const newFilesArray = Array.from(files); // Convert FileList to File[]
+            const newFilesArray = Array.from(files); 
 
             setDisplayCaseData?.((prev) => {
                 if (!prev) return prev;
@@ -358,7 +144,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
 
                 return {
                     ...prev,
-                    attachFile: [...currentFiles, ...newFilesArray], // Allow duplicates
+                    attachFile: [...currentFiles, ...newFilesArray],
                 };
             });
             e.target.value = '';
@@ -435,201 +221,9 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
     );
 };
 
-// --- Helper function: renderField ---
-const renderField = (field: IndividualFormField): Record<string, any> => {
-    if (field.type === "InputGroup" && Array.isArray(field.value)) {
-        return {
-            [field.label]: field.value.map((child: any) => renderField(child))
-        };
-    }
-
-    if (field.type === "dynamicField" && Array.isArray(field.options)) {
-        const selectedOption = field.options.find((opt: any) => opt.value === field.value);
-        return {
-            [field.label]: {
-                value: field.value || "-",
-                ...(selectedOption && Array.isArray(selectedOption.form)
-                    ? { form: selectedOption.form.map((child: any) => renderField(child)) }
-                    : {})
-            }
-        };
-    }
-
-    let value = field.value;
-    // Keep File objects for image fields
-    if ((field.type === "multiImage" || field.type === "dndMultiImage") && Array.isArray(value)) {
-        return { [field.label]: value };
-    }
-    if (field.type === "image" && value instanceof File) {
-        return { [field.label]: value };
-    }
-
-    if (field.type === "option" && Array.isArray(value)) {
-        value = value.length > 0 ? value : [];
-    }
-    if (field.type === "select" || field.type === "radio") {
-        value = value || "-";
-    }
-    if (typeof value === "string" && value.trim() === "") {
-        value = "-";
-    }
-    return { [field.label]: value };
-};
 
 
-// --- Sub-component: FormFieldValueDisplay ---
-interface FormFieldValueDisplayProps {
-    caseData?: CaseItem;
-}
 
-const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData }) => {
-    if (!caseData || !caseData.formData || !caseData.formData.formFieldJson) return null;
-    const result = caseData.formData.formFieldJson.map(renderField);
-    const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-
-    const vehicleInformation = Array.isArray(fieldMap["Group"])
-        ? fieldMap["Group"].find((item: any) => item["Vehicle Information"])?.["Vehicle Information"] || "-"
-        : fieldMap["Vehicle Information"] || "-";
-
-    const assemblyInformation = Array.isArray(fieldMap["Group"])
-        ? fieldMap["Group"].find((item: any) => item["Assembly Information"])?.["Assembly Information"] || "-"
-        : "-";
-
-    const attachments = fieldMap["Attachments"];
-
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                <span className=" text-md text-blue-500 dark:text-blue-400 " >Service Information</span>
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Sevice Types : {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType}</div>
-                </div>
-                {caseData.caseType && <FormViewer formData={caseData.caseType} />}
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Service Detail {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.description}
-
-                    </div>
-                </div>
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.date != "" ?
-                            DateStringToDateFormat(caseData.date) :
-                            "-"
-                        }
-                    </div>
-                </div>
-                <div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">Priority</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData.priority ? getTextPriority(caseData.priority).level : "-"}</div>
-
-                </div>
-                <div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData.serviceCenter}</div>
-                </div>
-            </div>
-            <div >
-                <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
-                    <div className="mb-2">
-                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Location Information</span>
-                    </div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        <div className="flex flex-wrap gap-x-2 gap-y-1 ">
-                            <MapPin />
-                            {Array.isArray(fieldMap["3. Service Location & Destination:"])
-                                ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
-                                    return Object.values(item).map((val, i) => (
-                                        <div key={idx + "-" + i}>{String(val)}</div>
-                                    ));
-                                })
-                                : (caseData.location ?? "-")}
-                        </div>
-
-                    </div>
-
-                </div>
-                <div className=" bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ">
-                    <div className="mb-2">
-                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Vehicle & Assembly</span>
-                    </div>
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Vehicle Information</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {vehicleInformation}
-                        </div>
-                    </div>
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Assembly Information</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {assemblyInformation}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
-                <div className="mb-2">
-                    <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
-                </div>
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.customerData?.name || "-"}
-                    </div>
-                </div>
-
-                <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
-                <div className="text-md font-medium text-gray-900 dark:text-white">
-                    {caseData.customerData?.mobileNo || "-"}
-                </div>
-
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.customerData?.contractMethod || "-"}
-                    </div>
-                    {caseData.customerData?.contractMethod == "Email" ?
-                        <>
-                            <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
-                            <div className="text-md font-medium text-gray-900 dark:text-white">
-                                {caseData.customerData?.email || "-"}
-                            </div>
-                        </> : null}
-
-
-                </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
-                <div className="mb-2">
-                    <span className="text-md text-blue-500 dark:text-blue-400">Attachments</span>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                    {Array.isArray(attachments) && attachments.length > 0 ? (
-                        attachments.map((attachment, index) => {
-                            const imageUrl = attachment instanceof File
-                                ? URL.createObjectURL(attachment)
-                                : String(attachment);
-                            return (
-                                <a key={index} href={imageUrl} target="_blank" rel="noopener noreferrer">
-                                    <img
-                                        src={imageUrl}
-                                        alt={`Attachment ${index + 1}`}
-                                        className="w-24 h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-80 transition-opacity"
-                                    />
-                                </a>
-                            );
-                        })
-                    ) : (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">No attachments found.</div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 
 // --- Sub-component: CaseTypeFormSection ---
@@ -774,147 +368,9 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
 };
 
 
-interface CustomerInputProps {
-    customerData: Custommer
-    listCustomerData: User[];
-    handleCustomerDataChange: (newValue: Custommer) => void;
-}
-
-const CustomerInput: React.FC<CustomerInputProps> = ({
-    customerData,
-    listCustomerData,
-    handleCustomerDataChange,
-}) => {
-    // Improved customerOptions to map label and value properly
-    const customerOptions = useMemo(() =>
-        listCustomerData.map(user => ({
-            label: user.firstName + " " + user.lastName,
-            value: user.id, // Use ID as value for robust selection
-            mobileNo: user.mobileNo,
-            email: user.email // Also include email for potential auto-fill
-        })),
-        [listCustomerData]
-    );
-
-    const contractMethodMock = ["Iot Alert", "Chat", "Email"];
-
-    const handleCustomerDataNameChange = (selectedId: string) => {
-        const selectedCustomer = customerOptions.find(option => option.value === selectedId);
-
-        if (selectedCustomer) {
-            handleCustomerDataChange({
-                ...customerData,
-                name: selectedCustomer.label, // Set the full name for display
-                mobileNo: String(selectedCustomer.mobileNo), // Auto-fill phone number
-                email: selectedCustomer.email // Auto-fill email if available
-            });
-        } else {
-            // Clear name, mobileNo, and email if nothing is selected or an invalid option
-            handleCustomerDataChange({
-                ...customerData,
-                name: "",
-                mobileNo: undefined,
-                email: undefined
-            });
-        }
-    };
-
-    const handleCustomerDataContractMethodeChange = (data: string) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | ""});
-    };
-
-    const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? undefined : e.target.value;
-        let updatedCustomerData = { ...customerData, mobileNo: value };
-        if (value !== undefined) {
-            const matchingCustomer = listCustomerData.find(
-                (customer) => customer.mobileNo === value
-            );
-            if (matchingCustomer) {
-                updatedCustomerData = {
-                    ...updatedCustomerData,
-                    name: `${matchingCustomer.firstName} ${matchingCustomer.lastName}`,
-                    email: matchingCustomer.email // Auto-fill email if available
-                };
-            } else {
-                // If no match, clear the customer name and email
-                updatedCustomerData = {
-                    ...updatedCustomerData,
-                    name: "",
-                    email: undefined
-                };
-            }
-        } else {
-            // If phone number is cleared, clear name and email as well
-            updatedCustomerData = {
-                ...updatedCustomerData,
-                name: "",
-                email: undefined
-            };
-        }
-
-        handleCustomerDataChange(updatedCustomerData);
-    };
-
-    const handleCustomerEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? undefined : e.target.value;
-        handleCustomerDataChange({ ...customerData, email: value });
-    };
-
-    return (
-        <div className=" text-gray-900 dark:text-gray-400 mx-3">
-            <div className="w-auto md:mr-2">
-                <h3 className="mb-2 ">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                <SearchableSelect
-                    // Pass only labels for display, but capture the ID on change
-                    options={customerOptions.map(option => option.label)}
-                    value={customerData.name || ""} // Display the name
-                    onChange={(label) => {
-                        // Find the ID based on the selected label to pass to handleCustomerDataNameChange
-                        const selectedOption = customerOptions.find(option => option.label === label);
-                        handleCustomerDataNameChange(selectedOption ? selectedOption.value : "");
-                    }}
-                    placeholder={"Enter Customer Name"}
-                />
-            </div>
-            <div className="w-auto md:mr-2">
-                <h3 className="my-2 ">Phone Number : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                <Input
-                    value={customerData.mobileNo ?? ""}
-                    onChange={(e) => { handleCustomerDataPhoneChange(e) }}
-                    className={`${commonInputCss}`}
-                    placeholder={"Enter Customer Phone Number"}
-                    required={true}
-                />
-            </div>
-            <div className="w-auto md:mr-2">
-                <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                <SearchableSelect
-                    options={contractMethodMock}
-                    className="sm:my-3"
-                    value={customerData.contractMethod ?? ""}
-                    onChange={(e) => handleCustomerDataContractMethodeChange(e)}
-                />
-            </div>
-            {customerData.contractMethod === "Email" &&
-                <div className="w-auto md:mr-2  ">
-                    <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                    <Input
-                        type="email"
-                        onChange={handleCustomerEmailChange}
-                        value={customerData.email || ""}
-                        placeholder="Enter Email"
-                        className={commonInputCss}
-                        required={true}
-                    />
-                </div>
-            }
-        </div>
-    );
-};
 
 
-// --- Main Component: CaseDetailView ---
+
 export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseItem }) {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(!caseData);
@@ -1359,9 +815,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                         md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
                         ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
                     `}>
-                        {caseData
-                            ? <CustomerPanel type="edit" onClose={() => setIsCustomerPanelOpen(false)} />
-                            : <CustomerPanel type="add" onClose={() => setIsCustomerPanelOpen(false)} />}
+                  
+                    <CustomerPanel  onClose={() => setIsCustomerPanelOpen(false)} customerData={customerData} />
+                            
                     </div>
                 </div>
             </div>
