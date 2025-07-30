@@ -1,4 +1,5 @@
-import { CustomerData, FormField, formType } from "./FormField"
+import { Custommer } from "@/types"
+import {  FormField, formType } from "./FormField"
 interface assignee{
   name: string
   color: string
@@ -19,7 +20,7 @@ export interface CaseItem {
   formData?: FormField
   caseType?: formType
   serviceCenter?:string
-  customerData?:CustomerData
+  customerData?:Custommer
   location?:string
   attachFile?:File[]
 }

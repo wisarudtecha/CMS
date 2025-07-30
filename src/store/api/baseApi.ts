@@ -123,6 +123,7 @@ export const baseApi = createApi({
     "File",
     "Comment",
     "Timeline",
+    "Cases",
   ],
   endpoints: () => ({}),
 });

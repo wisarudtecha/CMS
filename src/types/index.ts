@@ -19,7 +19,11 @@ export interface User extends BaseEntity {
   name: string;
   avatar?: string;
   role: Role;
+  mobileNo?:string
+  firstName?:string
+  lastName?:string
   department: string;
+  email?: string;
   permissions: Permission[];
   lastLogin?: Date;
   isActive: boolean;
@@ -27,6 +31,16 @@ export interface User extends BaseEntity {
 }
 
 export type Role = string;
+export interface Custommer  {
+  contractMethod?:"Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
+  name: string;
+  mobileNo?: string;
+  email?: string; 
+  photo?:string
+}
+
+
+export type UserRole = "admin" | "manager" | "agent" | "viewer";
 export type Permission = "read" | "write" | "delete" | "admin" | "manage_users" | "manage_workflows";
 
 export interface UserPreferences {

@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState, useEffect, ChangeEvent, useRef } from "
 import {
     ArrowLeft,
     Clock,
-    User,
+    User as User_Icon,
     MessageSquare,
     Paperclip,
     MapPin,
@@ -19,7 +19,7 @@ import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { formType, IndividualFormField, FormField, CustomerData } from "@/components/interface/FormField"
+import { formType, IndividualFormField, FormField } from "@/components/interface/FormField"
 import createCaseJson from "../../utils/json/createCase.json" // Renamed to avoid conflict with function name
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
@@ -40,6 +40,11 @@ import DateStringToDateFormat, { TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
+import { CaseSubType, CaseType, CaseTypeSubType } from "../interface/CaseType"
+import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi"
+import { useGetUsersQuery } from "@/store/api/userApi"
+import type { Custommer, User } from "@/types";
+import React from "react"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 // Mock data for officers - this would likely come from an API
 const mockOfficers: Officer[] = [
@@ -56,10 +61,61 @@ interface CustomerPanelProps {
     onClose: () => void; // Added onClose handler for mobile view
 }
 
+function mergeCaseTypeAndSubType(
+    caseTypes: CaseType[],
+    caseSubTypes: CaseSubType[]
+): CaseTypeSubType[] {
+    const mergedList: CaseTypeSubType[] = [];
+
+    caseTypes.forEach(type => {
+        const matchingSubTypes = caseSubTypes.filter(sub => sub.typeId === type.typeId);
+
+        matchingSubTypes.forEach(sub => {
+            mergedList.push({
+                CaseTypeid: type.id,
+                CaseSubTypeid: sub.id,
+                typeId: type.typeId,
+                orgId: type.orgId,
+                en: `${type.en} - ${sub.en}`,
+                th: `${type.th} - ${sub.th}`,
+                activeType: type.active,
+                activeSubType: sub.active,
+                wfId: sub.wfId,
+                caseSla: sub.caseSla,
+                priority: sub.priority,
+                userSkillList: sub.userSkillList,
+                unitPropLists: sub.unitPropLists
+            });
+        });
+    });
+
+    return mergedList;
+}
+
+
+const getTypeSupType = () => {
+
+    try {
+        let caseMatched
+        const { data: caseTypes } = useGetTypeQuery(null);
+        const { data: subTypes } = useGetSubTypeQuery(null);
+        if (caseTypes?.data && subTypes?.data) {
+            caseMatched = mergeCaseTypeAndSubType(caseTypes.data, subTypes.data);
+        }
+        // console.log("Matched Case Types with Subtypes:", caseMatched);
+        return caseMatched
+    } catch (error) {
+        console.error("Failed to fetch case types:", error);
+    }
+
+}
+
+
+
+
 const CustomerPanel: React.FC<CustomerPanelProps> = ({ type, onClose }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("customer-info");
-
     const edittabs = [
         { id: "customer-info", label: "Info" },
         { id: "Location", label: "Location" },
@@ -321,7 +377,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                             <span>Create Date: {DateStringToDateFormat(caseData.date)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                            <User className="w-4 h-4" />
+                            <User_Icon className="w-4 h-4" />
                             <span>Created: {caseData.createBy}</span>
                         </div>
                     </div>
@@ -370,7 +426,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                     </Button>
                 </div>
                 <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
-                    <User className="w-4 h-4" />
+                    <User_Icon className="w-4 h-4" />
                     <span>Assign</span>
                 </Button>
             </div>
@@ -521,13 +577,13 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.customerData?.customerName || "-"}
+                        {caseData.customerData?.name || "-"}
                     </div>
                 </div>
 
                 <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
                 <div className="text-md font-medium text-gray-900 dark:text-white">
-                    {caseData.customerData?.phoneNumber || "-"}
+                    {caseData.customerData?.mobileNo || "-"}
                 </div>
 
                 <div className="mb-2">
@@ -584,6 +640,7 @@ interface CaseTypeFormSectionProps {
     hadleIsFillGetType: (isFill: boolean) => void;
     selectedCaseTypeForm: formType | undefined;
     editFormData: boolean; // Prop to control if the form is editable
+    caseTypeSupTypeData: CaseTypeSubType[];
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -592,9 +649,14 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     handleGetTypeFormData,
     hadleIsFillGetType,
     selectedCaseTypeForm,
-    editFormData
+    editFormData,
+    caseTypeSupTypeData
 }) => {
-    const caseTypeOptions = useMemo(() => Array.from(new Set(caseTypeMock.map((item: formType) => item.caseType))), []);
+    const caseTypeOptions = useMemo(() => {
+        if (!caseTypeSupTypeData?.length) return [];
+        return caseTypeSupTypeData.map(item => item.th);
+    }, [caseTypeSupTypeData]);
+
 
     return (
         <>
@@ -713,27 +775,85 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
 
 
 interface CustomerInputProps {
-    customerData: CustomerData;
-    handleCustomerDataChange: (newValue: CustomerData) => void;
+    customerData: Custommer
+    listCustomerData: User[];
+    handleCustomerDataChange: (newValue: Custommer) => void;
 }
 
 const CustomerInput: React.FC<CustomerInputProps> = ({
     customerData,
+    listCustomerData,
     handleCustomerDataChange,
 }) => {
+    // Improved customerOptions to map label and value properly
+    const customerOptions = useMemo(() =>
+        listCustomerData.map(user => ({
+            label: user.firstName + " " + user.lastName,
+            value: user.id, // Use ID as value for robust selection
+            mobileNo: user.mobileNo,
+            email: user.email // Also include email for potential auto-fill
+        })),
+        [listCustomerData]
+    );
+
     const contractMethodMock = ["Iot Alert", "Chat", "Email"];
 
-    const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? "" : e.target.value;
-        handleCustomerDataChange({ ...customerData, customerName: value });
+    const handleCustomerDataNameChange = (selectedId: string) => {
+        const selectedCustomer = customerOptions.find(option => option.value === selectedId);
+
+        if (selectedCustomer) {
+            handleCustomerDataChange({
+                ...customerData,
+                name: selectedCustomer.label, // Set the full name for display
+                mobileNo: String(selectedCustomer.mobileNo), // Auto-fill phone number
+                email: selectedCustomer.email // Auto-fill email if available
+            });
+        } else {
+            // Clear name, mobileNo, and email if nothing is selected or an invalid option
+            handleCustomerDataChange({
+                ...customerData,
+                name: "",
+                mobileNo: undefined,
+                email: undefined
+            });
+        }
     };
 
-    const handleCustomerDataContractMethodeChange = (data: any) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data });
+    const handleCustomerDataContractMethodeChange = (data: string) => {
+        handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | ""});
     };
+
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? undefined : Number(e.target.value);
-        handleCustomerDataChange({ ...customerData, phoneNumber: value });
+        const value = e.target.value === "" ? undefined : e.target.value;
+        let updatedCustomerData = { ...customerData, mobileNo: value };
+        if (value !== undefined) {
+            const matchingCustomer = listCustomerData.find(
+                (customer) => customer.mobileNo === value
+            );
+            if (matchingCustomer) {
+                updatedCustomerData = {
+                    ...updatedCustomerData,
+                    name: `${matchingCustomer.firstName} ${matchingCustomer.lastName}`,
+                    email: matchingCustomer.email // Auto-fill email if available
+                };
+            } else {
+                // If no match, clear the customer name and email
+                updatedCustomerData = {
+                    ...updatedCustomerData,
+                    name: "",
+                    email: undefined
+                };
+            }
+        } else {
+            // If phone number is cleared, clear name and email as well
+            updatedCustomerData = {
+                ...updatedCustomerData,
+                name: "",
+                email: undefined
+            };
+        }
+
+        handleCustomerDataChange(updatedCustomerData);
     };
 
     const handleCustomerEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -745,18 +865,22 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         <div className=" text-gray-900 dark:text-gray-400 mx-3">
             <div className="w-auto md:mr-2">
                 <h3 className="mb-2 ">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                <Input
-                    value={customerData.customerName}
-                    onChange={(e) => { handleCustomerDataNameChange(e) }}
-                    className={`  ${commonInputCss}`}
+                <SearchableSelect
+                    // Pass only labels for display, but capture the ID on change
+                    options={customerOptions.map(option => option.label)}
+                    value={customerData.name || ""} // Display the name
+                    onChange={(label) => {
+                        // Find the ID based on the selected label to pass to handleCustomerDataNameChange
+                        const selectedOption = customerOptions.find(option => option.label === label);
+                        handleCustomerDataNameChange(selectedOption ? selectedOption.value : "");
+                    }}
                     placeholder={"Enter Customer Name"}
-                    required={true} // Added required attribute
                 />
             </div>
             <div className="w-auto md:mr-2">
                 <h3 className="my-2 ">Phone Number : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                 <Input
-                    value={customerData?.phoneNumber || ""}
+                    value={customerData.mobileNo ?? ""}
                     onChange={(e) => { handleCustomerDataPhoneChange(e) }}
                     className={`${commonInputCss}`}
                     placeholder={"Enter Customer Phone Number"}
@@ -768,9 +892,8 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 <SearchableSelect
                     options={contractMethodMock}
                     className="sm:my-3"
-                    value={customerData.contractMethod}
+                    value={customerData.contractMethod ?? ""}
                     onChange={(e) => handleCustomerDataContractMethodeChange(e)}
-
                 />
             </div>
             {customerData.contractMethod === "Email" &&
@@ -779,16 +902,17 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     <Input
                         type="email"
                         onChange={handleCustomerEmailChange}
-                        value={customerData.email}
+                        value={customerData.email || ""}
                         placeholder="Enter Email"
-                        className="shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 "
-                        required={true} // Added required attribute
+                        className={commonInputCss}
+                        required={true}
                     />
                 </div>
             }
         </div>
     );
 };
+
 
 // --- Main Component: CaseDetailView ---
 export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseItem }) {
@@ -803,22 +927,25 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
-
-    // State for the data currently being displayed
+    const caseTypeSupTypeData = getTypeSupType()
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
     const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
-    // States for form inputs
     const [caseType, setCaseType] = useState<{ caseType: string, priority: number }>({ caseType: "", priority: 0 });
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
     const [formData, setFormData] = useState<FormField | undefined>();
     const [serviceCenterData, setServiceCenterData] = useState<string>("");
-    const [customerData, setCustomerData] = useState<CustomerData>({
-        customerName: "",
-        contractMethod: "",
-        phoneNumber: undefined,
-        email: undefined,
+    const [customerData, setCustomerData] = useState<Custommer>()
+    const [listCustomerData, setListCustomerData] = useState<User[]>([])
+    const { data: usersData } = useGetUsersQuery({
+        start: 0,
+        length: 100
     });
-
+    useEffect(() => {
+        if (usersData?.data) {
+            setListCustomerData(usersData.data);
+        }
+        console.log(usersData?.data)
+    }, [usersData]);
     const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     useEffect(() => {
@@ -832,7 +959,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(caseData.caseType);
             setFormData(caseData.formData);
             setServiceCenterData(caseData.serviceCenter || "");
-            setCustomerData(caseData.customerData || { customerName: "", contractMethod: "" });
+            setCustomerData(caseData.customerData);
 
         } else {
             const draft = localStorage.getItem("Create Case");
@@ -877,15 +1004,15 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             errorMessage = "Please enter Service Details.";
         } else if (!displayedCaseData?.date) {
             errorMessage = "Please select a Request Service Date.";
-        } else if (!customerData.customerName?.trim()) {
+        } else if (!customerData?.name?.trim()) {
             errorMessage = "Please enter Customer Name.";
-        } else if (!customerData.phoneNumber) {
+        } else if (!customerData.mobileNo) {
             errorMessage = "Please enter Customer Phone Number.";
-        } else if (!customerData.contractMethod?.trim()) {
+        } else if (!customerData?.contractMethod?.trim()) {
             errorMessage = "Please select a Contact Method.";
-        } else if (customerData.contractMethod === "Email" && !customerData.email?.trim()) {
+        } else if (customerData.email === "Email" && !customerData.email?.trim()) {
             errorMessage = "Please enter Customer Email.";
-        } else if (!isValueFill.dynamicForm || !isValueFill.getType) {
+        } else if ((!isValueFill.dynamicForm && formData) || (!isValueFill.getType && selectedCaseTypeForm)) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
 
@@ -930,7 +1057,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
             setServiceCenterData(displayedCaseData.serviceCenter || "");
-            setCustomerData(displayedCaseData.customerData || { customerName: "", contractMethod: "" });
+            setCustomerData(displayedCaseData.customerData);
         }
         setEditFormData(prev => !prev);
     }, [editFormData, displayedCaseData]);
@@ -995,7 +1122,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     }, [caseType]);
     const handleSetServiceCenter = useCallback((data: string) => setServiceCenterData(data), []);
-    const handleCustomerDataChange = useCallback((data: CustomerData) => setCustomerData(data), []);
+    const handleCustomerDataChange = useCallback((data: Custommer) => setCustomerData(data), []);
     const handleSaveDrafts = () => {
         const updatedCaseDataForDraft: CaseItem = {
             ...(displayedCaseData || {} as CaseItem),
@@ -1057,7 +1184,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                         </div>
                         <div className="md:hidden">
                             <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
-                                <User className="w-4 h-4 mr-2" />
+                                <User_Icon className="w-4 h-4 mr-2" />
                                 View Customer
                             </Button>
                         </div>
@@ -1149,6 +1276,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             hadleIsFillGetType={handleIsFillGetType}
                                             selectedCaseTypeForm={selectedCaseTypeForm}
                                             editFormData={editFormData}
+                                            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
                                         />
                                         <div className="pr-7">
                                             <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Service Details: {requireElements}</h3>
@@ -1190,7 +1318,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     ></Input>
                                                 </div>
                                             </div>
-                                            <CustomerInput handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
+                                            {customerData &&
+                                                <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
+                                            }
                                         </div>
                                         <DynamicForm
                                             initialForm={formData || createCaseJson}
