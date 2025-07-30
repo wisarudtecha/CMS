@@ -390,7 +390,14 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
     const [formData, setFormData] = useState<FormField | undefined>();
     const [serviceCenterData, setServiceCenterData] = useState<string>("");
-    const [customerData, setCustomerData] = useState<Custommer>()
+    const [customerData, setCustomerData] = useState<Custommer>({
+        contractMethod: "",
+        name: "",
+        mobileNo:undefined,
+        photo:undefined,
+        email:undefined
+
+    })
     const [listCustomerData, setListCustomerData] = useState<User[]>([])
     const { data: usersData } = useGetUsersQuery({
         start: 0,
@@ -400,7 +407,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         if (usersData?.data) {
             setListCustomerData(usersData.data);
         }
-        console.log(usersData?.data)
     }, [usersData]);
     const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
@@ -415,7 +421,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(caseData.caseType);
             setFormData(caseData.formData);
             setServiceCenterData(caseData.serviceCenter || "");
-            setCustomerData(caseData.customerData);
+            {caseData.customerData&&setCustomerData(caseData.customerData)}
 
         } else {
             const draft = localStorage.getItem("Create Case");
@@ -513,7 +519,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
             setServiceCenterData(displayedCaseData.serviceCenter || "");
-            setCustomerData(displayedCaseData.customerData);
+            {displayedCaseData.customerData&&
+            setCustomerData(displayedCaseData.customerData)}
         }
         setEditFormData(prev => !prev);
     }, [editFormData, displayedCaseData]);
@@ -774,9 +781,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     ></Input>
                                                 </div>
                                             </div>
-                                            {customerData &&
-                                                <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
-                                            }
+                                                <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData } />
                                         </div>
                                         <DynamicForm
                                             initialForm={formData || createCaseJson}
