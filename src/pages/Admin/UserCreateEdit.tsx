@@ -112,10 +112,10 @@ const UserCreateEdit: React.FC = () => {
         const fetchDropdowns = async () => {
             try {
                 const endpoints = [
-                    '/api/v1/role?start=0&length=100',
-                    '/api/v1/departments?start=0&length=100',
-                    '/api/v1/commands?start=0&length=100',
-                    '/api/v1/stations?start=0&length=100'
+                    '/role?start=0&length=100',
+                    '/departments?start=0&length=100',
+                    '/commands?start=0&length=100',
+                    '/stations?start=0&length=100'
                 ];
                 const responses = await Promise.all(endpoints.map(ep => apiFetch(API_BASE_URL + ep)));
                 const results = await Promise.all(responses.map(res => res.ok ? res.json() : Promise.resolve({ data: [] })));
@@ -144,7 +144,7 @@ const UserCreateEdit: React.FC = () => {
                 setLoading(true);
                 setError(null);
                 try {
-                    const response = await apiFetch(`${API_BASE_URL}/api/v1/users/${id}`);
+                    const response = await apiFetch(`${API_BASE_URL}/users/${id}`);
                     if (!response.ok) {
                         if (response.status === 401) throw new Error('Unauthorized: Please log in again.');
                         throw new Error('Failed to fetch user data.');
@@ -289,8 +289,8 @@ const UserCreateEdit: React.FC = () => {
         // --- API Call ---
         try {
             const endpoint = isEdit 
-                ? `${API_BASE_URL}/api/v1/users/${id}` 
-                : `${API_BASE_URL}/api/v1/users/add`;
+                ? `${API_BASE_URL}/users/${id}` 
+                : `${API_BASE_URL}/users/add`;
             const method = isEdit ? 'PATCH' : 'POST';
 
             // Set timeout for API call (30s)

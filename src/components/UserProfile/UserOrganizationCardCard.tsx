@@ -115,10 +115,10 @@ export default function UserOrganizationCard() {
 
         // Fetch dropdown data first
         const endpoints = [
-          '/api/v1/role?start=0&length=100',
-          '/api/v1/departments?start=0&length=100',
-          '/api/v1/commands?start=0&length=100',
-          '/api/v1/stations?start=0&length=100'
+          '/role?start=0&length=100',
+          '/departments?start=0&length=100',
+          '/commands?start=0&length=100',
+          '/stations?start=0&length=100'
         ];
 
         const responses = await Promise.all(
@@ -157,7 +157,7 @@ export default function UserOrganizationCard() {
         })));
 
         // Fetch user data
-        const userResponse = await apiFetch(`${API_BASE_URL}/api/v1/users/username/${username}`);
+        const userResponse = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
         
         if (!userResponse.ok) {
           if (userResponse.status === 401) {

@@ -92,7 +92,7 @@ export default function UserInfoCard() {
           return;
         }
 
-        const response = await apiFetch(`${API_BASE_URL}/api/v1/users/username/${username}`);
+        const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
         
         if (!response.ok) {
           if (response.status === 401) {
