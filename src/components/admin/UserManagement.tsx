@@ -281,7 +281,7 @@ const UserManagementComponent: React.FC = () => {
           userItem: UserProfile
         ) =>
           // navigate(`/user/edit${userItem.id}`)
-          navigate(`/user/edit${userItem.id}`)
+          navigate(`/user/edit/${userItem.id}`)
       },
       {
         key: "delete",

@@ -129,9 +129,9 @@ export default function App() {
 
             {/* User Management */}
             <Route path="/users" element={<UserManagementPage />} />
-            <Route path="/users/create" element={<UserCreateEdit />} />
-            <Route path="/users/edit/:id" element={<UserCreateEdit />} />
-            <Route path="/users/:id" element={<UserCreateEdit />} /> 
+            <Route path="/user/create" element={<UserCreateEdit />} />
+            <Route path="/user/edit/:id" element={<UserCreateEdit />} />
+            <Route path="/user/:id" element={<UserCreateEdit />} /> 
 
             {}{/* Security & Error Handling */}
             <Route path="/security/error-boundaries" element={<ErrorBoundary />} />
