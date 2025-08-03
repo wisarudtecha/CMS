@@ -5,35 +5,76 @@
  */
 
 import { baseApi } from "@/store/api/baseApi";
-import type { User, UserRole, Permission, ApiResponse } from "@/types";
+import type {
+  ApiResponse,
+  User,
+  // UserRole
+} from "@/types";
+import type { Permission, Role, RolePermission } from "@/types/role";
 
-export interface UserCreateData {
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  department: string;
-  permissions?: Permission[];
-}
+// export interface UserCreateData {
+//   name: string;
+//   email: string;
+//   password: string;
+//   role: UserRole;
+//   department: string;
+//   permissions?: Permission[];
+// }
 
-export interface UserUpdateData {
-  name?: string;
-  email?: string;
-  role?: UserRole;
-  department?: string;
-  permissions?: Permission[];
-  isActive?: boolean;
-}
+// export interface UserUpdateData {
+//   name?: string;
+//   email?: string;
+//   role?: UserRole;
+//   department?: string;
+//   permissions?: Permission[];
+//   isActive?: boolean;
+// }
 
 export interface UserQueryParams {
   start?: number;
   length?: number;
-  role?: UserRole;
+  // role?: UserRole;
+  role?: string;
   department?: string;
   isActive?: boolean;
   search?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+}
+
+export interface RoleQueryParams {
+  start?: number;
+  length?: number;
+}
+
+export interface RolePermissionQueryParams {
+  start?: number;
+  length?: number;
+  id?: number;
+  roleId?: string;
+}
+
+export interface PermissionCreateData {
+  permId: string;
+  active: boolean;
+}
+
+export interface RolePermissionsCreateData {
+  roleId: string;
+  permissions: PermissionCreateData[];
+}
+
+export interface RolePermissionsUpdateData {
+  permissions: RolePermissionsCreateData[];
+}
+
+export interface RolesPermissionsUpdateData {
+  body: RolePermissionsCreateData[];
+}
+
+export interface PermissionQueryParams {
+  start?: number;
+  length?: number;
 }
 
 export const userApi = baseApi.injectEndpoints({
@@ -57,23 +98,23 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "User", id }],
     }),
 
-    createUser: builder.mutation<ApiResponse<User>, UserCreateData>({
-      query: (data) => ({
-        url: "/users",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["User"],
-    }),
+    // createUser: builder.mutation<ApiResponse<User>, UserCreateData>({
+    //   query: (data) => ({
+    //     url: "/users",
+    //     method: "POST",
+    //     body: data,
+    //   }),
+    //   invalidatesTags: ["User"],
+    // }),
 
-    updateUser: builder.mutation<ApiResponse<User>, { id: string; data: UserUpdateData }>({
-      query: ({ id, data }) => ({
-        url: `/users/${id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
-    }),
+    // updateUser: builder.mutation<ApiResponse<User>, { id: string; data: UserUpdateData }>({
+    //   query: ({ id, data }) => ({
+    //     url: `/users/${id}`,
+    //     method: "PUT",
+    //     body: data,
+    //   }),
+    //   invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
+    // }),
 
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
@@ -92,23 +133,108 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
     }),
 
-    // Role and permission management
-    getUserRoles: builder.query<ApiResponse<UserRole[]>, void>({
-      query: () => "/users/roles",
+    // ===================================================================
+    // Role
+    // ===================================================================
+
+    getUserRoles: builder.query<ApiResponse<Role[]>, RoleQueryParams>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/role?${searchParams.toString()}`;
+      }
     }),
 
-    getUserPermissions: builder.query<ApiResponse<Permission[]>, void>({
-      query: () => "/users/permissions",
+    // ===================================================================
+    // Role and Permission Matching
+    // ===================================================================
+
+    // GET api/v1/role_permission
+    getUserRolesPermissions: builder.query<ApiResponse<RolePermission[]>, RolePermissionQueryParams>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/role_permission?${searchParams.toString()}`;
+      }
     }),
 
-    updateUserRole: builder.mutation<ApiResponse<User>, { id: string; role: UserRole }>({
-      query: ({ id, role }) => ({
-        url: `/users/${id}/role`,
-        method: "PUT",
-        body: { role },
-      }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
+    // POST api/v1/role_permission/add
+    createUserRolePermissions: builder.mutation<ApiResponse<RolePermission[]>, RolePermissionsCreateData>({
+      query: (data) => ({
+        url: "/role_permission/add",
+        method: "POST",
+        body: data
+      })
     }),
+
+    // PATCH api/v1/role_permission/multi
+    updateUserRolesPermissions: builder.mutation<ApiResponse<RolePermission[]>, RolesPermissionsUpdateData>({
+      query: (data) => ({
+        url: `/role_permission/multi`,
+        method: "PATCH",
+        body: data
+      })
+    }),
+
+    // GET api/v1/role_permission/roleId/{roleId}
+    getUserRolesPermissionsByRoleId: builder.query<ApiResponse<RolePermission[]>, string>({
+      query: (roleId) => `/role_permission/roleId/${roleId}`
+    }),
+
+    // GET api/v1/role_permission/{id}
+    getUserRolesPermissionsById: builder.query<ApiResponse<RolePermission[]>, number>({
+      query: (id) => `/role_permission/${id}`
+    }),
+
+    // DELETE api/v1/role_permission/{id}
+    deleteUserRolePermissions: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `/role_permission/${id}`,
+        method: "DELETE"
+      })
+    }),
+
+    // PATCH api/v1/role_permission/{roleId}
+    updateUserRolePermissions: builder.mutation<ApiResponse<User>, { roleId: string; data: RolePermissionsUpdateData }>({
+      query: ({ roleId, data }) => ({
+        url: `/role_permission/${roleId}`,
+        method: "PATCH",
+        body: data
+      })
+    }),
+    
+    // ===================================================================
+    // Permission
+    // ===================================================================
+
+    getUserPermissions: builder.query<ApiResponse<Permission[]>, PermissionQueryParams>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/permission?${searchParams.toString()}`;
+      }
+    }),
+
+    // updateUserRole: builder.mutation<ApiResponse<User>, { id: string; role: UserRole }>({
+    //   query: ({ id, role }) => ({
+    //     url: `/users/${id}/role`,
+    //     method: "PUT",
+    //     body: { role },
+    //   }),
+    //   invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
+    // }),
 
     updateUserPermissions: builder.mutation<ApiResponse<User>, { id: string; permissions: Permission[] }>({
       query: ({ id, permissions }) => ({
@@ -147,19 +273,19 @@ export const userApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getUserAnalytics: builder.query<ApiResponse<{
-      totalUsers: number;
-      activeUsers: number;
-      newUsers: number;
-      roleDistribution: Record<UserRole, number>;
-      departmentDistribution: Record<string, number>;
-    }>, { timeRange: { start: string; end: string } }>({
-      query: (params) => ({
-        url: "/users/analytics",
-        method: "POST",
-        body: params,
-      }),
-    }),
+    // getUserAnalytics: builder.query<ApiResponse<{
+    //   totalUsers: number;
+    //   activeUsers: number;
+    //   newUsers: number;
+    //   roleDistribution: Record<UserRole, number>;
+    //   departmentDistribution: Record<string, number>;
+    // }>, { timeRange: { start: string; end: string } }>({
+    //   query: (params) => ({
+    //     url: "/users/analytics",
+    //     method: "POST",
+    //     body: params,
+    //   }),
+    // }),
 
     // Department management
     getDepartments: builder.query<ApiResponse<string[]>, void>({
@@ -194,17 +320,24 @@ export const userApi = baseApi.injectEndpoints({
 export const {
   useGetUsersQuery,
   useGetUserQuery,
-  useCreateUserMutation,
-  useUpdateUserMutation,
+  // useCreateUserMutation,
+  // useUpdateUserMutation,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
   useGetUserRolesQuery,
+  useGetUserRolesPermissionsQuery,
+  useCreateUserRolePermissionsMutation,
+  useUpdateUserRolesPermissionsMutation,
+  useLazyGetUserRolesPermissionsByRoleIdQuery,
+  useGetUserRolesPermissionsByIdQuery,
+  useDeleteUserRolePermissionsMutation,
+  useUpdateUserRolePermissionsMutation,
   useGetUserPermissionsQuery,
-  useUpdateUserRoleMutation,
+  // useUpdateUserRoleMutation,
   useUpdateUserPermissionsMutation,
   useBulkUpdateUsersMutation,
   useGetUserActivityQuery,
-  useGetUserAnalyticsQuery,
+  // useGetUserAnalyticsQuery,
   useGetDepartmentsQuery,
   useCreateDepartmentMutation,
   useImpersonateUserMutation,
