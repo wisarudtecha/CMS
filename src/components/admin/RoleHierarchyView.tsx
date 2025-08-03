@@ -1,6 +1,10 @@
 // /src/components/admin/RoleHierarchyView.tsx
 import React, { useState } from "react";
-import { ArrowRightIcon, ChevronDownIcon, LockIcon } from "@/icons";
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  // LockIcon
+} from "@/icons";
 import type { RoleHierarchy } from "@/types/role";
 import roles from "@/mocks/roles.json";
 
@@ -42,6 +46,7 @@ export const RoleHierarchyView: React.FC<{ hierarchy: RoleHierarchy[] }> = ({ hi
                 )}
               </button>
             )}
+            {/*
             <div className={`p-2 rounded-lg ${node.role.color} mr-3`}>
               <LockIcon className="w-4 h-4 text-white" />
             </div>
@@ -67,6 +72,7 @@ export const RoleHierarchyView: React.FC<{ hierarchy: RoleHierarchy[] }> = ({ hi
                 {node.inheritedPermissions.length} permissions
               </div>
             </div>
+            */}
           </div>
         </div>
         {hasChildren && isExpanded && (

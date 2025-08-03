@@ -46,39 +46,39 @@ const notificationSlice = createSlice({
     },
 
     addNotification: (state, action: PayloadAction<Notification>) => {
-      state.notifications.unshift(action.payload);
+      state.notifications?.unshift(action.payload);
       if (!action.payload.isRead) {
-        state.unreadCount += 1;
+        state.unreadCount = (state.unreadCount || 0) + 1;
       }
     },
 
     updateNotification: (state, action: PayloadAction<{ id: string; updates: Partial<Notification> }>) => {
       const { id, updates } = action.payload;
-      const notificationIndex = state.notifications.findIndex(notification => notification.id === id);
+      const notificationIndex = state.notifications?.findIndex(notification => notification.id === id) || 0;
       
       if (notificationIndex !== -1) {
-        const wasUnread = !state.notifications[notificationIndex].isRead;
-        state.notifications[notificationIndex] = { ...state.notifications[notificationIndex], ...updates };
+        const wasUnread = !state.notifications?.[notificationIndex]?.isRead;
+        state.notifications![notificationIndex] = { ...state.notifications![notificationIndex], ...updates };
         
         // Update unread count if read status changed
         if (wasUnread && updates.isRead === true) {
-          state.unreadCount = Math.max(0, state.unreadCount - 1);
+          state.unreadCount = Math.max(0, (state.unreadCount || 0) - 1);
         } else if (!wasUnread && updates.isRead === false) {
-          state.unreadCount += 1;
+          state.unreadCount = (state.unreadCount || 0) + 1;
         }
       }
     },
 
     removeNotification: (state, action: PayloadAction<string>) => {
       const notificationId = action.payload;
-      const notificationIndex = state.notifications.findIndex(notification => notification.id === notificationId);
+      const notificationIndex = state.notifications?.findIndex(notification => notification.id === notificationId) || 0;
       
       if (notificationIndex !== -1) {
-        const wasUnread = !state.notifications[notificationIndex].isRead;
-        state.notifications.splice(notificationIndex, 1);
+        const wasUnread = !state.notifications?.[notificationIndex]?.isRead;
+        state.notifications?.splice(notificationIndex, 1);
         
         if (wasUnread) {
-          state.unreadCount = Math.max(0, state.unreadCount - 1);
+          state.unreadCount = Math.max(0, (state.unreadCount || 0) - 1);
         }
       }
     },
@@ -86,16 +86,16 @@ const notificationSlice = createSlice({
     // Bulk operations
     markAsRead: (state, action: PayloadAction<string>) => {
       const notificationId = action.payload;
-      const notification = state.notifications.find(n => n.id === notificationId);
+      const notification = state.notifications?.find(n => n.id === notificationId);
       
       if (notification && !notification.isRead) {
         notification.isRead = true;
-        state.unreadCount = Math.max(0, state.unreadCount - 1);
+        state.unreadCount = Math.max(0, (state.unreadCount || 0) - 1);
       }
     },
 
     markAllAsRead: (state) => {
-      state.notifications.forEach(notification => {
+      state.notifications?.forEach(notification => {
         notification.isRead = true;
       });
       state.unreadCount = 0;
@@ -112,11 +112,11 @@ const notificationSlice = createSlice({
     },
 
     incrementUnreadCount: (state) => {
-      state.unreadCount += 1;
+      state.unreadCount = (state.unreadCount || 0) + 1;
     },
 
     decrementUnreadCount: (state) => {
-      state.unreadCount = Math.max(0, state.unreadCount - 1);
+      state.unreadCount = Math.max(0, (state.unreadCount || 0) - 1);
     },
 
     // Preferences
@@ -125,7 +125,7 @@ const notificationSlice = createSlice({
     },
 
     updatePreferences: (state, action: PayloadAction<Partial<NotificationPreferences>>) => {
-      state.preferences = { ...state.preferences, ...action.payload };
+      state.preferences = { ...state.preferences, ...action.payload } as NotificationPreferences;
     },
 
     // Real-time notification handling
@@ -133,12 +133,12 @@ const notificationSlice = createSlice({
       const notification = action.payload;
       
       // Check if notification already exists
-      const exists = state.notifications.some(n => n.id === notification.id);
+      const exists = state.notifications?.some(n => n.id === notification.id);
       
       if (!exists) {
-        state.notifications.unshift(notification);
+        state.notifications?.unshift(notification);
         if (!notification.isRead) {
-          state.unreadCount += 1;
+          state.unreadCount = (state.unreadCount || 0) + 1;
         }
       }
     },

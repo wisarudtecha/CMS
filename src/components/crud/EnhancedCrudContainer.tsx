@@ -108,7 +108,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // ===================================================================
 
   const enabledFeatures: CrudFeatures = {
-    bulkActions: true,
+    bulkActions: false,
     dragAndDrop: false,
     export: true,
     filtering: true,

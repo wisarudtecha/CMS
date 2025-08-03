@@ -28,6 +28,9 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 // Authentication Imports
 import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 
+// Role and Permissions Imports
+// import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+
 // Case Management Imports
 import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
@@ -59,6 +62,7 @@ import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
 // User Management Imports
 import UserManagementPage from "./pages/Admin/UserManagement";
 import UserCreateEdit from "./pages/Admin/UserCreateEdit";
+import RoleManagementPage from "./pages/Admin/RoleManagement";
 
 // Security & Error Handling Imports
 import ErrorBoundary from "./components/security/ErrorBoundary";
@@ -119,6 +123,11 @@ export default function App() {
             <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
 
             {/* Workflow Management (SOP) */}
+            {/*
+            <ProtectedRoute requiredPermissions={['user.view', 'user.edit']}>
+              <Route path="/workflow/list" element={<WorkflowListPage />} />
+            </ProtectedRoute>
+            */}
             <Route path="/workflow/list" element={<WorkflowListPage />} />
             {/* Workflow Builder (Latest Version: v0.2.0) */}
             <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />
@@ -131,7 +140,8 @@ export default function App() {
             <Route path="/users" element={<UserManagementPage />} />
             <Route path="/user/create" element={<UserCreateEdit />} />
             <Route path="/user/edit/:id" element={<UserCreateEdit />} />
-            <Route path="/user/:id" element={<UserCreateEdit />} /> 
+            <Route path="/user/:id" element={<UserCreateEdit />} />
+            <Route path="/roles" element={<RoleManagementPage />} />
 
             {}{/* Security & Error Handling */}
             <Route path="/security/error-boundaries" element={<ErrorBoundary />} />

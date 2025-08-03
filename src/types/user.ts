@@ -1,5 +1,4 @@
 // /src/types/user.ts
-
 // ===================================================================
 // Mockup
 // ===================================================================
@@ -24,13 +23,13 @@ export interface UserEntity {
   address?: UserAddress;
 }
 
-export interface Role {
-  id: string;
-  name: string;
-  level: number;
-  color: string;
-  permissions: string[];
-}
+// export interface Role {
+//   id: string;
+//   name: string;
+//   level: number;
+//   color: string;
+//   permissions: string[];
+// }
 
 export interface TemporaryRole {
   role: Role;
@@ -154,6 +153,27 @@ export interface Department {
   updatedBy: string;
 }
 
+export interface Meta {
+  photo?: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  roleName: string;
+  province?: string;
+  country?: string;
+}
+
+export interface Role {
+  id: string;
+  orgId: string;
+  roleName: string;
+  active: boolean;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  createdBy: string;
+  updatedBy: string;
+}
+
 export interface UserProfile {
   // system: SystemMetadata;
   // personal: PersonalInfo;
@@ -174,7 +194,7 @@ export interface UserProfile {
   blood: string;
   gender: string; // Consider enum e.g., "1" | "2"
   mobileNo: string;
-  address: Address;
+  address: string;
   photo: string | null;
   username: string;
   password: string;
@@ -196,5 +216,7 @@ export interface UserProfile {
   updatedAt: string; // ISO date string
   createdBy: string;
   updatedBy: string;
+  meta?: Meta;
+  permissions?: string[];
 }
 

@@ -18,13 +18,28 @@
  * - Intended as a starting point or scaffolding.
  */
 
-import React from 'react';
+import React from "react";
+import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
+import type { Department, Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import UserManagementComponent from "@/components/admin/UserManagement";
 
 const UserManagementPage: React.FC = () => {
-  return (
+  // ===================================================================
+  // API Data
+  // ===================================================================
+
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 10 });
+  const users: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
+
+  const { data: departmentsData } = useGetDepartmentsQuery();
+  const departments = departmentsData?.data as unknown as Department[] || [];
+
+  const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
+  const roles = rolesData?.data as unknown as Role[] || [];
+
+  return (users && departments && roles) ? (
     <>
       <PageMeta
         title="React.js User Management | TailAdmin - Next.js Admin Dashboard Template"
@@ -33,8 +48,10 @@ const UserManagementPage: React.FC = () => {
 
       <PageBreadcrumb pageTitle="User Management" />
 
-      <UserManagementComponent />
+      <UserManagementComponent usr={users} dept={departments} role={roles} />
     </>
+  ) : (
+    <div>Loading...</div>
   );
 };
 
