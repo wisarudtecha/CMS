@@ -1,44 +1,155 @@
 // /src/components/admin/PermissionMatrixView.tsx
 import React, {
+  useEffect,
   useMemo,
-  // useState
+  useRef,
+  useState
 } from "react";
 import {
-  AlertHexaIcon,
+  // AlertHexaIcon,
   CheckLineIcon,
-  // DownloadIcon
+  // DownloadIcon,
+  LockIcon
 } from "@/icons";
-import type { Permission, Role } from "@/types/role";
-import permissionCategories from "@/mocks/permissionCategories.json";
+// import { Loader2 } from "lucide-react";
+import type {
+  Permission,
+  Role,
+  RolePermission,
+  // LoadingStates
+} from "@/types/role";
+import Button from "@/components/ui/button/Button";
+// import permissionCategories from "@/mocks/permissionCategories.json";
 
 export const PermissionMatrixView: React.FC<{
   roles: Role[];
+  rolePermissions: RolePermission[];
   permissions: Permission[];
-  onPermissionToggle: (roleId: string, permissionId: string) => void;
-}> = ({ roles, permissions, onPermissionToggle }) => {
-  // const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const selectedCategory = "all";
-
+  onPermissionToggle: (roleId: string, permissionId: string) => Promise<void>;
+  handlePermissionSave: () => void;
+  // loading: LoadingStates;
+}> = ({
+  roles,
+  rolePermissions,
+  permissions,
+  onPermissionToggle,
+  handlePermissionSave
+  // loading
+}) => {
+  const selectedRole = "all";
   const filteredPermissions = useMemo(() => {
-    if (selectedCategory === "all") {
+    if (selectedRole === "all") {
       return permissions;
     }
-    return permissions.filter(p => p.categoryId === selectedCategory);
-  }, [permissions, selectedCategory]);
+    const rolePerms = rolePermissions.filter(rp => rp.roleId === selectedRole).map(rp => rp.permId);
+    return permissions.filter(p => rolePerms.includes(p.permId));
+  }, [
+    permissions,
+    rolePermissions,
+    selectedRole
+  ]);
 
-  const permissionsByCategory = useMemo(() => {
-    return permissionCategories.map(category => ({
-      category,
-      permissions: filteredPermissions.filter(p => p.categoryId === category.id)
-    })).filter(item => item.permissions.length > 0);
-  }, [filteredPermissions]);
+  // const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  // const selectedCategory = "all";
+  // const filteredPermissions = useMemo(() => {
+  //   if (selectedCategory === "all") {
+  //     return permissions;
+  //   }
+  //   return permissions.filter(p => p.categoryId === selectedCategory);
+  // }, [permissions, selectedCategory]);
+
+  // const permissionsByRole = useMemo(() => {
+  //   return rolePermissions.map(rp => ({
+  //     permissions: filteredPermissions.filter(p => p.permId === rp.permId)
+  //   })).filter(item => item.permissions.length > 0);
+  // }, [
+  //   rolePermissions,
+  //   filteredPermissions
+  // ]);
+
+  const permissionsByRole = useMemo(() => {
+    const grouped: Record<string, typeof filteredPermissions> = {};
+    permissions.forEach(rp => {
+      const matched = filteredPermissions.find(p => p.permId === rp.permId);
+      if (matched) {
+        const group = matched.groupName;
+        if (!grouped[group]) {
+          grouped[group] = [];
+        }
+        grouped[group].push(matched);
+      }
+    });
+    return grouped;
+  }, [permissions, filteredPermissions]);
+
+  // const permissionsByCategory = useMemo(() => {
+  //   return permissionCategories.map(category => ({
+  //     category,
+  //     permissions: filteredPermissions.filter(p => p.categoryId === category.id)
+  //   })).filter(item => item.permissions.length > 0);
+  // }, [filteredPermissions]);
+
+  // const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
+  const handlePermissionToggle = async (roleId: string, permissionId: string) => {
+    // const updateKey = `${roleId}-${permissionId}`;
+    // setPendingUpdates(prev => new Set(prev.add(updateKey)));
+    // console.log(hasPermission);
+    
+    try {
+      onPermissionToggle(roleId, permissionId);
+    }
+    catch (error) {
+      console.error("Error toggling permission:", error);
+    }
+    finally {
+      // setPendingUpdates(prev => {
+      //   const newSet = new Set(prev);
+      //   newSet.delete(updateKey);
+      //   return newSet;
+      // });
+    }
+  };
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState<number>(0);
+  useEffect(() => {
+    const updateHeight = () => {
+      const calculated = (window.innerHeight * 0.7) - 160;
+      setMaxHeight(calculated);
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+
+  const [expandedGroupName, setExpandedGroupName] = useState<string | null>(null);
+  useEffect(() => {
+    if (permissions.length > 0) {
+      setExpandedGroupName(permissions[0].groupName);
+    }
+  }, [permissions]);
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroupName((prev) => (prev === groupName ? null : groupName));
+  };
+
+  // console.log(
+  //   roles,
+  //   rolePermissions,
+  //   permissions,
+  //   filteredPermissions,
+  //   permissionsByRole
+  // );
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-      {/* <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+      {/*
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Permission Matrix</h3>
           <div className="flex items-center space-x-2">
+            <Button variant="success" size="sm" onClick={() => handlePermissionSave()}>
+              Save
+            </Button>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -55,32 +166,157 @@ export const PermissionMatrixView: React.FC<{
             </button>
           </div>
         </div>
-      </div> */}
+      </div>
+      */}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      <div className="overflow-x-auto overflow-y-auto" ref={containerRef} style={{maxHeight}}>
+        <table className="min-w-full border-collapse">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700">
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700">
                 Permission
               </th>
               {roles.map(role => (
+                <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider min-w-24">
+                  <div className="flex flex-col items-center">
+                    <span className="tracking-wider max-w-20 capitalize">{role.roleName.replace(/_/g, " ")}</span>
+                  </div>
+                </th>
+              ))}
+              
+              {/*
+              {roles.map(role => (
                 <th key={role.id} className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider min-w-24">
                   <div className="flex flex-col items-center">
-                    {/* <div className={`w-6 h-6 rounded ${role.color} mb-1`} /> */}
+                    <div className={`w-6 h-6 rounded ${role.color} mb-1`} />
                     <span className="tracking-wider max-w-20">{role.name}</span>
                   </div>
                 </th>
               ))}
+              */}
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {Object.entries(permissionsByRole).map(([groupName, permissions], index) => (
+              <React.Fragment key={index}>
+                {groupName && (
+                  <tr
+                    className="text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer border-b-gray-300 dark:border-b-gray-600"
+                    onClick={() => toggleGroup(groupName)}
+                  >
+                    <td colSpan={roles.length} className="px-6 py-3">
+                      <div className="flex items-center">
+                        <span className="font-medium text-gray-900 dark:text-white capitalize">{groupName?.replace(/_/g, " ")}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-right text-gray-900 dark:text-white">{expandedGroupName === groupName ? '▲' : '▼'}</td>
+                  </tr>
+                )}
+
+                {expandedGroupName === groupName && permissions.map(permission => (
+                  <tr
+                    key={permission.id}
+                    // className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300`}
+                  >
+                    <td className="px-6 py-4 sticky left-0">
+                      <div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                            {permission.permName}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    {roles.map(role => {
+                      const hasPermission = role?.permissions?.includes(permission.permId);
+                      return (
+                        <td key={role.id} className="px-3 py-4">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => handlePermissionToggle(role.id, permission.permId)}
+                              className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                                hasPermission 
+                                  ? "bg-green-500 border-green-500 text-white" 
+                                  : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                              } "hover:border-green-400"`}
+                            >
+                              {hasPermission && <CheckLineIcon className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+
+            {/*
+            {permissionsByRole.map(({ groupName, permissions }, index) => (
+              <React.Fragment key={index}>
+                {groupName && (
+                  <tr className="bg-gray-50 dark:bg-gray-700">
+                    <td colSpan={roles.length + 1} className="px-6 py-3">
+                      <div className="flex items-center">
+                        <span className="font-medium text-gray-900 dark:text-white capitalize">{groupName?.replace(/_/g, " ")}</span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                {permissions.map(permission => (
+                  <tr key={permission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="px-6 py-4 sticky left-0">
+                      <div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                            {permission.permName}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    {roles.map(role => {
+                      const hasPermission = role?.permissions?.includes(permission.permId);
+                      // const updateKey = `${role.id}-${permission.permId}`;
+                      // const isPending = pendingUpdates.has(updateKey);
+                      return (
+                        <td key={role.id} className="px-3 py-4">
+                          <div className="flex items-center justify-center">
+                            <button
+                              // onClick={() => onPermissionToggle(role.id, permission.id)}
+                              onClick={() => handlePermissionToggle(role.id, permission.permId)}
+                              // onClick={() => !isPending && handlePermissionToggle(role.id, permission.permId)}
+                              // disabled={isPending}
+                              className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                                hasPermission 
+                                  ? "bg-green-500 border-green-500 text-white" 
+                                  : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                              } "hover:border-green-400"`}
+                            >
+                              {hasPermission && <CheckLineIcon className="w-4 h-4" />}
+                              {isPending ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : hasPermission ? (
+                                <CheckLineIcon className="w-4 h-4" />
+                              ) : null}
+                            </button>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+            */}
+
+            {/*
             {permissionsByCategory.map(({ category, permissions }) => (
               <React.Fragment key={category.id}>
                 <tr className="bg-gray-50 dark:bg-gray-700">
                   <td colSpan={roles.length + 1} className="px-6 py-3">
                     <div className="flex items-center">
-                      {/* <category.icon className={`w-5 h-5 mr-2 ${category.color}`} /> */}
+                      <category.icon className={`w-5 h-5 mr-2 ${category.color}`} />
                       <span className="font-medium text-gray-900 dark:text-white">{category.name}</span>
                     </div>
                   </td>
@@ -123,7 +359,6 @@ export const PermissionMatrixView: React.FC<{
                     {roles.map(role => {
                       const hasPermission = role.permissions.includes(permission.id);
                       const isDisabled = role.isSystem;
-                      
                       return (
                         <td key={role.id} className="px-3 py-4">
                           <div className="flex items-center justify-center">
@@ -146,8 +381,28 @@ export const PermissionMatrixView: React.FC<{
                 ))}
               </React.Fragment>
             ))}
+            */}
           </tbody>
         </table>
+      </div>
+
+      {roles.length === 0 && (
+        <div className="text-center py-12">
+          <LockIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No roles found</h3>
+          <p className="text-gray-500 dark:text-gray-400">Create your first role to get started.</p>
+        </div>
+      )}
+
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{""}</h3>
+          <div className="flex items-center space-x-2">
+            <Button variant="success" size="sm" onClick={() => handlePermissionSave()}>
+              Save
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

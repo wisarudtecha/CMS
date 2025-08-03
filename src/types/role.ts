@@ -1,54 +1,35 @@
 // /src/types/role.ts
 export interface Permission {
   id: string;
-  name: string;
-  description: string;
-  category?: PermissionCategory;
-  level: "read" | "write" | "admin" | "system";
-  dependencies?: string[];
-  dangerous?: boolean;
-  categoryId?: string;
+  groupName: string;
+  permId: string;
+  permName: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
-export interface PermissionCategory {
-  id: string;
-  name: string;
-  description: string;
-  // icon: React.ComponentType<any>;
-  icon?: string;
-  color: string;
-}
+// export interface PermissionCategory {
+//   id: string;
+//   name: string;
+//   description: string;
+//   // icon: React.ComponentType<any>;
+//   icon?: string;
+//   color: string;
+// }
 
 export interface Role {
   id: string;
-  name: string;
-  description: string;
-  level: number;
-  color: string;
-  permissions: string[];
-  isSystem: boolean;
-  isTemplate: boolean;
-  parentRole?: string;
-  userCount: number;
-  createdAt: string;
-  lastModified: string;
-  createdBy: string;
-}
-
-export interface RoleTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  permissions: string[];
-  usageCount: number;
-  rating: number;
-}
-
-export interface RoleHierarchy {
-  role: Role;
-  children: RoleHierarchy[];
-  inheritedPermissions: string[];
+  orgId: string;
+  roleName: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  permissions?: string[];
 }
 
 export interface RoleAnalytics {
@@ -62,6 +43,12 @@ export interface RoleAnalytics {
   recentChanges?: number;
 }
 
+export interface RoleHierarchy {
+  role: Role;
+  children: RoleHierarchy[];
+  inheritedPermissions: string[];
+}
+
 export interface RoleMetrics {
   totalRoles: number;
   activeRoles: number;
@@ -69,4 +56,36 @@ export interface RoleMetrics {
   customRoles: number;
   avgPermissions: number;
   mostUsed: string;
+}
+
+export interface RolePermission {
+  id: number;
+  orgId: string;
+  roleId: string;
+  permId: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+// export interface RoleTemplate {
+//   id: string;
+//   name: string;
+//   description: string;
+//   category: string;
+//   permissions: string[];
+//   usageCount: number;
+//   rating: number;
+// }
+
+export interface LoadingStates {
+  roles: boolean;
+  permissions: boolean;
+  analytics: boolean;
+  permissionUpdate: string | null;
+  roleCreate: boolean;
+  roleUpdate: boolean;
+  roleDelete: boolean;
 }

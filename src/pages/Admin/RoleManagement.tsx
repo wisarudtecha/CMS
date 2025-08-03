@@ -18,12 +18,37 @@
  * - Intended as a starting point or scaffolding.
  */
 
-import React from 'react';
+import React from "react";
+import {
+  useGetUserRolesQuery,
+  useGetUserRolesPermissionsQuery,
+  useGetUserPermissionsQuery
+} from "@/store/api/userApi";
+import type { Permission, Role, RolePermission } from "@/types/role";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import RoleManagementComponent from "@/components/admin/RoleManagement";
 
 const RoleManagementPage: React.FC = () => {
+  // ===================================================================
+  // API Data
+  // ===================================================================
+  const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 1000 });
+  const permissions = permissionsData?.data as unknown as Permission[] || [];
+  // console.log(permissions);
+
+  const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 100 });
+  const rolesPermissions = rolesPermissionsData?.data as unknown as RolePermission[] || [];
+  // console.log(rolesPermissions);
+
+  const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
+  // const roles = rolesData?.data as unknown as Role[] || [];
+  const roles = rolesData?.data?.map((r) => ({
+    ...r,
+    permissions: rolesPermissions.filter(rp => rp.roleId === r.id).map(rp => rp.permId)
+  })) as unknown as Role[] || [];
+  // console.log(roles);
+
   return (
     <>
       <PageMeta
@@ -33,7 +58,11 @@ const RoleManagementPage: React.FC = () => {
 
       <PageBreadcrumb pageTitle="Role Management" />
 
-      <RoleManagementComponent />
+      <RoleManagementComponent
+        role={roles}
+        rolesPerms={rolesPermissions}
+        perms={permissions}
+      />
     </>
   );
 };

@@ -15,10 +15,10 @@ export interface BaseEntity {
 
 // User & Authentication Types
 export interface User extends BaseEntity {
-  email: string;
+  user: string;
   name: string;
   avatar?: string;
-  role: UserRole;
+  role: Role;
   department: string;
   permissions: Permission[];
   lastLogin?: Date;
@@ -26,7 +26,7 @@ export interface User extends BaseEntity {
   preferences: UserPreferences;
 }
 
-export type UserRole = "admin" | "manager" | "agent" | "viewer";
+export type Role = string;
 export type Permission = "read" | "write" | "delete" | "admin" | "manage_users" | "manage_workflows";
 
 export interface UserPreferences {
@@ -431,11 +431,16 @@ export interface WorkflowState {
 }
 
 export interface NotificationState {
-  notifications: Notification[];
-  unreadCount: number;
-  preferences: NotificationPreferences;
-  isLoading: boolean;
-  error: string | null;
+  notifications?: Notification[];
+  unreadCount?: number;
+  preferences?: NotificationPreferences;
+  isLoading?: boolean;
+  error?: string | null;
+  
+  show?: boolean;
+  type?: "success" | "error" | "warning" | "info";
+  title?: string;
+  message?: string;
 }
 
 export interface UIState {

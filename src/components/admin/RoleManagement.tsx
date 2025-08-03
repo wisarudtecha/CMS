@@ -1,24 +1,35 @@
 // /src/components/admin/RoleManagement.tsx
-import React, {
-  useCallback,
-  // useMemo,
-  useState
-} from "react";
+import React, { useCallback, useEffect, useState }
+from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingStarIcon } from "@/icons";
+// import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingStarIcon } from "@/icons";
 import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
 import { RoleCard } from "@/components/admin/RoleCard";
+import { ToastContainer } from "@/components/crud/ToastContainer";
+import { useToast } from "@/hooks/useToast";
+import {
+  // RolePermissionsCreateData,
+  RolesPermissionsUpdateData,
+  // useCreateUserRolePermissionsMutation,
+  useUpdateUserRolesPermissionsMutation,
+  // useLazyGetUserRolesPermissionsByRoleIdQuery,
+  // useGetUserRolesPermissionsByIdQuery,
+  // useDeleteUserRolePermissionsMutation,
+  // useUpdateUserRolePermissionsMutation,
+} from "@/store/api/userApi";
+// import type { ApiResponse } from "@/types";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
   Permission,
   Role,
-  RoleAnalytics,
-  // RoleHierarchy
+  // RoleAnalytics,
+  RolePermission,
+  // LoadingStates
 } from "@/types/role";
-import MetricsView from "@/components/admin/MetricsView";
-import allPermissions from "@/mocks/allPermissions.json";
-import roles from "@/mocks/roles.json";
+// import MetricsView from "@/components/admin/MetricsView";
+// import allPermissions from "@/mocks/allPermissions.json";
+// import roles from "@/mocks/roles.json";
 
 // ===================================================================
 // Utility Functions
@@ -27,34 +38,37 @@ import roles from "@/mocks/roles.json";
 // const buildRoleHierarchy = (roles: Role[]): RoleHierarchy[] => {
 //   // const roleMap = new Map(roles.map(role => [role.id, role]));
 //   const hierarchy: RoleHierarchy[] = [];
-
 //   const buildTree = (role: Role, parentPermissions: string[] = []): RoleHierarchy => {
 //     const inheritedPermissions = [...new Set([...parentPermissions, ...role.permissions])];
 //     const children: RoleHierarchy[] = [];
-
 //     roles.forEach(childRole => {
 //       if (childRole.parentRole === role.id) {
 //         children.push(buildTree(childRole, inheritedPermissions));
 //       }
 //     });
-
 //     return {
 //       role,
 //       children,
 //       inheritedPermissions
 //     };
 //   };
-
 //   roles.forEach(role => {
 //     if (!role.parentRole) {
 //       hierarchy.push(buildTree(role));
 //     }
 //   });
-
 //   return hierarchy;
 // };
 
-const RoleManagementComponent: React.FC = () => {
+const RoleManagementComponent: React.FC<{
+  role: Role[];
+  rolesPerms: RolePermission[];
+  perms: Permission[];
+}> = ({
+  role,
+  rolesPerms,
+  perms
+}) => {
   const navigate = useNavigate();
 
   // ===================================================================
@@ -70,18 +84,28 @@ const RoleManagementComponent: React.FC = () => {
   //   mostUsed: "Agent"
   // };
 
-  const mockAnalytics: RoleAnalytics = {
-    totalRoles: roles.length,
-    activeRoles: roles.filter(r => r.userCount > 0).length,
-    systemRoles: roles.filter(r => r.isSystem).length,
-    customRoles: roles.filter(r => !r.isSystem).length,
-    averagePermissions: Math.round(roles.reduce((sum, role) => sum + role.permissions.length, 0) / roles.length),
-    // mostUsedRole: roles.reduce((prev, current) => (prev.userCount > current.userCount) ? prev : current),
-    mostUsedRole: "Agent",
-    // recentChanges: 3
-  };
+  // const mockAnalytics: RoleAnalytics = {
+  //   totalRoles: role.length,
+  //   activeRoles: role.filter(r => r.userCount > 0).length,
+  //   systemRoles: role.filter(r => r.isSystem).length,
+  //   customRoles: role.filter(r => !r.isSystem).length,
+  //   averagePermissions: Math.round(role.reduce((sum, r) => sum + r.permissions.length, 0) / role.length),
+  //   mostUsedRole: roles.reduce((prev, current) => (prev.userCount > current.userCount) ? prev : current),
+  //   mostUsedRole: "Agent",
+  //   recentChanges: 3
+  // };
 
-  const data: Role[] = roles as Role[];
+  const data: Role[] = role as Role[];
+
+  // const [loading, setLoading] = useState<LoadingStates>({
+  //   roles: true,
+  //   permissions: true,
+  //   analytics: true,
+  //   permissionUpdate: null,
+  //   roleCreate: false,
+  //   roleUpdate: false,
+  //   roleDelete: false
+  // });
 
   // ===================================================================
   // CRUD Configuration
@@ -168,7 +192,31 @@ const RoleManagementComponent: React.FC = () => {
     title: () => "Role Information",
     size: "xl",
     enableNavigation: true,
-    tabs: [],
+    tabs: [
+      {
+        key: "role",
+        label: "Role",
+        // icon: InfoIcon,
+        render: (
+          // userItem: UserEntity
+          // userItem: UserProfile
+        ) => {
+          return (
+            // Content
+            <>
+              {/*
+              <UserMetaCard meta={userItem?.meta as UserMeta} />
+              <UserInfoCard info={userItem as UserEntity} editable={false} />
+              <UserAddressCard address={userItem?.address as UserAddress} editable={false} />
+              */}
+              {/* <UserMetaCard meta={userItem?.meta as UserMeta} /> */}
+              {/* <UserInfoCard info={userItem as UserProfile} editable={false} /> */}
+              {/* <UserAddressCard address={userItem?.address as UserAddress} editable={false} /> */}
+            </>
+          )
+        }
+      }
+    ],
     actions: [
       {
         key: "view",
@@ -212,14 +260,14 @@ const RoleManagementComponent: React.FC = () => {
       key: "id",
       label: "Role",
       type: "select" as const,
-      options: roles.map(role => ({ value: role.id, label: role.name })),
+      options: role.map(role => ({ value: role.id, label: role.roleName })),
       placeholder: "Select role"
     },
     {
       key: "permissions",
       label: "Permissions",
       type: "select" as const,
-      options: allPermissions.map(p => ({ value: p.id, label: `${p.name} - ${p.description}` })),
+      options: perms.map(p => ({ value: p.id, label: `${p.permName} - ${p.groupName}` })),
       multiple: true,
       placeholder: "Select one or more permissions",
       searchable: true,
@@ -270,8 +318,7 @@ const RoleManagementComponent: React.FC = () => {
       // Handle search
       if (key === "search" && typeof value === "string") {
         const searchTerm = value.toLowerCase();
-        return roleItem.name.toLowerCase().includes(searchTerm) ||
-               roleItem.description.toLowerCase().includes(searchTerm)
+        return roleItem.roleName.toLowerCase().includes(searchTerm)
       }
 
       // Handle multiselect arrays
@@ -279,7 +326,8 @@ const RoleManagementComponent: React.FC = () => {
         switch (key) {
           case "permissions":
             // Check if role has any of the selected permissions
-            return value.some(permission => roleItem.permissions.includes(permission));
+            // return value.some(permission => roleItem.permissions.includes(permission));
+            return false;
             
           default:
             return (value as string[]).includes(roleItem[key as keyof Role] as string);
@@ -290,7 +338,7 @@ const RoleManagementComponent: React.FC = () => {
       if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         const range = value as { min?: number; max?: number };
         if ((range.min !== undefined || range.max !== undefined) && typeof roleItem[key as keyof Role] === "number") {
-          const roleValue = roleItem[key as keyof Role] as number;
+          const roleValue = roleItem[key as keyof Role] as unknown as number;
           if (range.min !== undefined && roleValue < range.min) return false;
           if (range.max !== undefined && roleValue > range.max) return false;
           return true;
@@ -311,7 +359,11 @@ const RoleManagementComponent: React.FC = () => {
   // Event Handlers
   // ===================================================================
 
-  const [roleList, setRoles] = useState<Role[]>(roles);
+  const [roleList, setRoles] = useState<Role[]>(data);
+  useEffect(() => {
+    setRoles(data);
+  }, [data]);
+
   // const [selectedView, setSelectedView] = useState<"cards" | "matrix" | "hierarchy">("cards");
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -326,13 +378,12 @@ const RoleManagementComponent: React.FC = () => {
 
   // const roleHierarchy = useMemo(() => buildRoleHierarchy(roleList), [roleList]);
 
-  const handlePermissionToggle = useCallback((roleId: string, permissionId: string) => {
+  const handlePermissionToggle = useCallback(async (roleId: string, permId: string) => {
     setRoles(prevRoles => prevRoles.map(role => {
       if (role.id === roleId) {
-        const permissions = role.permissions.includes(permissionId)
-          ? role.permissions.filter(p => p !== permissionId)
-          : [...role.permissions, permissionId];
-        
+        const permissions = role?.permissions?.includes(permId)
+          ? role.permissions.filter(p => p !== permId)
+          : [...role.permissions || [], permId];
         return {
           ...role,
           permissions,
@@ -342,6 +393,129 @@ const RoleManagementComponent: React.FC = () => {
       return role;
     }));
   }, []);
+
+  // const [trigger] = useLazyGetUserRolesPermissionsByRoleIdQuery();
+  // const [createRolePermissions] = useCreateUserRolePermissionsMutation();
+  const [updateUserRolesPermissions] = useUpdateUserRolesPermissionsMutation();
+  // const [updateUserRolesPermissionsResponse, setUpdateUserRolesPermissionsResponse] = useState<ApiResponse<RolePermission[]>>();
+
+  const handlePermissionSave = async () => {
+    try {
+      const payload: RolesPermissionsUpdateData = {
+        body: (roleList).map(rl => {
+          return {
+            roleId: rl.id,
+            permissions: (rl.permissions || []).map(p => {
+              return { permId: p, active: true };
+            })
+          };
+        }
+      )};
+      // console.log(payload);
+      const response = await updateUserRolesPermissions(payload).unwrap();
+      // setUpdateUserRolesPermissionsResponse(response);
+      // console.log("Update roles and permissions:", response);
+      if (response?.status) {
+        addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
+      }
+      else {
+        throw new Error(response?.desc || response?.msg || "Unknown error");
+      }
+
+      // for (const [, rl] of roleList.entries()) {
+      //   trigger(rl.id);
+      //   const { data: rpsData } = await trigger(rl.id);
+      //   const rps = rpsData as unknown as RolePermission[] || [];
+      //   if (rps.length === 0) {
+      //     const ps = (rl.permissions || []).map(p => {
+      //       return { permId: p, active: true };
+      //     });
+      //     const payload: RolePermissionsCreateData = {
+      //       roleId: rl.id,
+      //       permissions: ps,
+      //     };
+      //     try {
+      //       const response = await createRolePermissions(payload).unwrap();
+      //       console.log("Created role permissions:", response);
+      //     }
+      //     catch (err) {
+      //       console.error("Error creating role permissions:", err);
+      //     }
+      //   }
+      // };
+    }
+    catch (error) {
+      // console.error("Error reading role permissions:", error);
+      addToast("error", `Roles Permissions Management: ${error}`);
+    }
+  };
+
+  // const handlePermissionToggle = useCallback(( roleId: string, permId: string ) => {
+  //   setRoles(prevRoles => prevRoles.map(role => {
+  //     if (role.id === roleId) {
+  //       const permissions = role?.permissions?.includes(permId)
+  //         ? role.permissions.filter(p => p !== permId)
+  //         : [...role.permissions || [], permId];
+  //       return {
+  //         ...role,
+  //         permissions,
+  //         lastModified: new Date().toISOString()
+  //       };
+  //     }
+  //     return role;
+  //   }));
+  // }, []);
+
+  // const handlePermissionToggle = useCallback(async (roleId: string, permId: string) => {
+  //   const roles = role.find(r => r.id === roleId);
+  //   if (!roles) {
+  //     return;
+  //   }
+  //   const hasPermission = roles?.permissions?.includes(permId);
+  //   const newPermissions = hasPermission
+  //     ? roles?.permissions?.filter(p => p !== permId)
+  //     : [...roles?.permissions || [], permId];
+  //   // Optimistic update
+  //   setRoles(prevRoles => prevRoles.map(role => 
+  //     role.id === roleId 
+  //       ? { ...role, permissions: newPermissions, lastModified: new Date().toISOString() }
+  //       : role
+  //   ));
+  //   try {
+  //     const result = await RoleManagementAPI.toggleRolePermission(roleId, permissionId, !hasPermission);
+  //     if (result.success && result.data) {
+  //       // Update with server response
+  //       setRoles(prevRoles => prevRoles.map(r => 
+  //         r.id === roleId ? result.data! : r
+  //       ));
+  //       showNotification(
+  //         "success", 
+  //         "Permission Updated", 
+  //         `Permission ${hasPermission ? "removed from" : "granted to"} ${roles.roleName}`
+  //       );
+  //     }
+  //     else {
+  //       // Revert optimistic update
+  //       setRoles(prevRoles => prevRoles.map(r => 
+  //         r.id === roleId ? roles : r
+  //       ));
+  //       showNotification("error", "Update Failed", result.error || "Failed to update permission");
+  //     }
+  //     setRoles(prevRoles => prevRoles.map(r => 
+  //       r.id === roleId ? roles : r
+  //     ));
+  //   }
+  //   catch {
+  //     // Revert optimistic update
+  //     setRoles(prevRoles => prevRoles.map(r => 
+  //       r.id === roleId ? roles : r
+  //     ));
+  //     showNotification("error", "Update Failed", "Network error occurred");
+  //   }
+  // }, [
+  //   role,
+  //   showNotification
+  // ]);
 
   // const handleEdit = useCallback((role: Role) => {
   //   setSelectedRole(role);
@@ -375,6 +549,10 @@ const RoleManagementComponent: React.FC = () => {
     // Add custom role-specific action handling
   };
 
+  // const handleAction = async (actionKey: string, roleItem: RolePermission) => {
+  //   console.log(updateUserRolesPermissionsResponse);
+  // };
+
   // Handle deletion
   const handleDelete = (roleId: string) => {
     console.log("Role deleted:", roleId);
@@ -396,7 +574,7 @@ const RoleManagementComponent: React.FC = () => {
   // ===================================================================
 
   const renderCard = (roleItem: Role) => {
-    const roleConfig = roles.find(r => r.id === roleItem.id);
+    const roleConfig = role.find(r => r.id === roleItem.id);
     return <RoleCard
       role={roleConfig as Role}
       onEdit={() => navigate(`/role/${roleItem.id}/edit`)}
@@ -416,10 +594,12 @@ const RoleManagementComponent: React.FC = () => {
 
   const renderMatrix = () => {
     return <PermissionMatrixView
-      // roles={data}
       roles={roleList}
-      permissions={allPermissions as Permission[]}
+      rolePermissions={rolesPerms as RolePermission[]}
+      permissions={perms as Permission[]}
       onPermissionToggle={handlePermissionToggle}
+      handlePermissionSave={handlePermissionSave}
+      // loading={loading}
     />
   };
 
@@ -427,18 +607,20 @@ const RoleManagementComponent: React.FC = () => {
   // Render Component
   // ===================================================================
 
-  const attrMetrics = [
-    { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
-    { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-    { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
-    { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
-    { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
-    { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
-  ];
+  // const attrMetrics = [
+  //   { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
+  //   { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+  //   { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
+  //   { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
+  //   { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
+  //   { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
+  // ];
+
+  const { toasts, addToast, removeToast } = useToast();
 
   return (
     <>
-      <MetricsView metrics={mockAnalytics} attrMetrics={attrMetrics} />
+      {/* <MetricsView metrics={mockAnalytics} attrMetrics={attrMetrics} /> */}
 
       <EnhancedCrudContainer
         advancedFilters={advancedFilters}
@@ -457,7 +639,7 @@ const RoleManagementComponent: React.FC = () => {
         // bulkActions={bulkActions}
         config={config} 
         customFilterFunction={customCaseFilterFunction}
-        data={data}
+        data={role}
         // displayModes={["card", "matrix", "hierarchy"]}
         displayModes={["card", "matrix"]}
         enableDebug={true} // Enable debug mode to troubleshoot
@@ -487,6 +669,8 @@ const RoleManagementComponent: React.FC = () => {
         renderCard={renderCard}
         renderMatrix={renderMatrix}
       />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>
   );
 };

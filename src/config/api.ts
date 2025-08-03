@@ -32,7 +32,8 @@ export const API_CONFIG = {
     VERIFY: "/auth/verify",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
-    PROFILE: "/auth/profile"
+    PROFILE: "/auth/profile",
+    ROLE_PERMISSION_BY_ROLE_ID: "/role_permission/roleId/"
   },
   TIMEOUT: 10000, // 10 seconds
   RETRY_ATTEMPTS: 3,
