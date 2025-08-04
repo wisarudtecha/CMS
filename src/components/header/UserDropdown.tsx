@@ -413,20 +413,22 @@ export default function UserDropdown() {
     // Do NOT reopen user dropdown when closed by click outside
     setIsOpen(false);
   }
-  useEffect(() => {
-    const profileStr = localStorage.getItem("profile"); 
-    if (profileStr) {
-      try {
-        const profile = JSON.parse(profileStr);
-        setDisplayName(profile.displayName || "Musharof");
-        setFullName(profile.fullName || "Musharof Chowdhury");
-        setEmail(profile.email || "randomuser@pimjo.com");
-        setPhoto(profile.photo || "/images/user/owner.jpg");
-      } catch (err) {
-        console.error("Error parsing profile from localStorage", err);
-      }
+useEffect(() => {
+  const profileStr = localStorage.getItem("profile");
+  if (profileStr) {
+    try {
+      const profile = JSON.parse(profileStr);
+      setDisplayName(profile.displayName || "Musharof");
+      setFullName(`${profile.firstName || "Musharof"} ${profile.lastName || "Chowdhury"}`);
+      setEmail(profile.email || "randomuser@pimjo.com");
+      setPhoto(profile.photo || "/images/user/owner.jpg");
+    } catch (err) {
+      console.error("Error parsing profile from localStorage", err);
     }
-  }, []);
+  }
+}, []);
+
+
   const handleLogoutClick = () => {
     removeData();  
     logout();     

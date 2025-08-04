@@ -118,9 +118,7 @@ export default function UserMetaCard() {
 
   const handleEdit = () => {
     if (userData?.id) {
-      navigate(`/users/edit/${userData.id}`, {
-        state: { from: 'profile' }
-      });
+      navigate(`/user/edit/${userData.id}`, { state: { from: 'profile' } });
     }
   };
 
