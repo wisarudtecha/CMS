@@ -19,6 +19,7 @@
 
 import React from "react";
 import { useParams } from "react-router-dom";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import WorkflowEditorComponent from "@/components/workflow/editor/Editor";
@@ -39,9 +40,11 @@ const WorkflowEditorPage: React.FC = () => {
         description="This is React.js Workflow Visual Editor for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <PageBreadcrumb items={threeLayerBreadcrumb} />
+      <ProtectedRoute requiredPermissions={["workflow.view", "workflow.edit"]}>
+        <PageBreadcrumb items={threeLayerBreadcrumb} />
 
-      <WorkflowEditorComponent workflowId={params?.id || "new"} />
+        <WorkflowEditorComponent workflowId={params?.id || "new"} />
+      </ProtectedRoute>
     </>
   );
 };
@@ -69,7 +72,7 @@ export default WorkflowEditorPage;
  * - Modify Text of Header and Title.
  * - Remove Unnecessary Dropdown.
  * - Text Brightness Customization.
- * - Update the SLA's measure unit.
+ * - Update the SLA"s measure unit.
  * 
  * @version 0.2.1
  * @date    02-07-2025

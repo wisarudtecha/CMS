@@ -18,7 +18,8 @@
  * - Intended as a starting point or scaffolding.
  */
 
-import React from 'react';
+import React from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import CaseHistoryComponent from "@/components/case/CaseHistory";
@@ -31,9 +32,11 @@ const CaseHistoryPage: React.FC = () => {
         description="This is React.js Case History page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <PageBreadcrumb pageTitle="Case History" />
+      <ProtectedRoute requiredPermissions={["case.view_history"]}>
+        <PageBreadcrumb pageTitle="Case History" />
 
-      <CaseHistoryComponent />
+        <CaseHistoryComponent />
+      </ProtectedRoute>
     </>
   );
 };

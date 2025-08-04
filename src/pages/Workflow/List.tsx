@@ -18,7 +18,8 @@
  * - Intended as a starting point or scaffolding.
  */
 
-import React from 'react';
+import React from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import WorkflowListComponent from "@/components/workflow/list/List";
@@ -31,9 +32,11 @@ const WorkflowListPage: React.FC = () => {
         description="This is React.js Workflow Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <PageBreadcrumb pageTitle="Workflow Management" />
+      <ProtectedRoute requiredPermissions={["workflow.view"]}>
+        <PageBreadcrumb pageTitle="Workflow Management" />
 
-      <WorkflowListComponent />
+        <WorkflowListComponent />
+      </ProtectedRoute>
     </>
   );
 };

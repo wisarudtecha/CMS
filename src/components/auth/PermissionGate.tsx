@@ -7,7 +7,8 @@ export const PermissionGate: React.FC<{
   permissions?: string[];
   requireAny?: boolean;
   module?: string;
-  action?: "view" | "create" | "update" | "delete";
+  // action?: "view" | "create" | "update" | "delete";
+  action?: string;
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }> = ({ 

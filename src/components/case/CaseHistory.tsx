@@ -3,8 +3,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { AlertHexaIcon, CalenderIcon, ChatIcon, CheckCircleIcon, ChevronUpIcon, FileIcon, FolderIcon, TimeIcon, UserIcon } from "@/icons";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
+import { usePermissions } from "@/hooks/usePermissions";
 import { formatDate } from "@/utils/crud";
 import type { CaseEntity } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
@@ -14,6 +16,7 @@ import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC = () => {
   const navigate = useNavigate();
+  const permissions = usePermissions();
 
   // ===================================================================
   // Mock Data
@@ -234,29 +237,31 @@ const CaseHistoryComponent: React.FC = () => {
         // icon: InfoIcon,
         render: (caseItem: CaseEntity) => (
           <>
-            <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
-              {/* Progress Timeline and Progress Line */}
-              <div className="hidden xl:block">
-                <ProgressTimeline
-                  steps={getTimelineSteps(caseItem)}
-                  orientation="horizontal"
-                  size="md"
-                  showTimestamps={false}
-                  showDescriptions={false}
-                  // className="mb-2"
-                />
+            <PermissionGate module="case" action="view_timeline">
+              <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
+                {/* Progress Timeline and Progress Line */}
+                <div className="hidden xl:block">
+                  <ProgressTimeline
+                    steps={getTimelineSteps(caseItem)}
+                    orientation="horizontal"
+                    size="md"
+                    showTimestamps={false}
+                    showDescriptions={false}
+                    // className="mb-2"
+                  />
+                </div>
+                <div className="block xl:hidden">
+                  <ProgressTimeline
+                    steps={getTimelineSteps(caseItem)}
+                    orientation="vertical"
+                    size="sm"
+                    showTimestamps={false}
+                    showDescriptions={false}
+                    className="mb-2"
+                  />
+                </div>
               </div>
-              <div className="block xl:hidden">
-                <ProgressTimeline
-                  steps={getTimelineSteps(caseItem)}
-                  orientation="vertical"
-                  size="sm"
-                  showTimestamps={false}
-                  showDescriptions={false}
-                  className="mb-2"
-                />
-              </div>
-            </div>
+            </PermissionGate>
 
             {/* Content */}
             <div>
@@ -492,7 +497,8 @@ const CaseHistoryComponent: React.FC = () => {
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           closePreview();
           navigate(`/cases/${caseItem.id}/edit`);
-        }
+        },
+        condition: () => permissions.hasPermission("case.update")
       },
       {
         key: "assign",
@@ -503,7 +509,8 @@ const CaseHistoryComponent: React.FC = () => {
           console.log("Assigning case:", caseItem.id);
           // Would open assignment modal
           closePreview();
-        }
+        },
+        condition: () => permissions.hasPermission("case.assign")
       },
       {
         key: "close",
@@ -514,7 +521,7 @@ const CaseHistoryComponent: React.FC = () => {
           console.log("Closing case:", caseItem.id);
           closePreview();
         },
-        condition: (caseItem: CaseEntity) => caseItem.status !== "closed" && caseItem.status !== "resolved"
+        condition: (caseItem: CaseEntity) => caseItem.status !== "closed" && caseItem.status !== "resolved" && permissions.hasPermission("case.close")
       }
     ]
   };
@@ -751,13 +758,14 @@ const CaseHistoryComponent: React.FC = () => {
           sorting: true,
           filtering: true,
           pagination: true,
-          bulkActions: true,
+          bulkActions: false,
           export: true,
           realTimeUpdates: false, // Disabled for demo
           keyboardShortcuts: true
         }}
         // keyboardShortcuts={[]}
         // loading={false}
+        module="case"
         previewConfig={previewConfig}
         searchFields={["caseNumber", "title", "description", "assignedTo", "reporter"]}
         // customFilterFunction={() => true}

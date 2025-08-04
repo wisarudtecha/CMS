@@ -97,6 +97,7 @@ const RoleManagementComponent: React.FC<{
 
   const data: Role[] = role as Role[];
 
+  const [loading, setLoading] = useState(false);
   // const [loading, setLoading] = useState<LoadingStates>({
   //   roles: true,
   //   permissions: true,
@@ -401,6 +402,7 @@ const RoleManagementComponent: React.FC<{
 
   const handlePermissionSave = async () => {
     try {
+      setLoading(true);
       const payload: RolesPermissionsUpdateData = {
         body: (roleList).map(rl => {
           return {
@@ -447,6 +449,9 @@ const RoleManagementComponent: React.FC<{
     catch (error) {
       // console.error("Error reading role permissions:", error);
       addToast("error", `Roles Permissions Management: ${error}`);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -599,7 +604,7 @@ const RoleManagementComponent: React.FC<{
       permissions={perms as Permission[]}
       onPermissionToggle={handlePermissionToggle}
       handlePermissionSave={handlePermissionSave}
-      // loading={loading}
+      loading={loading}
     />
   };
 

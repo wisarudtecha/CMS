@@ -19,6 +19,7 @@
  */
 
 import React from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
 import type { Department, Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -46,9 +47,11 @@ const UserManagementPage: React.FC = () => {
         description="This is React.js User Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <PageBreadcrumb pageTitle="User Management" />
+      <ProtectedRoute requiredPermissions={["user.view"]}>
+        <PageBreadcrumb pageTitle="User Management" />
 
-      <UserManagementComponent usr={users} dept={departments} role={roles} />
+        <UserManagementComponent usr={users} dept={departments} role={roles} />
+      </ProtectedRoute>
     </>
   ) : (
     <div>Loading...</div>

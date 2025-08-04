@@ -1,5 +1,6 @@
 // /src/components/crud/ClickableCard.tsx
 import React from "react";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import type { CrudAction } from "@/types/crud";
 import Button from "@/components/ui/button/Button";
 import Checkbox from "@/components/form/input/Checkbox";
@@ -13,6 +14,7 @@ interface ClickableCardProps<T> {
   onSelectItem: (item: T) => void;
   bulkSelectionEnabled?: boolean;
   className?: string;
+  module?: string;
 }
 
 export const ClickableCard = <T extends { id: string }>({
@@ -24,6 +26,7 @@ export const ClickableCard = <T extends { id: string }>({
   onSelectItem,
   bulkSelectionEnabled = false,
   // className = ""
+  module
 }: ClickableCardProps<T>) => {
   // const isSelected = selectedItems.some(selected => selected.id === item.id);
   const isSelected = (item: T) => selectedItems.some(selected => selected.id === item.id);
@@ -63,16 +66,18 @@ export const ClickableCard = <T extends { id: string }>({
               .map((action) => {
                 const Icon = action.icon;
                 return (
-                  <Button
-                    key={action.key}
-                    onClick={() => action.onClick(item)}
-                    variant={action.variant}
-                    size="xs"
-                    className="lg:block lg:w-full lg:mb-2 mr-2 lg:mr-0"
-                  >
-                    {Icon && <Icon />}
-                    {action.label}
-                  </Button>
+                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                    <Button
+                      key={action.key}
+                      onClick={() => action.onClick(item)}
+                      variant={action.variant}
+                      size="xs"
+                      className="lg:block lg:w-full lg:mb-2 mr-2 lg:mr-0"
+                    >
+                      {Icon && <Icon />}
+                      {action.label}
+                    </Button>
+                  </PermissionGate>
                 );
               })}
           </div>

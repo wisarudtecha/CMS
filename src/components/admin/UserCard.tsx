@@ -70,7 +70,7 @@ export const UserCard: React.FC<{
       >
         <div className="xl:flex items-center gap-4 text-xs">
           <div className="xl:flex items-center gap-1 min-h-4">
-            <span className="text-gray-900 dark:text-white capitalize">{role?.roleName || ""}</span>
+            <span className="text-gray-900 dark:text-white capitalize">{role?.roleName?.replace(/_/g, " ") || ""}</span>
           </div>
         </div>
         

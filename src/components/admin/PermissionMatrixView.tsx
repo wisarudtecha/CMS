@@ -20,21 +20,23 @@ import type {
 } from "@/types/role";
 import Button from "@/components/ui/button/Button";
 // import permissionCategories from "@/mocks/permissionCategories.json";
+import { SYSTEM_ROLE } from "@/utils/constants";
 
 export const PermissionMatrixView: React.FC<{
+  // loading: LoadingStates;
+  loading: boolean;
+  permissions: Permission[];
   roles: Role[];
   rolePermissions: RolePermission[];
-  permissions: Permission[];
-  onPermissionToggle: (roleId: string, permissionId: string) => Promise<void>;
   handlePermissionSave: () => void;
-  // loading: LoadingStates;
+  onPermissionToggle: (roleId: string, permissionId: string) => Promise<void>;
 }> = ({
+  loading,
+  permissions,
   roles,
   rolePermissions,
-  permissions,
+  handlePermissionSave,
   onPermissionToggle,
-  handlePermissionSave
-  // loading
 }) => {
   const selectedRole = "all";
   const filteredPermissions = useMemo(() => {
@@ -234,12 +236,13 @@ export const PermissionMatrixView: React.FC<{
                         <td key={role.id} className="px-3 py-4">
                           <div className="flex items-center justify-center">
                             <button
-                              onClick={() => handlePermissionToggle(role.id, permission.permId)}
+                              onClick={() => SYSTEM_ROLE !== role.id && handlePermissionToggle(role.id, permission.permId)}
+                              disabled={SYSTEM_ROLE === role.id}
                               className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
                                 hasPermission 
                                   ? "bg-green-500 border-green-500 text-white" 
                                   : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                              } "hover:border-green-400"`}
+                              } ${SYSTEM_ROLE === role.id ? "opacity-50 cursor-not-allowed" : "hover:border-green-400"}`}
                             >
                               {hasPermission && <CheckLineIcon className="w-4 h-4" />}
                             </button>
@@ -398,8 +401,14 @@ export const PermissionMatrixView: React.FC<{
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">{""}</h3>
           <div className="flex items-center space-x-2">
-            <Button variant="success" size="sm" onClick={() => handlePermissionSave()}>
-              Save
+            <Button
+              variant="success"
+              size="sm"
+              onClick={() => !loading && handlePermissionSave()}
+              disabled={loading}
+              className={loading ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              {loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>

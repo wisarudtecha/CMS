@@ -8,6 +8,7 @@ import {
 // import { RoleHierarchyView } from "@/components/admin/HierarchyView";
 // import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
 import { TableView } from "@/components/admin/TableView";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
 import { BulkActionBar } from "@/components/crud/BulkActionBar";
 import { ClickableCard } from "@/components/crud/ClickableCard";
@@ -58,6 +59,7 @@ interface EnhancedCrudContainerProps<T> {
   features?: Partial<CrudFeatures>;
   keyboardShortcuts?: KeyboardShortcut[];
   loading?: boolean;
+  module?: string;
   previewConfig?: PreviewConfig<T>;
   // searchFields?: (keyof T)[];
   searchFields?: unknown;
@@ -86,6 +88,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   features = {},
   keyboardShortcuts = [],
   loading = false,
+  module,
   previewConfig,
   // searchFields = ["name", "description", "title"] as (keyof T)[],
   searchFields,
@@ -490,9 +493,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
             {/* Create Button */}
             {onCreate && (
-              <Button onClick={onCreate} variant="primary" className="h-11">
-                Create {config.entityName}
-              </Button>
+              <PermissionGate module="workflow" action="create">
+                <Button onClick={onCreate} variant="primary" className="h-11">
+                  Create {config.entityName}
+                </Button>
+              </PermissionGate>
             )}
           </div>
         </div>
@@ -556,6 +561,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                 selectedItems={selectedItems}
                 onClick={handleItemClick}
                 onSelectItem={selectItem}
+                module={module}
               >
                 {renderCard(item)}
               </ClickableCard>

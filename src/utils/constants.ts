@@ -86,6 +86,8 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
+export const SYSTEM_ROLE = "d6381714-8e89-47de-9d16-859131cdc5dc";
+
 export const PERMISSIONS = {
   TICKETS: {
     READ: "tickets:read",

@@ -490,13 +490,13 @@ const WorkflowListComponent: React.FC = () => {
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            list: "/workflows",
-            create: "/workflows",
-            read: "/workflows/:id",
-            update: "/workflows/:id",
-            delete: "/workflows/:id",
-            bulkDelete: "/workflows/bulk",
-            export: "/workflows/export"
+            list: "/workflow",
+            create: "/workflow",
+            read: "/workflow/:id",
+            update: "/workflow/:id",
+            delete: "/workflow/:id",
+            bulkDelete: "/workflow/bulk",
+            export: "/workflow/export"
           }
         }}
         bulkActions={bulkActions}
@@ -511,7 +511,7 @@ const WorkflowListComponent: React.FC = () => {
           sorting: true,
           filtering: true,
           pagination: true,
-          bulkActions: true,
+          bulkActions: false,
           export: true,
           realTimeUpdates: false, // Disabled for demo
           keyboardShortcuts: true
