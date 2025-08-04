@@ -488,7 +488,7 @@ const UserForm: React.FC = () => {
                                      </>
                                  ) : (
                                      <div className="md:col-span-2">
-                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Password can be changed from the user's profile page after creation.</p>
+                                
                                      </div>
                                  )}
                              </div>
