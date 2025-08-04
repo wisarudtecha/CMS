@@ -2,10 +2,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { AngleLeftIcon, AngleRightIcon, BoxCubeIcon, CheckLineIcon, CloseIcon, CopyIcon, DownloadIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { PermissionGate } from "@/components/auth/PermissionGate";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import Input from "@/components/form/input/InputField";
-import TextArea from "@/components/form/input/TextArea";
+import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Select from "@/components/form/Select";
+import TextArea from "@/components/form/input/TextArea";
 import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
 import workflowData from "@/mocks/workflowData.json";
@@ -66,7 +69,7 @@ const formOptions = [
   { value: "document_upload", label: "File - Document Upload" }
 ];
 
-const PICOptions = [
+const GroupOptions = [
   { value: "case_manager", label: "Case Manager" },
   { value: "investigator", label: "Investigator" },
   { value: "supervisor", label: "Supervisor" },
@@ -128,6 +131,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   workflowId,
   onSave 
 }) => {
+  const permissions = usePermissions();
+
   const [nodes, setNodes] = useState<WorkflowNode[]>(initialData.nodes);
   const [connections, setConnections] = useState<Connection[]>(initialData.connections);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
@@ -147,6 +152,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   // Enhanced state for Components Preview
   const [decisionSelections, setDecisionSelections] = useState<Record<string, "yes" | "no">>({});
   // const [currentPath, setCurrentPath] = useState<string[]>([]);
+  const [selectedTagsGroup, setSelectedTagsGroup] = useState<string[]>([]);
   
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -592,7 +598,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       return;
     }
 
-    if (e.shiftKey) {
+    if (e.shiftKey && permissions.hasAnyPermission(["workflow.create", "workflow.update"])) {
       // Shift + click to start connection
 
       // Check connection limits
@@ -629,7 +635,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     else {
       // Regular click to drag
       const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
+      if (rect && permissions.hasAnyPermission(["workflow.create", "workflow.update"])) {
         setIsDragging(nodeId);
         setDragOffset({
           x: e.clientX - rect.left - node.position.x,
@@ -640,7 +646,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     setSelectedNode(node);
   }, [
     nodes,
-    connections
+    connections,
+    permissions
   ]);
 
   // Handle mouse move
@@ -906,7 +913,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         >
           {/* Workflow Metadata */}
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">
               Workflow Details
             </h3>
             
@@ -915,12 +922,19 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Title
               </label>
-              <Input
-                type="text"
-                value={workflowMetadata.title}
-                onChange={(e) => updateWorkflowMetadata({ title: e.target.value })}
-                placeholder="Enter workflow title..."
-              />
+              {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                <Input
+                  type="text"
+                  value={workflowMetadata.title}
+                  onChange={(e) => updateWorkflowMetadata({ title: e.target.value })}
+                  placeholder="Enter workflow title..."
+                />
+              : <div
+                  className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                >
+                  {workflowMetadata.title || "Untitled Workflow"}
+                </div>
+              }
             </div>
 
             {/* Description Input */}
@@ -928,12 +942,19 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Description
               </label>
-              <TextArea
-                value={workflowMetadata.description}
-                onChange={(value) => updateWorkflowMetadata({ description: value })}
-                rows={2}
-                placeholder="Brief description..."
-              />
+              {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                <TextArea
+                  value={workflowMetadata.description}
+                  onChange={(value) => updateWorkflowMetadata({ description: value })}
+                  rows={2}
+                  placeholder="Brief description..."
+                />
+              : <div
+                  className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                >
+                  {workflowMetadata.description || "-"}
+                </div>
+              }
             </div>
 
             {/* Status Selector */}
@@ -941,16 +962,19 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Status
               </label>
-              <Select
-                value={workflowMetadata.status}
-                onChange={(value) => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
-                options={workflowStatusesOptions}
-                placeholder="Select Status"
-              />
+              {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
+                <Select
+                  value={workflowMetadata.status}
+                  onChange={(value) => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
+                  options={workflowStatusesOptions}
+                  placeholder="Select Status"
+                  className="cursor-pointer"
+                />
+              )}
             </div>
 
             {/* Status Badge */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-default">
               <span className="text-xs text-gray-500 dark:text-gray-400">Current Status:</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"
@@ -960,31 +984,33 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             </div>
           </div>
 
-          {/* Node Types */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Add Nodes</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(nodeTypes).map(([type, config]) => {
-                return (
-                  <div
-                    key={type}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, type as WorkflowNode["type"])}
-                    onClick={() => addNode(type as WorkflowNode["type"])}
-                    // className={`flex items-center gap-2 p-2 border rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
-                    className={`flex items-center gap-2 p-2 rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
-                    title={`Click to add or drag to canvas: ${config.label}`}
-                  >
-                    <span className="text-xs text-center w-100">{config.label}</span>
-                  </div>
-                );
-              })}
+          <PermissionGate permissions={["workflow.create", "workflow.update"]}>
+            {/* Node Types */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Add Nodes</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(nodeTypes).map(([type, config]) => {
+                  return (
+                    <div
+                      key={type}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, type as WorkflowNode["type"])}
+                      onClick={() => addNode(type as WorkflowNode["type"])}
+                      // className={`flex items-center gap-2 p-2 border rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
+                      title={`Click to add or drag to canvas: ${config.label}`}
+                    >
+                      <span className="text-xs text-center w-100">{config.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </PermissionGate>
 
           {/* Case Management System Settings */}
           <div className="mb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">
               {/* Case Management Settings */}
               SOP Settings
             </h3>
@@ -999,24 +1025,28 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 onChange={(value) => updateWorkflowMetadata({ casePriority: value })}
                 options={casePriorityOptions}
                 placeholder="Select Priority"
+                className="cursor-pointer"
               />
             </div>
             */}
 
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {/* Case Category */}
-                Case Type
-              </label>
-              <Select
-                value={workflowMetadata.caseCategory || ""}
-                onChange={(value) => updateWorkflowMetadata({ caseCategory: value })}
-                options={caseCategoryOptions}
-                // placeholder="Select Category"
-                placeholder="Select Case Type"
-                disabled={workflowId && workflowId !== "new" ? true : false}
-              />
-            </div>
+            <PermissionGate permissions={["workflow.create", "workflow.update"]}>
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  {/* Case Category */}
+                  Case Type
+                </label>
+                <Select
+                  value={workflowMetadata.caseCategory || ""}
+                  onChange={(value) => updateWorkflowMetadata({ caseCategory: value })}
+                  options={caseCategoryOptions}
+                  // placeholder="Select Category"
+                  placeholder="Select Case Type"
+                  disabled={workflowId && workflowId !== "new" ? true : false}
+                  className="cursor-pointer"
+                />
+              </div>
+            </PermissionGate>
 
             {/*
             <div className="mb-2">
@@ -1028,12 +1058,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 onChange={(value) => updateWorkflowMetadata({ targetCaseStatus: value })}
                 options={targetCaseStatusOptions}
                 placeholder="Select Target Status"
+                className="cursor-pointer"
               />
             </div>
             */}
 
             {/* Case Management Summary */}
-            <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded-lg border border-blue-200 dark:border-blue-800 cursor-default">
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-100 mb-2">
                 {/* Case Summary */}
                 SOP Summary
@@ -1055,7 +1086,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   </span>
                 </div>
                 <div>
-                  Category: <strong>{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label || "Not Set"}</strong>
+                  Case Type: <strong>{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label || "Not Set"}</strong>
                 </div>
                 <div>
                   Target Status: <strong>{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label || "Not Set"}</strong>
@@ -1064,65 +1095,67 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mb-2">
-            <Button
-              onClick={() => setShowImportDialog(true)}
-              className="w-full mb-2"
-              variant="success"
-            >
-              <FileIcon className="w-4 h-4" />
-              Import JSON
-            </Button>
-            <Button
-              onClick={() => setShowComponentsPreview(true)}
-              className="w-full mb-2"
-              variant="info"
-            >
-              <BoxCubeIcon className="w-4 h-4" />
-              {/* Components Preview */}
-              SOP Preview
-            </Button>
-            <Button
-              onClick={handleSaveClick}
-              className="w-full mb-2"
-              variant="primary"
-            >
-              <DownloadIcon className="w-4 h-4" />
-              Save Workflow
-            </Button>
-          </div>
+          <PermissionGate permissions={["workflow.create", "workflow.update"]}>
+            {/* Actions */}
+            <div className="mb-2">
+              <Button
+                onClick={() => setShowImportDialog(true)}
+                className="w-full mb-2"
+                variant="success"
+              >
+                <FileIcon className="w-4 h-4" />
+                Import JSON
+              </Button>
+              <Button
+                onClick={() => setShowComponentsPreview(true)}
+                className="w-full mb-2"
+                variant="info"
+              >
+                <BoxCubeIcon className="w-4 h-4" />
+                {/* Components Preview */}
+                SOP Preview
+              </Button>
+              <Button
+                onClick={handleSaveClick}
+                className="w-full mb-2"
+                variant="primary"
+              >
+                <DownloadIcon className="w-4 h-4" />
+                Save Workflow
+              </Button>
+            </div>
 
-          {/* Instructions */}
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <p className="text-gray-600 dark:text-gray-300">
-              {/* <strong>Case Management:</strong> */}
-              <strong>SOP Management:</strong>
-            </p>
-            {/* <p>• Set case priority, category, and target status</p> */}
-            {/* <p>• Set case priority, and category</p> */}
-            <p>• Set case priority, type, and target status</p>
-            <p>• Visual priority indicators in summary panel</p>
-            <p className="text-gray-600 dark:text-gray-300"><strong>Node Operations:</strong></p>
-            <p>• Click nodes to add at top-left of visible canvas</p>
-            <p>• Drag nodes from palette to canvas</p>
-            <p>• Click to select nodes</p>
-            <p>• Drag to move nodes (snaps to grid)</p>
-            <p>• Shift+click to connect nodes</p>
-            <p>• Decision nodes have Yes/No connectors</p>
-            <p className="text-gray-600 dark:text-gray-300"><strong>Workflow Features:</strong></p>
-            <p>• Start nodes can continue from other workflows</p>
-            <p>• End nodes can allow workflow continuation</p>
-            <p>• Visual indicators:
-              <AngleLeftIcon className="mx-1 inline w-3 h-3 bg-blue-400 border border-blue-600 rounded-full items-center justify-center" /> (continues from),
-              <AngleRightIcon className="mx-1 inline w-3 h-3 bg-green-400 border border-green-600 rounded-full items-center justify-center" /> (allows continuation)
-            </p>
-            <p>• Start/End nodes required for save</p>
-            <p>• Max connections: 1 (normal), 2 (decision)</p>
-            <p>• Import/Export JSON workflows</p>
-            <p>• Preview form components</p>
-            <p>• Scroll for large workflows</p>
-          </div>
+            {/* Instructions */}
+            <div className="text-xs text-gray-500 dark:text-gray-400 cursor-default">
+              <p className="text-gray-600 dark:text-gray-300">
+                {/* <strong>Case Management:</strong> */}
+                <strong>SOP Management:</strong>
+              </p>
+              {/* <p>• Set case priority, category, and target status</p> */}
+              {/* <p>• Set case priority, and category</p> */}
+              <p>• Set case priority, type, and target status</p>
+              <p>• Visual priority indicators in summary panel</p>
+              <p className="text-gray-600 dark:text-gray-300"><strong>Node Operations:</strong></p>
+              <p>• Click nodes to add at top-left of visible canvas</p>
+              <p>• Drag nodes from palette to canvas</p>
+              <p>• Click to select nodes</p>
+              <p>• Drag to move nodes (snaps to grid)</p>
+              <p>• Shift+click to connect nodes</p>
+              <p>• Decision nodes have Yes/No connectors</p>
+              <p className="text-gray-600 dark:text-gray-300"><strong>Workflow Features:</strong></p>
+              <p>• Start nodes can continue from other workflows</p>
+              <p>• End nodes can allow workflow continuation</p>
+              <p>• Visual indicators:
+                <AngleLeftIcon className="mx-1 inline w-3 h-3 bg-blue-400 border border-blue-600 rounded-full items-center justify-center" /> (continues from),
+                <AngleRightIcon className="mx-1 inline w-3 h-3 bg-green-400 border border-green-600 rounded-full items-center justify-center" /> (allows continuation)
+              </p>
+              <p>• Start/End nodes required for save</p>
+              <p>• Max connections: 1 (normal), 2 (decision)</p>
+              <p>• Import/Export JSON workflows</p>
+              <p>• Preview form components</p>
+              <p>• Scroll for large workflows</p>
+            </div>
+          </PermissionGate>
         </div>
 
         {/* Canvas */}
@@ -1131,7 +1164,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         >
           <div
             ref={canvasRef}
-            className="min-w-full min-h-full relative cursor-grab active:cursor-grabbing"
+            className={`min-w-full min-h-full relative 
+              ${permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ? "cursor-grab active:cursor-grabbing" : "cursor-default"}`
+            }
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
@@ -1285,7 +1320,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   data-node-id={node.id}
                   className={`absolute pointer-events-auto select-none transition-all rounded-lg ${
                     isSelected ? "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
-                  } ${isDragging === node.id ? "cursor-grabbing" : "cursor-grab"}`}
+                  } ${permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ? (isDragging === node.id ? "cursor-grabbing" : "cursor-grab") : "cursor-default"}`}
                   style={{
                     left: node.position.x,
                     top: node.position.y,
@@ -1334,7 +1369,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     </div>
                   )}
                   
-                  {isSelected && (
+                  {isSelected && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1357,19 +1392,21 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         >
           <div className="flex items-center gap-2 mb-2">
             <PencilIcon className="w-5 h-5 text-lg font-semibold text-gray-700 dark:text-gray-200" />
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 cursor-default">
               Node Configuration
             </h3>
           </div>
 
           {/* Validation Errors */}
           {validationErrors.length > 0 && (
-            <Alert
-              variant="error"
-              title="Validation Errors"
-              messages={validationErrors}
-              showLink={false}
-            />
+            <div className="cursor-default mb-2">
+              <Alert
+                variant="error"
+                title="Validation Errors"
+                messages={validationErrors}
+                showLink={false}
+              />
+            </div>
           )}
 
           {selectedNode ? (
@@ -1378,23 +1415,37 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Label
                 </label>
-                <Input
-                  type="text"
-                  value={selectedNode.data.label}
-                  onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                />
+                {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                  <Input
+                    type="text"
+                    value={selectedNode.data.label}
+                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                  />
+                : <div
+                    className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                  >
+                    {selectedNode.data.label || "-"}
+                  </div>
+                }
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Description
                 </label>
-                <TextArea
-                  value={selectedNode.data.description || ""}
-                  onChange={(value) => updateNodeData(selectedNode.id, { description: value })}
-                  rows={3}
-                  placeholder="Enter description..."
-                />
+                {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                  <TextArea
+                    value={selectedNode.data.description || ""}
+                    onChange={(value) => updateNodeData(selectedNode.id, { description: value })}
+                    rows={3}
+                    placeholder="Enter description..."
+                  />
+                : <div
+                    className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                  >
+                    {selectedNode.data.description || "-"}
+                  </div>
+                }
               </div>
 
               <div>
@@ -1413,51 +1464,66 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs text-gray-500 dark:text-gray-400">X</label>
-                    <Input
-                      type="number"
-                      value={Math.round(selectedNode.position.x)}
-                      onChange={(e) => {
-                        const newPosition = snapToGrid({ 
-                          x: parseInt(e.target.value) || 0, 
-                          y: selectedNode.position.y 
-                        });
-                        const newNodes = nodes.map(n => 
-                          n.id === selectedNode.id 
-                            ? { ...n, position: newPosition }
-                            : n
-                        );
-                        setNodes(newNodes);
-                        setSelectedNode({ ...selectedNode, position: newPosition });
-                      }}
-                      step={GRID_SIZE}
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Input
+                        type="number"
+                        value={Math.round(selectedNode.position.x)}
+                        onChange={(e) => {
+                          const newPosition = snapToGrid({ 
+                            x: parseInt(e.target.value) || 0, 
+                            y: selectedNode.position.y 
+                          });
+                          const newNodes = nodes.map(n => 
+                            n.id === selectedNode.id 
+                              ? { ...n, position: newPosition }
+                              : n
+                          );
+                          setNodes(newNodes);
+                          setSelectedNode({ ...selectedNode, position: newPosition });
+                        }}
+                        step={GRID_SIZE}
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {Math.round(selectedNode.position.x) || 0}
+                      </div>
+                    }
                   </div>
 
                   <div>
                     <label className="block text-xs text-gray-500 dark:text-gray-400">Y</label>
-                    <Input
-                      type="number"
-                      value={Math.round(selectedNode.position.y)}
-                      onChange={(e) => {
-                        const newPosition = snapToGrid({ 
-                          x: selectedNode.position.x, 
-                          y: parseInt(e.target.value) || 0 
-                        });
-                        const newNodes = nodes.map(n => 
-                          n.id === selectedNode.id 
-                            ? { ...n, position: newPosition }
-                            : n
-                        );
-                        setNodes(newNodes);
-                        setSelectedNode({ ...selectedNode, position: newPosition });
-                      }}
-                      step={GRID_SIZE}
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Input
+                        type="number"
+                        value={Math.round(selectedNode.position.y)}
+                        onChange={(e) => {
+                          const newPosition = snapToGrid({ 
+                            x: selectedNode.position.x, 
+                            y: parseInt(e.target.value) || 0 
+                          });
+                          const newNodes = nodes.map(n => 
+                            n.id === selectedNode.id 
+                              ? { ...n, position: newPosition }
+                              : n
+                          );
+                          setNodes(newNodes);
+                          setSelectedNode({ ...selectedNode, position: newPosition });
+                        }}
+                        step={GRID_SIZE}
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {Math.round(selectedNode.position.y) || 0}
+                      </div>
+                    }
                   </div>
                 </div>
               </div>
 
               {/* Type-specific configuration */}
+              {/*
               {selectedNode.type === "start" && (
                 <>
                   <div>
@@ -1539,6 +1605,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   )}
                 </>
               )}
+              */}
 
               {/* Type-specific configuration */}
               {selectedNode.type === "decision" && (
@@ -1546,14 +1613,21 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Condition
                   </label>
-                  <Input
-                    type="text"
-                    value={typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
-                    onChange={(e) => updateNodeData(selectedNode.id, { 
-                      config: { ...(selectedNode.data.config ?? {}), condition: e.target.value }
-                    })}
-                    placeholder="Enter condition..."
-                  />
+                  {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                    <Input
+                      type="text"
+                      value={typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
+                      onChange={(e) => updateNodeData(selectedNode.id, { 
+                        config: { ...(selectedNode.data.config ?? {}), condition: e.target.value }
+                      })}
+                      placeholder="Enter condition..."
+                    />
+                  : <div
+                      className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                    >
+                      {typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
+                    </div>
+                  }
                 </div>
               )}
 
@@ -1563,30 +1637,44 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Action
                     </label>
-                    <Select
-                      value={typeof selectedNode.data.config?.action === "string" ? selectedNode.data.config.action : ""}
-                      onChange={(value) => updateNodeData(selectedNode.id, {
-                        config: { ...selectedNode.data.config, action: value }
-                      })}
-                      options={actionOptions}
-                      placeholder="Select Action"
-                      className="bg-white dark:bg-gray-900"
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Select
+                        value={typeof selectedNode.data.config?.action === "string" ? selectedNode.data.config.action : ""}
+                        onChange={(value) => updateNodeData(selectedNode.id, {
+                          config: { ...selectedNode.data.config, action: value }
+                        })}
+                        options={actionOptions}
+                        placeholder="Select Action"
+                        className="bg-white dark:bg-gray-900 cursor-pointer"
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {actionOptions.find(a => a.value === selectedNode.data.config?.action)?.label || ""}
+                      </div>
+                    }
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Form
                     </label>
-                    <Select
-                      value={typeof selectedNode.data.config?.form === "string" ? selectedNode.data.config.form : ""}
-                      onChange={(value) => updateNodeData(selectedNode.id, { 
-                        config: { ...selectedNode.data.config, form: value }
-                      })}
-                      options={formOptions}
-                      placeholder="Select Form"
-                      className="bg-white dark:bg-gray-900"
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Select
+                        value={typeof selectedNode.data.config?.form_id === "string" ? selectedNode.data.config.form_id : ""}
+                        onChange={(value) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, form_id: value }
+                        })}
+                        options={formOptions}
+                        placeholder="Select Form"
+                        className="bg-white dark:bg-gray-900 cursor-pointer"
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {formOptions.find(f => f.value === selectedNode.data.config?.form_id)?.label || ""}
+                      </div>
+                    }
                   </div>
 
                   <div>
@@ -1594,38 +1682,83 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       {/* SLA (Hours) */}
                       SLA (Minutes)
                     </label>
-                    <Input
-                      type="number"
-                      value={typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
-                      onChange={(e) => updateNodeData(selectedNode.id, { 
-                        config: { ...selectedNode.data.config, sla: e.target.value }
-                      })}
-                      // placeholder="Enter SLA in hours..."
-                      placeholder="Enter SLA in minutes..."
-                      min="1"
-                      max="720"
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Input
+                        type="number"
+                        value={typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, sla: e.target.value }
+                        })}
+                        // placeholder="Enter SLA in hours..."
+                        placeholder="Enter SLA in minutes..."
+                        min="1"
+                        max="720"
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
+                      </div>
+                    }
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Group of Assignee
+                    </label>
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      // <Select
+                      //   value={typeof selectedNode.data.config?.group === "string" ? selectedNode.data.config.group : ""}
+                      //   onChange={(value) => updateNodeData(selectedNode.id, { 
+                      //     config: { ...selectedNode.data.config, group: value }
+                      //   })}
+                      //   options={GroupOptions}
+                      //   placeholder="Select Group"
+                      //   className="bg-white dark:bg-gray-900 cursor-pointer"
+                      // />
+                      <CustomizableSelect
+                        options={GroupOptions}
+                        value={selectedTagsGroup}
+                        onChange={setSelectedTagsGroup}
+                        placeholder="Select Group"
+                        // asyncFetch={async (query, page) => {
+                        //   const res = await fetch(`/api/tags?q=${query}&page=${page}`);
+                        //   return res.json();
+                        // }}
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {GroupOptions.find(g => g.value === selectedNode.data.config?.group)?.label || ""}
+                      </div>
+                    }
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       PIC (Person in Charge)
                     </label>
-                    <Select
-                      value={typeof selectedNode.data.config?.pic === "string" ? selectedNode.data.config.pic : ""}
-                      onChange={(value) => updateNodeData(selectedNode.id, { 
-                        config: { ...selectedNode.data.config, pic: value }
-                      })}
-                      options={PICOptions}
-                      placeholder="Select PIC"
-                      className="bg-white dark:bg-gray-900"
-                    />
+                    {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                      <Input
+                        type="text"
+                        value={typeof selectedNode.data.config?.pic === "string" || typeof selectedNode.data.config?.pic === "number" ? selectedNode.data.config.pic : ""}
+                        onChange={(e) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, pic: e.target.value }
+                        })}
+                        placeholder="Enter PIC..."
+                      />
+                    : <div
+                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
+                      >
+                        {typeof selectedNode.data.config?.pic === "string" ? selectedNode.data.config.pic : ""}
+                      </div>
+                    }
                   </div>
                 </>
               )}
 
               {/* Connection Info */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 cursor-default">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Connections</h4>
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>
@@ -1638,14 +1771,14 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               </div>
             </div>
           ) : (
-            <div className="text-center text-gray-600 dark:text-gray-300 py-8">
+            <div className="text-center text-gray-600 dark:text-gray-300 py-8 cursor-default">
               <PencilIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
               <p>Select a node to configure its properties</p>
             </div>
           )}
 
           {/* Workflow Stats */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 cursor-default">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Workflow Stats</h4>
             <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
               <div>Title: <span className="font-medium">{workflowMetadata.title}</span></div>
@@ -1689,11 +1822,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         </div>
 
         {/* JSON Preview Dialog */}
-        {showJsonPreview && (
+        {showJsonPreview && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
           <Modal isOpen={showJsonPreview} onClose={() => setShowJsonPreview(false)} className="max-w-4xl p-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Workflow JSON Preview</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">{workflowMetadata.title}</p>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">Workflow JSON Preview</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{workflowMetadata.title}</p>
             </div>
             
             <div className="p-4 overflow-auto max-h-[60vh]">
@@ -1754,10 +1887,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         )}
 
         {/* Import Dialog */}
-        {showImportDialog && (
+        {showImportDialog && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
           <Modal isOpen={showImportDialog} onClose={() => setShowImportDialog(false)} className="max-w-4xl p-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Import Workflow JSON</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">Import Workflow JSON</h3>
             </div>
             
             <div className="p-4">
@@ -1816,7 +1949,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             onClose={() => setShowComponentsPreview(false)}
             isFullscreen={true}
           >
-            <div>
+            <div className="cursor-default">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                 {/* Components Preview */}
                 SOP Preview
@@ -1864,7 +1997,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               )}
             </div>
             
-            <div className="py-4 overflow-auto">
+            <div className="py-4 overflow-auto cursor-default">
               {generateComponentsPreview().length > 0 ? (
                 <div className="space-y-6">
                   {generateComponentsPreview().map((component, index) => (
@@ -1967,6 +2100,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                                     }
                                     placeholder={`Select ${field.label.toLowerCase()}...`}
                                     onChange={() => {}}
+                                    className="cursor-pointer"
                                   />
                                 ) : field.type === "radio" ? (
                                   <div className="space-y-1">

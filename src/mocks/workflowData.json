@@ -15,7 +15,7 @@
         "description": "Review submitted application",
         "config": {
           "action": "review_application",
-          "form": "application_form",
+          "form_id": "application_form",
           "sla": "24",
           "pic": "john_doe"
         }
@@ -40,9 +40,9 @@
         "description": "Send approval notification",
         "config": {
           "action": "send_notification",
-          "form": "approval_form",
+          "form_id": "approval_form",
           "sla": "2",
-          "pic": "admin"
+          "group": "admin"
         }
       }
     },
@@ -55,9 +55,9 @@
         "description": "Send rejection notification",
         "config": {
           "action": "send_notification",
-          "form": "rejection_form",
+          "form_id": "rejection_form",
           "sla": "2",
-          "pic": "admin"
+          "group": "admin"
         }
       }
     },

@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { BoltIcon, ListIcon, TimeIcon, VideoIcon } from "@/icons";
+import { usePermissions } from "@/hooks/usePermissions";
 import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Workflow } from "@/types/workflow";
@@ -11,6 +12,7 @@ import workflowList from "@/mocks/workflowList.json";
 
 const WorkflowListComponent: React.FC = () => {
   const navigate = useNavigate();
+  const permissions = usePermissions();
 
   // ===================================================================
   // Mock Data
@@ -112,14 +114,16 @@ const WorkflowListComponent: React.FC = () => {
         label: "View",
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}`)
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}`),
+        condition: () => permissions.hasPermission("workflow.view")
       },
       {
-        key: "edit",
+        key: "update",
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}/edit`)
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}/edit`),
+        condition: () => permissions.hasPermission("workflow.update")
       },
       {
         key: "delete",
@@ -129,7 +133,8 @@ const WorkflowListComponent: React.FC = () => {
         onClick: (workflow: Workflow) => {
           // This will be intercepted by the container"s handleItemAction
           console.log("Delete action triggered for:", workflow.id);
-        }
+        },
+        condition: () => permissions.hasPermission("workflow.delete")
       }
     ]
   };
@@ -310,7 +315,8 @@ const WorkflowListComponent: React.FC = () => {
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
           navigate(`/workflow/editor/v2/${workflow.id}/edit`);
-        }
+        },
+        condition: () => permissions.hasPermission("workflow.update")
       },
       {
         key: "duplicate",
@@ -320,7 +326,8 @@ const WorkflowListComponent: React.FC = () => {
         onClick: (workflow: Workflow, closePreview: () => void) => {
           console.log("Duplicating workflow:", workflow.id);
           closePreview();
-        }
+        },
+        condition: () => permissions.hasPermission("workflow.create")
       },
       {
         key: "delete",
@@ -330,7 +337,8 @@ const WorkflowListComponent: React.FC = () => {
         onClick: (workflow: Workflow, closePreview: () => void) => {
           console.log("Deleting workflow:", workflow.id);
           closePreview();
-        }
+        },
+        condition: () => permissions.hasPermission("workflow.delete")
       }
     ]
   };
@@ -518,6 +526,7 @@ const WorkflowListComponent: React.FC = () => {
         }}
         // keyboardShortcuts={[]}
         // loading={false}
+        module="workflow"
         previewConfig={previewConfig}
         searchFields={["name", "description", "category"]}
         // customFilterFunction={() => true}

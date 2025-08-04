@@ -40,7 +40,7 @@ const WorkflowEditorPage: React.FC = () => {
         description="This is React.js Workflow Visual Editor for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["workflow.view", "workflow.edit"]}>
+      <ProtectedRoute requiredPermissions={["workflow.view"]}>
         <PageBreadcrumb items={threeLayerBreadcrumb} />
 
         <WorkflowEditorComponent workflowId={params?.id || "new"} />
