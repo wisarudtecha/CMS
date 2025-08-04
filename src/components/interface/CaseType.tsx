@@ -27,28 +27,30 @@ export interface CaseSubType {
     userSkillList: string[];
     unitPropLists: string[];
     active: boolean;
-    createdAt: string; // use `Date` if you want to parse the timestamp
+    createdAt: string;
     updatedAt: string;
     createdBy: string;
     updatedBy: string;
 }
 
 
-export interface CaseTypeSubType  {
-    CaseTypeid: string;
-    CaseSubTypeid : string
-    typeId: string;
-    orgId: string;
-    en: string; // {en-type} - {for each en-subtype}
-    th: string; // {th-type} - {for each th-subtype}
-    activeType: boolean;
-    wfId: string;
-    caseSla: string;
-    priority: string;
-    userSkillList: string[];
-    unitPropLists: string[];
-    activeSubType: boolean;
+
+
+
+export interface CaseTypeSubType {
+  typeId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  sTypeId: string;
+  sTypeCode: string;
+  subTypeEn: string;
+  subTypeTh: string;
+  wfId: string;
+  caseSla: string;
+  priority: number;
+  userSkillList: string[];
+  unitPropLists: string[];
+  subTypeActive: boolean;
 }
-
-
-

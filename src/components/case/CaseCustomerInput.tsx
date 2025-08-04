@@ -1,11 +1,12 @@
-import { Custommer, User } from "@/types";
-import { ChangeEvent, useMemo } from "react";
+import { Custommer } from "@/types";
+import { ChangeEvent } from "react";
 import Input from "../form/input/InputField";
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
+import { Customer } from "@/store/api/custommerApi";
 
 interface CustomerInputProps {
     customerData: Custommer
-    listCustomerData: User[];
+    listCustomerData: Customer[];
     handleCustomerDataChange: (newValue: Custommer) => void;
 }
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
@@ -14,45 +15,20 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     listCustomerData,
     handleCustomerDataChange,
 }) => {
-    // Improved customerOptions to map label and value properly
-    const customerOptions = useMemo(() =>
-        listCustomerData.map(user => ({
-            label: user.firstName + " " + user.lastName,
-            value: user.id, 
-            mobileNo: user.mobileNo,
-            email: user.email ,
-            photo:user.photo,
-            id:user.id
-        })),
-        [listCustomerData]
-    );
-    const contractMethodMock = ["Iot Alert", "Chat", "Email"];
-    const handleCustomerDataNameChange = (selectedId: string) => {
-        const selectedCustomer = customerOptions.find(option => option.value === selectedId);
 
-        if (selectedCustomer) {
-            handleCustomerDataChange({
-                ...customerData,
-                name: selectedCustomer.label, 
-                mobileNo: String(selectedCustomer.mobileNo), 
-                email: selectedCustomer.email, 
-                photo:selectedCustomer.photo,
-                id:selectedCustomer.id
-            });
-        } else {
-            handleCustomerDataChange({
-                ...customerData,
-                name: "",
-                mobileNo: undefined,
-                email: undefined
-            });
-        }
+    const contractMethodMock = ["Iot Alert", "Chat", "Email"];
+    const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        handleCustomerDataChange({
+            ...customerData,
+            name: e.target.value 
+        });
     };
+
+
 
     const handleCustomerDataContractMethodeChange = (data: string) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | ""});
+        handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | "" });
     };
-
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value === "" ? undefined : e.target.value;
         let updatedCustomerData = { ...customerData, mobileNo: value };
@@ -64,23 +40,29 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 updatedCustomerData = {
                     ...updatedCustomerData,
                     name: `${matchingCustomer.firstName} ${matchingCustomer.lastName}`,
-                    email: matchingCustomer.email 
+                    email: matchingCustomer.email,
+                    photo: matchingCustomer.photo,
+                    id: matchingCustomer.id,
                 };
             } else {
                 updatedCustomerData = {
                     ...updatedCustomerData,
-                    name: "",
-                    email: undefined
+                    mobileNo: value,
+                    email: "",
+                    photo: "",
+                    id: "",
                 };
             }
         } else {
             updatedCustomerData = {
                 ...updatedCustomerData,
                 name: "",
-                email: undefined
+                email: undefined,
+                id: "",
+                photo: "",
             };
         }
-
+        console.log(updatedCustomerData)
         handleCustomerDataChange(updatedCustomerData);
     };
 
@@ -93,13 +75,12 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         <div className=" text-gray-900 dark:text-gray-400 mx-3">
             <div className="w-auto md:mr-2">
                 <h3 className="mb-2 ">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                <SearchableSelect                    options={customerOptions.map(option => option.label)}
-                    value={customerData.name || ""} // Display the name
-                    onChange={(label) => {
-                        const selectedOption = customerOptions.find(option => option.label === label);
-                        handleCustomerDataNameChange(selectedOption ? selectedOption.value : "");
-                    }}
+                <Input
+                    value={customerData.name}
+                    onChange={(e) => { handleCustomerDataNameChange(e) }}
+                    className={`${commonInputCss}`}
                     placeholder={"Enter Customer Name"}
+                    required={true}
                 />
             </div>
             <div className="w-auto md:mr-2">

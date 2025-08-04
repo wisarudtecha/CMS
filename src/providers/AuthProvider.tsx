@@ -5,6 +5,8 @@ import { authReducer } from "@/hooks/useAuthContext";
 import { AuthService } from "@/utils/authService";
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
+import { useFetchCustomers, useFetchTypeSubType } from "@/components/case/CaseApiManager";
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const getInitialAuthState = (): AuthState => {
@@ -12,7 +14,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const token = TokenManager.getToken();
     const user = TokenManager.getStoredUser();
-
     if (token && user && !TokenManager.isTokenExpired(token)) {
       // console.log("✅ Valid session found during initialization");
       // If user doesn't have the new structure, create it with proper permissions
@@ -221,6 +222,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.user
       );
 
+      useFetchCustomers()
+      useFetchTypeSubType()
       dispatch({ 
         type: "LOGIN_SUCCESS", 
         payload: { 

@@ -21,7 +21,6 @@ import { formType, FormField } from "@/components/interface/FormField"
 import Badge from "@/components/ui/badge/Badge"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
-import caseTypeMock from "../../utils/json/caseType.json"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
 import Comments from "../comment/Comment"
@@ -33,14 +32,15 @@ import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
 import { CaseTypeSubType } from "../interface/CaseType"
-import { useGetUsersQuery } from "@/store/api/userApi"
-import type { Custommer, User } from "@/types";
+import type { Custommer } from "@/types";
 import React from "react"
 import CustomerInput from "./CaseCustomerInput"
 import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
 import PreviewDataBeforeSubmit from "./PreviewCaseData"
-import { ServiceCenter } from "@/store/api/disPatch"
+import { ServiceCenter } from "@/store/api/dispatch"
+import { Customer } from "@/store/api/custommerApi"
+import { useFetchSubTypeForm } from "./CaseApiManager"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -148,6 +148,13 @@ const requireElements = <span className=" text-red-500 text-sm font-bold">*</spa
 //     }
 
 // }
+const findCaseTypeSubType = (
+    list: CaseTypeSubType[],
+    targetKey: string
+): CaseTypeSubType | undefined => {
+    return list.find(item => mergeCaseTypeAndSubType(item) === targetKey);
+};
+
 
 interface CaseCardProps {
     onAssignClick: () => void;
@@ -280,9 +287,14 @@ interface CaseTypeFormSectionProps {
     handleCaseTypeChange: (newValue: string) => void;
     handleGetTypeFormData: (getTypeData: FormField) => void;
     hadleIsFillGetType: (isFill: boolean) => void;
-    selectedCaseTypeForm: formType | undefined;
+    selectedCaseTypeForm: FormField | undefined;
     editFormData: boolean; // Prop to control if the form is editable
     caseTypeSupTypeData: CaseTypeSubType[];
+}
+const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
+    return `${data.th ?? ""}` +
+        `${data.sTypeCode ? `-${data.sTypeCode}` : ""}` +
+        `${data.subTypeTh ? `_${data.subTypeTh}` : ""}`
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -294,9 +306,12 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     editFormData,
     caseTypeSupTypeData
 }) => {
+
     const caseTypeOptions = useMemo(() => {
         if (!caseTypeSupTypeData?.length) return [];
-        return caseTypeSupTypeData.map(item => item.th);
+        return caseTypeSupTypeData.map(item =>
+            mergeCaseTypeAndSubType(item)
+        );
     }, [caseTypeSupTypeData]);
 
 
@@ -308,7 +323,13 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     {selectedCaseTypeForm && (
                         <div className="flex">
                             <span className="mr-2">Priority</span>
-                            <div className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(selectedCaseTypeForm.priority)} rounded-lg`}></div>
+                            <div
+                                className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
+                                    caseTypeSupTypeData.find(data => data.th === caseType)?.priority ?? 0
+                                )
+                                    } rounded-lg`}
+                            ></div>
+
                         </div>
                     )}
                 </div>
@@ -359,9 +380,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
-    const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSupType") || "") as CaseTypeSubType[]
+    const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
     // const caseTypeSupTypeData = getTypeSupType()
-    const serviceCenter = JSON.parse(localStorage.getItem("serviceCenter") || "") as ServiceCenter[]
+    const serviceCenter = JSON.parse(localStorage.getItem("serviceCenter") ?? "[]") as ServiceCenter[];
     // const serviceCenter = getServiceCenter()
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
     // const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
@@ -377,20 +398,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         email: undefined,
         id: ""
     })
-    const [listCustomerData, setListCustomerData] = useState<User[]>([])
-    const { data: usersData } = useGetUsersQuery({
-        start: 0,
-        length: 100
-    });
-    useEffect(() => {
-        if (usersData?.data) {
-            setListCustomerData(usersData.data);
-        }
-    }, [usersData]);
+    const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     useEffect(() => {
         setDisplayedCaseData(caseData);
+        setListCustomerData(JSON.parse(localStorage.getItem("customer_data") ?? "[]") as Customer[])
         if (caseData) {
             const newCaseType = caseData.caseType ?
                 { caseType: caseData.caseType.caseType || "", priority: caseData.caseType.priority || 0 } :
@@ -421,7 +434,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         if (caseTypeData?.caseType === caseType.caseType) {
             return caseTypeData;
         }
-        return caseTypeMock.find(form => form.caseType === caseType.caseType);
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType)
+        if(newCaseType?.sTypeId===null)
+        {
+            return 
+        }
+        return JSON.parse(localStorage.getItem("subTypeForm-" + newCaseType?.sTypeId) ?? "{}") as FormField;
     }, [caseType, displayedCaseData]);
 
 
@@ -483,6 +501,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [caseTypeData, customerData, serviceCenterData, caseType])
 
     const handlePreviewShow = () => {
+        console.log(displayedCaseData)
         setShowPreviewData(true)
     }
 
@@ -499,17 +518,26 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setServiceCenterData(displayedCaseData.serviceCenter || "");
             {
                 displayedCaseData.customerData &&
-                setCustomerData(displayedCaseData.customerData)
+                    setCustomerData(displayedCaseData.customerData)
             }
         }
         setEditFormData(prev => !prev);
     }, [editFormData, displayedCaseData]);
 
-    const handleCaseTypeChange = useCallback((newValue: string) => {
-        setCaseType(prevCaseType => ({
-            ...prevCaseType,
-            caseType: newValue
-        }));
+    const handleCaseTypeChange = useCallback(async (newValue: string) => {
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
+
+        if (newCaseType) {
+            const localStorageItem = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
+
+            if (!localStorageItem) {
+                await useFetchSubTypeForm(newCaseType.sTypeId); 
+            }
+            setCaseType(prevCaseType => ({
+                ...prevCaseType,
+                caseType: newValue
+            }));
+        }
     }, []);
 
     const handleLocationChange = useCallback((data: string) => {

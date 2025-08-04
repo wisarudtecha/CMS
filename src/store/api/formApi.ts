@@ -1,6 +1,6 @@
 import { ApiResponse} from "@/types";
 import { baseApi } from "./baseApi";
-import { FormManager, IndividualFormField } from "@/components/interface/FormField";
+import { FormField, FormManager, IndividualFormField } from "@/components/interface/FormField";
 
 export interface UpdataStatusResponse {
     status: string;
@@ -82,6 +82,16 @@ export const formApi = baseApi.injectEndpoints({
             invalidatesTags: ["Form and Workflow"], 
         }),
 
+        postSubTypeForm: builder.mutation<ApiResponse<FormField>, string>({
+                    query: (subType) => ({
+                        url: "/forms/casesubtype",
+                        method: "POST",
+                        body: {
+                            caseSubType: subType
+                        },
+                    }),
+                    invalidatesTags: ["Form and Workflow"],
+                }),
 
         // getTicket: builder.query<FormField, string>({
         //   query: (id) => `/tickets/${id}`,

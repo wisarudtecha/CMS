@@ -1,8 +1,44 @@
-import { ApiResponse} from "@/types";
+import { ApiResponse } from "@/types";
 import { baseApi } from "./baseApi";
-import { CaseSubType, CaseType } from "@/components/interface/CaseType";
+import { CaseSubType, CaseType, CaseTypeSubType } from "@/components/interface/CaseType";
 
-export const formApi = baseApi.injectEndpoints({
+export interface CreateCase {
+    arrivedDate: string;
+    caseDetail: string;
+    caseDuration: number;
+    caseLat: string;
+    caseLon: string;
+    caseSTypeId: string;
+    caseTypeId: string;
+    caseVersion: string;
+    caselocAddr: string;
+    caselocAddrDecs: string;
+    closedDate: string;
+    commandedDate: string;
+    countryId: string;
+    createdDate: string;
+    deviceId: string;
+    distId: string;
+    extReceive: string;
+    phoneNo: string;
+    phoneNoHide: boolean;
+    priority: number;
+    provId: string;
+    receivedDate: string;
+    referCaseId: string;
+    resDetail: string;
+    resId: string;
+    source: string;
+    startedDate: string;
+    statusId: string;
+    userarrive: string;
+    userclose: string;
+    usercommand: string;
+    usercreate: string;
+    userreceive: string;
+}
+
+export const caseApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ticket CRUD operations
 
@@ -16,14 +52,24 @@ export const formApi = baseApi.injectEndpoints({
             providesTags: ["Cases"],
         }),
 
-       
+        postCreateCase: builder.mutation<ApiResponse<null>, CreateCase>({
+            query: (newCase) => ({
+                url: "/case/add",
+                method: "POST",
+                body: newCase,
+            }),
+            invalidatesTags: ["Cases"],
+        }),
 
 
-       
+        postTypeSubType: builder.query<ApiResponse<CaseTypeSubType[]>, null>({
+            query: () => "/casetypes_with_subtype",
+            providesTags: ["Cases"],
+        }),
     }),
 });
 export const {
     useGetSubTypeQuery,
     useGetTypeQuery,
-} = formApi;
+} = caseApi;
 

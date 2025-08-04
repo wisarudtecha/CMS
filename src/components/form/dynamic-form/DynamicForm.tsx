@@ -526,7 +526,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     initialForm ?
       {
         ...initialForm,
-        formFieldJson: initialForm.formFieldJson.map(field => {
+        formFieldJson: initialForm.formFieldJson?.map(field => {
           let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
 
           if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
@@ -547,7 +547,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }
 
           return updatedField;
-        })
+        })?? []
       } :
       {
         formId: uuidv4(),
@@ -561,7 +561,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     if (initialForm) {
       setCurrentForm({
         ...initialForm,
-        formFieldJson: initialForm.formFieldJson.map(field => {
+        formFieldJson: initialForm.formFieldJson?.map(field => {
           let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
 
           if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
@@ -582,7 +582,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }
 
           return updatedField;
-        })
+        })??[]
       });
     } else {
       setCurrentForm({
