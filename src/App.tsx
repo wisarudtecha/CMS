@@ -28,9 +28,6 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 // Authentication Imports
 import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 
-// Role and Permissions Imports
-// import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-
 // Case Management Imports
 import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
@@ -123,11 +120,6 @@ export default function App() {
             <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
 
             {/* Workflow Management (SOP) */}
-            {/*
-            <ProtectedRoute requiredPermissions={['user.view', 'user.edit']}>
-              <Route path="/workflow/list" element={<WorkflowListPage />} />
-            </ProtectedRoute>
-            */}
             <Route path="/workflow/list" element={<WorkflowListPage />} />
             {/* Workflow Builder (Latest Version: v0.2.0) */}
             <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />

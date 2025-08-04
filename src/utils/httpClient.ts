@@ -40,18 +40,32 @@ export class HttpClient {
     // Add auth token if available
     const token = TokenManager.getToken();
     if (token) {
-      defaultHeaders.set('Authorization', `Bearer ${token}`);
+      defaultHeaders.set("Authorization", `Bearer ${token}`);
     }
 
     const config: RequestInit = {
       ...options,
       headers: defaultHeaders,
       signal: this.abortController.signal,
-      credentials: "include" // Include cookies for CSRF
+      credentials: "include", // Include cookies for CSRF
+      mode: "cors" // Explicitly set CORS mode
     };
+
+    // console.log("🌐 Making API request:", {
+    //   method: config.method || "GET",
+    //   url: fullUrl,
+    //   headers: defaultHeaders,
+    //   body: options.body ? "Present" : "None"
+    // });
 
     try {
       const response = await fetch(fullUrl, config);
+
+      // console.log("📡 API Response:", {
+      //   status: response.status,
+      //   statusText: response.statusText,
+      //   headers: Object.fromEntries(response.headers.entries())
+      // });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -62,24 +76,43 @@ export class HttpClient {
             return this.makeRequest(url, options);
           }
           else {
-            throw new Error("Authentication failed");
+            throw new Error("Authentication failed - please login again");
           }
         }
+
+        // Handle CORS errors
+        if (response.status === 0 || response.type === "opaque") {
+          throw new Error("CORS Error: Backend server is not configured to allow requests from this domain. Please check CORS settings.");
+        }
         
-        const errorData = await response.json().catch(() => ({}));
+        // const errorData = await response.json().catch(() => ({}));
+        let errorData;
+        try {
+          errorData = await response.json();
+        }
+        catch {
+          errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+        }
+
         throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
+      // console.log("✅ API Success:", data);
       return data;
     }
     catch (error) {
+      console.error("❌ API Error:", error);
+
       if (error instanceof DOMException && error.name === "AbortError") {
         throw new Error("Request cancelled");
       }
       
+      // if (error instanceof TypeError && error.message === "Failed to fetch") {
+      //   throw new Error("Network error - please check your connection");
+      // }
       if (error instanceof TypeError && error.message === "Failed to fetch") {
-        throw new Error("Network error - please check your connection");
+        throw new Error("CORS Error: Cannot connect to backend server. Please check:\n• Backend server is running\n• CORS is configured properly");
       }
       
       throw error;
@@ -99,7 +132,8 @@ export class HttpClient {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ refreshToken }),
-        credentials: "include"
+        credentials: "include",
+        mode: "cors"
       });
 
       if (response.ok) {

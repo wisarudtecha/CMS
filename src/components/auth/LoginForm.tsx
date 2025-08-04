@@ -30,7 +30,7 @@ export const LoginForm: React.FC = () => {
     const errors: Record<string, string> = {};
     
     if (!credentials.username) {
-      errors.username = "Email is required";
+      errors.username = "Username is required";
     }
     
     if (!credentials.password) {

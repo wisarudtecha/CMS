@@ -7,11 +7,18 @@ export interface User {
   role: "admin" | "manager" | "agent" | "viewer";
   department: string;
   lastLogin: Date;
-  permissions: string[];
+  permission: string[];
   organization: string;
+  orgId: string;
+  roleId: string;
   avatar?: string;
   isEmailVerified: boolean;
   twoFactorEnabled: boolean;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface AuthState {
@@ -94,6 +101,16 @@ export interface LoginResponse {
   refreshToken: string;
   expiresIn: number;
   tokenType: string;
+  permissions?: string[];
+}
+
+export interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredPermissions?: string[];
+  requireAnyPermission?: string[];
+  module?: string; // e.g., "dispatch", "user" - checks for view permission
+  action?: "view" | "create" | "update" | "delete"; // specific action permission
+  fallback?: React.ComponentType;
 }
 
 export interface RegisterData {

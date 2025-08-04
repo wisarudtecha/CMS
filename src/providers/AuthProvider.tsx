@@ -15,6 +15,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (token && user && !TokenManager.isTokenExpired(token)) {
       // console.log("✅ Valid session found during initialization");
+      // If user doesn't have the new structure, create it with proper permissions
+      if (!user.orgId || !user.roleId) {
+        const updatedUser = AuthService.createMockUser(user.username);
+        TokenManager.setTokens(token, TokenManager.getRefreshToken() || '', false, updatedUser);
+        return {
+          user: updatedUser,
+          token,
+          refreshToken: TokenManager.getRefreshToken(),
+          isAuthenticated: true,
+          isLoading: false,
+          isRefreshing: false,
+          error: null,
+          sessionTimeout: null,
+          failedAttempts: 0,
+          isLocked: false,
+          networkStatus: navigator.onLine ? 'online' : 'offline',
+          lastActivity: Date.now()
+        };
+      }
       return {
         user,
         token,
@@ -253,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("🔄 Token refresh already in progress.");
       return;
     }
-    console.log("🔄 Refreshing token...");
+    // console.log("🔄 Refreshing token...");
 
     dispatch({ type: "REFRESH_START" });
 

@@ -263,10 +263,12 @@ export class TokenManager {
           role: (decoded.payload.role as User["role"]) || "viewer",
           department: "IT", // Default for demo
           organization: decoded.payload.organization || "SKY-AI", // Default for demo
+          orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+          roleId: "d6381714-8e89-47de-9d16-859131cdc5dc",
           lastLogin: new Date(),
           isEmailVerified: true, // Default for demo
           twoFactorEnabled: false, // Default for demo
-          permissions: decoded.payload.permissions || ["read"]
+          permission: decoded.payload.permissions || ["read"]
         };
         
         result.expiresAt = new Date(decoded.payload.exp * 1000);

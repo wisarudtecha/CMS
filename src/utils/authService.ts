@@ -1,26 +1,121 @@
 // /src/utils/authService.ts
 import { API_CONFIG } from "@/config/api";
 import { HttpClient } from "@/utils/httpClient";
+import { PermissionManager } from "@/utils/permissionManager";
 import { TokenManager } from "@/utils/tokenManager";
 import type { LoginCredentials, LoginResponse, RegisterData, User } from "@/types/auth";
+import type { Permission, Role } from "@/types/role";
 
 export class AuthService {
   private static httpClient = HttpClient.getInstance();
 
   // Mock responses for demo mode
-  private static createMockUser(username: string, role: string = "admin"): User {
+  private static createMockPermissions(): Permission[] {
+    const mockRoleId = "d6381714-8e89-47de-9d16-859131cdc5dc";
+    const mockOrgId = "434c0f16-b7ea-4a7b-a74b-e2e0f859f549";
+    const now = new Date().toISOString();
+    
+    // Based on your API structure - creating comprehensive permissions
+    const permissions = [
+      // Dispatch permissions
+      { permId: "dispatch.view", id: 88 },
+      { permId: "dispatch.create", id: 89 },
+      { permId: "dispatch.update", id: 90 },
+      { permId: "dispatch.delete", id: 91 },
+      
+      // User permissions
+      { permId: "user.view", id: 92 },
+      { permId: "user.create", id: 93 },
+      { permId: "user.edit", id: 94 },
+      { permId: "user.delete", id: 95 },
+      
+      // Report permissions
+      { permId: "report.view", id: 96 },
+      { permId: "report.export", id: 97 },
+      
+      // Monitor permissions
+      { permId: "monitor.live", id: 98 },
+      { permId: "monitor.playback", id: 99 },
+      
+      // Additional CMS permissions
+      { permId: "ticket.view", id: 100 },
+      { permId: "ticket.create", id: 101 },
+      { permId: "ticket.update", id: 102 },
+      { permId: "ticket.delete", id: 103 },
+      { permId: "workflow.view", id: 104 },
+      { permId: "workflow.create", id: 105 },
+      { permId: "workflow.update", id: 106 },
+      { permId: "sop.view", id: 107 },
+      { permId: "sop.create", id: 108 },
+      { permId: "sop.update", id: 109 },
+      { permId: "dashboard.view", id: 110 },
+      { permId: "settings.view", id: 111 },
+      { permId: "settings.update", id: 112 }
+    ];
+
+    return permissions.map((perm) => ({
+      id: String(perm.id),
+      orgId: mockOrgId,
+      roleId: mockRoleId,
+      permId: perm.permId,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: "system",
+      updatedBy: "system",
+      groupName: perm.permId.split('.')[0],
+      permName: perm.permId.split('.')[1] || perm.permId,
+    }));
+  }
+
+  private static createMockRole(): Role {
+    const permissions = this.createMockPermissions();
+    const now = new Date().toISOString();
+    
+    return {
+      id: "d6381714-8e89-47de-9d16-859131cdc5dc",
+      roleName: "Administrator",
+      orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+      // permissions: permissions,
+      permissions: permissions.map(p => p.permId),
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: "system",
+      updatedBy: "system"
+    };
+  }
+
+  static createMockUser(
+    username: string,
+    // roleType: string = "admin"
+  ): User {
+    const role = this.createMockRole();
+    // const permissions = PermissionManager.extractPermissionIds(role.permissions);
+    const permissions = PermissionManager.extractPermissionIds(role.permissions as unknown as Permission[]);
+    const now = new Date().toISOString();
+    
     return {
       id: "1",
       username: username,
       name: username === "admin" ? "Admin Sky AI" : "Demo User",
-      role: role as User["role"],
+      orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+      roleId: role.id,
+      // role: role as User["role"],
+      role: role.roleName.toLowerCase() as User["role"],
       department: "IT",
       lastLogin: new Date(),
-      permissions: role === "admin" ? ["read", "write", "delete", "admin"] : ["read", "write"],
+      // permissions: role === "admin" ? ["read", "write", "delete", "admin"] : ["read", "write"],
+      permission: permissions,
       organization: "SKY-AI",
       avatar: undefined,
       isEmailVerified: true,
-      twoFactorEnabled: false
+      twoFactorEnabled: false,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: "system",
+      updatedBy: "system"
     };
   }
 
@@ -28,7 +123,7 @@ export class AuthService {
     const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
     const payload = btoa(JSON.stringify({ 
       sub: user.id, 
-      email: user.email,
+      username: user.username,
       role: user.role,
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours from now
     }));
@@ -44,8 +139,8 @@ export class AuthService {
         // Demo mode - simulate API call
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        if (credentials.email === "admin@cms.com" && credentials.password === "admin123") {
-          const mockUser = this.createMockUser(credentials.email, "admin");
+        if (credentials.username === "wisarud.tec" && credentials.password === "P@ssw0rd") {
+          const mockUser = this.createMockUser(credentials.username);
           const accessToken = this.createMockJWT(mockUser);
           
           console.log("✅ Demo login successful");
@@ -58,10 +153,13 @@ export class AuthService {
           };
         }
         else {
-          throw new Error("Invalid credentials. Use admin@cms.com / admin123");
+          throw new Error("Invalid credentials. Use wisarud.tec / P@ssw0rd");
         }
       }
       else {
+        // Real API mode - make actual HTTP request
+        // console.log('🌐 Making real API request to:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`);
+
         // Real API mode
         const params = {
           username: credentials.username,
@@ -87,12 +185,41 @@ export class AuthService {
           throw new Error(response.message || "Login failed");
         }
 
-        // console.log("✅ API login successful");
+        // const roleId = response?.data?.user?.roleId || ""
+        // if (roleId) {
+        //   const permissions = await this.httpClient.post<Permission[]>(
+        //     `${API_CONFIG.ENDPOINTS.ROLE_PERMISSION_BY_ROLE_ID}${roleId}`
+        //   );
+        //   if (!permissions.data) {
+        //     throw new Error(response.message || "No permission found");
+        //   }
+        //   const userWithRolePermissions = {
+        //     accessToken: response.data.accessToken,
+        //     refreshToken: response.data.refreshToken,
+        //     user: { ...response.data.user, permissions: permissions.data.map(p => p.permId) },
+        //     expiresIn: response.data.expiresIn || 86400,
+        //     tokenType: response.data.tokenType || "Bearer",
+        //   }
+        //   return userWithRolePermissions;
+        // }
+
+        // console.log("✅ API login successful", response.data);
         return response.data;
       }
     }
     catch (error) {
       console.error("❌ Login failed:", error);
+
+      // Enhance error messages based on mode
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          throw new Error('CORS Error: Your backend server needs to allow requests from this frontend. Please configure CORS headers.');
+        }
+        else if (error.message.includes('Failed to fetch')) {
+          throw new Error(`Cannot connect to backend server (${API_CONFIG.BASE_URL}). Please check if your server is running and CORS is configured.`);
+        }
+      }
+
       throw error;
     }
   }
@@ -113,7 +240,7 @@ export class AuthService {
         // Demo mode - simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const mockUser = this.createMockUser(data.email, data.role);
+        const mockUser = this.createMockUser(data.email);
         const accessToken = this.createMockJWT(mockUser);
         
         console.log("✅ Demo registration successful");
@@ -131,7 +258,7 @@ export class AuthService {
           API_CONFIG.ENDPOINTS.REGISTER,
           {
             name: data.name,
-            email: data.email,
+            username: data.username,
             password: data.password,
             department: data.department,
             role: data.role,
@@ -161,7 +288,7 @@ export class AuthService {
         // Demo mode - simulate API call
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const mockUser = this.createMockUser("admin@cms.com", "admin");
+        const mockUser = this.createMockUser("wisarud.tec");
         const newAccessToken = this.createMockJWT(mockUser);
         
         console.log("✅ Demo token refreshed successfully");
@@ -224,7 +351,7 @@ export class AuthService {
           throw new Error("Token expired");
         }
         
-        const mockUser = this.createMockUser("admin@cms.com", "admin");
+        const mockUser = this.createMockUser("wisarud.tec");
         console.log("✅ Demo token verified successfully");
         return mockUser;
       }
