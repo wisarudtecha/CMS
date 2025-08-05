@@ -31,12 +31,10 @@ export interface User extends BaseEntity {
   preferences: UserPreferences;
 }
 
-<<<<<<< HEAD
 export type Role = string;
+
+
 export interface Custommer  {
-=======
-export interface Custommer {
->>>>>>> 615943c (edit open case and casedetail)
   contractMethod?:"Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
   name: string;
   mobileNo?: string;
