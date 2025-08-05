@@ -30,9 +30,9 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | "" });
     };
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? undefined : e.target.value;
+        const value = e.target.value;
         let updatedCustomerData = { ...customerData, mobileNo: value };
-        if (value !== undefined) {
+        if (value !== "") {
             const matchingCustomer = listCustomerData.find(
                 (customer) => customer.mobileNo === value
             );
@@ -48,6 +48,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 updatedCustomerData = {
                     ...updatedCustomerData,
                     mobileNo: value,
+                    name: "",
                     email: "",
                     photo: "",
                     id: "",
@@ -56,18 +57,18 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         } else {
             updatedCustomerData = {
                 ...updatedCustomerData,
+                mobileNo: "",
                 name: "",
-                email: undefined,
+                email: "",
                 id: "",
                 photo: "",
-            };
+            } ;
         }
-        console.log(updatedCustomerData)
         handleCustomerDataChange(updatedCustomerData);
     };
 
     const handleCustomerEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? undefined : e.target.value;
+        const value = e.target.value === "" ? "" : e.target.value;
         handleCustomerDataChange({ ...customerData, email: value });
     };
 

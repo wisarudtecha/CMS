@@ -38,6 +38,26 @@ export interface CreateCase {
     userreceive: string;
 }
 
+export interface DepartmentCommandStationData {
+  id: string;
+  orgId: string;
+  deptId: string;
+  commId: string;
+  stnId: string;
+  stationEn: string;
+  stationTh: string;
+  stationActive: boolean;
+  commandEn: string;
+  commandTh: string;
+  commandActive: boolean;
+  deptEn: string;
+  deptTh: string;
+  deptActive: boolean;
+}
+
+export interface DepartmentCommandStationDataMerged extends DepartmentCommandStationData {
+  name: string;
+}
 export const caseApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ticket CRUD operations
@@ -66,10 +86,18 @@ export const caseApi = baseApi.injectEndpoints({
             query: () => "/casetypes_with_subtype",
             providesTags: ["Cases"],
         }),
+
+        getDeptCommandStations: builder.query<ApiResponse<DepartmentCommandStationData[]>, null>({
+            query: () => "/department_command_stations",
+            providesTags: ["Dispatch"],
+        }),
     }),
 });
 export const {
     useGetSubTypeQuery,
     useGetTypeQuery,
+    usePostCreateCaseMutation,
+    usePostTypeSubTypeQuery,
+    useGetDeptCommandStationsQuery,
 } = caseApi;
 

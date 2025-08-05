@@ -53,7 +53,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
         const multiImageFiles = Array.isArray(field.value) ? field.value : [];
         valueContent = multiImageFiles.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"> {/* Added a grid for multiple images */}
-            {multiImageFiles.map((file: File | { name: string; url: string; [key: string]: any }, index: number) => {
+            {multiImageFiles.map((file: File | { name: string; url: string;[key: string]: any }, index: number) => {
               let imageUrl: string = "";
               if (file instanceof File || file instanceof Blob) {
                 imageUrl = URL.createObjectURL(file);
@@ -125,16 +125,14 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
 
   return (
     <div>
-      {formData.formFieldJson.length === 0 ? (
-        <p className="text-center text-gray-500 italic">No form fields to display.</p>
+      {(formData?.formFieldJson?.length || 0) > 0 ? (
+        formData.formFieldJson.map((field) => (
+          <React.Fragment key={field.id}>
+            {renderFieldValue(field)}
+          </React.Fragment>
+        ))
       ) : (
-        <div>
-          {formData.formFieldJson.map((field) => (
-            <React.Fragment key={field.id}>
-              {renderFieldValue(field)}
-            </React.Fragment>
-          ))}
-        </div>
+        <p className="text-center text-gray-500 italic">No form fields to display.</p>
       )}
     </div>
   );

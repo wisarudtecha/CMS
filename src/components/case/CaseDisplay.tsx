@@ -50,19 +50,7 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
 };
 
 const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData }) => {
-    if (!caseData || !caseData.formData || !caseData.formData.formFieldJson) return null;
-    const result = caseData.formData.formFieldJson.map(renderField);
-    const fieldMap = result.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
-    const vehicleInformation = Array.isArray(fieldMap["Group"])
-        ? fieldMap["Group"].find((item: any) => item["Vehicle Information"])?.["Vehicle Information"] || "-"
-        : fieldMap["Vehicle Information"] || "-";
-
-    const assemblyInformation = Array.isArray(fieldMap["Group"])
-        ? fieldMap["Group"].find((item: any) => item["Assembly Information"])?.["Assembly Information"] || "-"
-        : "-";
-
-    const attachments = fieldMap["Attachments"];
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
@@ -72,18 +60,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Types : {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType}</div>
                 </div>
-                {caseData.caseType && <FormViewer formData={caseData.caseType} />}
+                {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.description}
+                        {caseData?.description}
 
                     </div>
                 </div>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.date != "" ?
+                        {caseData?.date != "" && caseData?.date != null ?
                             DateStringToDateFormat(caseData.date) :
                             "-"
                         }
@@ -91,12 +79,12 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                 </div>
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Priority</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData.priority ? getTextPriority(caseData.priority).level : "-"}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.caseType?.priority ? getTextPriority(caseData.caseType.priority).level : "-"}</div>
 
                 </div>
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData.serviceCenter}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.serviceCenter?.name}</div>
                 </div>
             </div>
             <div >
@@ -107,19 +95,15 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex flex-wrap gap-x-2 gap-y-1 ">
                             <MapPin />
-                            {Array.isArray(fieldMap["3. Service Location & Destination:"])
-                                ? fieldMap["3. Service Location & Destination:"].map((item: any, idx: number) => {
-                                    return Object.values(item).map((val, i) => (
-                                        <div key={idx + "-" + i}>{String(val)}</div>
-                                    ));
-                                })
-                                : (caseData.location ?? "-")}
+                            <div>
+                                {caseData?.location ? caseData.location : "-"}
+                            </div>
                         </div>
 
                     </div>
 
                 </div>
-                <div className=" bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ">
+                {/* <div className=" bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ">
                     <div className="mb-2">
                         <span className=" text-md text-blue-500 dark:text-blue-400 " >Vehicle & Assembly</span>
                     </div>
@@ -135,41 +119,42 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                             {assemblyInformation}
                         </div>
                     </div>
-                </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
-                <div className="mb-2">
-                    <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
-                </div>
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
+                </div> */}
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+                    <div className="mb-2">
+                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
+                    </div>
+                    <div className="mb-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.customerData?.name || "-"}
+                        </div>
+                    </div>
+
+                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.customerData?.name || "-"}
+                        {caseData?.customerData?.mobileNo || "-"}
+                    </div>
+
+                    <div className="mb-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.customerData?.contractMethod || "-"}
+                        </div>
+                        {caseData?.customerData?.contractMethod == "Email" ?
+                            <>
+                                <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
+                                <div className="text-md font-medium text-gray-900 dark:text-white">
+                                    {caseData.customerData?.email || "-"}
+                                </div>
+                            </> : null}
+
+
                     </div>
                 </div>
-
-                <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
-                <div className="text-md font-medium text-gray-900 dark:text-white">
-                    {caseData.customerData?.mobileNo || "-"}
-                </div>
-
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData.customerData?.contractMethod || "-"}
-                    </div>
-                    {caseData.customerData?.contractMethod == "Email" ?
-                        <>
-                            <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
-                            <div className="text-md font-medium text-gray-900 dark:text-white">
-                                {caseData.customerData?.email || "-"}
-                            </div>
-                        </> : null}
-
-
-                </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
+
+            {/* <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <div className="mb-2">
                     <span className="text-md text-blue-500 dark:text-blue-400">Attachments</span>
                 </div>
@@ -193,7 +178,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                         <div className="text-sm text-gray-500 dark:text-gray-400">No attachments found.</div>
                     )}
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

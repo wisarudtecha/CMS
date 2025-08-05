@@ -1,3 +1,4 @@
+import { CaseTypeSubType } from "./CaseType";
 
 export interface IndividualFormField {
   id: string;
@@ -27,7 +28,9 @@ export interface FormField {
   formFieldJson: IndividualFormField[];
 }
 
-
+export interface FormFieldWithNode extends FormField {
+  nodeId: string;
+}
 
 export interface FormFieldWithChildren extends FormField {
   formFieldJson: IndividualFormFieldWithChildren[];
@@ -51,9 +54,9 @@ export interface FormManager extends FormField {
   createdBy:string
 }
 
-export interface formType extends FormField {
+export interface formType  extends CaseTypeSubType {
+  formField : FormFieldWithNode
   caseType:string
-  priority: number;
 }
 
 export interface CustomerData {

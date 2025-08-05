@@ -32,15 +32,15 @@ import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
 import { CaseTypeSubType } from "../interface/CaseType"
-import type { Custommer } from "@/types";
+import type { Custommer, User } from "@/types";
 import React from "react"
 import CustomerInput from "./CaseCustomerInput"
 import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
 import PreviewDataBeforeSubmit from "./PreviewCaseData"
-import { ServiceCenter } from "@/store/api/dispatch"
 import { Customer } from "@/store/api/custommerApi"
 import { useFetchSubTypeForm } from "./CaseApiManager"
+import { CreateCase, DepartmentCommandStationData, DepartmentCommandStationDataMerged, usePostCreateCaseMutation } from "@/store/api/caseApi"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -297,6 +297,12 @@ const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
         `${data.subTypeTh ? `_${data.subTypeTh}` : ""}`
 }
 
+const mergeDeptCommandStation = (data: DepartmentCommandStationData) => {
+    return `${data.deptTh ? `${data.deptTh}` : ""}` +
+        `${data.commandTh ? `-${data.commandTh}` : ""}` +
+        `${data.stationTh ? `_${data.stationTh}` : ""}`
+}
+
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     caseType,
     handleCaseTypeChange,
@@ -313,19 +319,17 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
             mergeCaseTypeAndSubType(item)
         );
     }, [caseTypeSupTypeData]);
-
-
     return (
         <>
             <div className="text-white dark:text-gray-300">
                 <div className="flex justify-between m-3 text-gray-900 dark:text-gray-400">
                     <h3 className="mb-2  block text-gray-900 dark:text-gray-400">Case Type :{requireElements}</h3>
-                    {selectedCaseTypeForm && (
+                    {((selectedCaseTypeForm && (caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType)?.priority))) && (
                         <div className="flex">
                             <span className="mr-2">Priority</span>
                             <div
                                 className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
-                                    caseTypeSupTypeData.find(data => data.th === caseType)?.priority ?? 0
+                                    caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType)?.priority ?? -1
                                 )
                                     } rounded-lg`}
                             ></div>
@@ -343,7 +347,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                 />
 
             </div>
-            {selectedCaseTypeForm && (
+            {selectedCaseTypeForm?.formFieldJson && (
                 <>
                     <DynamicForm
                         initialForm={selectedCaseTypeForm}
@@ -382,22 +386,22 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
     const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
     // const caseTypeSupTypeData = getTypeSupType()
-    const serviceCenter = JSON.parse(localStorage.getItem("serviceCenter") ?? "[]") as ServiceCenter[];
+    const [createCase] = usePostCreateCaseMutation();
+    const departmentCommandStations = JSON.parse(localStorage.getItem("DeptCommandStations_data") ?? "[]") as DepartmentCommandStationData[];
+    const serviceCenter = departmentCommandStations.map((item) => ({
+        ...item,
+        name: mergeDeptCommandStation(item)
+    })) as DepartmentCommandStationDataMerged[];
     // const serviceCenter = getServiceCenter()
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
     // const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
     const [caseType, setCaseType] = useState<{ caseType: string, priority: number }>({ caseType: "", priority: 0 });
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
     const [formData, setFormData] = useState<FormField | undefined>();
-    const [serviceCenterData, setServiceCenterData] = useState<string>("");
+    const [serviceCenterData, setServiceCenterData] = useState<DepartmentCommandStationDataMerged>({} as DepartmentCommandStationDataMerged);
     const [customerData, setCustomerData] = useState<Custommer>({
-        contractMethod: "",
-        name: "",
-        mobileNo: undefined,
-        photo: undefined,
-        email: undefined,
-        id: ""
-    })
+    } as Custommer);
+    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as User;
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
@@ -412,18 +416,18 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseType(newCaseType);
             setCaseTypeData(caseData.caseType);
             setFormData(caseData.formData);
-            setServiceCenterData(caseData.serviceCenter || "");
+            setServiceCenterData(caseData.serviceCenter || {} as DepartmentCommandStationDataMerged);
             { caseData.customerData && setCustomerData(caseData.customerData) }
 
         } else {
             const draft = localStorage.getItem("Create Case");
             if (draft) {
-                const parsedDraft = JSON.parse(draft);
-                setCaseType(parsedDraft.caseType?.caseType || '');
+                const parsedDraft = JSON.parse(draft) as CaseItem;
                 setCaseTypeData(parsedDraft.caseType);
                 setFormData(parsedDraft.formData);
-                setServiceCenterData(parsedDraft.serviceCenter || "");
-                setCustomerData(parsedDraft.customerData || { customerName: "", contractMethod: "" });
+                setCaseType({ caseType: parsedDraft.caseType?.caseType || "", priority: parsedDraft.caseType?.priority || 0 });
+                setServiceCenterData(parsedDraft.serviceCenter || {} as DepartmentCommandStationDataMerged);
+                setCustomerData(parsedDraft.customerData || {} as Custommer);
                 setDisplayedCaseData(parsedDraft);
             }
         }
@@ -435,11 +439,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             return caseTypeData;
         }
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType)
-        if(newCaseType?.sTypeId===null)
-        {
-            return 
+        if (newCaseType?.sTypeId === null) {
+            return
         }
-        return JSON.parse(localStorage.getItem("subTypeForm-" + newCaseType?.sTypeId) ?? "{}") as FormField;
+        return {
+            ...newCaseType,
+            formField: JSON.parse(localStorage.getItem("subTypeForm-" + newCaseType?.sTypeId) ?? "{}") as FormField
+        } as formType;
     }, [caseType, displayedCaseData]);
 
 
@@ -447,15 +453,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleSelectOfficer = useCallback((selectedOfficer: Officer) => {
         setShowOFFicersData(prev => (prev?.id === selectedOfficer.id ? null : selectedOfficer));
     }, []);
-
-    const handleAssignOfficers = useCallback((selectedOfficerIds: string[]) => {
-        const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
-        setAssignedOfficers(selected);
-        setShowAssignModal(false);
-    }, []);
-
-    const handleSaveChanges = useCallback(() => {
-        setShowPreviewData(false)
+    const handleCheckRequiredFields = () => {
         let errorMessage = "";
         if (!caseType.caseType) {
             errorMessage = "Please select a Service Type.";
@@ -474,6 +472,19 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         } else if ((!isValueFill.dynamicForm && formData) || (!isValueFill.getType && selectedCaseTypeForm)) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
+        return errorMessage;
+    }
+
+    const handleAssignOfficers = useCallback((selectedOfficerIds: string[]) => {
+        const selected = mockOfficers.filter(o => selectedOfficerIds.includes(o.id));
+        setAssignedOfficers(selected);
+        setShowAssignModal(false);
+    }, []);
+
+    const handleSaveChanges = useCallback(() => {
+        setShowPreviewData(false)
+        const errorMessage = handleCheckRequiredFields();
+
 
         if (errorMessage) {
             setToastMessage(errorMessage);
@@ -486,6 +497,63 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setDisplayedCaseData(updateCaseData);
         setEditFormData(false)
         setToastMessage("Changes saved successfully!");
+        setToastType("success");
+        setShowToast(true);;
+    }, [isValueFill, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+
+    const handleCreateCase = useCallback(async () => {
+        setShowPreviewData(false)
+        const errorMessage = handleCheckRequiredFields();
+
+        if (errorMessage) {
+            setToastMessage(errorMessage);
+            setToastType("error");
+            setShowToast(true);
+            return;
+        }
+        try {
+            await createCase({
+                arrivedDate: new Date(TodayDate()).toISOString(),
+                caseDetail: updateCaseData?.description || "",
+                caseDuration: 0,
+                caseLat: "",
+                caseLon: "",
+                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
+                caseTypeId: updateCaseData?.caseType?.typeId || "",
+                caseVersion: "",
+                caselocAddr: updateCaseData?.location || "",
+                caselocAddrDecs: updateCaseData?.location || "",
+                closedDate: "",
+                commandedDate: new Date(TodayDate()).toISOString(),
+                deviceId: "",
+                distId: "70",
+                extReceive: "",
+                phoneNoHide: true,
+                phoneNo: updateCaseData?.customerData?.mobileNo || "",
+                priority: updateCaseData?.caseType?.priority || 0,
+                provId: "10",
+                receivedDate: new Date(TodayDate()).toISOString(),
+                referCaseId: "",
+                resDetail: "",
+                resId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                source: "",
+                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
+                statusId: "",
+                userarrive: "",
+                userclose: "",
+                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
+                usercreate: profile?.name || "",
+                userreceive: "",
+            } as CreateCase).unwrap();
+        } catch (error : any) {
+            setToastType("error");
+            setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
+            setShowToast(true);;
+            return;
+        }
+        setDisplayedCaseData(updateCaseData);
+        setEditFormData(false)
+        setToastMessage("Ceate Case successfully!");
         setToastType("success");
         setShowToast(true);;
     }, [isValueFill, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
@@ -515,7 +583,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseType(newCaseType || '');
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
-            setServiceCenterData(displayedCaseData.serviceCenter || "");
+            setServiceCenterData(displayedCaseData.serviceCenter || {} as DepartmentCommandStationDataMerged);
             {
                 displayedCaseData.customerData &&
                     setCustomerData(displayedCaseData.customerData)
@@ -531,7 +599,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             const localStorageItem = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
 
             if (!localStorageItem) {
-                await useFetchSubTypeForm(newCaseType.sTypeId); 
+                await useFetchSubTypeForm(newCaseType.sTypeId);
             }
             setCaseType(prevCaseType => ({
                 ...prevCaseType,
@@ -582,7 +650,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleIsFillGetType = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
     // const handleIsFillDynamicForm = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, dynamicForm: isFill })), []);
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
-        const newData = { ...getTypeData, caseType: caseType.caseType, priority: caseType.priority };
+        const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseType.caseType } as formType;
         setCaseTypeData(prevData => {
             // Same logic here to prevent loops from the other DynamicForm
             if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
@@ -592,7 +660,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         });
 
     }, [caseType]);
-    const handleSetServiceCenter = useCallback((data: string) => setServiceCenterData(data), []);
+    const handleSetServiceCenter = useCallback((selectedName: string) => {
+        const selected = serviceCenter.find(item => item.name === selectedName);
+        if (selected) {
+            setServiceCenterData(selected);
+        }
+    }, [serviceCenter]);
     const handleCustomerDataChange = useCallback((data: Custommer) => setCustomerData(data), []);
     const handleSaveDrafts = () => {
         const updatedCaseDataForDraft: CaseItem = {
@@ -744,7 +817,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             handleCaseTypeChange={handleCaseTypeChange}
                                             handleGetTypeFormData={handleGetTypeFormData}
                                             hadleIsFillGetType={handleIsFillGetType}
-                                            selectedCaseTypeForm={selectedCaseTypeForm}
+                                            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
                                             editFormData={editFormData}
                                             caseTypeSupTypeData={caseTypeSupTypeData ?? []}
                                         />
@@ -762,8 +835,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             <div >
                                                 <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
                                                 <SearchableSelect
-                                                    options={serviceCenter?.map(option => option.name) || []}
-                                                    value={serviceCenterData}
+                                                    options={serviceCenter.map(item => item.name)}
+                                                    value={serviceCenterData.name || ""}
                                                     onChange={handleSetServiceCenter}
                                                     placeholder={"Select a Service Center"}
                                                     className="2xsm:m-3"
@@ -842,7 +915,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             )}
 
             <Modal isOpen={showPreviewData} onClose={() => setShowPreviewData(false)} className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar">
-                <PreviewDataBeforeSubmit caseData={updateCaseData} submitButton={handleSaveChanges}></PreviewDataBeforeSubmit>
+                <PreviewDataBeforeSubmit caseData={updateCaseData} submitButton={caseData ? handleSaveChanges : handleCreateCase}></PreviewDataBeforeSubmit>
             </Modal>
 
             <AssignOfficerModal

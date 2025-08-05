@@ -1,5 +1,6 @@
 import { Custommer } from "@/types"
 import {  FormField, formType } from "./FormField"
+import { DepartmentCommandStationDataMerged } from "@/store/api/caseApi"
 interface assignee{
   name: string
   color: string
@@ -19,7 +20,7 @@ export interface CaseItem {
   assignee: assignee[]
   formData?: FormField
   caseType?: formType
-  serviceCenter?:string
+  serviceCenter?:DepartmentCommandStationDataMerged
   customerData?:Custommer
   location?:string
   attachFile?:File[]

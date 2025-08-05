@@ -4,6 +4,8 @@
  * Comprehensive type system for the entire application
  */
 
+import { Customer } from "@/store/api/custommerApi";
+
 // Base Entity Types
 export interface BaseEntity {
   id: string;
@@ -34,15 +36,10 @@ export interface User extends BaseEntity {
 export type Role = string;
 
 
-export interface Custommer  {
+export interface Custommer  extends Customer{
   contractMethod?:"Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
-  name: string;
-  mobileNo?: string;
-  email?: string; 
-  photo?:string;
-  id:string;
+  name: string; 
 }
-
 
 export type UserRole = "admin" | "manager" | "agent" | "viewer";
 export type Permission = "read" | "write" | "delete" | "admin" | "manage_users" | "manage_workflows";

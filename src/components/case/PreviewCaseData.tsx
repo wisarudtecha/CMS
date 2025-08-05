@@ -38,9 +38,9 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                     </div>
                 </div>
                 <div className="flex items-center space-x-2 text-center mt-3 mr-[10%] sm:mt-0">
-                    {caseData &&
-                        <Badge color={`${getTextPriority(caseData?.priority).color}`}>
-                            {getTextPriority(caseData?.priority).level} Priority
+                    {caseData?.caseType?.priority &&
+                        <Badge color={`${getTextPriority(caseData?.caseType?.priority).color}`}>
+                            {getTextPriority(caseData?.caseType?.priority).level} Priority
                         </Badge>}
                     {caseData?.status &&
                         <Badge variant="outline" >
