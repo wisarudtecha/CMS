@@ -21,7 +21,8 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             value: user.id, 
             mobileNo: user.mobileNo,
             email: user.email ,
-            photo:user.photo
+            photo:user.photo,
+            id:user.id
         })),
         [listCustomerData]
     );
@@ -35,7 +36,8 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 name: selectedCustomer.label, 
                 mobileNo: String(selectedCustomer.mobileNo), 
                 email: selectedCustomer.email, 
-                photo:selectedCustomer.photo
+                photo:selectedCustomer.photo,
+                id:selectedCustomer.id
             });
         } else {
             handleCustomerDataChange({

@@ -18,7 +18,6 @@ import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField } from "@/components/interface/FormField"
-import createCaseJson from "../../utils/json/createCase.json" // Renamed to avoid conflict with function name
 import Badge from "@/components/ui/badge/Badge"
 import AssignOfficerModal, { Officer } from "@/components/assignOfficer/AssignOfficerModel"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
@@ -33,14 +32,15 @@ import DateStringToDateFormat, { TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
-import { CaseSubType, CaseType, CaseTypeSubType } from "../interface/CaseType"
-import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi"
+import { CaseTypeSubType } from "../interface/CaseType"
 import { useGetUsersQuery } from "@/store/api/userApi"
 import type { Custommer, User } from "@/types";
 import React from "react"
 import CustomerInput from "./CaseCustomerInput"
 import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
+import PreviewDataBeforeSubmit from "./PreviewCaseData"
+import { ServiceCenter } from "@/store/api/disPatch"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -53,53 +53,101 @@ const mockOfficers: Officer[] = [
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 
 
-function mergeCaseTypeAndSubType(
-    caseTypes: CaseType[],
-    caseSubTypes: CaseSubType[]
-): CaseTypeSubType[] {
-    const mergedList: CaseTypeSubType[] = [];
+// function mergeCaseTypeAndSubType(
+//     caseTypes: CaseType[],
+//     caseSubTypes: CaseSubType[]
+// ): CaseTypeSubType[] {
+//     const mergedList: CaseTypeSubType[] = [];
 
-    caseTypes.forEach(type => {
-        const matchingSubTypes = caseSubTypes.filter(sub => sub.typeId === type.typeId);
+//     caseTypes.forEach(type => {
+//         const matchingSubTypes = caseSubTypes.filter(sub => sub.typeId === type.typeId);
 
-        matchingSubTypes.forEach(sub => {
-            mergedList.push({
-                CaseTypeid: type.id,
-                CaseSubTypeid: sub.id,
-                typeId: type.typeId,
-                orgId: type.orgId,
-                en: `${type.en} - ${sub.en}`,
-                th: `${type.th} - ${sub.th}`,
-                activeType: type.active,
-                activeSubType: sub.active,
-                wfId: sub.wfId,
-                caseSla: sub.caseSla,
-                priority: sub.priority,
-                userSkillList: sub.userSkillList,
-                unitPropLists: sub.unitPropLists
-            });
-        });
-    });
+//         matchingSubTypes.forEach(sub => {
+//             mergedList.push({
+//                 CaseTypeid: type.id,
+//                 CaseSubTypeid: sub.id,
+//                 typeId: type.typeId,
+//                 orgId: type.orgId,
+//                 en: `${type.en} - ${sub.en}`,
+//                 th: `${type.th} - ${sub.th}`,
+//                 activeType: type.active,
+//                 activeSubType: sub.active,
+//                 wfId: sub.wfId,
+//                 caseSla: sub.caseSla,
+//                 priority: sub.priority,
+//                 userSkillList: sub.userSkillList,
+//                 unitPropLists: sub.unitPropLists
+//             });
+//         });
+//     });
 
-    return mergedList;
-}
+//     return mergedList;
+// }
 
-const getTypeSupType = () => {
+// function mergeEntitiesIntoServiceCenters(
+//     departments: Department[],
+//     stations: Station[],
+//     commands: Commands[]
+// ): ServiceCenter[] {
+//     const serviceCenters: ServiceCenter[] = [];
 
-    try {
-        let caseMatched
-        const { data: caseTypes } = useGetTypeQuery(null);
-        const { data: subTypes } = useGetSubTypeQuery(null);
-        if (caseTypes?.data && subTypes?.data) {
-            caseMatched = mergeCaseTypeAndSubType(caseTypes.data, subTypes.data);
-        }
-        // console.log("Matched Case Types with Subtypes:", caseMatched);
-        return caseMatched
-    } catch (error) {
-        console.error("Failed to fetch case types:", error);
-    }
+//     const departmentMap = new Map<string, Department>();
+//     departments.forEach(dept => departmentMap.set(`${dept.deptId}`, dept));
+//     const commandMap = new Map<string, Commands>();
+//     commands.forEach(cmd => commandMap.set(`${cmd.deptId}-${cmd.commId}`, cmd));
 
-}
+//     stations.forEach(station => {
+//         const department = departmentMap.get(`${station.deptId}`);
+//         const command = commandMap.get(`${station.deptId}-${station.commId}`);
+//         if (department && command) {
+//             serviceCenters.push({
+//                 department: department,
+//                 station: station,
+//                 command: command,
+//                 name: department.th+"-"+station.th+"-"+command.th
+//             });
+//         }
+//     });
+
+//     return serviceCenters;
+// }
+
+
+// const getTypeSupType = () => {
+
+//     try {
+//         let caseMatched
+//         const { data: caseTypes } = useGetTypeQuery(null);
+//         const { data: subTypes } = useGetSubTypeQuery(null);
+//         if (caseTypes?.data && subTypes?.data) {
+//             caseMatched = mergeCaseTypeAndSubType(caseTypes.data, subTypes.data);
+//         }
+//         // console.log("Matched Case Types with Subtypes:", caseMatched);
+//         return caseMatched
+//     } catch (error) {
+//         console.error("Failed to fetch case types:", error);
+//     }
+
+
+// }
+
+
+// const getServiceCenter= () => {
+
+//     try {
+//         let serviceCenter
+//         const { data: commands } = useGetCommandsQuery({start:0,length:100});
+//         const { data: department } = useGetDepartmentQuery({start:0,length:100});
+//         const { data: station } = useGetStationsQuery({start:0,length:100});
+//         if (commands?.data && department?.data && station?.data) {
+//             serviceCenter = mergeEntitiesIntoServiceCenters( department.data,station.data,commands.data);
+//         }
+//         return serviceCenter
+//     } catch (error) {
+//         console.error("Failed to fetch case types:", error);
+//     }
+
+// }
 
 interface CaseCardProps {
     onAssignClick: () => void;
@@ -135,7 +183,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
         const files = e.target.files;
 
         if (files && files.length > 0) {
-            const newFilesArray = Array.from(files); 
+            const newFilesArray = Array.from(files);
 
             setDisplayCaseData?.((prev) => {
                 if (!prev) return prev;
@@ -256,7 +304,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
         <>
             <div className="text-white dark:text-gray-300">
                 <div className="flex justify-between m-3 text-gray-900 dark:text-gray-400">
-                    <h3 className="mb-2  block text-gray-900 dark:text-gray-400">Service Type :{requireElements}</h3>
+                    <h3 className="mb-2  block text-gray-900 dark:text-gray-400">Case Type :{requireElements}</h3>
                     {selectedCaseTypeForm && (
                         <div className="flex">
                             <span className="mr-2">Priority</span>
@@ -292,80 +340,8 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 };
 
 
-interface PreviewDataBeforeSubmitProps {
-    caseData?: CaseItem;
-    submitButton?: () => void;
-}
 
-const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
-    caseData,
-    submitButton
-}) => {
-    // const progressSteps = [
-    //     { id: 1, title: "Received", completed: true },
-    //     { id: 2, title: "Assigned", completed: true },
-    //     { id: 3, title: "Acknowledged", completed: false, current: true },
-    //     { id: 4, title: "En Route", completed: false },
-    //     { id: 5, title: "On Site", completed: false },
-    //     { id: 6, title: "Completed", completed: false }
-    // ];
-    return (
-        <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
-                <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData?.title}</h2>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>Create Date: {caseData && DateStringToDateFormat(caseData?.date)}</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-center space-x-2 text-center mt-3 mr-[10%] sm:mt-0">
-                    {caseData &&
-                        <Badge color={`${getTextPriority(caseData?.priority).color}`}>
-                            {getTextPriority(caseData?.priority).level} Priority
-                        </Badge>}
-                    {caseData?.status &&
-                        <Badge variant="outline" >
-                            {caseData?.status}
-                        </Badge>}
-                </div>
-            </div>
-            {/* <ProgressStepPreview progressSteps={progressSteps} className="border-t-1 border-b-1 p-2 dark:border-gray-500" /> */}
-            {(caseData?.attachFile && caseData) && (
-                <>
-                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                        Attach File :
-                    </span>
 
-                    {Array.isArray(caseData.attachFile) && caseData.attachFile.length > 0 && (
-                        <div className="mt-2 mb-3">
-                            <div className="grid grid-cols-3 gap-2">
-                                {caseData.attachFile.map((file: File, index: number) => (
-                                    <div key={file.name + index} className="relative group">
-                                        <img
-                                            src={URL.createObjectURL(file)}
-                                            alt={`Upload ${index + 1}`}
-                                            className="w-full h-20 object-cover rounded border border-gray-600"
-                                        />
-
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-            <FormFieldValueDisplay caseData={caseData} />
-            {submitButton &&
-                <div className="flex justify-end ">
-                    <Button onClick={submitButton}>Submit</Button>
-                </div>
-            }
-        </div>
-    );
-};
 
 
 
@@ -383,9 +359,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
-    const caseTypeSupTypeData = getTypeSupType()
+    const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSupType") || "") as CaseTypeSubType[]
+    // const caseTypeSupTypeData = getTypeSupType()
+    const serviceCenter = JSON.parse(localStorage.getItem("serviceCenter") || "") as ServiceCenter[]
+    // const serviceCenter = getServiceCenter()
     const [displayedCaseData, setDisplayedCaseData] = useState<CaseItem | undefined>(caseData);
-    const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
+    // const [formDataChange, setFormDataChange] = useState<FormField | undefined>();
     const [caseType, setCaseType] = useState<{ caseType: string, priority: number }>({ caseType: "", priority: 0 });
     const [caseTypeData, setCaseTypeData] = useState<formType | undefined>(caseData?.caseType);
     const [formData, setFormData] = useState<FormField | undefined>();
@@ -393,10 +372,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [customerData, setCustomerData] = useState<Custommer>({
         contractMethod: "",
         name: "",
-        mobileNo:undefined,
-        photo:undefined,
-        email:undefined
-
+        mobileNo: undefined,
+        photo: undefined,
+        email: undefined,
+        id: ""
     })
     const [listCustomerData, setListCustomerData] = useState<User[]>([])
     const { data: usersData } = useGetUsersQuery({
@@ -408,7 +387,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setListCustomerData(usersData.data);
         }
     }, [usersData]);
-    const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
+    // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     useEffect(() => {
         setDisplayedCaseData(caseData);
@@ -421,7 +400,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(caseData.caseType);
             setFormData(caseData.formData);
             setServiceCenterData(caseData.serviceCenter || "");
-            {caseData.customerData&&setCustomerData(caseData.customerData)}
+            { caseData.customerData && setCustomerData(caseData.customerData) }
 
         } else {
             const draft = localStorage.getItem("Create Case");
@@ -491,18 +470,17 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setToastMessage("Changes saved successfully!");
         setToastType("success");
         setShowToast(true);;
-    }, [isValueFill, formDataChange, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+    }, [isValueFill, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
 
     useEffect(() => {
         const updatedCaseData = {
             ...(displayedCaseData as CaseItem),
-            formData: formDataChange!,
             caseType: caseTypeData!,
             customerData: customerData,
             serviceCenter: serviceCenterData,
         };
         setUpdateCaseData(updatedCaseData)
-    }, [formDataChange, caseTypeData, customerData, serviceCenterData, caseType])
+    }, [caseTypeData, customerData, serviceCenterData, caseType])
 
     const handlePreviewShow = () => {
         setShowPreviewData(true)
@@ -519,8 +497,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setCaseTypeData(displayedCaseData.caseType);
             setFormData(displayedCaseData.formData);
             setServiceCenterData(displayedCaseData.serviceCenter || "");
-            {displayedCaseData.customerData&&
-            setCustomerData(displayedCaseData.customerData)}
+            {
+                displayedCaseData.customerData &&
+                setCustomerData(displayedCaseData.customerData)
+            }
         }
         setEditFormData(prev => !prev);
     }, [editFormData, displayedCaseData]);
@@ -563,16 +543,16 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     };
 
 
-    const handleDynamicFormChange = useCallback((data: FormField) => {
-        setFormDataChange(prevData => {
-            if (JSON.stringify(prevData) !== JSON.stringify(data)) {
-                return data;
-            }
-            return prevData;
-        });
-    }, []);
+    // const handleDynamicFormChange = useCallback((data: FormField) => {
+    //     setFormDataChange(prevData => {
+    //         if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+    //             return data;
+    //         }
+    //         return prevData;
+    //     });
+    // }, []);
     const handleIsFillGetType = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
-    const handleIsFillDynamicForm = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, dynamicForm: isFill })), []);
+    // const handleIsFillDynamicForm = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, dynamicForm: isFill })), []);
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = { ...getTypeData, caseType: caseType.caseType, priority: caseType.priority };
         setCaseTypeData(prevData => {
@@ -589,7 +569,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleSaveDrafts = () => {
         const updatedCaseDataForDraft: CaseItem = {
             ...(displayedCaseData || {} as CaseItem),
-            formData: formDataChange || formData!,
             caseType: caseTypeData!,
             customerData: customerData,
             serviceCenter: serviceCenterData,
@@ -630,7 +609,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             )}
 
             <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="Create Case" />
+                <PageBreadcrumb pageTitle="" />
                 <div className="px-4 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
@@ -742,7 +721,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             caseTypeSupTypeData={caseTypeSupTypeData ?? []}
                                         />
                                         <div className="pr-7">
-                                            <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Service Details: {requireElements}</h3>
+                                            <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Case Details: {requireElements}</h3>
                                             <textarea
                                                 onChange={(e) => handleDetailChange(e.target.value)}
                                                 value={displayedCaseData?.description}
@@ -755,7 +734,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             <div >
                                                 <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
                                                 <SearchableSelect
-                                                    options={serviceCenterMock}
+                                                    options={serviceCenter?.map(option => option.name) || []}
                                                     value={serviceCenterData}
                                                     onChange={handleSetServiceCenter}
                                                     placeholder={"Select a Service Center"}
@@ -781,18 +760,18 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     ></Input>
                                                 </div>
                                             </div>
-                                                <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData } />
+                                            <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
                                         </div>
-                                        <DynamicForm
+                                        {/* <DynamicForm
                                             initialForm={formData || createCaseJson}
                                             edit={false}
                                             editFormData={true}
                                             enableFormTitle={false}
                                             onFormChange={handleDynamicFormChange}
                                             returnFormAllFill={handleIsFillDynamicForm}
-                                        />
+                                        /> */}
 
-                                        <div className="flex justify-end mb-3 mr-3">
+                                        <div className="flex justify-end mt-20 mb-3 mr-3">
                                             {caseData ? <Button variant="success" onClick={handlePreviewShow}>
                                                 Save Changes
                                             </Button> :
@@ -820,9 +799,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                         md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
                         ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
                     `}>
-                  
-                    <CustomerPanel  onClose={() => setIsCustomerPanelOpen(false)} customerData={customerData} />
-                            
+
+                        <CustomerPanel onClose={() => setIsCustomerPanelOpen(false)} customerData={customerData} />
+
                     </div>
                 </div>
             </div>

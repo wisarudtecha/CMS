@@ -13,7 +13,7 @@ import Avatar from "../ui/avatar/Avatar"
 import type { Custommer } from "@/types";
 import React from "react"
 interface CustomerPanelProps {
-    customerData?:Custommer|null;
+    customerData?:Custommer;
     onClose: () => void; // Added onClose handler for mobile view
 }
 const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) => {

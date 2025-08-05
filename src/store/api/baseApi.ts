@@ -124,6 +124,7 @@ export const baseApi = createApi({
     "Comment",
     "Timeline",
     "Cases",
+    "Dispatch"
   ],
   endpoints: () => ({}),
 });
