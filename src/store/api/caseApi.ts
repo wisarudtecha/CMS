@@ -36,6 +36,7 @@ export interface CreateCase {
     usercommand: string;
     usercreate: string;
     userreceive: string;
+    nodeId:string;
 }
 
 export interface DepartmentCommandStationData {

@@ -520,10 +520,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 caseLon: "",
                 caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
                 caseTypeId: updateCaseData?.caseType?.typeId || "",
-                caseVersion: "",
+                caseVersion: "publish",
                 caselocAddr: updateCaseData?.location || "",
                 caselocAddrDecs: updateCaseData?.location || "",
-                closedDate: "",
                 deviceId: "",
                 distId: "70",
                 extReceive: "",
@@ -535,12 +534,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 resDetail: "",
                 source: "",
                 startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
-                statusId: "",
+                statusId: "S001",
                 userarrive: "",
                 userclose: "",
                 usercommand: updateCaseData?.serviceCenter?.commandTh || "",
                 usercreate: profile?.name || "",
                 userreceive: "",
+                nodeId: updateCaseData?.caseType?.formField.nodeId || "",
             } as CreateCase).unwrap();
         } catch (error : any) {
             setToastType("error");
@@ -664,20 +664,75 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         }
     }, [serviceCenter]);
     const handleCustomerDataChange = useCallback((data: Custommer) => setCustomerData(data), []);
-    const handleSaveDrafts = () => {
-        const updatedCaseDataForDraft: CaseItem = {
-            ...(displayedCaseData || {} as CaseItem),
-            caseType: caseTypeData!,
-            customerData: customerData,
-            serviceCenter: serviceCenterData,
-        };
-        setDisplayedCaseData(updatedCaseDataForDraft);
-        localStorage.setItem("Create Case", JSON.stringify(updatedCaseDataForDraft));
-        setToastMessage("Draft saved successfully!");
-        setToastType("info");
-        setShowToast(true);
+    // const handleSaveDrafts = async () => {
+    //     const updatedCaseDataForDraft: CaseItem = {
+    //         ...(displayedCaseData || {} as CaseItem),
+    //         caseType: caseTypeData!,
+    //         customerData: customerData,
+    //         serviceCenter: serviceCenterData,
+    //     };
+    //     setDisplayedCaseData(updatedCaseDataForDraft);
+    //     localStorage.setItem("Create Case", JSON.stringify(updatedCaseDataForDraft));
+    //     setToastMessage("Draft saved successfully!");
+    //     setToastType("info");
+    //     setShowToast(true);
 
-    };
+    // };
+    const handleSaveDrafts = useCallback(async () => {
+        setShowPreviewData(false)
+        const errorMessage = handleCheckRequiredFields();
+
+        if (errorMessage) {
+            setToastMessage(errorMessage);
+            setToastType("error");
+            setShowToast(true);
+            return;
+        }
+        try {
+            await createCase({
+                arrivedDate: new Date(TodayDate()).toISOString(),
+                caseDetail: updateCaseData?.description || "",
+                caseDuration: 0,
+                caseLat: "",
+                caseLon: "",
+                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
+                caseTypeId: updateCaseData?.caseType?.typeId || "",
+                caseVersion: "draft",
+                caselocAddr: updateCaseData?.location || "",
+                caselocAddrDecs: updateCaseData?.location || "",
+                deviceId: "",
+                distId: "70",
+                extReceive: "",
+                phoneNoHide: true,
+                phoneNo: updateCaseData?.customerData?.mobileNo || "",
+                priority: updateCaseData?.caseType?.priority || 0,
+                provId: "10",
+                referCaseId: "",
+                resDetail: "",
+                source: "",
+                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
+                statusId: "S000",
+                userarrive: "",
+                userclose: "",
+                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
+                usercreate: profile?.name || "",
+                userreceive: "",
+                nodeId: updateCaseData?.caseType?.formField.nodeId || "",
+            } as CreateCase).unwrap();
+        } catch (error : any) {
+            setToastType("error");
+            setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
+            setShowToast(true);;
+            return;
+        }
+        setDisplayedCaseData(updateCaseData);
+        setEditFormData(false)
+        setToastMessage("Ceate Case successfully!");
+        setToastType("success");
+        setShowToast(true);;
+    }, [isValueFill, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
+    
+    
     const handleRemoveFile = (fileNameToRemove: string) => {
         setUpdateCaseData?.((prev) => {
             if (!prev) return prev;
