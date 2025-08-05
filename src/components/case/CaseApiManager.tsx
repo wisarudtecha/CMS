@@ -12,6 +12,13 @@ export const useFetchCustomers = async () => {
 
 };
 
+export const useFetchCase = async () => {
+  const result = await store.dispatch(
+    caseApi.endpoints.getListCase.initiate({ start: 0, length: 100 })
+  );
+  localStorage.setItem("caseList", JSON.stringify(result.data?.data))
+
+};
 
 export const useFetchTypeSubType = async () => {
   const caseTypeSubType = await store.dispatch(
@@ -35,3 +42,11 @@ export const useFetchDeptCommandStations = async () => {
   localStorage.setItem("DeptCommandStations_data", JSON.stringify(result.data?.data))
 
 };
+
+
+export const caseApiSetup = () => {
+  useFetchCustomers();
+  useFetchCase();
+  useFetchTypeSubType();
+  useFetchDeptCommandStations();
+}

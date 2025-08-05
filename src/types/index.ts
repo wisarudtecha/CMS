@@ -36,8 +36,13 @@ export interface User extends BaseEntity {
 export type Role = string;
 
 
+export interface contractMethod {
+  id: string;
+  name: string;
+}
+
 export interface Custommer  extends Customer{
-  contractMethod?:"Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
+  contractMethod:contractMethod;
   name: string; 
 }
 

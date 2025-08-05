@@ -131,9 +131,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
             {renderFieldValue(field)}
           </React.Fragment>
         ))
-      ) : (
-        <p className="text-center text-gray-500 italic">No form fields to display.</p>
-      )}
+      ) : null}
     </div>
   );
 };

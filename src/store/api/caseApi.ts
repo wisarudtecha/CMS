@@ -1,8 +1,12 @@
 import { ApiResponse } from "@/types";
 import { baseApi } from "./baseApi";
 import { CaseSubType, CaseType, CaseTypeSubType } from "@/components/interface/CaseType";
+import { PaginationParams } from "./custommerApi";
+import { FormFieldWithNode } from "@/components/interface/FormField";
 
 export interface CreateCase {
+    formData:FormFieldWithNode;
+    customerName: string;
     arrivedDate: string;
     caseDetail: string;
     caseDuration: number;
@@ -37,6 +41,49 @@ export interface CreateCase {
     usercreate: string;
     userreceive: string;
     nodeId:string;
+}
+
+export interface Case {
+  id: string;
+  orgId: string;
+  caseId: string;
+  caseVersion: string;
+  referCaseId: string | null;
+  caseTypeId: string;
+  caseSTypeId: string;
+  priority: number;
+  source: string;
+  deviceId: string;
+  phoneNo: string;
+  phoneNoHide: boolean;
+  caseDetail: string | null;
+  extReceive: string;
+  statusId: string;
+  caseLat: string;
+  caseLon: string;
+  caselocAddr: string;
+  caselocAddrDecs: string;
+  countryId: string;
+  provId: string;
+  distId: string;
+  caseDuration: number;
+  createdDate: string;
+  startedDate: string;
+  commandedDate: string;
+  receivedDate: string;
+  arrivedDate: string;
+  closedDate: string;
+  usercreate: string;
+  usercommand: string;
+  userreceive: string;
+  userarrive: string;
+  userclose: string;
+  resId: string;
+  resDetail: string | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export interface DepartmentCommandStationData {
@@ -92,6 +139,14 @@ export const caseApi = baseApi.injectEndpoints({
             query: () => "/department_command_stations",
             providesTags: ["Dispatch"],
         }),
+
+        getListCase: builder.query<ApiResponse<Case[]>, PaginationParams>({
+            query: (params) => ({
+                url: "/case",
+                params,
+            }),
+            providesTags: ["Cases"],
+        }),
     }),
 });
 export const {
@@ -100,5 +155,6 @@ export const {
     usePostCreateCaseMutation,
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
+    useGetListCaseQuery,
 } = caseApi;
 

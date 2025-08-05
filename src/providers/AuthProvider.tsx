@@ -5,7 +5,7 @@ import { authReducer } from "@/hooks/useAuthContext";
 import { AuthService } from "@/utils/authService";
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
-import { useFetchCustomers, useFetchDeptCommandStations, useFetchTypeSubType } from "@/components/case/CaseApiManager";
+import { caseApiSetup } from "@/components/case/CaseApiManager";
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -222,9 +222,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.user
       );
 
-      useFetchCustomers()
-      useFetchTypeSubType()
-      useFetchDeptCommandStations()
+      caseApiSetup();
+
+
       dispatch({ 
         type: "LOGIN_SUCCESS", 
         payload: { 

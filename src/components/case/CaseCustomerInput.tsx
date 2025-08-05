@@ -1,4 +1,4 @@
-import { Custommer } from "@/types";
+import { contractMethod, Custommer } from "@/types";
 import { ChangeEvent } from "react";
 import Input from "../form/input/InputField";
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
@@ -16,7 +16,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     handleCustomerDataChange,
 }) => {
 
-    const contractMethodMock = ["Iot Alert", "Chat", "Email"];
+    const contractMethodMock = [{name:"CALL",id:"01"}, {name:"MobileApp",id:"02"}, {name:"Social",id:"03"},{name:"METTRIQ",id:"04"},{name:"IOT-Alert",id:"05"},{name:"Other",id:"06"}];
     const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         handleCustomerDataChange({
             ...customerData,
@@ -26,8 +26,8 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
 
 
 
-    const handleCustomerDataContractMethodeChange = (data: string) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data as "Email" | "Chat" | "Iot Alert" | "Phone Number" | "" });
+    const handleCustomerDataContractMethodeChange = (data: contractMethod) => {
+        handleCustomerDataChange({ ...customerData, contractMethod: data});
     };
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -97,13 +97,20 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             <div className="w-auto md:mr-2">
                 <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                 <SearchableSelect
-                    options={contractMethodMock}
+                    options={contractMethodMock.map(m => m.name)}
                     className="sm:my-3"
-                    value={customerData.contractMethod ?? ""}
-                    onChange={(e) => handleCustomerDataContractMethodeChange(e)}
+                    value={customerData.contractMethod?.name ?? ""}
+                    onChange={(selectedName) => {
+                        const selectedMethod = contractMethodMock.find(
+                            (method) => method.name === selectedName
+                        );
+                        if (selectedMethod) {
+                            handleCustomerDataContractMethodeChange(selectedMethod);
+                        }
+                    }}
                 />
             </div>
-            {customerData.contractMethod === "Email" &&
+            {customerData.contractMethod?.name === "Email" &&
                 <div className="w-auto md:mr-2  ">
                     <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                     <Input

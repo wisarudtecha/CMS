@@ -465,7 +465,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             errorMessage = "Please enter Customer Name.";
         } else if (!customerData.mobileNo) {
             errorMessage = "Please enter Customer Phone Number.";
-        } else if (!customerData?.contractMethod?.trim()) {
+        } else if (!customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
         } else if (customerData.email === "Email" && !customerData.email?.trim()) {
             errorMessage = "Please enter Customer Email.";
@@ -504,15 +504,50 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleCreateCase = useCallback(async () => {
         setShowPreviewData(false)
         const errorMessage = handleCheckRequiredFields();
-
         if (errorMessage) {
             setToastMessage(errorMessage);
             setToastType("error");
             setShowToast(true);
             return;
         }
+        // console.log(
+        //     {
+        //         formData: updateCaseData?.caseType?.formField,
+        //         customerName: updateCaseData?.customerData?.name,
+        //         arrivedDate: new Date(TodayDate()).toISOString(),
+        //         caseDetail: updateCaseData?.description || "",
+        //         caseDuration: 0,
+        //         caseLat: "",
+        //         caseLon: "",
+        //         caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
+        //         caseTypeId: updateCaseData?.caseType?.typeId || "",
+        //         caseVersion: "publish",
+        //         caselocAddr: updateCaseData?.location || "",
+        //         caselocAddrDecs: updateCaseData?.location || "",
+        //         deviceId: "",
+        //         distId: "70",
+        //         extReceive: "",
+        //         phoneNoHide: true,
+        //         phoneNo: updateCaseData?.customerData?.mobileNo || "",
+        //         priority: updateCaseData?.caseType?.priority || 0,
+        //         provId: "10",
+        //         referCaseId: "",
+        //         resDetail: "",
+        //         source: updateCaseData?.customerData?.contractMethod || "",
+        //         startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
+        //         statusId: "S001",
+        //         userarrive: "",
+        //         userclose: "",
+        //         usercommand: updateCaseData?.serviceCenter?.commandTh || "",
+        //         usercreate: profile?.name || "",
+        //         userreceive: "",
+        //         nodeId: updateCaseData?.caseType?.formField.nodeId || "",
+        //     }
+        // )
         try {
             await createCase({
+                formData:updateCaseData?.caseType?.formField,
+                customerName: updateCaseData?.customerData?.name,
                 arrivedDate: new Date(TodayDate()).toISOString(),
                 caseDetail: updateCaseData?.description || "",
                 caseDuration: 0,
@@ -532,7 +567,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 provId: "10",
                 referCaseId: "",
                 resDetail: "",
-                source: "",
+                source: updateCaseData?.customerData?.contractMethod?.id || "",
                 startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
                 statusId: "S001",
                 userarrive: "",
@@ -564,7 +599,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         };
         setUpdateCaseData(updatedCaseData)
     }, [caseTypeData, customerData, serviceCenterData, caseType])
-
     const handlePreviewShow = () => {
         console.log(displayedCaseData)
         setShowPreviewData(true)
@@ -663,7 +697,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setServiceCenterData(selected);
         }
     }, [serviceCenter]);
-    const handleCustomerDataChange = useCallback((data: Custommer) => setCustomerData(data), []);
+    const handleCustomerDataChange = useCallback((data: Custommer) => {setCustomerData(data)}, []);
     // const handleSaveDrafts = async () => {
     //     const updatedCaseDataForDraft: CaseItem = {
     //         ...(displayedCaseData || {} as CaseItem),
@@ -676,7 +710,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     //     setToastMessage("Draft saved successfully!");
     //     setToastType("info");
     //     setShowToast(true);
-
     // };
     const handleSaveDrafts = useCallback(async () => {
         setShowPreviewData(false)
@@ -690,7 +723,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         }
         try {
             await createCase({
-                arrivedDate: new Date(TodayDate()).toISOString(),
+                formData:updateCaseData?.caseType?.formField,
+                customerName: updateCaseData?.customerData?.name,
                 caseDetail: updateCaseData?.description || "",
                 caseDuration: 0,
                 caseLat: "",
@@ -709,7 +743,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 provId: "10",
                 referCaseId: "",
                 resDetail: "",
-                source: "",
+                source: updateCaseData?.customerData?.contractMethod?.id || "",
                 startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
                 statusId: "S000",
                 userarrive: "",
@@ -725,6 +759,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setShowToast(true);;
             return;
         }
+        localStorage.setItem("Create Case", JSON.stringify(updateCaseData));
         setDisplayedCaseData(updateCaseData);
         setEditFormData(false)
         setToastMessage("Ceate Case successfully!");

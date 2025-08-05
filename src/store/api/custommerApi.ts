@@ -40,7 +40,7 @@ export interface Address {
     subDistrict: string;
 }
 
-interface PaginationParams {
+export interface PaginationParams {
     start?: number;
     length?: number;
 }
