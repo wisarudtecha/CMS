@@ -11,17 +11,21 @@ import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import caseData from "../../utils/json/case.json"
-import CaseDetailView from "../../components/case/CaseDetailView"
-import { CaseItem } from "@/components/interface/CaseItem"
+import CaseDetailView, { mergeCaseTypeAndSubType } from "../../components/case/CaseDetailView"
+
 import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
 import DateStringToDateFormat from "@/components/date/DateToString"
+import { CaseList } from "@/components/interface/CaseItem"
+import { CaseTypeSubType } from "@/components/interface/CaseType"
+const caseData = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseList[]
 const statusColumns = [
-  { title: "new" },
-  { title: "in-progress" },
-  { title: "pending" },
-  { title: "resolved" },
+  { title: "New", group: ["S001", "S008"] },
+  { title: "Assign", group: ["S002", "S009"] },
+  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] },
+  { title: "Approve", group: ["S017", "S018"] },
+  { title: "Done", group: ["S007", "S016"] },
+  { title: "Cancel", group: ["S014"] },
 ]
 
 function createAvatarFromString(name: string): string {
@@ -38,8 +42,7 @@ export default function CasesView() {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [showDynamicForm, setShowDynamicForm] = useState(false)
-
-  // NEW: filter/sort state
+  const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
   const [searchText, setSearchText] = useState("")
   const [sortField] = useState<"title" | "date">("date")
   const [sortOrder] = useState<"asc" | "desc">("asc")
@@ -47,30 +50,30 @@ export default function CasesView() {
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
-    titleSearch: "", // New state for title search
-    descriptionSearch: "", // New state for description search
+    titleSearch: "", 
+    descriptionSearch: "",
     startDate: "",
-    endDate: "",// New state for date search
+    endDate: "",
   })
 
-  const allCasesForMeta = [
-    ...(caseData.new || []),
-    ...(caseData.inProgress || []),
-    ...(caseData.pendingReview || []),
-    ...(caseData.resolved || []),
-  ];
-  // const uniquePriorities = ["High", "Medium", "Low"];
-  const uniqueCategories = [...new Set(allCasesForMeta.map(c => c.category).filter(Boolean))];
+  const allCasesForMeta: CaseList[] = caseData;
+  const uniqueCategories = [...new Set(allCasesForMeta.map(c => c.statusId).filter(Boolean))];
 
-  const getStatusKey = (caseItem: CaseItem): string => {
-    if (caseData.new?.some(c => c.id === caseItem.id)) return "new"
-    if (caseData.inProgress?.some(c => c.id === caseItem.id)) return "in-progress"
-    if (caseData.pendingReview?.some(c => c.id === caseItem.id)) return "pending"
-    if (caseData.resolved?.some(c => c.id === caseItem.id)) return "resolved"
-    return ""
+  const getStatusKey = (caseItem: CaseList): string => {
+    const statusColumn = statusColumns.find(column =>
+      column.group.includes((caseItem as any).statusId)
+    );
+
+    return statusColumn ? statusColumn.title : "";
+  };
+
+  const matchingSubTypesNames = (caseSTypeId: string ,caseTypeSupType: CaseTypeSubType[]): string => {
+    const matchingSubType = caseTypeSupType.find(item => item.sTypeId === caseSTypeId
+
+    );
+    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : caseSTypeId;
   }
-
-  const handleCaseClick = (caseItem: CaseItem) => {
+  const handleCaseClick = (caseItem: CaseList) => {
 
     setSelectedCase(caseItem)
   }
@@ -79,39 +82,32 @@ export default function CasesView() {
   }
 
   const getFilteredCases = () => {
-    let allCases: CaseItem[] = []
-    if (caseData && typeof caseData === "object") {
+    let allCases: CaseList[] = []
+    if (Array.isArray(caseData)) {
       const mergeWithAssignee = (cases: any[] = []) =>
         cases.map(c => ({
           ...c,
           assignee: c.assignee
             ? c.assignee
-            : { name: "", color: "" }
+            : [{ name: "", color: "" }]
         }));
-      allCases = [
-        ...mergeWithAssignee(caseData.new),
-        ...mergeWithAssignee(caseData.inProgress),
-        ...mergeWithAssignee(caseData.pendingReview),
-        ...mergeWithAssignee(caseData.resolved)
-      ]
+      allCases = mergeWithAssignee(caseData)
     }
 
     const filtered = allCases.filter(c => {
       const generalSearchTerm = searchText.toLowerCase()
-      const assigneeName = c.assignee && c.assignee.length > 0 && c.assignee[0].name ? c.assignee[0].name.toLowerCase() : '';
+      const assigneeName = c.createdBy;
 
-      // General search condition for quick filter bar
       const generalSearchCondition = generalSearchTerm === '' ||
-        c.title.toLowerCase().includes(generalSearchTerm) ||
-        c.description.toLowerCase().includes(generalSearchTerm) ||
-        c.category.toLowerCase().includes(generalSearchTerm) ||
+        matchingSubTypesNames(c.caseSTypeId,caseTypeSupTypeData) ||
+        c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
+        c.statusId.toLowerCase().includes(generalSearchTerm) ||
         assigneeName.includes(generalSearchTerm) ||
-        DateStringToDateFormat(c.date).toLowerCase().includes(generalSearchTerm);
+        DateStringToDateFormat(c.createdDate).toLowerCase().includes(generalSearchTerm);
 
-      // Advanced filter conditions
       let priorityCondition = true;
       if (advancedFilters.priority !== '') {
-        let isPriorityMatch = false; // Changed to a boolean flag for range checking
+        let isPriorityMatch = false;
         switch (advancedFilters.priority) {
           case "High":
             isPriorityMatch = (c.priority >= 0 && c.priority <= 3);
@@ -128,20 +124,20 @@ export default function CasesView() {
         priorityCondition = isPriorityMatch;
       }
 
-      const categoryCondition = advancedFilters.category === '' || c.category === advancedFilters.category;
+      const categoryCondition = advancedFilters.category === '' || c.statusId === advancedFilters.category;
 
       const titleSearchCondition =
         advancedFilters.titleSearch === '' ||
-        c.title.toLowerCase().includes(advancedFilters.titleSearch.toLowerCase());
+        c.caseSTypeId.toLowerCase().includes(advancedFilters.titleSearch.toLowerCase());
 
       const descriptionSearchCondition =
         advancedFilters.descriptionSearch === '' ||
-        c.description.toLowerCase().includes(advancedFilters.descriptionSearch.toLowerCase());
+        c.caseDetail?.toLowerCase().includes(advancedFilters.descriptionSearch.toLowerCase());
 
       // NEW: Date range filtering logic
       let dateRangeCondition = true;
       if (advancedFilters.startDate !== '' || advancedFilters.endDate !== '') {
-        const caseDate = new Date(c.date);
+        const caseDate = new Date(c.createdDate);
         if (advancedFilters.startDate !== '') {
           const startDate = new Date(advancedFilters.startDate);
           if (caseDate < startDate) {
@@ -160,11 +156,18 @@ export default function CasesView() {
     })
 
     return filtered.sort((a, b) => {
-      const aVal = a[sortField]
-      const bVal = b[sortField]
-      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1
-      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1
-      return 0
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+      if (sortField === "title") {
+        aVal = a.caseSTypeId?.toLowerCase() ?? "";
+        bVal = b.caseSTypeId?.toLowerCase() ?? "";
+      } else if (sortField === "date") {
+        aVal = new Date(a.createdDate).getTime();
+        bVal = new Date(b.createdDate).getTime();
+      }
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
     })
   }
 
@@ -183,7 +186,7 @@ export default function CasesView() {
     };
 
     const handleClear = () => {
-      setAdvancedFilters({ priority: "", category: "", titleSearch: "", descriptionSearch: "", startDate: "",endDate:"" });
+      setAdvancedFilters({ priority: "", category: "", titleSearch: "", descriptionSearch: "", startDate: "", endDate: "" });
       handleAdvanceFilterClose();
     };
 
@@ -248,7 +251,8 @@ export default function CasesView() {
     </Modal>)
   }
 
-  const CaseCard = ({ caseItem }: { caseItem: CaseItem }) => (
+
+  const CaseCard = ({ caseItem }: { caseItem: CaseList }) => (
     <div className="space-y-2">
       <div className="text-xs text-gray-500 font-medium"></div>
       <div
@@ -256,26 +260,33 @@ export default function CasesView() {
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
-          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{caseItem.title}</h3>
+          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseSTypeId,caseTypeSupTypeData)}</h3>
         </div>
-        <p className="text-sm text-gray-400 leading-relaxed">{caseItem.description}</p>
+        <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caseDetail}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
-          {caseItem.assignee && caseItem.assignee.length > 0 && caseItem.assignee[0].name ? (
+          {caseItem.createdBy ? (
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
-                <span className="text-white text-xs">{createAvatarFromString(caseItem.assignee[0].name)}</span>
+                <span className="text-white text-xs">{createAvatarFromString(caseItem.createdBy)}</span>
               </div>
-              <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.assignee[0].name}</span>
+              <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
           <div className="flex items-center space-x-2">
             <MessageCircle className="w-3 h-3" />
-            <span>{caseItem.comments}</span>
+            <span>{caseItem.comments ?? 0}</span>
           </div>
         </div>
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.date)}</span>
-          <Badge>{caseItem.category}</Badge>
+          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdDate)}</span>
+          <Badge>
+            {
+              (() => {
+                const status = statusColumns.find(col => col.group.includes(caseItem.statusId));
+                return status ? status.title : caseItem.statusId;
+              })()
+            }
+          </Badge>
         </div>
 
       </div>
@@ -320,35 +331,35 @@ export default function CasesView() {
           onClick={() => handleCaseClick(caseItem)}
         >
           <div className="col-span-4">
-            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{caseItem.title}</h4>
+            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId,caseTypeSupTypeData)}</h4>
             {/* <div className="flex items-center space-x-2">
               <Badge color="primary">{caseItem.category}</Badge>
             </div> */}
           </div>
           <div className="flex col-span-2 items-center space-x-2">
-            <Badge color="primary">{caseItem.category}</Badge>
+            <Badge color="primary">{caseItem.statusId}</Badge>
           </div>
           <div className="col-span-2 flex items-center mx-4">
             <div className={`w-2 h-2 rounded-full ${getPriorityColorClass(caseItem.priority)}`} />
           </div>
           <div className="col-span-2 flex items-center space-x-2">
-            {caseItem.assignee && caseItem.assignee.length > 0 && caseItem.assignee[0].name ? (
+            {caseItem.createdBy ? (
               <>
                 <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
-                  <span className="text-white text-xs">{createAvatarFromString(caseItem.assignee[0].name)}</span>
+                  <span className="text-white text-xs">{createAvatarFromString(caseItem.createdBy)}</span>
                 </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.assignee[0].name}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.createdBy}</span>
               </>
             ) : (
               <div className="ml-4 text-gray-500 dark:text-gray-400">-</div>
             )}
           </div>
           <div className="col-span-1 flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.date)}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.createdDate)}</span>
           </div>
           <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
             <MessageCircle className="w-3 h-3" />
-            <span>{caseItem.comments}</span>
+            <span>{caseItem?.comments ?? 0}</span>
           </div>
         </div>
       ))}

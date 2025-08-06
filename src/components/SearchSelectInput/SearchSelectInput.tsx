@@ -67,7 +67,7 @@ export const SearchableSelect: React.FC<{
                                 className={`w-full`}
                             />
                         </div>
-                        <ul className="max-h-60 overflow-auto">
+                        <ul className="max-h-60 overflow-auto custom-scrollbar">
                             {filteredOptions.map((option, index) => {
                                 const optionValue = isDynamic ? option.value : option;
                                 const optionKey = isDynamic ? option.value : `${option}-${index}`;

@@ -43,10 +43,19 @@ export const useFetchDeptCommandStations = async () => {
 
 };
 
+export const useFetchCaseStatus = async () => {
+  const result = await store.dispatch(
+    caseApi.endpoints.getStatus.initiate({ start: 0, length: 100 })
+  );
+  localStorage.setItem("caseStatus", JSON.stringify(result.data?.data))
+
+};
+
 
 export const caseApiSetup = () => {
   useFetchCustomers();
   useFetchCase();
   useFetchTypeSubType();
   useFetchDeptCommandStations();
+  useFetchCaseStatus();
 }

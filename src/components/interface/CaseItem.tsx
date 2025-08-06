@@ -25,3 +25,48 @@ export interface CaseItem {
   location?:string
   attachFile?:File[]
 }
+
+
+export interface CaseList {
+  id: string;
+  orgId: string;
+  caseId: string;
+  caseVersion: string;
+  referCaseId: string | null;
+  caseTypeId: string;
+  caseSTypeId: string;
+  priority: number;
+  source: string;
+  deviceId: string;
+  phoneNo: string;
+  phoneNoHide: boolean;
+  caseDetail: string | null;
+  extReceive: string;
+  statusId: string;
+  caseLat: string;
+  caseLon: string;
+  caselocAddr: string;
+  caselocAddrDecs: string;
+  countryId: string;
+  provId: string;
+  distId: string;
+  caseDuration: number;
+  createdDate: string;
+  startedDate: string;
+  commandedDate: string;
+  receivedDate: string;
+  arrivedDate: string;
+  closedDate: string;
+  usercreate: string;
+  usercommand: string;
+  userreceive: string;
+  userarrive: string;
+  userclose: string;
+  resId: string;
+  resDetail: string | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  comments: number;
+}

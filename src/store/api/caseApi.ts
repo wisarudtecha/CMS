@@ -41,6 +41,7 @@ export interface CreateCase {
     usercreate: string;
     userreceive: string;
     nodeId:string;
+    wId: string;
 }
 
 export interface Case {
@@ -106,6 +107,20 @@ export interface DepartmentCommandStationData {
 export interface DepartmentCommandStationDataMerged extends DepartmentCommandStationData {
   name: string;
 }
+
+export interface CaseStatus {
+  id: string;
+  statusId: string;
+  th: string;
+  en: string;
+  color: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
 export const caseApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ticket CRUD operations
@@ -143,6 +158,14 @@ export const caseApi = baseApi.injectEndpoints({
         getListCase: builder.query<ApiResponse<Case[]>, PaginationParams>({
             query: (params) => ({
                 url: "/case",
+                params,
+            }),
+            providesTags: ["Cases"],
+        }),
+
+        getStatus: builder.query<ApiResponse<CaseStatus[]>, PaginationParams>({
+            query: (params) => ({
+                url: "/case_status",
                 params,
             }),
             providesTags: ["Cases"],

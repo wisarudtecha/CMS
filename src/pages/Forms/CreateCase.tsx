@@ -29,10 +29,10 @@ export default function CreateCasePages({ onBack }: CreateCasePagesProps) {
                         </Button>
                         <div className="flex items-center">
                             <div className="flex">
-                                <div className="relative bg-gray-700 text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-600 text-sm font-medium">
+                                {/* <div className="relative bg-gray-700 text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-600 text-sm font-medium">
                                     Case #0891234005
                                     <button className="ml-2 text-gray-400 hover:text-white">×</button>
-                                </div>
+                                </div> */}
                                 {/* <div className="relative bg-gray-800 text-gray-300 px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-600 text-sm font-medium ml-1">
                                     Case #0891234007
                                     <button className="ml-2 text-gray-400 hover:text-white">×</button>

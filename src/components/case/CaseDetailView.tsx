@@ -291,7 +291,7 @@ interface CaseTypeFormSectionProps {
     editFormData: boolean; // Prop to control if the form is editable
     caseTypeSupTypeData: CaseTypeSubType[];
 }
-const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
+export const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
     return `${data.th ?? ""}` +
         `${data.sTypeCode ? `-${data.sTypeCode}` : ""}` +
         `${data.subTypeTh ? `_${data.subTypeTh}` : ""}`
@@ -384,6 +384,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>(caseData);
+
     const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
     // const caseTypeSupTypeData = getTypeSupType()
     const [createCase] = usePostCreateCaseMutation();
@@ -438,15 +439,29 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         if (caseTypeData?.caseType === caseType.caseType) {
             return caseTypeData;
         }
-        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType)
-        if (newCaseType?.sTypeId === null) {
-            return
+
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType);
+        if (!newCaseType?.sTypeId) {
+            return;
         }
+
+        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
+        let formField: FormField = {} as FormField;
+
+        try {
+            if (formFieldStr && formFieldStr !== "undefined") {
+                formField = JSON.parse(formFieldStr);
+            }
+        } catch (e) {
+            console.error("Failed to parse formField JSON:", e);
+        }
+
         return {
             ...newCaseType,
-            formField: JSON.parse(localStorage.getItem("subTypeForm-" + newCaseType?.sTypeId) ?? "{}") as FormField
+            formField,
         } as formType;
     }, [caseType, displayedCaseData]);
+
 
 
     // Handlers
@@ -546,7 +561,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         // )
         try {
             await createCase({
-                formData:updateCaseData?.caseType?.formField,
+                formData: updateCaseData?.caseType?.formField,
                 customerName: updateCaseData?.customerData?.name,
                 arrivedDate: new Date(TodayDate()).toISOString(),
                 caseDetail: updateCaseData?.description || "",
@@ -577,7 +592,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 userreceive: "",
                 nodeId: updateCaseData?.caseType?.formField.nodeId || "",
             } as CreateCase).unwrap();
-        } catch (error : any) {
+        } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
             setShowToast(true);;
@@ -697,7 +712,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setServiceCenterData(selected);
         }
     }, [serviceCenter]);
-    const handleCustomerDataChange = useCallback((data: Custommer) => {setCustomerData(data)}, []);
+    const handleCustomerDataChange = useCallback((data: Custommer) => { setCustomerData(data) }, []);
     // const handleSaveDrafts = async () => {
     //     const updatedCaseDataForDraft: CaseItem = {
     //         ...(displayedCaseData || {} as CaseItem),
@@ -723,7 +738,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         }
         try {
             await createCase({
-                formData:updateCaseData?.caseType?.formField,
+                formData: updateCaseData?.caseType?.formField,
                 customerName: updateCaseData?.customerData?.name,
                 caseDetail: updateCaseData?.description || "",
                 caseDuration: 0,
@@ -753,7 +768,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 userreceive: "",
                 nodeId: updateCaseData?.caseType?.formField.nodeId || "",
             } as CreateCase).unwrap();
-        } catch (error : any) {
+        } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
             setShowToast(true);;
@@ -766,15 +781,14 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setToastType("success");
         setShowToast(true);;
     }, [isValueFill, caseTypeData, customerData, serviceCenterData, caseType, displayedCaseData]);
-    
-    
-    const handleRemoveFile = (fileNameToRemove: string) => {
-        setUpdateCaseData?.((prev) => {
-            if (!prev) return prev;
 
-            // Filter out the file to remove by name
+
+    const handleRemoveFile = (index: number) => {
+        setDisplayedCaseData((prev) => {
+            if (!prev) return prev;
+            // Remove the file at the specified index
             const updatedFiles = (prev.attachFile ?? []).filter(
-                (file) => file.name !== fileNameToRemove
+                (_file, i) => i !== index
             );
 
             return {
@@ -783,7 +797,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             };
         });
     };
-
     return (
         <div className="flex flex-col h-screen">
             <PageMeta title="Case Detail" description="Case Detail Page" />
@@ -807,10 +820,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                     Back
                                 </Button>
                             )}
-                            {caseData && <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
+                            {/* {caseData && <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
                                 Case #{caseData.id.toString().padStart(10, '0')}
                                 <button className="ml-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">×</button>
-                            </div>}
+                            </div>} */}
                         </div>
                         <div className="md:hidden">
                             <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
@@ -828,7 +841,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                         <div className="pr-0">
                             <div className="px-4 pt-6">
                                 {(caseData && displayedCaseData) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData} editFormData={editFormData} setDisplayCaseData={setDisplayedCaseData} />}
-                                {(displayedCaseData?.attachFile && displayedCaseData) && (
+                                {(displayedCaseData?.attachFile && displayedCaseData.attachFile.length > 0 && displayedCaseData) && (
                                     <div className="mx-3">
                                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                                             Attach File :
@@ -845,7 +858,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                                 className="w-full h-20 object-cover rounded border border-gray-600"
                                                             />
                                                             <Button
-                                                                onClick={() => handleRemoveFile(file.name)}
+                                                                onClick={() => handleRemoveFile(index)}
                                                                 className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 size="sm"
                                                                 variant="error"
