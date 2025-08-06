@@ -1,7 +1,8 @@
 // /src/components/crud/AdvancedFilterPanel.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
+import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Select from "@/components/form/Select";
 import { Modal } from "@/components/ui/modal";
 import {
@@ -28,8 +29,14 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [localValues, setLocalValues] = useState<FilterConfig>(values);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleFilterChange = (key: string, value: unknown) => {
+    setLocalValues(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleFilterChanges = (key: string, value: string[]) => {
+    setSelectedTags(value);
     setLocalValues(prev => ({ ...prev, [key]: value }));
   };
 
@@ -45,6 +52,10 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    console.log(localValues);
+  }, [localValues]);
+
   const renderFilter = (filter: AdvancedFilter) => {
     const value = localValues[filter.key];
 
@@ -57,6 +68,19 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
             options={filter.options || []}
             placeholder={filter.placeholder}
             multiple={filter.multiple}
+            className="cursor-pointer"
+          />
+        );
+      
+      case "customizable-select":
+        return (
+          <CustomizableSelect
+            options={filter.options || []}
+            value={selectedTags}
+            onChange={(newValue) => handleFilterChanges(filter.key, newValue)}
+            placeholder={filter.placeholder}
+            onModal={true}
+            className="cursor-pointer"
           />
         );
 
@@ -81,6 +105,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
                 start: e.target.value
               })}
               placeholder="Start date"
+              className="cursor-pointer"
             />
             <Input
               type="date"
@@ -90,6 +115,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
                 end: e.target.value
               })}
               placeholder="End date"
+              className="cursor-pointer"
             />
           </div>
         );
@@ -147,9 +173,13 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
         )}
       </Button>
 
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} className="max-w-2xl p-6">
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="max-w-2xl p-6"
+      >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
             Advanced Filters
           </h3>
           <Button

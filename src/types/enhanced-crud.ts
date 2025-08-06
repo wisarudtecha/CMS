@@ -31,7 +31,7 @@ export interface ExportOption {
 export interface AdvancedFilter {
   key: string;
   label: string;
-  type: "select" | "multiselect" | "date-range" | "number-range" | "text" | "boolean";
+  type: "select" | "multiselect" | "customizable-select" | "date-range" | "number-range" | "text" | "boolean";
   options?: { value: string; label: string }[];
   placeholder?: string;
   min?: number;
@@ -40,6 +40,7 @@ export interface AdvancedFilter {
   searchable?: boolean;
   clearable?: boolean;
   maxSelections?: number;
+  isFullscreen?: boolean;
 }
 
 export interface KeyboardShortcut {

@@ -1,17 +1,36 @@
 // /src/types/workflow.ts
+import { FormManager } from "@/components/interface/FormField";
+import type { UserProfile } from "@/types/user";
+
+// export interface Workflow {
+//   id: string;
+//   name: string;
+//   description: string;
+//   status: "active" | "inactive" | "draft" | "testing";
+//   createdAt: string;
+//   lastRun?: string;
+//   runCount: number;
+//   category?: string;
+//   tags?: string[];
+//   author?: string;
+//   version?: string;
+//   config?: unknown;
+// }
+
 export interface Workflow {
   id: string;
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "draft" | "testing";
+  orgId: string;
+  wfId: string;
+  title: string;
+  desc: string;
+  active: boolean;
+  publish: boolean;
+  locks: boolean;
+  versions: string;
   createdAt: string;
-  lastRun?: string;
-  runCount: number;
-  category?: string;
-  tags?: string[];
-  author?: string;
-  version?: string;
-  config?: unknown;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export interface Position {
@@ -56,7 +75,9 @@ export interface WorkflowData {
 }
 
 export interface WorkflowEditorComponentProps {
+  forms?: FormManager[];
   initialData?: WorkflowData;
+  users?: UserProfile[];
   workflowId?: string; // For loading from URL
   onSave?: (data: WorkflowData) => void;
 }

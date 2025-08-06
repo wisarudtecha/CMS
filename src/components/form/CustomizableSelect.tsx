@@ -1,5 +1,6 @@
 // /src/components/form/CustomizableSelect.tsx
 import { useEffect, useRef, useState } from "react";
+import Input from "@/components/form/input/InputField";
 
 interface Option {
   value: string;
@@ -15,6 +16,7 @@ interface CustomSelectProps {
   multiple?: boolean;
   asyncFetch?: (query: string, page: number) => Promise<Option[]>;
   className?: string;
+  onModal?: boolean;
 }
 
 const CustomizableSelect: React.FC<CustomSelectProps> = ({
@@ -26,6 +28,7 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
   // multiple = true,
   asyncFetch,
   className = "",
+  onModal = false
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [fetchedOptions, setFetchedOptions] = useState<Option[]>(options);
@@ -34,15 +37,40 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const loadOptions = async (query: string, page: number) => {
-    if (!asyncFetch) return;
+    if (!asyncFetch) {
+      return;
+    }
     const newOptions = await asyncFetch(query, page);
     setFetchedOptions((prev) => (page === 1 ? newOptions : [...prev, ...newOptions]));
   };
 
   useEffect(() => {
-    if (asyncFetch) loadOptions(inputValue, page);
+    if (!asyncFetch) {
+      // Client-side filtering logic
+      const filtered = options.filter((opt) =>
+        opt.label.toLowerCase().includes(inputValue.toLowerCase())
+      );
+      const pageSize = 20;
+      const start = (page - 1) * pageSize;
+      const end = page * pageSize;
+      setFetchedOptions((prev) =>
+        page === 1 ? filtered.slice(start, end) : [...prev, ...filtered.slice(start, end)]
+      );
+      return;
+    }
+
+    if (inputValue.length < 3) {
+      setFetchedOptions([]); // Clear options if not enough characters
+      return;
+    }
+
+    const delayDebounce = setTimeout(() => {
+      loadOptions(inputValue, page);
+    }, 3000); // Wait 3 seconds
+
+    return () => clearTimeout(delayDebounce);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue, page]);
+  }, [inputValue, page, asyncFetch, options]);
 
   const toggleOption = (val: string) => {
     const updated = value.includes(val)
@@ -73,7 +101,7 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div
-        className={`border rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm cursor-pointer ${disabled ? "opacity-50" : ""}`}
+        className={`h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:placeholder:text-white/30 dark:focus:border-brand-800 text-gray-400 dark:text-gray-400 cursor-pointer ${disabled ? "opacity-50" : ""}`}
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
       >
         {value.length > 0 ? (
@@ -98,16 +126,16 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
       {isOpen && (
         <div
           onScroll={handleScroll}
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded border bg-white dark:bg-gray-900 shadow-lg"
+          className={`${!onModal && "absolute max-h-60"} z-99999 mt-1 w-full overflow-y-auto rounded border bg-white dark:bg-gray-900 shadow-lg`}
         >
-          <input
+          <Input
             type="text"
             value={inputValue}
             onChange={(e) => {
               setPage(1);
               setInputValue(e.target.value);
             }}
-            className="w-full p-2 border-b bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="rounded-none border-0 border-b-2"
             placeholder="Search..."
           />
           {fetchedOptions.map((opt) => (

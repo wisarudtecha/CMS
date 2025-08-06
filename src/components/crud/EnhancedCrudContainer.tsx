@@ -33,6 +33,7 @@ import { useRealTimeUpdates } from "@/hooks/useRealTimeUpdates";
 import { useSort } from "@/hooks/useSort";
 import { useToast } from "@/hooks/useToast";
 import { apiService } from "@/services/api";
+import { SYSTEM_ROLE } from "@/utils/constants";
 import type { CrudConfig } from "@/types/crud";
 import type { AdvancedFilter, ApiConfig, BulkAction, CrudFeatures, ExportOption, KeyboardShortcut, PreviewConfig } from "@/types/enhanced-crud";
 // import type { Permission, Role } from "@/types/role";
@@ -437,7 +438,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                   </div>
 
                   {/* Search Bar */}
-                  {enabledFeatures.search && (
+                  {enabledFeatures.search && displayMode != "matrix" && (
                     <div className="mb-2 xl:mb-0">
                       <SearchBar
                         value={searchInput}
@@ -450,7 +451,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                   )}
 
                   {/* Basic Filters */}
-                  {enabledFeatures.filtering && config.filters && (
+                  {enabledFeatures.filtering && config.filters && displayMode != "matrix" && (
                     <div className="mb-2 xl:mb-0">
                       <FilterBar
                         filters={config.filters}
@@ -463,7 +464,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                   )}
 
                   {/* Advanced Filters */}
-                  {advancedFilters.length > 0 && (
+                  {advancedFilters.length > 0 && displayMode != "matrix" && (
                     <div className="mb-2 xl:mb-0">
                       <AdvancedFilterPanel
                         filters={advancedFilters}
@@ -653,7 +654,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Debug Info (only in development) */}
-        {enableDebug && (
+        {enableDebug && SYSTEM_ROLE && (
           <div
             className="
               bg-gray-200
@@ -663,6 +664,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               border-gray-300
               dark:border-gray-600
               border
+              cursor-default
               fixed
               bottom-12
               xl:bottom-6
@@ -691,17 +693,16 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             <div>Selected Items: {getSelectedCount()}</div>
             <div>Display Mode: {displayMode}</div>
             <div>Actions Count: {enhancedActions?.length || 0}</div>
-
-            {/*
-            <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div>
-            <div className="mt-2 pt-2 border-t border-gray-700 dark:border-gray-200">
+            
+            {/* <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div> */}
+            <div className="mt-2 pt-2 border-t border-gray-300 dark:border-gray-600">
               <div className="font-bold">Confirm Dialog</div>
               <div>Is Open: {confirmDialog.isOpen ? "YES" : "NO"}</div>
               <div>Type: {confirmDialog.type}</div>
               <div>Entity: {confirmDialog.entityName}</div>
               <div>Has onConfirm: {confirmDialog.onConfirm ? "YES" : "NO"}</div>
             </div>
-            */}
+           
           </div>
         )}
       </div>

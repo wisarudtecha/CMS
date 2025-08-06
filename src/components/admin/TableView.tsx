@@ -19,7 +19,7 @@ export function TableView<T extends { id: string }>({
   toggleSelectAll,
 }: TableViewProps<T>) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden">
       <div className="overflow-x-auto">
         <Table className="w-full">
           <TableHeader className="bg-gray-50 dark:bg-gray-800">

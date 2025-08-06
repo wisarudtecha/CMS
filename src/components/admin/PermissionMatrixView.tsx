@@ -21,6 +21,7 @@ import type {
 import Button from "@/components/ui/button/Button";
 // import permissionCategories from "@/mocks/permissionCategories.json";
 import { SYSTEM_ROLE } from "@/utils/constants";
+import { permissionsByRole } from "@/utils/dataMappers";
 
 export const PermissionMatrixView: React.FC<{
   // loading: LoadingStates;
@@ -69,20 +70,20 @@ export const PermissionMatrixView: React.FC<{
   //   filteredPermissions
   // ]);
 
-  const permissionsByRole = useMemo(() => {
-    const grouped: Record<string, typeof filteredPermissions> = {};
-    permissions.forEach(rp => {
-      const matched = filteredPermissions.find(p => p.permId === rp.permId);
-      if (matched) {
-        const group = matched.groupName;
-        if (!grouped[group]) {
-          grouped[group] = [];
-        }
-        grouped[group].push(matched);
-      }
-    });
-    return grouped;
-  }, [permissions, filteredPermissions]);
+  // const permissionsByRole = useMemo(() => {
+  //   const grouped: Record<string, typeof filteredPermissions> = {};
+  //   permissions.forEach(rp => {
+  //     const matched = filteredPermissions.find(p => p.permId === rp.permId);
+  //     if (matched) {
+  //       const group = matched.groupName;
+  //       if (!grouped[group]) {
+  //         grouped[group] = [];
+  //       }
+  //       grouped[group].push(matched);
+  //     }
+  //   });
+  //   return grouped;
+  // }, [permissions, filteredPermissions]);
 
   // const permissionsByCategory = useMemo(() => {
   //   return permissionCategories.map(category => ({
@@ -173,7 +174,7 @@ export const PermissionMatrixView: React.FC<{
 
       <div className="overflow-x-auto overflow-y-auto" ref={containerRef} style={{maxHeight}}>
         <table className="min-w-full border-collapse">
-          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 cursor-default">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700">
                 Permission
@@ -199,7 +200,7 @@ export const PermissionMatrixView: React.FC<{
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {Object.entries(permissionsByRole).map(([groupName, permissions], index) => (
+            {Object.entries(permissionsByRole(filteredPermissions)).map(([groupName, permissions], index) => (
               <React.Fragment key={index}>
                 {groupName && (
                   <tr
@@ -221,7 +222,7 @@ export const PermissionMatrixView: React.FC<{
                     // className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
                     className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300`}
                   >
-                    <td className="px-6 py-4 sticky left-0">
+                    <td className="px-6 py-4 sticky left-0 cursor-default">
                       <div>
                         <div className="flex items-center">
                           <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">

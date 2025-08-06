@@ -20,6 +20,10 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { FormManager } from "@/components/interface/FormField";
+import { useGetAllFormsQuery } from "@/store/api/formApi";
+import { useGetUsersQuery } from "@/store/api/userApi";
+import type { UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import WorkflowEditorComponent from "@/components/workflow/editor/Editor";
@@ -33,6 +37,12 @@ const threeLayerBreadcrumb = [
 const WorkflowEditorPage: React.FC = () => {
   const params = useParams<{ id: string }>();
 
+  const { data: formsData } = useGetAllFormsQuery(null);
+  const forms = formsData?.data as unknown as FormManager[] || [];
+
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 10 });
+  const users = usersData?.data as unknown as UserProfile[] || [];
+
   return (
     <>
       <PageMeta
@@ -43,7 +53,7 @@ const WorkflowEditorPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["workflow.view"]}>
         <PageBreadcrumb items={threeLayerBreadcrumb} />
 
-        <WorkflowEditorComponent workflowId={params?.id || "new"} />
+        <WorkflowEditorComponent workflowId={params?.id || "new"} forms={forms} users={users} />
       </ProtectedRoute>
     </>
   );

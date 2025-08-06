@@ -20,11 +20,16 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useGetWorkflowsQuery } from "@/store/api/workflowApi";
+import type { Workflow } from "@/types/workflow";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import WorkflowListComponent from "@/components/workflow/list/List";
 
 const WorkflowListPage: React.FC = () => {
+  const { data: workflowsData } = useGetWorkflowsQuery("");
+  const workflows = workflowsData?.data as unknown as Workflow[] || [];
+
   return (
     <>
       <PageMeta
@@ -35,7 +40,7 @@ const WorkflowListPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["workflow.view"]}>
         <PageBreadcrumb pageTitle="Workflow Management" />
 
-        <WorkflowListComponent />
+        <WorkflowListComponent workflows={workflows} />
       </ProtectedRoute>
     </>
   );

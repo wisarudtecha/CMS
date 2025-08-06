@@ -9,13 +9,17 @@ from "react";
 // import { mapPermissionsWithCategories } from "@/utils/dataMappers";
 import {
   CheckLineIcon,
+  CloseLineIcon,
   LockIcon,
   // PencilIcon,
-  TimeIcon
+  // TimeIcon
 } from "@/icons";
+import { SYSTEM_ROLE } from "@/utils/constants";
+import { permissionsByRole } from "@/utils/dataMappers";
 import type {
-  // Permission,
-  Role
+  Permission,
+  Role,
+  // RolePermission
 } from "@/types/role";
 // import Button from "@/components/ui/button/Button";
 // import permissionCategories from "@/mocks/permissionCategories.json";
@@ -36,12 +40,16 @@ import type {
 
 export const RoleCard: React.FC<{
   role: Role;
+  // rolePermissions: RolePermission[];
+  permission: Permission[];
   onEdit?: (role: Role) => void;
   onDelete?: (role: Role) => void;
   onClone?: (role: Role) => void;
   onViewPermissions?: (role: Role) => void;
 }> = ({
   role,
+  // rolePermissions,
+  permission,
   // onEdit,
   // onDelete,
   // onClone,
@@ -49,26 +57,37 @@ export const RoleCard: React.FC<{
 }) => {
   // const [showActions, setShowActions] = useState(false);
 
+  const permissionByRole = Object.values(permissionsByRole(permission.filter(p => (role.permissions || []).includes(p.permId)))) || [];
+
   return (
     <>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
+          {/*
           <div
             // className={`p-2 rounded-lg ${role.color}`}
             className={`p-2 rounded-lg`}
           >
             <LockIcon className="w-5 h-5 text-gray-900 dark:text-white" />
           </div>
+          */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white capitalize">
               {role.roleName.replace(/_/g, " ")}
-              <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${role.active
+              <span className={`xl:ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${role.active
                   ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                   : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                 }`}>
-                {role.active ? <CheckLineIcon className="w-3 h-3 mr-1" /> : <TimeIcon className="w-3 h-3 mr-1" />}
+                {role.active ? <CheckLineIcon className="w-3 h-3 mr-1" /> : <CloseLineIcon className="w-3 h-3 mr-1" />}
                 {role.active ? "Active" : "Inactive"}
               </span>
+
+              {role.id === SYSTEM_ROLE && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                  <LockIcon className="w-3 h-3 mr-1" />
+                  System
+                </span>
+              )}
 
               {/*
               {role.isSystem && (
@@ -148,17 +167,36 @@ export const RoleCard: React.FC<{
           <span className="text-gray-900 dark:text-white">{role.userCount}</span>
         </div>
         */}
-        {/*
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600 dark:text-gray-400">Permissions:</span>
-          <span className="text-gray-900 dark:text-white">{role.permissions.length}</span>
+          <span className="text-gray-900 dark:text-white">{role?.permissions?.length || 0}</span>
         </div>
-        */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600 dark:text-gray-400">Last Modified:</span>
           <span className="text-gray-900 dark:text-white">
             {new Date(role.updatedAt || "").toLocaleDateString()}
           </span>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-2 min-h-6">
+          {permissionByRole.slice(0, 3).map((item, key) => {
+            return (
+              <div
+                key={item[key].permId}
+                className="flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
+                // title={item[key].groupName}
+              >
+                <span className="text-gray-700 dark:text-gray-300">{item[key].groupName}</span>
+              </div>
+            );
+          })}
+          {permissionByRole.length > 3 && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              +{permissionByRole.length - 3} more
+            </span>
+          )}
         </div>
       </div>
 

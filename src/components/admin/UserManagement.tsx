@@ -38,12 +38,49 @@ const UserManagementComponent: React.FC<{
   // Mock Data
   // ===================================================================
 
+  // ===================================================================
+  // Real Functionality Data
+  // ===================================================================
+
+  const countUsersByMonth = (users: UserProfile[]) => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const lastMonthDate = new Date(thisYear, thisMonth - 1);
+    const lastMonth = lastMonthDate.getMonth();
+    const lastYear = lastMonthDate.getFullYear();
+
+    let thisMonthCount = 0;
+    let lastMonthCount = 0;
+
+    users.forEach((user) => {
+      const createdDate = new Date(user.createdAt);
+      const month = createdDate.getMonth();
+      const year = createdDate.getFullYear();
+
+      if (year === thisYear && month === thisMonth) {
+        thisMonthCount++;
+      }
+      else if (year === lastYear && month === lastMonth) {
+        lastMonthCount++;
+      }
+    });
+
+    return {
+      thisMonth: thisMonthCount,
+      lastMonth: lastMonthCount,
+      difference: thisMonthCount - lastMonthCount,
+      growthRate: lastMonthCount === 0 ? null : ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100,
+    };
+  };
+
   const mockMetrics: UserMetrics = {
-    totalUsers: 0,
-    activeUsers: 0,
-    newThisMonth: 0,
-    suspendedUsers: 0,
-    lastMonthGrowth: 0
+    totalUsers: usr.length || 0,
+    activeUsers: usr.filter(u => u.active).length || 0,
+    newThisMonth: countUsersByMonth(usr)?.thisMonth || 0,
+    suspendedUsers: usr.filter(u => !u.active).length || 0,
+    lastMonthGrowth: countUsersByMonth(usr)?.lastMonth || 0
   };
 
   // ===================================================================
@@ -129,7 +166,7 @@ const UserManagementComponent: React.FC<{
               // className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-white capitalize ${roleConfig?.color} ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
               className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-gray-900 dark:text-white capitalize`}
             >
-              {roleConfig?.roleName || ""}
+              {roleConfig?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || "Guest"}
             </span>
           );
         }
@@ -171,13 +208,13 @@ const UserManagementComponent: React.FC<{
         sortable: true,
         render: (userItem: UserProfile) => {
           const statusConfig = userItem.active
-            ? { color: "text-green-600 dark:text-green-300", icon: CheckLineIcon }
-            : { color: "text-red-600 dark:text-red-300", icon: TimeIcon };
+            ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
+            : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: TimeIcon };
           const Icon = statusConfig.icon;
           return (
             <div
               // className={`flex items-center gap-1 ${statusConfig.color} ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
-              className={`flex items-center gap-1 ${statusConfig.color}`}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full justify-center ${statusConfig.color}`}
             >
               <Icon className="w-4 h-4" />
               <span className="text-sm font-medium capitalize">{userItem.active ? "Active" : "Inactive"}</span>
@@ -205,16 +242,14 @@ const UserManagementComponent: React.FC<{
         label: "View",
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (userItem: UserProfile) =>
-          navigate(`/user/${userItem.id}`)
+        onClick: (userItem: UserProfile) => navigate(`/user/${userItem.id}`)
       },
       {
-        key: "edit",
+        key: "update",
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (userItem: UserProfile) =>
-          navigate(`/user/edit/${userItem.id}`)
+        onClick: (userItem: UserProfile) => navigate(`/user/edit/${userItem.id}`)
       },
       {
         key: "delete",
@@ -297,7 +332,7 @@ const UserManagementComponent: React.FC<{
         }
       },
       {
-        key: "edit",
+        key: "update",
         label: "Edit",
         // icon: PencilIcon,
         variant: "warning",
@@ -328,13 +363,13 @@ const UserManagementComponent: React.FC<{
       key: "roleId",
       label: "Role",
       type: "select" as const,
-      options: role.map(role => ({ value: role.id, label: role.roleName }))
+      options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
     },
     {
       key: "department",
       label: "Department",
       type: "select" as const,
-      options: dept.map(department => ({ value: department.id, label: department.th }))
+      options: dept.map(department => ({ value: department.id, label: department.th || department.en }))
     },
     {
       key: "status",
@@ -346,83 +381,83 @@ const UserManagementComponent: React.FC<{
         // { value: "suspended", label: "Suspended" }
       ]
     },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      type: "date-range" as const
-    }
+    // {
+    //   key: "lastLogin",
+    //   label: "Last Login",
+    //   type: "date-range" as const
+    // }
   ];
 
   // ===================================================================
   // Bulk Actions
   // ===================================================================
 
-  const bulkActions = [
-    {
-      key: "bulk-activate",
-      label: "Activate",
-      variant: "success" as const,
-      onClick: async (items: { id: string }[]) => {
-        console.log("Bulk activate user:", items.map(c => c.id));
-      }
-    },
-    {
-      key: "bulk-deactivate",
-      label: "Deactivate",
-      variant: "warning" as const,
-      onClick: async (items: { id: string }[]) => {
-        console.log("Bulk deactivate user:", items.map(c => c.id));
-      }
-    },
-    // {
-    //   key: "bulk-suspend",
-    //   label: "Suspend",
-    //   variant: "error" as const,
-    //   onClick: async (items: { id: string }[]) => {
-    //     console.log("Bulk suspend user:", items.map(c => c.id));
-    //   }
-    // },
-    {
-      key: "bulk-export",
-      label: "Export",
-      variant: "light" as const,
-      onClick: async (items: { id: string }[]) => {
-        console.log("Bulk export user:", items.map(c => c.id));
-      }
-    }
-  ];
+  // const bulkActions = [
+  //   {
+  //     key: "bulk-activate",
+  //     label: "Activate",
+  //     variant: "success" as const,
+  //     onClick: async (items: { id: string }[]) => {
+  //       console.log("Bulk activate user:", items.map(c => c.id));
+  //     }
+  //   },
+  //   {
+  //     key: "bulk-deactivate",
+  //     label: "Deactivate",
+  //     variant: "warning" as const,
+  //     onClick: async (items: { id: string }[]) => {
+  //       console.log("Bulk deactivate user:", items.map(c => c.id));
+  //     }
+  //   },
+  //   // {
+  //   //   key: "bulk-suspend",
+  //   //   label: "Suspend",
+  //   //   variant: "error" as const,
+  //   //   onClick: async (items: { id: string }[]) => {
+  //   //     console.log("Bulk suspend user:", items.map(c => c.id));
+  //   //   }
+  //   // },
+  //   {
+  //     key: "bulk-export",
+  //     label: "Export",
+  //     variant: "light" as const,
+  //     onClick: async (items: { id: string }[]) => {
+  //       console.log("Bulk export user:", items.map(c => c.id));
+  //     }
+  //   }
+  // ];
 
   // ===================================================================
   // Export Options
   // ===================================================================
 
-  const exportOptions = [
-    {
-      key: "csv-summary",
-      label: "Summary Report (CSV)",
-      format: "csv" as const,
-      columns: ["firstname", "lastname"]
-    },
-    {
-      key: "csv-detailed",
-      label: "Detailed Report (CSV)",
-      format: "csv" as const,
-      columns: ["firstname", "lastname", "address", "createdAt"]
-    },
-    {
-      key: "json-full",
-      label: "Complete Data (JSON)",
-      format: "json" as const
-    }
-  ];
+  // const exportOptions = [
+  //   {
+  //     key: "csv-summary",
+  //     label: "Summary Report (CSV)",
+  //     format: "csv" as const,
+  //     columns: ["firstname", "lastname"]
+  //   },
+  //   {
+  //     key: "csv-detailed",
+  //     label: "Detailed Report (CSV)",
+  //     format: "csv" as const,
+  //     columns: ["firstname", "lastname", "address", "createdAt"]
+  //   },
+  //   {
+  //     key: "json-full",
+  //     label: "Complete Data (JSON)",
+  //     format: "json" as const
+  //   }
+  // ];
 
   // ===================================================================
   // Custom Card Rendering
   // ===================================================================
 
   const renderCard = (userItem: UserProfile) => {
-    const roleConfig = role.find(r => r.id === userItem.roleId);
-    return <UserCard user={userItem as UserProfile} role={roleConfig as Role} />;
+    const roleData = role.find(r => r.id === userItem.roleId);
+    return <UserCard user={userItem as UserProfile} role={roleData as Role} />;
   };
 
   // ===================================================================
@@ -449,8 +484,8 @@ const UserManagementComponent: React.FC<{
   const attrMetrics = [
     { key: "totalUsers", title: "Total Users", icon: UserIcon, color: "blue", className: "text-blue-600" },
     { key: "activeUsers", title: "Active Users", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "suspendedUsers", title: "Inactive Users", icon: CloseIcon, color: "red", className: "text-red-600" },
     { key: "newThisMonth", title: "New This Month", icon: ChevronUpIcon, color: "purple", className: "text-purple-600", trend: mockMetrics.lastMonthGrowth },
-    { key: "suspendedUsers", title: "Suspended Users", icon: CloseIcon, color: "red", className: "text-red-600" },
   ];
 
   return (
@@ -471,16 +506,16 @@ const UserManagementComponent: React.FC<{
             export: "/users/export"
           }
         }}
-        bulkActions={bulkActions}
+        // bulkActions={bulkActions}
         config={config as unknown as CrudConfig<{ id: string; }>}
         data={usr as unknown as { id: string }[]}
         displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
-        exportOptions={exportOptions}
+        // exportOptions={exportOptions}
         features={{
-          // bulkActions: true,
-          export: true,
+          bulkActions: false,
+          export: false,
           filtering: true,
           keyboardShortcuts: true,
           pagination: true,
@@ -490,6 +525,7 @@ const UserManagementComponent: React.FC<{
         }}
         // keyboardShortcuts={[]}
         loading={!usr}
+        module="user"
         previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
         searchFields={["firstName", "lastName", "email"]}
         // customFilterFunction={() => true}

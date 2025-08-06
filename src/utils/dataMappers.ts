@@ -3,7 +3,11 @@
 // import rawPermissionCategories from "@/mocks/permissionCategories.json";
 // import rawRoles from "@/mocks/roleList.json";
 // import rawUsers from "@/mocks/userList.json";
-// import type { Permission, PermissionCategory } from "@/types/role";
+import type {
+  Permission,
+  // RolePermission,
+  // PermissionCategory
+} from "@/types/role";
 // import type { Role, UserEntity } from "@/types/user";
 
 // ===================================================================
@@ -47,3 +51,18 @@
 //     role: rolesById.get((u).roleId as string) ?? fallbackRole,
 //   })) as UserEntity[];
 // }
+
+export const permissionsByRole = (permissions: Permission[]) => {
+  const grouped: Record<string, typeof permissions> = {};
+  permissions.forEach(rp => {
+    const matched = permissions.find(p => p.permId === rp.permId);
+    if (matched) {
+      const group = matched.groupName;
+      if (!grouped[group]) {
+        grouped[group] = [];
+      }
+      grouped[group].push(matched);
+    }
+  });
+  return grouped;
+}

@@ -1,5 +1,6 @@
 // /src/utils/authService.ts
 import { API_CONFIG } from "@/config/api";
+import { SYSTEM_ROLE } from "@/utils/constants";
 import { HttpClient } from "@/utils/httpClient";
 import { PermissionManager } from "@/utils/permissionManager";
 import { TokenManager } from "@/utils/tokenManager";
@@ -431,6 +432,22 @@ export class AuthService {
     catch (error) {
       console.error("❌ Password reset failed:", error);
       throw error;
+    }
+  }
+
+  static async isSystemAdmin() {
+    try {
+      const storage = localStorage || sessionStorage || null;
+      const raw = storage.getItem("profile");
+      if (!raw) {
+        throw new Error("❌ No profile found");
+      }
+      const profile: User = await JSON.parse(raw);
+      return profile?.roleId === SYSTEM_ROLE;
+    }
+    catch (error) {
+      console.error("❌ Error checking system admin status:", error);
+      return false;
     }
   }
 }

@@ -5,12 +5,23 @@ import type { UserMetrics } from "@/types/user";
 import MetricsCard from "@/components/admin/MetricsCard";
 
 const MetricsView: React.FC<{ 
-  metrics: UserMetrics | RoleMetrics | RoleAnalytics;
-  attrMetrics: { key: string; title: string; icon: React.FC<{ className: string }>; color: string; className: string; trend?: number }[];
+  metrics: UserMetrics | RoleMetrics | RoleAnalytics | undefined;
+  attrMetrics: {
+    key: string;
+    title: string;
+    icon: React.FC<{ className: string }>;
+    color: string;
+    className: string;
+    // trend?: number;
+  }[];
 }> = ({ metrics, attrMetrics }) => {
   const cardMetrics: JSX.Element[] = [];
 
-  Object.entries(metrics).forEach(([key, item]) => {
+  if (!metrics) {
+    return;
+  }
+
+  Object.entries(metrics || [] as unknown as UserMetrics | RoleMetrics | RoleAnalytics).forEach(([key, item]) => {
     const metric = attrMetrics.find((m) => m.key === key);
 
     if (!metric) {
@@ -30,12 +41,12 @@ const MetricsView: React.FC<{
 
     cardMetrics.push(
       <MetricsCard
-        key={key}
-        title={title}
-        value={value}
+        key={key || "Loading.."}
+        title={title || "Loading.."}
+        value={value || 0}
         icon={<Icon className={`w-6 h-6 ${className}`} />}
         trend={trend}
-        color={color}
+        color={color || "Loading.."}
       />
     );
   });

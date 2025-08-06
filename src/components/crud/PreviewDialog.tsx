@@ -11,7 +11,7 @@ import {
   // AngleRightIcon, 
   CopyIcon,
   CheckCircleIcon,
-  // InfoIcon,
+  InfoIcon,
   // SettingsIcon,
   // FileIcon
 } from "@/icons";
@@ -145,7 +145,7 @@ export const PreviewDialog = <T extends { id: string }>({
       onClose={onClose} 
       className={`${sizeClasses[config.size || "lg"]} max-h-[95vh] overflow-x-auto`}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full cursor-default">
         {/* Header */}
         <div className="xl:flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="xl:flex items-center gap-4 min-w-0 flex-1">
@@ -299,9 +299,9 @@ export const PreviewDialog = <T extends { id: string }>({
         )}
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 m-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 m-4 cursor-default">
         <div className="flex items-center gap-2 mb-2">
-          {/* <InfoIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" /> */}
+          <InfoIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h3 className="font-medium text-blue-900 dark:text-blue-100">Preview Feature</h3>
         </div>
         <p className="text-sm text-blue-700 dark:text-blue-300">

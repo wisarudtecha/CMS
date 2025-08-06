@@ -1,6 +1,6 @@
 // /src/components/admin/UserCard.tsx
 import React, { useEffect, useState } from "react";
-import { CheckLineIcon, TimeIcon } from "@/icons";
+import { CheckLineIcon, CloseLineIcon } from "@/icons";
 import { formatLastLogin } from "@/utils/crud";
 import { isImageAvailable } from "@/utils/resourceValidators";
 import type { Role, UserProfile } from "@/types/user";
@@ -10,8 +10,8 @@ export const UserCard: React.FC<{
   role: Role;
 }> = ({ user, role }) => {
   const statusConfig = user.active
-    ? { color: "text-green-600 dark:text-green-300", icon: CheckLineIcon }
-    : { color: "text-red-600 dark:text-red-300", icon: TimeIcon };
+    ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
+    : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: CloseLineIcon };
   const Icon = statusConfig.icon;
 
   const [photo, setPhoto] = useState(false);
@@ -45,22 +45,26 @@ export const UserCard: React.FC<{
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
               {user.email}
             </p>
+            <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
+              <Icon className="w-4 h-4 inline mr-1" />
+              {user.active ? "Active" : "Inactive"}
+            </span>
           </div>
         </div>
+        {/*
         <div className="xl:flex flex-col gap-1 items-end flex-shrink-0">
-          {/*
           <span
             // className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-white capitalize ${role?.color}`}
             className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-gray-900 dark:text-white capitalize`}
           >
             {role?.roleName || ""}
           </span>
-          */}
           <span className={`text-xs font-medium capitalize ${statusConfig.color}`}>
             <Icon className="w-4 h-4 inline mr-1" />
             {user.active ? "Active" : "Inactive"}
           </span>
         </div>
+        */}
       </div>
 
       {/* Additional Info */}
@@ -70,7 +74,7 @@ export const UserCard: React.FC<{
       >
         <div className="xl:flex items-center gap-4 text-xs">
           <div className="xl:flex items-center gap-1 min-h-4">
-            <span className="text-gray-900 dark:text-white capitalize">{role?.roleName?.replace(/_/g, " ") || ""}</span>
+            <span className="text-gray-900 dark:text-white capitalize">{role?.roleName?.replace(/_/g, " ") || "Guest"}</span>
           </div>
         </div>
         

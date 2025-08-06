@@ -8,7 +8,7 @@ const MetricsCard: React.FC<{
   trend?: number;
   color?: string;
 }> = ({ title, value, icon, trend, color = "blue" }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-6">
+  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-6 cursor-default">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-0">{title}</p>

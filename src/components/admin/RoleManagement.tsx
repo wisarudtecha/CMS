@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState }
 from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-// import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingStarIcon } from "@/icons";
+import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingStarIcon } from "@/icons";
 import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
 import { RoleCard } from "@/components/admin/RoleCard";
 import { ToastContainer } from "@/components/crud/ToastContainer";
@@ -18,16 +18,19 @@ import {
   // useDeleteUserRolePermissionsMutation,
   // useUpdateUserRolePermissionsMutation,
 } from "@/store/api/userApi";
+import { SYSTEM_ROLE } from "@/utils/constants";
 // import type { ApiResponse } from "@/types";
-import type { PreviewConfig } from "@/types/enhanced-crud";
+import type {
+  PreviewConfig
+} from "@/types/enhanced-crud";
 import type {
   Permission,
   Role,
-  // RoleAnalytics,
+  RoleAnalytics,
   RolePermission,
   // LoadingStates
 } from "@/types/role";
-// import MetricsView from "@/components/admin/MetricsView";
+import MetricsView from "@/components/admin/MetricsView";
 // import allPermissions from "@/mocks/allPermissions.json";
 // import roles from "@/mocks/roles.json";
 
@@ -71,6 +74,33 @@ const RoleManagementComponent: React.FC<{
 }) => {
   const navigate = useNavigate();
 
+  const { toasts, addToast, removeToast } = useToast();
+
+  // const [trigger] = useLazyGetUserRolesPermissionsByRoleIdQuery();
+  // const [createRolePermissions] = useCreateUserRolePermissionsMutation();
+
+  const [updateUserRolesPermissions] = useUpdateUserRolesPermissionsMutation();
+
+  // const [updateUserRolesPermissionsResponse, setUpdateUserRolesPermissionsResponse] = useState<ApiResponse<RolePermission[]>>();
+
+  const [roleAnalytics, setRoleAnalytics] = useState<RoleAnalytics>();
+
+  // ===================================================================
+  // Loading State
+  // ===================================================================
+
+  // const [loading, setLoading] = useState<LoadingStates>({
+  //   roles: true,
+  //   permissions: true,
+  //   analytics: true,
+  //   permissionUpdate: null,
+  //   roleCreate: false,
+  //   roleUpdate: false,
+  //   roleDelete: false
+  // });
+
+  const [loading, setLoading] = useState(false);
+
   // ===================================================================
   // Mock Data
   // ===================================================================
@@ -95,18 +125,33 @@ const RoleManagementComponent: React.FC<{
   //   recentChanges: 3
   // };
 
+  // ===================================================================
+  // Real Functionality Data
+  // ===================================================================
+
   const data: Role[] = role as Role[];
 
-  const [loading, setLoading] = useState(false);
-  // const [loading, setLoading] = useState<LoadingStates>({
-  //   roles: true,
-  //   permissions: true,
-  //   analytics: true,
-  //   permissionUpdate: null,
-  //   roleCreate: false,
-  //   roleUpdate: false,
-  //   roleDelete: false
-  // });
+  const [roleList, setRoles] = useState<Role[]>(data);
+  
+  useEffect(() => {
+    setRoles(data);
+  }, [data]);
+
+  useEffect(() => {
+    const mostUsedRole = (arr: { roleName: string }[]) => Object.entries(
+      arr.reduce((acc, { roleName }) => ((acc[roleName] = (acc[roleName] || 0) + 1), acc), {} as Record<string, number>)
+    ).reduce((a, b) => (b[1] > a[1] ? b : a), ["", 0])[0];
+
+    setRoleAnalytics({
+      totalRoles: role.length,
+      activeRoles: role.filter(r => r.active).length,
+      systemRoles: role.filter(r => r.id === SYSTEM_ROLE).length,
+      customRoles: role.filter(r => r.id !== SYSTEM_ROLE).length,
+      averagePermissions: Math.round(role.reduce(sum => sum + perms.length, 0) / role.length),
+      mostUsedRole: mostUsedRole(role).replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
+      recentChanges: 0
+    });
+  }, [perms.length, role]);
 
   // ===================================================================
   // CRUD Configuration
@@ -167,7 +212,7 @@ const RoleManagementComponent: React.FC<{
         onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`)
       },
       {
-        key: "edit",
+        key: "update",
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
@@ -180,7 +225,8 @@ const RoleManagementComponent: React.FC<{
         // icon: TrashBinIcon,
         onClick: (roleItem: Role) => {
           console.log("Delete role:", roleItem.id);
-        }
+        },
+        condition: (roleItem: Role) => roleItem.id !== SYSTEM_ROLE
       }
     ]
   };
@@ -203,13 +249,7 @@ const RoleManagementComponent: React.FC<{
           // userItem: UserProfile
         ) => {
           return (
-            // Content
             <>
-              {/*
-              <UserMetaCard meta={userItem?.meta as UserMeta} />
-              <UserInfoCard info={userItem as UserEntity} editable={false} />
-              <UserAddressCard address={userItem?.address as UserAddress} editable={false} />
-              */}
               {/* <UserMetaCard meta={userItem?.meta as UserMeta} /> */}
               {/* <UserInfoCard info={userItem as UserProfile} editable={false} /> */}
               {/* <UserAddressCard address={userItem?.address as UserAddress} editable={false} /> */}
@@ -261,50 +301,28 @@ const RoleManagementComponent: React.FC<{
       key: "id",
       label: "Role",
       type: "select" as const,
-      options: role.map(role => ({ value: role.id, label: role.roleName })),
+      options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
       placeholder: "Select role"
     },
-    {
-      key: "permissions",
-      label: "Permissions",
-      type: "select" as const,
-      options: perms.map(p => ({ value: p.id, label: `${p.permName} - ${p.groupName}` })),
-      multiple: true,
-      placeholder: "Select one or more permissions",
-      searchable: true,
-      clearable: true
-    }
+    // {
+    //   key: "permissions",
+    //   label: "Permissions",
+    //   type: "customizable-select" as const,
+    //   options: perms.map(p => ({ value: p.id, label: `${p.groupName} - ${p.permName}` })),
+    //   multiple: true,
+    //   placeholder: "Select permissions",
+    //   searchable: true,
+    //   clearable: true
+    // }
   ];
 
   // ===================================================================
   // Bulk Actions
   // ===================================================================
 
-  // ...
-
   // ===================================================================
   // Export Options
   // ===================================================================
-
-  const exportOptions = [
-    {
-      key: "csv-summary",
-      label: "Summary Report (CSV)",
-      format: "csv" as const,
-      columns: ["name", "description"]
-    },
-    {
-      key: "csv-detailed",
-      label: "Detailed Report (CSV)",
-      format: "csv" as const,
-      columns: ["name", "description", "permissions"]
-    },
-    {
-      key: "json-full",
-      label: "Complete Data (JSON)",
-      format: "json" as const
-    }
-  ];
 
   // ===================================================================
   // Custom Filter Function for Enhanced MultiSelect Support
@@ -360,11 +378,6 @@ const RoleManagementComponent: React.FC<{
   // Event Handlers
   // ===================================================================
 
-  const [roleList, setRoles] = useState<Role[]>(data);
-  useEffect(() => {
-    setRoles(data);
-  }, [data]);
-
   // const [selectedView, setSelectedView] = useState<"cards" | "matrix" | "hierarchy">("cards");
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -395,11 +408,6 @@ const RoleManagementComponent: React.FC<{
     }));
   }, []);
 
-  // const [trigger] = useLazyGetUserRolesPermissionsByRoleIdQuery();
-  // const [createRolePermissions] = useCreateUserRolePermissionsMutation();
-  const [updateUserRolesPermissions] = useUpdateUserRolesPermissionsMutation();
-  // const [updateUserRolesPermissionsResponse, setUpdateUserRolesPermissionsResponse] = useState<ApiResponse<RolePermission[]>>();
-
   const handlePermissionSave = async () => {
     try {
       setLoading(true);
@@ -413,10 +421,10 @@ const RoleManagementComponent: React.FC<{
           };
         }
       )};
-      // console.log(payload);
       const response = await updateUserRolesPermissions(payload).unwrap();
+
       // setUpdateUserRolesPermissionsResponse(response);
-      // console.log("Update roles and permissions:", response);
+
       if (response?.status) {
         addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
       }
@@ -447,7 +455,6 @@ const RoleManagementComponent: React.FC<{
       // };
     }
     catch (error) {
-      // console.error("Error reading role permissions:", error);
       addToast("error", `Roles Permissions Management: ${error}`);
     }
     finally {
@@ -538,7 +545,6 @@ const RoleManagementComponent: React.FC<{
   //     lastModified: new Date().toISOString(),
   //     createdBy: "current_user@company.com"
   //   };
-    
   //   setRoles(prevRoles => [...prevRoles, newRole]);
   // }, []);
 
@@ -575,13 +581,15 @@ const RoleManagementComponent: React.FC<{
   // }, []);
 
   // ===================================================================
-  // Custom Card Rendering
+  // Custom Rendering
   // ===================================================================
 
   const renderCard = (roleItem: Role) => {
     const roleConfig = role.find(r => r.id === roleItem.id);
     return <RoleCard
       role={roleConfig as Role}
+      // rolePermissions={rolesPerms as RolePermission[]}
+      permission={perms as Permission[]}
       onEdit={() => navigate(`/role/${roleItem.id}/edit`)}
       onDelete={() => console.log("Delete role:", roleItem.id)}
       onClone={() => console.log("Clone role:", roleItem.id)}
@@ -612,20 +620,18 @@ const RoleManagementComponent: React.FC<{
   // Render Component
   // ===================================================================
 
-  // const attrMetrics = [
-  //   { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
-  //   { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-  //   { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
-  //   { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
-  //   { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
-  //   { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
-  // ];
-
-  const { toasts, addToast, removeToast } = useToast();
+  const attrMetrics = [
+    { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
+    { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
+    { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
+    { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
+    { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
+  ];
 
   return (
     <>
-      {/* <MetricsView metrics={mockAnalytics} attrMetrics={attrMetrics} /> */}
+      <MetricsView metrics={roleAnalytics} attrMetrics={attrMetrics} />
 
       <EnhancedCrudContainer
         advancedFilters={advancedFilters}
@@ -649,10 +655,10 @@ const RoleManagementComponent: React.FC<{
         displayModes={["card", "matrix"]}
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
-        exportOptions={exportOptions}
+        // exportOptions={exportOptions}
         features={{
           bulkActions: false,
-          export: true,
+          export: false,
           filtering: true,
           keyboardShortcuts: true,
           pagination: true,
@@ -662,6 +668,7 @@ const RoleManagementComponent: React.FC<{
         }}
         // keyboardShortcuts={[]}
         // loading={false}
+        module="role"
         previewConfig={previewConfig}
         searchFields={["name", "description"]}
         // customFilterFunction={() => true}

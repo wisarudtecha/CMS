@@ -14,6 +14,7 @@ import type {
   // WorkflowExecution,
   ApiResponse 
 } from "@/types";
+import { WorkflowData } from "@/types/workflow";
 
 export interface WorkflowCreateData {
   name: string;
@@ -35,23 +36,27 @@ export interface WorkflowExecutionData {
 export const workflowApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Workflow CRUD
-    getWorkflows: builder.query<ApiResponse<Workflow[]>, { 
-      page?: number;
-      limit?: number;
-      category?: string;
-      status?: "active" | "inactive";
-      search?: string;
-    }>({
-      query: (params) => {
-        const searchParams = new URLSearchParams();
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined) {
-            searchParams.append(key, String(value));
-          }
-        });
-        return `/workflows?${searchParams.toString()}`;
-      },
-      providesTags: ["Workflow"],
+    // getWorkflows: builder.query<ApiResponse<Workflow[]>, { 
+    //   page?: number;
+    //   limit?: number;
+    //   category?: string;
+    //   status?: "active" | "inactive";
+    //   search?: string;
+    // }>({
+    //   query: (params) => {
+    //     const searchParams = new URLSearchParams();
+    //     Object.entries(params).forEach(([key, value]) => {
+    //       if (value !== undefined) {
+    //         searchParams.append(key, String(value));
+    //       }
+    //     });
+    //     return `/workflows?${searchParams.toString()}`;
+    //   },
+    //   providesTags: ["Workflow"],
+    // }),
+
+    getWorkflows: builder.query<ApiResponse<WorkflowData[]>, string>({
+      query: () => `/workflows`,
     }),
 
     getWorkflow: builder.query<Workflow, string>({

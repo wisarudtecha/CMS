@@ -1,11 +1,6 @@
 // /src/layout/AppSidebar.tsx
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { Link, useLocation } from "react-router";
-import { useSidebar } from "../context/SidebarContext";
-import { useTranslation } from "../hooks/useTranslation";
-// import SidebarWidget from "./SidebarWidget";
-// import Button from "@/components/ui/button/Button";
-
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -22,106 +17,193 @@ import {
   TaskIcon,
   UserCircleIcon,
   LockIcon
-} from "../icons";
-import {
-  BoxIcon,
-  // PencilIcon
-} from "lucide-react";
+} from "@/icons";
+import { BoxIcon } from "lucide-react";
+import { useSidebar } from "@/context/SidebarContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
+import { AuthService } from "@/utils/authService";
+// import Button from "@/components/ui/button/Button";
+// import SidebarWidget from "@/layout/SidebarWidget";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  permission?: boolean;
+  subItems?: {
+    name: string;
+    path: string;
+    pro?: boolean;
+    new?: boolean;
+    permission?: boolean;
+  }[];
 };
 
 const AppSidebar: React.FC = () => {
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  useEffect(() => {
+    const fetchSystemAdminStatus = async () => {
+      setIsSystemAdmin(await AuthService.isSystemAdmin());
+    }
+    fetchSystemAdminStatus();
+  }, [isSystemAdmin]);
+
   const [menuDisplay, setMenuDisplay] = useState("hidden");
 
+  const permissions = usePermissions();
   const { t } = useTranslation();
 
   // Main Menu
   const mainItems: NavItem[] = useMemo(() => [
     {
       icon: <TaskIcon />,
-      name: "Case Management", // Case Management
+      name: "Case Management",
+      permission: permissions.hasAnyPermission([
+        "case.create", "case.assign", "case.view_history",
+      ]),
       subItems: [
-        // { name: "Case Creation", path: "/case-creation", pro: false },  // Case Management (Archived)
-        { name: "Case Creation", path: "/case/creation", pro: false },  // Case Management
-        // { name: "Case Assignment", path: "/case-assignment", pro: false },  // Case Assignment (Archived)
-        { name: "Case Assignment", path: "/case/assignment", pro: false },  // Case Assignment
-        // { name: "Case History", path: "/kanban", pro: false },  // Case History (Archived)
-        { name: "Case History", path: "/case/history", pro: false },  // Case History
-      ]
+        {
+          name: "Case Creation",
+          path: "/case/creation",
+          permission: permissions.hasPermission("case.create"),
+        },
+        {
+          name: "Case Assignment",
+          path: "/case/assignment",
+          permission: permissions.hasPermission("case.assign"),
+        },
+        {
+          name: "Case History",
+          path: "/case/history",
+          permission: permissions.hasPermission("case.view_history"),
+        },
+      ],
     },
     {
       icon: <PieChartIcon />,
-      name: "Dashboard & Analytics", // Dashboard & Analytics
+      name: "Dashboard & Analytics",
+      permission: permissions.hasAnyPermission([
+        "dashboard.view",
+      ]),
       subItems: [
-        // { name: "Overview SLA", path: "/overview-sla", pro: false },
-        // { name: "Ticket Summary", path: "/ticket-summary", pro: false },
-        // { name: "Ticket Details", path: "/ticket-details", pro: false },
-        // { name: "Transaction Summary", path: "/transaction-summary", pro: false },
-        // { name: "Transaction Details", path: "/transaction-details", pro: false },
-        // { name: "Responder Performance", path: "/responder-performance", pro: false },
-        { name: "Analytics", path: "/dashboard/analytics", pro: false }, // Mockup
-        { name: "Call Center", path: "/dashboard/callcenter", pro: false }, // Mockup
-        { name: "Agent Status", path: "/dashboard/agent-status", pro: false }, // Mockup
-        { name: "Service", path: "/dashboard/service", pro: false }, // Mockup
-      ]
+        // { name: "Overview SLA", path: "/overview-sla", permission: permissions.hasPermission("dashboard.view"), },
+        // { name: "Ticket Summary", path: "/ticket-summary", permission: permissions.hasPermission("dashboard.view"), },
+        // { name: "Ticket Details", path: "/ticket-details", permission: permissions.hasPermission("dashboard.view"), },
+        // { name: "Transaction Summary", path: "/transaction-summary", permission: permissions.hasPermission("dashboard.view"), },
+        // { name: "Transaction Details", path: "/transaction-details", permission: permissions.hasPermission("dashboard.view"), },
+        // { name: "Responder Performance", path: "/responder-performance", permission: permissions.hasPermission("dashboard.view"), },
+        {
+          name: "Analytics",
+          path: "/dashboard/analytics",
+          permission: permissions.hasPermission("dashboard.view"),
+        }, // Mockup
+        {
+          name: "Call Center",
+          path: "/dashboard/callcenter",
+          permission: permissions.hasPermission("dashboard.view"),
+        }, // Mockup
+        {
+          name: "Agent Status",
+          path: "/dashboard/agent-status",
+          permission: permissions.hasPermission("dashboard.view"),
+        }, // Mockup
+        {
+          name: "Service",
+          path: "/dashboard/service",
+          permission: permissions.hasPermission("dashboard.view"),
+        }, // Mockup
+      ],
     },
     {
       icon: <FileIcon />,
-      name: "Report", // Report
+      name: "Report",
       path: "/report",
-      // subItems: [
-      //   { name: "...", path: "/...", pro: false }, // ...
-      // ]
+      permission: permissions.hasAnyPermission([
+        "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
+      ]),
     },
     {
       icon: <ListIcon />,
-      name: "Form Builder", // Form Builder
+      name: "Form Builder",
+      permission: permissions.hasAnyPermission([
+        "form.view", "form.create",
+      ]),
       subItems: [
-        { name: "Form Management", path: "/form-management", pro: false },
-        { name: "Form Builder", path:"/dynamic-form", pro:false }
+        {
+          name: "Form Management",
+          path: "/form-management",
+          permission: permissions.hasPermission("form.view"),
+        },
+        {
+          name: "Form Builder",
+          path:"/dynamic-form",
+          permission: permissions.hasPermission("form.create"),
+        },
       ],
     },
     {
       icon: <BoxIcon />,
-      name: "Workflow", // Workflow
+      name: "Workflow",
+      permission: permissions.hasAnyPermission([
+        "workflow.view", "workflow.create",
+      ]),
       subItems: [
-        { name: "Workflow Management", path: "/workflow/list", pro: false },  // Workflow Management
-        { name: "Workflow Builder", path: "/workflow/editor/v2", pro: false },  // Workflow Builder
-      ]
+        {
+          name: "Workflow Management",
+          path: "/workflow/list",
+          permission: permissions.hasPermission("workflow.view"),
+        },
+        {
+          name: "Workflow Builder",
+          path: "/workflow/editor/v2",
+          permission: permissions.hasPermission("workflow.create"),
+        },
+      ],
     },
     {
       icon: <PlugInIcon />,
-      name: "System Configuration", // System Configuration
+      name: "System Configuration",
+      permission: permissions.hasAnyPermission([
+        "user.view", "role.view", "organization.view", "unit.view", "service.view",
+      ]),
       subItems: [
-        { name: "User Management", path: "/users", pro: false },  // User Management
-        { name: "Roles & Privileges", path: "/roles", pro: false },  // Roles & Privileges
-        { name: "Organization Management", path: "/organization", pro: false },  // Organization Management
-        { name: "Unit Management", path: "/unit", pro: false },  // Unit Management
-        { name: "Service Management", path: "/service", pro: false },  // Service Management
-      ]
+        {
+          name: "User Management",
+          path: "/users",
+          permission: permissions.hasPermission("user.view"),
+        },
+        {
+          name: "Roles & Privileges",
+          path: "/roles",
+          permission: permissions.hasPermission("role.view"),
+        },
+        {
+          name: "Organization Management",
+          path: "/organization",
+          permission: permissions.hasPermission("organization.view"),
+        },
+        {
+          name: "Unit Management",
+          path: "/unit",
+          permission: permissions.hasPermission("unit.view"),
+        },
+        {
+          name: "Service Management",
+          path: "/service",
+          permission: permissions.hasPermission("service.view"),
+        },
+      ],
     },
-    // {
-    //   icon: <... />,
-    //   name: "...", // ...
-    //   path: "/...",
-    //   subItems: [
-    //     { name: "...", path: "/...", pro: false }, // ...
-    //   ]
-    // },
-  ], []);
+  ], [permissions]);
 
   const navItems: NavItem[] = useMemo(() => [
     {
       icon: <GridIcon />,
       name: t("navigation.sidebar.menu.dashboard.title"),
       subItems: [
-        { name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", pro: false },
-        { name: "Dashboard Framework", path: "/dashboard", pro: false },
+        { name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", },
+        { name: "Dashboard Framework", path: "/dashboard", },
       ],
     },
     {
@@ -138,20 +220,20 @@ const AppSidebar: React.FC = () => {
       name: t("navigation.sidebar.menu.forms.title"),
       icon: <ListIcon />,
       subItems: [
-        { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", pro: false },
+        { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", },
       ],
     },
     {
       name: t("navigation.sidebar.menu.tables.title"),
       icon: <TableIcon />,
-      subItems: [{ name: t("navigation.sidebar.menu.tables.nested.basic_tables"), path: "/basic-tables", pro: false }],
+      subItems: [{ name: t("navigation.sidebar.menu.tables.nested.basic_tables"), path: "/basic-tables", }],
     },
     {
       name: t("navigation.sidebar.menu.pages.title"),
       icon: <PageIcon />,
       subItems: [
-        { name: t("navigation.sidebar.menu.pages.nested.blank_page"), path: "/blank", pro: false },
-        { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", pro: false },
+        { name: t("navigation.sidebar.menu.pages.nested.blank_page"), path: "/blank", },
+        { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", },
       ],
     },
   ], [t]);
@@ -161,40 +243,40 @@ const AppSidebar: React.FC = () => {
       icon: <PieChartIcon />,
       name: t("navigation.sidebar.other.charts.title"),
       subItems: [
-        { name: t("navigation.sidebar.other.charts.nested.line_chart"), path: "/line-chart", pro: false },
-        { name: t("navigation.sidebar.other.charts.nested.bar_chart"), path: "/bar-chart", pro: false },
+        { name: t("navigation.sidebar.other.charts.nested.line_chart"), path: "/line-chart", },
+        { name: t("navigation.sidebar.other.charts.nested.bar_chart"), path: "/bar-chart", },
       ],
     },
     {
       icon: <BoxCubeIcon />,
       name: t("navigation.sidebar.other.ui_elements.title"),
       subItems: [
-        { name: t("navigation.sidebar.other.ui_elements.nested.alerts"), path: "/alerts", pro: false },
-        { name: t("navigation.sidebar.other.ui_elements.nested.avatar"), path: "/avatars", pro: false },
-        { name: t("navigation.sidebar.other.ui_elements.nested.badge"), path: "/badge", pro: false },
-        { name: t("navigation.sidebar.other.ui_elements.nested.buttons"), path: "/buttons", pro: false },
-        { name: "Buttons Customize", path: "/buttons-customize", pro: false },
-        { name: t("navigation.sidebar.other.ui_elements.nested.images"), path: "/images", pro: false },
-        { name: t("navigation.sidebar.other.ui_elements.nested.videos"), path: "/videos", pro: false },
+        { name: t("navigation.sidebar.other.ui_elements.nested.alerts"), path: "/alerts", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.avatar"), path: "/avatars", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.badge"), path: "/badge", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.buttons"), path: "/buttons", },
+        { name: "Buttons Customize", path: "/buttons-customize", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.images"), path: "/images", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.videos"), path: "/videos", },
       ],
     },
     {
       icon: <PlugInIcon />,
       name: t("navigation.sidebar.other.authentication.title"),
       subItems: [
-        { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", pro: false },
-        { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", pro: false },
-        { name: "Authenticate Inspector", path: "/authenticate", pro: false },
+        { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", },
+        { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", },
+        { name: "Authenticate Inspector", path: "/authenticate", },
       ],
     },
     {
       icon: <LockIcon />,
       name: "Security & Error",
       subItems: [
-        { name: "Error Boundaries", path: "/security/error-boundaries", pro: false },
-        { name: "Loading & Skeletons", path: "/security/loading-system", pro: false },
-        { name: "Security Alert", path: "/security/security-alerts", pro: false },
-        { name: "Offline Handling", path: "/security/offline-state", pro: false },
+        { name: "Error Boundaries", path: "/security/error-boundaries", },
+        { name: "Loading & Skeletons", path: "/security/loading-system", },
+        { name: "Security Alert", path: "/security/security-alerts", },
+        { name: "Offline Handling", path: "/security/offline-state", },
       ],
     },
   ], [t]);
@@ -204,14 +286,14 @@ const AppSidebar: React.FC = () => {
       icon: <BoxCubeIcon />,
       name: "Case Management",
       subItems: [
-        { name: "Case History", path: "/kanban", pro: false },
+        { name: "Case History", path: "/kanban", },
       ],
     },
     {
       icon: <BoxCubeIcon />,
       name: "Workflow",
       subItems: [
-        { name: "Workflow Builder v0.1.0", path: "/workflow/editor/v1", pro: false },
+        { name: "Workflow Builder v0.1.0", path: "/workflow/editor/v1", },
       ],
     },
   ];
@@ -242,7 +324,7 @@ const AppSidebar: React.FC = () => {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "menu" | "others",
+                type: menuType as "main" | "menu" | "others" | "archives",
                 index,
               });
               submenuMatched = true;
@@ -295,54 +377,24 @@ const AppSidebar: React.FC = () => {
   const renderMenuItems = (items: NavItem[], menuType: "main" | "menu" | "others" | "archives") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${
-                openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive"
-              } cursor-pointer ${
-                !isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "lg:justify-start"
-              }`}
-            >
-              <span
-                className={`menu-item-icon-size  ${
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
-                }`}
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                    openSubmenu?.type === menuType &&
-                    openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : ""
-                  }`}
-                />
-              )}
-            </button>
-          ) : (
-            nav.path && (
-              <Link
-                to={nav.path}
+        (nav.permission || isSystemAdmin) && (
+          <li key={nav.name}>
+            {nav.subItems ? (
+              <button
+                onClick={() => handleSubmenuToggle(index, menuType)}
                 className={`menu-item group ${
-                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                    ? "menu-item-active"
+                    : "menu-item-inactive"
+                } cursor-pointer ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "lg:justify-start"
                 }`}
               >
                 <span
-                  className={`menu-item-icon-size ${
-                    isActive(nav.path)
+                  className={`menu-item-icon-size  ${
+                    openSubmenu?.type === menuType && openSubmenu?.index === index
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
                   }`}
@@ -352,65 +404,99 @@ const AppSidebar: React.FC = () => {
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <span className="menu-item-text">{nav.name}</span>
                 )}
-              </Link>
-            )
-          )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
-            >
-              <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
-                    <Link
-                      to={subItem.path}
-                      className={`menu-dropdown-item ${
-                        isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                      }`}
-                    >
-                      {subItem.name}
-                      <span className="flex items-center gap-1 ml-auto">
-                        {subItem.new && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            new
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <ChevronDownIcon
+                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                      openSubmenu?.type === menuType &&
+                      openSubmenu?.index === index
+                        ? "rotate-180 text-brand-500"
+                        : ""
+                    }`}
+                  />
+                )}
+              </button>
+            ) : (
+              nav.path && (
+                <Link
+                  to={nav.path}
+                  className={`menu-item group ${
+                    isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                  }`}
+                >
+                  <span
+                    className={`menu-item-icon-size ${
+                      isActive(nav.path)
+                        ? "menu-item-icon-active"
+                        : "menu-item-icon-inactive"
+                    }`}
+                  >
+                    {nav.icon}
+                  </span>
+                  {(isExpanded || isHovered || isMobileOpen) && (
+                    <span className="menu-item-text">{nav.name}</span>
+                  )}
+                </Link>
+              )
+            )}
+            {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+              <div
+                ref={(el) => {
+                  subMenuRefs.current[`${menuType}-${index}`] = el;
+                }}
+                className="overflow-hidden transition-all duration-300"
+                style={{
+                  height:
+                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                      ? `${subMenuHeight[`${menuType}-${index}`]}px`
+                      : "0px",
+                }}
+              >
+                <ul className="mt-2 space-y-1 ml-9">
+                  {nav.subItems.map((subItem) => (
+                    (subItem.permission || isSystemAdmin) && (
+                      <li key={subItem.name}>
+                        <Link
+                          to={subItem.path}
+                          className={`menu-dropdown-item ${
+                            isActive(subItem.path)
+                              ? "menu-dropdown-item-active"
+                              : "menu-dropdown-item-inactive"
+                          }`}
+                        >
+                          {subItem.name}
+                          <span className="flex items-center gap-1 ml-auto">
+                            {subItem.new && (
+                              <span
+                                className={`ml-auto ${
+                                  isActive(subItem.path)
+                                    ? "menu-dropdown-badge-active"
+                                    : "menu-dropdown-badge-inactive"
+                                } menu-dropdown-badge`}
+                              >
+                                new
+                              </span>
+                            )}
+                            {subItem.pro && (
+                              <span
+                                className={`ml-auto ${
+                                  isActive(subItem.path)
+                                    ? "menu-dropdown-badge-active"
+                                    : "menu-dropdown-badge-inactive"
+                                } menu-dropdown-badge`}
+                              >
+                                pro
+                              </span>
+                            )}
                           </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            pro
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </li>
+                        </Link>
+                      </li>
+                    )
+                  ))}
+                </ul>
+              </div>
+            )}
+          </li>
+        )
       ))}
     </ul>
   );
@@ -432,7 +518,7 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {isExpanded || isHovered || isMobileOpen ? (
+      {(isExpanded || isHovered || isMobileOpen) && isSystemAdmin ? (
         <div className="absolute bottom-16 lg:bottom-0 left-0 p-6 w-full bg-white dark:bg-gray-900 z-100">
           <button
             onClick={() => handleMenuDisplay()}
@@ -500,56 +586,61 @@ const AppSidebar: React.FC = () => {
             <div className={`mb-6`}>
               {renderMenuItems(mainItems, "main")}
             </div>
-            <div className={`mb-6 ${menuDisplay}`}>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  // "Menu"
-                  t("navigation.sidebar.menu.title")
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "menu")}
-            </div>
-            <div className={`mb-6 ${menuDisplay}`}>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  // "Others"
-                  t("navigation.sidebar.other.title")
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
-            <div className={`mb-6 ${menuDisplay}`}>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Archives"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(archivesItems, "archives")}
-            </div>
+            {isSystemAdmin && (
+              <>
+                <div className={`mb-6 ${menuDisplay}`}>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      // "Menu"
+                      t("navigation.sidebar.menu.title")
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(navItems, "menu")}
+                </div>
+                <div className={`mb-6 ${menuDisplay}`}>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      // "Others"
+                      t("navigation.sidebar.other.title")
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(othersItems, "others")}
+                </div>
+                <div className={`mb-6 ${menuDisplay}`}>
+                  <h2
+                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                      !isExpanded && !isHovered
+                        ? "lg:justify-center"
+                        : "justify-start"
+                    }`}
+                  >
+                    {isExpanded || isHovered || isMobileOpen ? (
+                      // "Archives"
+                      "Archives"
+                    ) : (
+                      <HorizontaLDots />
+                    )}
+                  </h2>
+                  {renderMenuItems(archivesItems, "archives")}
+                </div>
+              </>
+            )}
           </div>
         </nav>
         {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}

@@ -61,24 +61,25 @@ export const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="xl:flex items-center justify-between">
       <div className="xl:flex items-center gap-4">
-        <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0">
+        <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
           Showing {startEntry}-{endEntry} of {pagination.total || 0} entries
         </div>
         <div className="flex items-center gap-2 mb-2 xl:mb-0">
-          <span className="text-sm text-gray-600 dark:text-gray-300">Show:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">Show:</span>
           <span>
             <Select
               value={pagination.pageSize.toString()}
               onChange={(value) => onPageSizeChange(parseInt(value))}
               options={pageSizeOptions}
+              className="cursor-pointer"
             />
           </span>
-          <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">entries</span>
         </div>
       </div>
 
       <div className="xl:flex items-center gap-2">
-        <div className="flex text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0">
+        <div className="flex text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
           Page {pagination.page} of {totalPages}
         </div>
         
