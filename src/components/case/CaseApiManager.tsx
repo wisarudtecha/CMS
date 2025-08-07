@@ -2,6 +2,7 @@ import store from "@/store";
 import { caseApi, CaseListParams } from "@/store/api/caseApi";
 import { customerApi } from "@/store/api/custommerApi";
 import { formApi } from "@/store/api/formApi";
+import { CaseTypeSubType } from "../interface/CaseType";
 
 
 export const useFetchCustomers = async () => {
@@ -12,14 +13,14 @@ export const useFetchCustomers = async () => {
 
 };
 
-export const useFetchCase = async (params:CaseListParams) => {
+export const useFetchCase = async (params: CaseListParams) => {
   const result = await store.dispatch(
     caseApi.endpoints.getListCase.initiate(params)
   );
-  if(result.data?.data) {
-  localStorage.setItem("caseList", JSON.stringify(result.data?.data))
-  }else{
-  localStorage.setItem("caseList", "[]")
+  if (result.data?.data) {
+    localStorage.setItem("caseList", JSON.stringify(result.data?.data))
+  } else {
+    localStorage.setItem("caseList", "[]")
   }
 
 };
@@ -32,11 +33,25 @@ export const useFetchTypeSubType = async () => {
 
 };
 
-export const useFetchSubTypeForm= async (subType:string) => {
+export const useFetchSubTypeForm = async (subType: string) => {
   const SubTypeForm = await store.dispatch(
     formApi.endpoints.postSubTypeForm.initiate(subType)
   );
-  localStorage.setItem("subTypeForm-"+subType, JSON.stringify(SubTypeForm.data?.data))
+  localStorage.setItem("subTypeForm-" + subType, JSON.stringify(SubTypeForm.data?.data))
+};
+
+export const useFetchSubTypeAllForm = async () => {
+  const typeSubTypeForm = localStorage.getItem("caseTypeSubType");
+  if (typeSubTypeForm) {
+    const typeSubTypeFormList = JSON.parse(typeSubTypeForm) as CaseTypeSubType[];
+    typeSubTypeFormList.forEach(async (item) => {
+      const SubTypeForm = await store.dispatch(
+        formApi.endpoints.postSubTypeForm.initiate(item.sTypeId)
+      );
+      localStorage.setItem("subTypeForm-" + item.sTypeId, JSON.stringify(SubTypeForm.data?.data))
+    });
+  }
+
 };
 
 export const useFetchDeptCommandStations = async () => {
@@ -62,4 +77,5 @@ export const caseApiSetup = () => {
   useFetchTypeSubType();
   useFetchDeptCommandStations();
   useFetchCaseStatus();
+  useFetchSubTypeAllForm();
 }

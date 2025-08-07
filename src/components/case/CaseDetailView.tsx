@@ -39,7 +39,6 @@ import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
 import PreviewDataBeforeSubmit from "./PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
-import { useFetchSubTypeForm } from "./CaseApiManager"
 import { CreateCase, DepartmentCommandStationData, DepartmentCommandStationDataMerged, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
@@ -393,7 +392,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [serviceCenterData, setServiceCenterData] = useState<DepartmentCommandStationDataMerged>({} as DepartmentCommandStationDataMerged);
     const [customerData, setCustomerData] = useState<Custommer>({
     } as Custommer);
-    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") ;
+    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}");
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
@@ -445,7 +444,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         const caseListData = localStorage.getItem("caseList") || "[]";
         if (caseListData) {
             const caseList = JSON.parse(caseListData) as CaseList[];
-            caseList.push({ ...(createJson as object), createdAt: TodayDate() ,createdBy:profile?.username || ""} as CaseList);
+            caseList.push({ ...(createJson as object), createdAt: TodayDate(), createdBy: profile?.username || "" } as CaseList);
             localStorage.setItem("caseList", JSON.stringify(caseList));
         }
         return true;
@@ -653,11 +652,11 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
 
         if (newCaseType) {
-            const localStorageItem = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
+            // const localStorageItem = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
 
-            if (!localStorageItem) {
-                await useFetchSubTypeForm(newCaseType.sTypeId);
-            }
+            // if (!localStorageItem) {
+            //     await useFetchSubTypeForm(newCaseType.sTypeId);
+            // }
             setCaseType(prevCaseType => ({
                 ...prevCaseType,
                 caseType: newValue
