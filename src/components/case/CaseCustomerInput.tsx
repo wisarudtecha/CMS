@@ -48,10 +48,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 updatedCustomerData = {
                     ...updatedCustomerData,
                     mobileNo: value,
-                    name: "",
-                    email: "",
-                    photo: "",
-                    id: "",
+               
                 };
             }
         } else {
