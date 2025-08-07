@@ -13,7 +13,7 @@ import {
     ChevronUp,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
-import { CaseItem } from "@/components/interface/CaseItem"
+import { CaseItem, CaseList } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
@@ -32,7 +32,7 @@ import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
 import { CaseTypeSubType } from "../interface/CaseType"
-import type { Custommer, User } from "@/types";
+import type { Custommer } from "@/types";
 import React from "react"
 import CustomerInput from "./CaseCustomerInput"
 import CustomerPanel from "./CaseCustomerPanel"
@@ -398,53 +398,61 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [serviceCenterData, setServiceCenterData] = useState<DepartmentCommandStationDataMerged>({} as DepartmentCommandStationDataMerged);
     const [customerData, setCustomerData] = useState<Custommer>({
     } as Custommer);
-    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as User;
+    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") ;
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     const createCaseAction = async (acton: "draft" | "submit") => {
+        const caseVersion = acton === "draft" ? "draft" : "publish";
+        const statusId = acton === "draft" ? "S000" : "S001";
+        const createJson = {
+            formData: updateCaseData?.caseType?.formField,
+            customerName: updateCaseData?.customerData?.name,
+            caseDetail: updateCaseData?.description || "",
+            caseDuration: 0,
+            caseLat: "",
+            caseLon: "",
+            caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
+            caseTypeId: updateCaseData?.caseType?.typeId || "",
+            caseVersion: caseVersion,
+            caselocAddr: updateCaseData?.location || "",
+            caselocAddrDecs: updateCaseData?.location || "",
+            deviceId: "",
+            distId: "70",
+            extReceive: "",
+            phoneNoHide: true,
+            phoneNo: updateCaseData?.customerData?.mobileNo || "",
+            priority: updateCaseData?.caseType?.priority || 0,
+            provId: "10",
+            referCaseId: "",
+            resDetail: "",
+            source: updateCaseData?.customerData?.contractMethod?.id || "",
+            startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
+            statusId: statusId,
+            userarrive: "",
+            userclose: "",
+            usercommand: updateCaseData?.serviceCenter?.commandTh || "",
+            usercreate: profile?.username || "",
+            userreceive: "",
+            nodeId: updateCaseData?.caseType?.formField.nextNodeId || "",
+            wfId: updateCaseData?.caseType?.formField.wfId || "",
+            versions: updateCaseData?.caseType?.formField.versions || "",
+        } as CreateCase;
         try {
-            const caseVersion = acton === "draft" ? "draft" : "publish";
-            const statusId = acton === "draft" ? "S000" : "S001";
-            await createCase({
-                formData: updateCaseData?.caseType?.formField,
-                customerName: updateCaseData?.customerData?.name,
-                arrivedDate: new Date(TodayDate()).toISOString(),
-                caseDetail: updateCaseData?.description || "",
-                caseDuration: 0,
-                caseLat: "",
-                caseLon: "",
-                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
-                caseTypeId: updateCaseData?.caseType?.typeId || "",
-                caseVersion: caseVersion,
-                caselocAddr: updateCaseData?.location || "",
-                caselocAddrDecs: updateCaseData?.location || "",
-                deviceId: "",
-                distId: "70",
-                extReceive: "",
-                phoneNoHide: true,
-                phoneNo: updateCaseData?.customerData?.mobileNo || "",
-                priority: updateCaseData?.caseType?.priority || 0,
-                provId: "10",
-                referCaseId: "",
-                resDetail: "",
-                source: updateCaseData?.customerData?.contractMethod?.id || "",
-                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
-                statusId: statusId,
-                userarrive: "",
-                userclose: "",
-                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
-                usercreate: profile?.name || "",
-                userreceive: "",
-                nodeId: updateCaseData?.caseType?.formField.nextNodeId || "",
-                wfId: updateCaseData?.caseType?.formField.wfId || "",
-                versions: updateCaseData?.caseType?.formField.versions || "",
-            } as CreateCase).unwrap();
+
+            await createCase(createJson).unwrap();
         } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to create case`);
             setShowToast(true);;
             return false;
+        }
+        const caseListData = localStorage.getItem("caseList") || "[]";
+        console.log(profile)
+        if (caseListData) {
+            const caseList = JSON.parse(caseListData) as CaseList[];
+            caseList.push({ ...(createJson as object), createdAt: TodayDate() ,createdBy:profile?.username || ""} as CaseList);
+            localStorage.setItem("caseList", JSON.stringify(caseList));
         }
         return true;
 
@@ -605,7 +613,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         //     }
         // )
         const isNotError = await createCaseAction("submit");
-        if(isNotError === false) {
+        if (isNotError === false) {
             return
         }
         setDisplayedCaseData(updateCaseData);
@@ -746,7 +754,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             return;
         }
         const isNotError = await createCaseAction("draft");
-        if(isNotError === false) {
+        if (isNotError === false) {
             return
         }
         localStorage.setItem("Create Case", JSON.stringify(updateCaseData));

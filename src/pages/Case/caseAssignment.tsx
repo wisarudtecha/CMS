@@ -106,7 +106,7 @@ export default function CasesView() {
         c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
         c.statusId.toLowerCase().includes(generalSearchTerm) ||
         assigneeName.toLowerCase().includes(generalSearchTerm) ||
-        DateStringToDateFormat(c.createdDate).toLowerCase().includes(generalSearchTerm)
+        DateStringToDateFormat(c.createdAt).toLowerCase().includes(generalSearchTerm)
       );
     });
 
@@ -117,8 +117,8 @@ export default function CasesView() {
         aVal = a.caseSTypeId?.toLowerCase() ?? "";
         bVal = b.caseSTypeId?.toLowerCase() ?? "";
       } else if (sortField === "date") {
-        aVal = new Date(a.createdDate).getTime();
-        bVal = new Date(b.createdDate).getTime();
+        aVal = new Date(a.createdAt).getTime();
+        bVal = new Date(b.createdAt).getTime();
       }
       if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
       if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
@@ -247,7 +247,7 @@ export default function CasesView() {
           </div>
         </div>
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdDate)}</span>
+          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt)}</span>
           <Badge>
             {
               (() => {
@@ -334,7 +334,7 @@ export default function CasesView() {
             )}
           </div>
           <div className="col-span-1 flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.createdDate)}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.createdAt)}</span>
           </div>
           <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
             <MessageCircle className="w-3 h-3" />
