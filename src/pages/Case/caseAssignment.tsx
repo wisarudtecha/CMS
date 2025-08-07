@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   MessageCircle,
   Plus,
@@ -20,6 +20,7 @@ import { CaseList } from "@/components/interface/CaseItem"
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/CaseApiManager"
+import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
 
 const statusColumns = [
   { title: "New", group: ["S001", "S008"] },
@@ -63,9 +64,11 @@ export default function CasesView() {
     descriptionSearch: "",
     startDate: "",
     endDate: "",
+    caseType: "",
+    caseSubtype: "",
   })
 
-  // const uniqueCategories = statusColumns.map(col => col.title);
+  const uniqueCategories = statusColumns.map(col => col.title);
 
   const getStatusKey = (caseItem: CaseList): string => {
     const statusColumn = statusColumns.find(column =>
@@ -134,35 +137,79 @@ export default function CasesView() {
   // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
-
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
       // const category = statusColumns.find(col => col.title === localFilters.category)?.group[0] || "";
-        await useFetchCase({
-          detail: localFilters.descriptionSearch,
-          start_date: localFilters.startDate ? new Date(localFilters.startDate).toISOString() : undefined,
-          end_date: localFilters.endDate ? new Date(localFilters.endDate).toISOString() : undefined,
-          category: localFilters.category ? localFilters.category : undefined,
-        });
+      await useFetchCase({
+        caseType: localFilters.caseType ?? undefined,
+        caseSType: localFilters.caseSubtype ?? undefined,
+        detail: localFilters.descriptionSearch,
+        start_date: localFilters.startDate ? new Date(localFilters.startDate).toISOString() : undefined,
+        end_date: localFilters.endDate ? new Date(localFilters.endDate).toISOString() : undefined,
+        category: localFilters.category ? localFilters.category : undefined,
+      });
       const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
 
+    const handleCaseTypeChange = (label: string) => {
+      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item) === label);
+
+      setLocalFilters(prev => ({
+        ...prev,
+        caseSubtype: selectedCaseTypes?.sTypeId || "",
+        caseType: selectedCaseTypes?.typeId || ""
+      }));
+
+    };
+
     const handleClear = async () => {
-      const clearedFilters = { priority: "", category: "", titleSearch: "", descriptionSearch: "", startDate: "", endDate: "" };
+      const clearedFilters = {
+        priority: "",
+        category: "",
+        titleSearch: "",
+        descriptionSearch: "",
+        startDate: "",
+        endDate: "",
+        caseType: "",
+        caseSubtype: ""
+      };
       setAdvancedFilters(clearedFilters);
-      // Fetch the full, unfiltered list of cases
+
       await useFetchCase({ start: 0, length: 100 });
       const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
 
+    const caseTypeOptions = useMemo(() => {
+      if (!caseTypeSupTypeData?.length) return [];
+      return caseTypeSupTypeData.map(item =>
+        mergeCaseTypeAndSubType(item)
+      );
+    }, [caseTypeSupTypeData]);
+
+
     return (<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
       <div>
         <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">Advance Filtering</h3>
         <div className="space-y-4">
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Case Type</label>
+            <SearchableSelect
+              options={caseTypeOptions}
+              value={
+                (() => {
+                  const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType && item.sTypeId === localFilters.caseSubtype);
+                  return found ? mergeCaseTypeAndSubType(found) : "";
+                })()
+              }
+              onChange={(e) => handleCaseTypeChange(e)}
+              className="w-full  border-gray-200 bg-transparent  text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder="Search by Case Type..."
+            />
+          </div>
           <div>
             <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Details Search</label>
             <input
@@ -197,18 +244,18 @@ export default function CasesView() {
               />
             </div>
           </div>
-          {/* <div>
+          <div>
             <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <select
               id="category-filter"
-              value={localFilters.category}
-              onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
+              value={selectedStatus ?? ""}
+              onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
             >
               <option value="">All Categories</option>
               {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-          </div> */}
+          </div>
         </div>
         <div className="mt-6 flex justify-end space-x-3">
           <Button variant="outline" onClick={handleClear}>Clear</Button>
@@ -312,8 +359,8 @@ export default function CasesView() {
           className="grid grid-cols-12 gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 hover:cursor-pointer"
           onClick={() => handleCaseClick(caseItem)}
         >
-          <div className="col-span-4">
-            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
+          <div className="col-span-4 flex items-center">
+            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
           </div>
           <div className="flex col-span-2 items-center space-x-2">
             <Badge color="primary">{caseItem.statusId}</Badge>

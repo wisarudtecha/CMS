@@ -42,6 +42,7 @@ import { Customer } from "@/store/api/custommerApi"
 import { useFetchSubTypeForm } from "./CaseApiManager"
 import { CreateCase, DepartmentCommandStationData, DepartmentCommandStationDataMerged, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
+import { findCaseTypeSubType } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -149,12 +150,6 @@ const requireElements = <span className=" text-red-500 text-sm font-bold">*</spa
 //     }
 
 // }
-const findCaseTypeSubType = (
-    list: CaseTypeSubType[],
-    targetKey: string
-): CaseTypeSubType | undefined => {
-    return list.find(item => mergeCaseTypeAndSubType(item) === targetKey);
-};
 
 
 interface CaseCardProps {

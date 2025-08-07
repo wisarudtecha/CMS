@@ -127,6 +127,8 @@ export interface CaseListParams extends PaginationParams {
     start_date?: string;
     end_date?: string;
     category?: string;
+    caseType?: string;
+    caseSType?: string;
 }
 
 export const caseApi = baseApi.injectEndpoints({
