@@ -41,6 +41,7 @@ import PreviewDataBeforeSubmit from "./PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
 import { useFetchSubTypeForm } from "./CaseApiManager"
 import { CreateCase, DepartmentCommandStationData, DepartmentCommandStationDataMerged, usePostCreateCaseMutation } from "@/store/api/caseApi"
+import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'James Brown', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -291,11 +292,7 @@ interface CaseTypeFormSectionProps {
     editFormData: boolean; // Prop to control if the form is editable
     caseTypeSupTypeData: CaseTypeSubType[];
 }
-export const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
-    return `${data.th ?? ""}` +
-        `${data.sTypeCode ? `-${data.sTypeCode}` : ""}` +
-        `${data.subTypeTh ? `_${data.subTypeTh}` : ""}`
-}
+
 
 const mergeDeptCommandStation = (data: DepartmentCommandStationData) => {
     return `${data.deptTh ? `${data.deptTh}` : ""}` +
@@ -371,7 +368,6 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 
 
 
-
 export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseItem }) {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(!caseData);
@@ -405,6 +401,55 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as User;
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
+
+    const createCaseAction = async (acton: "draft" | "submit") => {
+        try {
+            const caseVersion = acton === "draft" ? "draft" : "publish";
+            const statusId = acton === "draft" ? "S000" : "S001";
+            await createCase({
+                formData: updateCaseData?.caseType?.formField,
+                customerName: updateCaseData?.customerData?.name,
+                arrivedDate: new Date(TodayDate()).toISOString(),
+                caseDetail: updateCaseData?.description || "",
+                caseDuration: 0,
+                caseLat: "",
+                caseLon: "",
+                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
+                caseTypeId: updateCaseData?.caseType?.typeId || "",
+                caseVersion: caseVersion,
+                caselocAddr: updateCaseData?.location || "",
+                caselocAddrDecs: updateCaseData?.location || "",
+                deviceId: "",
+                distId: "70",
+                extReceive: "",
+                phoneNoHide: true,
+                phoneNo: updateCaseData?.customerData?.mobileNo || "",
+                priority: updateCaseData?.caseType?.priority || 0,
+                provId: "10",
+                referCaseId: "",
+                resDetail: "",
+                source: updateCaseData?.customerData?.contractMethod?.id || "",
+                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
+                statusId: statusId,
+                userarrive: "",
+                userclose: "",
+                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
+                usercreate: profile?.name || "",
+                userreceive: "",
+                nodeId: updateCaseData?.caseType?.formField.nextNodeId || "",
+                wfId: updateCaseData?.caseType?.formField.wfId || "",
+                versions: updateCaseData?.caseType?.formField.versions || "",
+            } as CreateCase).unwrap();
+        } catch (error: any) {
+            setToastType("error");
+            setToastMessage(`Failed to create case`);
+            setShowToast(true);;
+            return false;
+        }
+        return true;
+
+    }
+
 
     useEffect(() => {
         setDisplayedCaseData(caseData);
@@ -559,44 +604,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         //         nodeId: updateCaseData?.caseType?.formField.nodeId || "",
         //     }
         // )
-        try {
-            await createCase({
-                formData: updateCaseData?.caseType?.formField,
-                customerName: updateCaseData?.customerData?.name,
-                arrivedDate: new Date(TodayDate()).toISOString(),
-                caseDetail: updateCaseData?.description || "",
-                caseDuration: 0,
-                caseLat: "",
-                caseLon: "",
-                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
-                caseTypeId: updateCaseData?.caseType?.typeId || "",
-                caseVersion: "publish",
-                caselocAddr: updateCaseData?.location || "",
-                caselocAddrDecs: updateCaseData?.location || "",
-                deviceId: "",
-                distId: "70",
-                extReceive: "",
-                phoneNoHide: true,
-                phoneNo: updateCaseData?.customerData?.mobileNo || "",
-                priority: updateCaseData?.caseType?.priority || 0,
-                provId: "10",
-                referCaseId: "",
-                resDetail: "",
-                source: updateCaseData?.customerData?.contractMethod?.id || "",
-                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
-                statusId: "S001",
-                userarrive: "",
-                userclose: "",
-                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
-                usercreate: profile?.name || "",
-                userreceive: "",
-                nodeId: updateCaseData?.caseType?.formField.nodeId || "",
-            } as CreateCase).unwrap();
-        } catch (error: any) {
-            setToastType("error");
-            setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
-            setShowToast(true);;
-            return;
+        const isNotError = await createCaseAction("submit");
+        if(isNotError === false) {
+            return
         }
         setDisplayedCaseData(updateCaseData);
         setEditFormData(false)
@@ -615,7 +625,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setUpdateCaseData(updatedCaseData)
     }, [caseTypeData, customerData, serviceCenterData, caseType])
     const handlePreviewShow = () => {
-        console.log(displayedCaseData)
         setShowPreviewData(true)
     }
 
@@ -736,43 +745,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setShowToast(true);
             return;
         }
-        try {
-            await createCase({
-                formData: updateCaseData?.caseType?.formField,
-                customerName: updateCaseData?.customerData?.name,
-                caseDetail: updateCaseData?.description || "",
-                caseDuration: 0,
-                caseLat: "",
-                caseLon: "",
-                caseSTypeId: updateCaseData?.caseType?.sTypeId || "",
-                caseTypeId: updateCaseData?.caseType?.typeId || "",
-                caseVersion: "draft",
-                caselocAddr: updateCaseData?.location || "",
-                caselocAddrDecs: updateCaseData?.location || "",
-                deviceId: "",
-                distId: "70",
-                extReceive: "",
-                phoneNoHide: true,
-                phoneNo: updateCaseData?.customerData?.mobileNo || "",
-                priority: updateCaseData?.caseType?.priority || 0,
-                provId: "10",
-                referCaseId: "",
-                resDetail: "",
-                source: updateCaseData?.customerData?.contractMethod?.id || "",
-                startedDate: new Date(updateCaseData?.date ?? TodayDate()).toISOString(),
-                statusId: "S000",
-                userarrive: "",
-                userclose: "",
-                usercommand: updateCaseData?.serviceCenter?.commandTh || "",
-                usercreate: profile?.name || "",
-                userreceive: "",
-                nodeId: updateCaseData?.caseType?.formField.nodeId || "",
-            } as CreateCase).unwrap();
-        } catch (error: any) {
-            setToastType("error");
-            setToastMessage(`Failed to update Create Case, ${error.data?.desc || error}`);
-            setShowToast(true);;
-            return;
+        const isNotError = await createCaseAction("draft");
+        if(isNotError === false) {
+            return
         }
         localStorage.setItem("Create Case", JSON.stringify(updateCaseData));
         setDisplayedCaseData(updateCaseData);

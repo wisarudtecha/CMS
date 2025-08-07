@@ -29,7 +29,9 @@ export interface FormField {
 }
 
 export interface FormFieldWithNode extends FormField {
-  nodeId: string;
+  versions: string;
+  nextNodeId: string;
+  wfId:string;
 }
 
 export interface FormFieldWithChildren extends FormField {

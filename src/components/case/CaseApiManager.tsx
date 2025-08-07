@@ -1,5 +1,5 @@
 import store from "@/store";
-import { caseApi } from "@/store/api/caseApi";
+import { caseApi, CaseListParams } from "@/store/api/caseApi";
 import { customerApi } from "@/store/api/custommerApi";
 import { formApi } from "@/store/api/formApi";
 
@@ -12,11 +12,15 @@ export const useFetchCustomers = async () => {
 
 };
 
-export const useFetchCase = async () => {
+export const useFetchCase = async (params:CaseListParams) => {
   const result = await store.dispatch(
-    caseApi.endpoints.getListCase.initiate({ start: 0, length: 100 })
+    caseApi.endpoints.getListCase.initiate(params)
   );
+  if(result.data?.data) {
   localStorage.setItem("caseList", JSON.stringify(result.data?.data))
+  }else{
+  localStorage.setItem("caseList", "[]")
+  }
 
 };
 
@@ -54,7 +58,7 @@ export const useFetchCaseStatus = async () => {
 
 export const caseApiSetup = () => {
   useFetchCustomers();
-  useFetchCase();
+  useFetchCase({ start: 0, length: 100 });
   useFetchTypeSubType();
   useFetchDeptCommandStations();
   useFetchCaseStatus();

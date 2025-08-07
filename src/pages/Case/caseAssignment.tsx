@@ -11,14 +11,16 @@ import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import CaseDetailView, { mergeCaseTypeAndSubType } from "../../components/case/CaseDetailView"
+import CaseDetailView from "../../components/case/CaseDetailView"
 
 import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
 import DateStringToDateFormat from "@/components/date/DateToString"
 import { CaseList } from "@/components/interface/CaseItem"
 import { CaseTypeSubType } from "@/components/interface/CaseType"
-const caseData = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseList[]
+import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
+import { useFetchCase } from "@/components/case/CaseApiManager"
+
 const statusColumns = [
   { title: "New", group: ["S001", "S008"] },
   { title: "Assign", group: ["S002", "S009"] },
@@ -47,113 +49,66 @@ export default function CasesView() {
   const [sortField] = useState<"title" | "date">("date")
   const [sortOrder] = useState<"asc" | "desc">("asc")
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
+
+  // Convert caseData to a state variable to allow dynamic updates
+  const [caseData, setCaseData] = useState<CaseList[]>(() => {
+    const savedCases = localStorage.getItem("caseList");
+    return savedCases ? JSON.parse(savedCases) : [];
+  });
+
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
-    titleSearch: "", 
+    titleSearch: "",
     descriptionSearch: "",
     startDate: "",
     endDate: "",
   })
 
-  const allCasesForMeta: CaseList[] = caseData;
-  const uniqueCategories = [...new Set(allCasesForMeta.map(c => c.statusId).filter(Boolean))];
+  // const uniqueCategories = statusColumns.map(col => col.title);
 
   const getStatusKey = (caseItem: CaseList): string => {
     const statusColumn = statusColumns.find(column =>
       column.group.includes((caseItem as any).statusId)
     );
-
     return statusColumn ? statusColumn.title : "";
   };
 
-  const matchingSubTypesNames = (caseSTypeId: string ,caseTypeSupType: CaseTypeSubType[]): string => {
-    const matchingSubType = caseTypeSupType.find(item => item.sTypeId === caseSTypeId
-
-    );
+  const matchingSubTypesNames = (caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
+    const matchingSubType = caseTypeSupType.find(item => item.sTypeId === caseSTypeId);
     return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : caseSTypeId;
   }
-  const handleCaseClick = (caseItem: CaseList) => {
 
+  const handleCaseClick = (caseItem: CaseList) => {
     setSelectedCase(caseItem)
   }
+
   const handleAdvanceFilterClose = () => {
     setShowAdvanceFilter(false)
   }
 
+  // Refactored to remove advanced filtering logic, which is now handled by the API
   const getFilteredCases = () => {
-    let allCases: CaseList[] = []
-    if (Array.isArray(caseData)) {
-      const mergeWithAssignee = (cases: any[] = []) =>
-        cases.map(c => ({
-          ...c,
-          assignee: c.assignee
-            ? c.assignee
-            : [{ name: "", color: "" }]
-        }));
-      allCases = mergeWithAssignee(caseData)
-    }
+    let allCases: CaseList[] = caseData.map(c => ({
+      ...c,
+      assignee: c.createdBy ? c.createdBy : [{ name: "", color: "" }]
+    }));
 
     const filtered = allCases.filter(c => {
       const generalSearchTerm = searchText.toLowerCase()
+      if (generalSearchTerm === '') return true;
+
       const assigneeName = c.createdBy;
 
-      const generalSearchCondition = generalSearchTerm === '' ||
-        matchingSubTypesNames(c.caseSTypeId,caseTypeSupTypeData) ||
+      // General search condition remains on the client side for instant feedback
+      return (
+        matchingSubTypesNames(c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
         c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
         c.statusId.toLowerCase().includes(generalSearchTerm) ||
-        assigneeName.includes(generalSearchTerm) ||
-        DateStringToDateFormat(c.createdDate).toLowerCase().includes(generalSearchTerm);
-
-      let priorityCondition = true;
-      if (advancedFilters.priority !== '') {
-        let isPriorityMatch = false;
-        switch (advancedFilters.priority) {
-          case "High":
-            isPriorityMatch = (c.priority >= 0 && c.priority <= 3);
-            break;
-          case "Medium":
-            isPriorityMatch = (c.priority >= 4 && c.priority <= 6);
-            break;
-          case "Low":
-            isPriorityMatch = (c.priority >= 7 && c.priority <= 9);
-            break;
-          default:
-            isPriorityMatch = true; // No specific priority filter applied
-        }
-        priorityCondition = isPriorityMatch;
-      }
-
-      const categoryCondition = advancedFilters.category === '' || c.statusId === advancedFilters.category;
-
-      const titleSearchCondition =
-        advancedFilters.titleSearch === '' ||
-        c.caseSTypeId.toLowerCase().includes(advancedFilters.titleSearch.toLowerCase());
-
-      const descriptionSearchCondition =
-        advancedFilters.descriptionSearch === '' ||
-        c.caseDetail?.toLowerCase().includes(advancedFilters.descriptionSearch.toLowerCase());
-
-      // NEW: Date range filtering logic
-      let dateRangeCondition = true;
-      if (advancedFilters.startDate !== '' || advancedFilters.endDate !== '') {
-        const caseDate = new Date(c.createdDate);
-        if (advancedFilters.startDate !== '') {
-          const startDate = new Date(advancedFilters.startDate);
-          if (caseDate < startDate) {
-            dateRangeCondition = false;
-          }
-        }
-        if (advancedFilters.endDate !== '') {
-          const endDate = new Date(advancedFilters.endDate);
-          if (caseDate > endDate) {
-            dateRangeCondition = false;
-          }
-        }
-      }
-
-      return generalSearchCondition && priorityCondition && categoryCondition && titleSearchCondition && descriptionSearchCondition && dateRangeCondition; // Include dateRangeCondition
-    })
+        assigneeName.toLowerCase().includes(generalSearchTerm) ||
+        DateStringToDateFormat(c.createdDate).toLowerCase().includes(generalSearchTerm)
+      );
+    });
 
     return filtered.sort((a, b) => {
       let aVal: string | number = "";
@@ -168,25 +123,39 @@ export default function CasesView() {
       if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
       if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
       return 0;
-    })
+    });
   }
 
-  // Modified to use getFilteredCases and then filter by column status
   const getCasesForColumn = (columnId: string) => {
     const filteredCases = getFilteredCases();
     return filteredCases.filter(c => getStatusKey(c) === columnId);
   }
 
+  // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
 
-    const handleApply = () => {
+    const handleApply = async () => {
       setAdvancedFilters(localFilters);
+      // const category = statusColumns.find(col => col.title === localFilters.category)?.group[0] || "";
+        await useFetchCase({
+          detail: localFilters.descriptionSearch,
+          start_date: localFilters.startDate ? new Date(localFilters.startDate).toISOString() : undefined,
+          end_date: localFilters.endDate ? new Date(localFilters.endDate).toISOString() : undefined,
+          category: localFilters.category ? localFilters.category : undefined,
+        });
+      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+      setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
 
-    const handleClear = () => {
-      setAdvancedFilters({ priority: "", category: "", titleSearch: "", descriptionSearch: "", startDate: "", endDate: "" });
+    const handleClear = async () => {
+      const clearedFilters = { priority: "", category: "", titleSearch: "", descriptionSearch: "", startDate: "", endDate: "" };
+      setAdvancedFilters(clearedFilters);
+      // Fetch the full, unfiltered list of cases
+      await useFetchCase({ start: 0, length: 100 });
+      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+      setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
 
@@ -194,8 +163,6 @@ export default function CasesView() {
       <div>
         <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">Advance Filtering</h3>
         <div className="space-y-4">
-          {/* New fields for advanced search */}
-
           <div>
             <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Details Search</label>
             <input
@@ -213,8 +180,8 @@ export default function CasesView() {
               <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
               <input
                 id="start-date-search"
-                type="datetime-local" // Keep this for precise date/time selection
-                value={localFilters.startDate} // Bind to startDate
+                type="datetime-local"
+                value={localFilters.startDate}
                 onChange={(e) => setLocalFilters({ ...localFilters, startDate: e.target.value })}
                 className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
               />
@@ -223,14 +190,14 @@ export default function CasesView() {
               <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
               <input
                 id="end-date-search"
-                type="datetime-local" // Keep this for precise date/time selection
-                value={localFilters.endDate} // Bind to endDate
+                type="datetime-local"
+                value={localFilters.endDate}
                 onChange={(e) => setLocalFilters({ ...localFilters, endDate: e.target.value })}
                 className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
               />
             </div>
           </div>
-          <div>
+          {/* <div>
             <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <select
               id="category-filter"
@@ -241,7 +208,7 @@ export default function CasesView() {
               <option value="">All Categories</option>
               {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-          </div>
+          </div> */}
         </div>
         <div className="mt-6 flex justify-end space-x-3">
           <Button variant="outline" onClick={handleClear}>Clear</Button>
@@ -251,6 +218,8 @@ export default function CasesView() {
     </Modal>)
   }
 
+  // ... Rest of the component remains the same (CaseCard, KanbanView, ListView, JSX return)
+  // No changes are needed below this line for the requested refactoring.
 
   const CaseCard = ({ caseItem }: { caseItem: CaseList }) => (
     <div className="space-y-2">
@@ -260,7 +229,7 @@ export default function CasesView() {
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
-          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseSTypeId,caseTypeSupTypeData)}</h3>
+          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
         </div>
         <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caseDetail}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
@@ -293,15 +262,28 @@ export default function CasesView() {
     </div>
   )
 
-  const KanbanView = () => (
-    <div className="flex flex-wrap gap-6 pb-6">
+  const KanbanView = () => {
+    if (selectedStatus) {
+      const filteredCases = getCasesForColumn(selectedStatus);
+      return (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
+            {filteredCases.map((caseItem) => (
+              <CaseCard key={caseItem.id} caseItem={caseItem} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (<div className="flex flex-wrap gap-6 pb-6">
       {statusColumns.map((column) => (
         (selectedStatus === null || selectedStatus === column.title) && (
-          <div key={column.title} className="flex-shrink-0 w-80">
-            <div className="flex items-center justify-between mb-4 px-2">
+          <div key={column.title} className="flex-shrink-0 w-70">
+            {!selectedStatus && <div className="flex items-center justify-between mb-4 px-2">
               <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
               <Badge color="primary">{getCasesForColumn(column.title).length}</Badge>
-            </div>
+            </div>}
             <div className="space-y-3 px-2">
               {getCasesForColumn(column.title).map((caseItem) => (
                 <CaseCard key={caseItem.id} caseItem={caseItem} />
@@ -310,8 +292,8 @@ export default function CasesView() {
           </div>
         )
       ))}
-    </div>
-  )
+    </div>)
+  }
 
   const ListView = () => (
     <div className="space-y-2">
@@ -331,10 +313,7 @@ export default function CasesView() {
           onClick={() => handleCaseClick(caseItem)}
         >
           <div className="col-span-4">
-            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId,caseTypeSupTypeData)}</h4>
-            {/* <div className="flex items-center space-x-2">
-              <Badge color="primary">{caseItem.category}</Badge>
-            </div> */}
+            <h4 className="text-sm font-semibold mb-1 text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
           </div>
           <div className="flex col-span-2 items-center space-x-2">
             <Badge color="primary">{caseItem.statusId}</Badge>
@@ -410,7 +389,6 @@ export default function CasesView() {
                   List
                 </Button>
               </div>
-              {/* ✅ Filter UI */}
               <div className="space-x-2 flex items-center">
                 <input
                   type="text"
@@ -419,18 +397,9 @@ export default function CasesView() {
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
-                {/* <select
-                  className="px-2 py-1 rounded border text-sm text-gray-500 dark:text-gray-400 dark:border-gray-800"
-                  value={sortField}
-                  onChange={(e) => setSortField(e.target.value as "title" | "date")}
-                >
-                  <option value="date">Date</option>
-                  <option value="title">Title</option>
-                </select> */}
                 <Button variant="outline" onClick={() => { setShowAdvanceFilter(true) }}>
                   Advance Filtering
                 </Button>
-
               </div>
             </div>
 

@@ -139,7 +139,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     <div className="mb-2">
                         <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
                         <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.customerData?.contractMethod.name || "-"}
+                            {caseData?.customerData?.name || "-"}
                         </div>
                         {/* {caseData?.customerData?.contractMethod.name == "Email" ?
                             <>

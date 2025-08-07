@@ -5,7 +5,7 @@ import { PaginationParams } from "./custommerApi";
 import { FormFieldWithNode } from "@/components/interface/FormField";
 
 export interface CreateCase {
-    formData:FormFieldWithNode;
+    formData: FormFieldWithNode;
     customerName: string;
     arrivedDate: string;
     caseDetail: string;
@@ -40,85 +40,93 @@ export interface CreateCase {
     usercommand: string;
     usercreate: string;
     userreceive: string;
-    nodeId:string;
-    wId: string;
+    nodeId: string;
+    wfId: string;
+    versions: string;
 }
 
 export interface Case {
-  id: string;
-  orgId: string;
-  caseId: string;
-  caseVersion: string;
-  referCaseId: string | null;
-  caseTypeId: string;
-  caseSTypeId: string;
-  priority: number;
-  source: string;
-  deviceId: string;
-  phoneNo: string;
-  phoneNoHide: boolean;
-  caseDetail: string | null;
-  extReceive: string;
-  statusId: string;
-  caseLat: string;
-  caseLon: string;
-  caselocAddr: string;
-  caselocAddrDecs: string;
-  countryId: string;
-  provId: string;
-  distId: string;
-  caseDuration: number;
-  createdDate: string;
-  startedDate: string;
-  commandedDate: string;
-  receivedDate: string;
-  arrivedDate: string;
-  closedDate: string;
-  usercreate: string;
-  usercommand: string;
-  userreceive: string;
-  userarrive: string;
-  userclose: string;
-  resId: string;
-  resDetail: string | null;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
+    id: string;
+    orgId: string;
+    caseId: string;
+    caseVersion: string;
+    referCaseId: string | null;
+    caseTypeId: string;
+    caseSTypeId: string;
+    priority: number;
+    source: string;
+    deviceId: string;
+    phoneNo: string;
+    phoneNoHide: boolean;
+    caseDetail: string | null;
+    extReceive: string;
+    statusId: string;
+    caseLat: string;
+    caseLon: string;
+    caselocAddr: string;
+    caselocAddrDecs: string;
+    countryId: string;
+    provId: string;
+    distId: string;
+    caseDuration: number;
+    createdDate: string;
+    startedDate: string;
+    commandedDate: string;
+    receivedDate: string;
+    arrivedDate: string;
+    closedDate: string;
+    usercreate: string;
+    usercommand: string;
+    userreceive: string;
+    userarrive: string;
+    userclose: string;
+    resId: string;
+    resDetail: string | null;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
 }
 
 export interface DepartmentCommandStationData {
-  id: string;
-  orgId: string;
-  deptId: string;
-  commId: string;
-  stnId: string;
-  stationEn: string;
-  stationTh: string;
-  stationActive: boolean;
-  commandEn: string;
-  commandTh: string;
-  commandActive: boolean;
-  deptEn: string;
-  deptTh: string;
-  deptActive: boolean;
+    id: string;
+    orgId: string;
+    deptId: string;
+    commId: string;
+    stnId: string;
+    stationEn: string;
+    stationTh: string;
+    stationActive: boolean;
+    commandEn: string;
+    commandTh: string;
+    commandActive: boolean;
+    deptEn: string;
+    deptTh: string;
+    deptActive: boolean;
 }
 
 export interface DepartmentCommandStationDataMerged extends DepartmentCommandStationData {
-  name: string;
+    name: string;
 }
 
 export interface CaseStatus {
-  id: string;
-  statusId: string;
-  th: string;
-  en: string;
-  color: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
+    id: string;
+    statusId: string;
+    th: string;
+    en: string;
+    color: string;
+    active: boolean;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+}
+
+export interface CaseListParams extends PaginationParams {
+    detail?: string;
+    start_date?: string;
+    end_date?: string;
+    category?: string;
 }
 
 export const caseApi = baseApi.injectEndpoints({
@@ -155,7 +163,7 @@ export const caseApi = baseApi.injectEndpoints({
             providesTags: ["Dispatch"],
         }),
 
-        getListCase: builder.query<ApiResponse<Case[]>, PaginationParams>({
+        getListCase: builder.query<ApiResponse<Case[]>, CaseListParams>({
             query: (params) => ({
                 url: "/case",
                 params,
