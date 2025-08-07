@@ -17,6 +17,7 @@ interface CustomSelectProps {
   asyncFetch?: (query: string, page: number) => Promise<Option[]>;
   className?: string;
   onModal?: boolean;
+  // key?: string;
 }
 
 const CustomizableSelect: React.FC<CustomSelectProps> = ({
@@ -28,7 +29,8 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
   // multiple = true,
   asyncFetch,
   className = "",
-  onModal = false
+  onModal = false,
+  // key = new Date().getTime().toString(),
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [fetchedOptions, setFetchedOptions] = useState<Option[]>(options);
@@ -101,7 +103,7 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div
-        className={`h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:placeholder:text-white/30 dark:focus:border-brand-800 text-gray-400 dark:text-gray-400 cursor-pointer ${disabled ? "opacity-50" : ""}`}
+        className={`min-h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:placeholder:text-white/30 dark:focus:border-brand-800 text-gray-400 dark:text-gray-400 cursor-pointer ${disabled ? "opacity-50" : ""}`}
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
       >
         {value.length > 0 ? (
@@ -140,7 +142,9 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
           />
           {fetchedOptions.map((opt) => (
             <div
-              key={opt.value}
+              // key={opt.value}
+              // key={`${opt.value}-${new Date().getTime()}`}
+              key={opt.label}
               onClick={() => toggleOption(opt.value)}
               className={`px-3 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white ${
                 value.includes(opt.value) ? "bg-blue-100 dark:bg-blue-800 text-gray-900 dark:text-white" : ""

@@ -23,6 +23,19 @@ export interface CaseEntity {
   actualHours?: number;
 }
 
+export interface CaseStatus {
+  id: string;
+  statusId: string;
+  th: string;
+  en: string;
+  color: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
 export interface Attachment {
   id: string;
   filename: string;

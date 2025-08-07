@@ -1,8 +1,9 @@
 // /src/components/auth/ProtectedRoute.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AlertIcon } from "@/icons";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthService } from "@/utils/authService";
 import { PermissionManager } from "@/utils/permissionManager";
 import type {
   ProtectedRouteProps,
@@ -19,6 +20,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   fallback: Fallback
 }) => {
   const { state } = useAuth();
+
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  useEffect(() => {
+    const fetchAuthService = async () => {
+      setIsSystemAdmin(await AuthService.isSystemAdmin());
+    }
+    fetchAuthService();
+  }, [isSystemAdmin]);
 
   if (state.isLoading || state.isRefreshing) {
     return (
@@ -41,7 +50,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check module-based permission (e.g., 'dispatch.view')
   if (module) {
     const modulePermission = `${module}.${action}`;
-    if (!PermissionManager.hasPermission(state.user, modulePermission)) {
+    if (!PermissionManager.hasPermission(state.user, modulePermission) && !isSystemAdmin) {
       return Fallback ? (
         <Fallback />
       ) : (
@@ -62,8 +71,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check specific required permissions (all must be present)
-  if (requiredPermissions.length > 0) {
-    if (!PermissionManager.hasAllPermissions(state.user, requiredPermissions)) {
+  if (requiredPermissions.length > 0 && !isSystemAdmin) {
+    if (!PermissionManager.hasAllPermissions(state.user, requiredPermissions) && !isSystemAdmin) {
       return Fallback ? (
         <Fallback />
       ) : (

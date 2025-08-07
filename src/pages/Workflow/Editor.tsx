@@ -23,6 +23,8 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { FormManager } from "@/components/interface/FormField";
 import { useGetAllFormsQuery } from "@/store/api/formApi";
 import { useGetUsersQuery } from "@/store/api/userApi";
+import { useGetCaseStatusesQuery } from "@/store/api/serviceApi";
+import type { CaseStatus } from "@/types/case";
 import type { UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -36,6 +38,12 @@ const threeLayerBreadcrumb = [
 
 const WorkflowEditorPage: React.FC = () => {
   const params = useParams<{ id: string }>();
+
+  // ===================================================================
+  // API Data
+  // ===================================================================
+  const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
+  const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
 
   const { data: formsData } = useGetAllFormsQuery(null);
   const forms = formsData?.data as unknown as FormManager[] || [];
@@ -53,7 +61,12 @@ const WorkflowEditorPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["workflow.view"]}>
         <PageBreadcrumb items={threeLayerBreadcrumb} />
 
-        <WorkflowEditorComponent workflowId={params?.id || "new"} forms={forms} users={users} />
+        <WorkflowEditorComponent
+          workflowId={params?.id || "new"}
+          forms={forms}
+          users={users}
+          caseStatuses={caseStatuses}
+        />
       </ProtectedRoute>
     </>
   );

@@ -1,4 +1,4 @@
-// /src/components/admin/TableView.tsx
+// /src/components/crud/TableView.tsx
 import { ChevronDownIcon, ChevronUpIcon } from "@/icons";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableTableRow } from "@/components/crud/ClickableTableRow";

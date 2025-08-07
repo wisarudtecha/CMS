@@ -7,7 +7,7 @@ import {
 } from "@/icons";
 // import { RoleHierarchyView } from "@/components/admin/HierarchyView";
 // import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
-import { TableView } from "@/components/admin/TableView";
+import { TableView } from "@/components/crud/TableView";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
 import { BulkActionBar } from "@/components/crud/BulkActionBar";
@@ -702,7 +702,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               <div>Entity: {confirmDialog.entityName}</div>
               <div>Has onConfirm: {confirmDialog.onConfirm ? "YES" : "NO"}</div>
             </div>
-           
           </div>
         )}
       </div>

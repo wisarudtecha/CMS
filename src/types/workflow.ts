@@ -1,5 +1,6 @@
 // /src/types/workflow.ts
 import { FormManager } from "@/components/interface/FormField";
+import type { CaseStatus } from "@/types/case";
 import type { UserProfile } from "@/types/user";
 
 // export interface Workflow {
@@ -75,6 +76,7 @@ export interface WorkflowData {
 }
 
 export interface WorkflowEditorComponentProps {
+  caseStatuses: CaseStatus[];
   forms?: FormManager[];
   initialData?: WorkflowData;
   users?: UserProfile[];

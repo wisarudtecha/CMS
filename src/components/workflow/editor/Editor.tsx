@@ -81,25 +81,25 @@ const GroupOptions = [
 ];
 
 // Case Management System options
-const casePriorityOptions = [
-  { value: "low", label: "Low Priority" },
-  { value: "medium", label: "Medium Priority" },
-  { value: "high", label: "High Priority" },
-  { value: "critical", label: "Critical Priority" },
-  { value: "urgent", label: "Urgent Priority" }
-];
+// const casePriorityOptions = [
+//   { value: "low", label: "Low Priority" },
+//   { value: "medium", label: "Medium Priority" },
+//   { value: "high", label: "High Priority" },
+//   { value: "critical", label: "Critical Priority" },
+//   { value: "urgent", label: "Urgent Priority" }
+// ];
 
-const caseCategoryOptions = [
-  { value: "bug", label: "Bug Report" },
-  { value: "feature", label: "Feature Request" },
-  { value: "support", label: "Support Request" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "investigation", label: "Investigation" },
-  { value: "incident", label: "Incident" },
-  { value: "change_request", label: "Change Request" },
-  { value: "consultation", label: "Consultation" },
-  { value: "escalation", label: "Escalation" }
-];
+// const caseCategoryOptions = [
+//   { value: "bug", label: "Bug Report" },
+//   { value: "feature", label: "Feature Request" },
+//   { value: "support", label: "Support Request" },
+//   { value: "maintenance", label: "Maintenance" },
+//   { value: "investigation", label: "Investigation" },
+//   { value: "incident", label: "Incident" },
+//   { value: "change_request", label: "Change Request" },
+//   { value: "consultation", label: "Consultation" },
+//   { value: "escalation", label: "Escalation" }
+// ];
 
 // const targetCaseStatusOptions = [
 //   { value: "open", label: "Open" },
@@ -115,6 +115,7 @@ const caseCategoryOptions = [
 // ];
 
 const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
+  caseStatuses,
   forms,
   initialData = {
     nodes: [],
@@ -124,10 +125,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       description: "",
       status: "draft",
       createdAt: new Date().toISOString(),
-      casePriority: "",
-      caseCategory: "",
+      // casePriority: "",
+      // caseCategory: "",
       // targetCaseStatus: ""
-    }
+    },
+    // group: [],
+    // pic: [],
   },
   users,
   workflowId,
@@ -154,12 +157,17 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   // Enhanced state for Components Preview
   const [decisionSelections, setDecisionSelections] = useState<Record<string, "yes" | "no">>({});
   // const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [selectedTagsGroup, setSelectedTagsGroup] = useState<string[]>([]);
-  const [selectedTagsUser, setSelectedTagsUser] = useState<string[]>([]);
+  // const [selectedTagsGroup, setSelectedTagsGroup] = useState<string[]>([]);
+  // const [selectedTagsUser, setSelectedTagsUser] = useState<string[]>([]);
   
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
+    value: caseStatus?.statusId || "",
+    label: caseStatus?.en || caseStatus?.th || ""
+  })) : [];
 
   const formOptions = forms?.map((form) => {
     return { value: form?.formId || "", label: form?.formName || "" };
@@ -377,15 +385,24 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           continueFromWorkflow?: boolean;
           sourceWorkflowId?: string;
         }
-
+      // | {
+      //     id: string;
+      //     type: "form";
+      //     label: string;
+      //     form: string;
+      //     formConfig: ReturnType<typeof getFormComponentConfig>;
+      //     sla?: string | number;
+      //     pic?: string;
+      //   }
       | {
           id: string;
-          type: "form";
+          type: "process";
           label: string;
-          form: string;
-          formConfig: ReturnType<typeof getFormComponentConfig>;
-          sla?: string | number;
-          pic?: string;
+          action?: string
+          formId?: string;
+          sla?: number;
+          group?: string[];
+          pic?: string[];
         }
       | {
           id: string;
@@ -410,6 +427,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         return;
       }
 
+      console.log(node.data.config);
+
       if (node.type === "start") {
         components.push({
           id: node.id,
@@ -420,18 +439,29 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           sourceWorkflowId: typeof node.data.config?.sourceWorkflowId === "string" ? node.data.config.sourceWorkflowId : undefined
         });
       }
-      else if (node.type === "process" && node.data.config?.form) {
-        const formConfig = getFormComponentConfig(
-          typeof node.data.config?.form === "string" ? node.data.config.form : ""
-        );
+      // else if (node.type === "process" && node.data.config?.form) {
+      //   const formConfig = getFormComponentConfig(
+      //     typeof node.data.config?.form === "string" ? node.data.config.form : ""
+      //   );
+      //   components.push({
+      //     id: node.id,
+      //     type: "form",
+      //     label: node.data.label,
+      //     form: typeof node.data.config?.form === "string" ? node.data.config.form : "",
+      //     formConfig,
+      //     sla: typeof node.data.config?.sla === "string" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
+      //     pic: typeof node.data.config?.pic === "string" ? node.data.config.pic : undefined
+      //   });
+      // }
+      else if (node.type === "process") {
         components.push({
           id: node.id,
-          type: "form",
+          type: "process",
           label: node.data.label,
-          form: typeof node.data.config?.form === "string" ? node.data.config.form : "",
-          formConfig,
-          sla: typeof node.data.config?.sla === "string" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
-          pic: typeof node.data.config?.pic === "string" ? node.data.config.pic : undefined
+          formId: typeof node.data.config?.formId === "string" ? node.data.config.formId : "",
+          sla: typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
+          pic: Array.isArray(node.data.config?.pic) ? node.data.config.pic : undefined,
+          group: Array.isArray(node.data.config?.group) ? node.data.config.group : undefined
         });
       }
       else if (node.type === "decision") {
@@ -773,22 +803,6 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       setSelectedNode(prev => prev ? { ...prev, data: { ...prev.data, ...updates } } : null);
     }
   }, [selectedNode]);
-
-  const updateNodeDataMultiple = (key: string, values: string[]) => {
-    if (selectedNode) {
-      switch (key) {
-        case "group":
-          setSelectedTagsGroup(values);
-          break;
-        case "pic":
-          setSelectedTagsUser(values);
-          break;
-        default:
-          break;
-      }
-      updateNodeData(selectedNode.id, { config: { ...selectedNode.data.config, [key]: values } });
-    }
-  }
 
   // Import JSON workflow
   const importJsonWorkflow = useCallback(() => {
@@ -1685,7 +1699,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                         onChange={(value) => updateNodeData(selectedNode.id, {
                           config: { ...selectedNode.data.config, action: value }
                         })}
-                        options={actionOptions}
+                        // options={actionOptions}
+                        options={caseStatusOptions}
                         placeholder="Select Action"
                         className="bg-white dark:bg-gray-900 cursor-pointer"
                       />
@@ -1728,7 +1743,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       <Input
                         type="number"
                         id="selectedNode.data.config.sla"
-                        value={typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
+                        value={typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : undefined}
                         onChange={(e) => updateNodeData(selectedNode.id, { 
                           config: { ...selectedNode.data.config, sla: e.target.value }
                         })}
@@ -1761,9 +1776,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       // />
                       <CustomizableSelect
                         options={GroupOptions}
-                        value={selectedTagsGroup}
-                        // onChange={setSelectedTagsGroup}
-                        onChange={(values) => updateNodeDataMultiple("group", values as string[])}
+                        value={Array.isArray(selectedNode.data.config?.group) ? selectedNode.data.config.group : []}
+                        onChange={(value) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, group: value }
+                        })}
                         placeholder="Select Groups"
                         // asyncFetch={async (query, page) => {
                         //   const res = await fetch(`/api/tags?q=${query}&page=${page}`);
@@ -1793,9 +1809,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       // />
                       <CustomizableSelect
                         options={userOptions}
-                        value={selectedTagsUser}
-                        // onChange={setSelectedTagsUser}
-                        onChange={(values) => updateNodeDataMultiple("pic", values as string[])}
+                        value={Array.isArray(selectedNode.data.config?.pic) ? selectedNode.data.config.pic : []}
+                        onChange={(value) => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode.data.config, pic: value }
+                        })}
                         placeholder="Select Users"
                         // asyncFetch={async (query, page) => {
                         //   const res = await fetch(`/api/tags?q=${query}&page=${page}`);
@@ -1849,11 +1866,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <div>End Nodes: {nodes.filter(n => n.type === "end").length}</div>
 
               {/* Case Management Stats */}
+              {/*
               {(
                 workflowMetadata.casePriority
                 || workflowMetadata.caseCategory
-
-                // || workflowMetadata.targetCaseStatus
+                || workflowMetadata.targetCaseStatus
               ) && (
                 <>
                   <div className="border-t border-gray-300 dark:border-gray-600 pt-1 mt-2"></div>
@@ -1864,14 +1881,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   {workflowMetadata.caseCategory && (
                     <div>Category: <span className="font-medium">{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label}</span></div>
                   )}
-
-                  {/*
                   {workflowMetadata.targetCaseStatus && (
                     <div>Target: <span className="font-medium">{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label}</span></div>
                   )}
-                  */}
                 </>
               )}
+              */}
             </div>
           </div>
         </div>
@@ -2012,11 +2027,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <p className="text-sm text-gray-600 dark:text-gray-300">Generated form components based on workflow path</p>
 
               {/* Case Management Info Banner */}
+              {/*
               {(
                 workflowMetadata.casePriority
                 || workflowMetadata.caseCategory
-
-                // || workflowMetadata.targetCaseStatus
+                || workflowMetadata.targetCaseStatus
               ) && (
                 <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-4 text-sm">
@@ -2039,17 +2054,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                         {caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label}
                       </span>
                     )}
-
-                    {/*
                     {workflowMetadata.targetCaseStatus && (
                       <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded text-xs font-medium">
                         Target: {targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label}
                       </span>
                     )}
-                    */}
                   </div>
                 </div>
               )}
+              */}
             </div>
             
             <div className="py-4 overflow-auto cursor-default">
@@ -2069,9 +2082,20 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                             Start
                           </span>
                         )}
+                        {/*
                         {component.type === "form" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
                             Form: {component.form}
+                          </span>
+                        )}
+                        */}
+                        {component.type === "process" && (
+                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
+                            Action: {component?.action || "N/A"}{" "}
+                            Form: {component?.formId || "N/A"}{" "}
+                            SLA: {component?.sla || "N/A"} minutes{" "}
+                            Group: {component?.group || "N/A"}{" "}
+                            PIC: {component?.pic || "N/A"}
                           </span>
                         )}
                         {component.type === "decision" && (
@@ -2112,6 +2136,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       )}
                       
                       {/* Form Component */}
+                      {/*
                       {component.type === "form" && (
                         <div>
                           {component.sla && (
@@ -2186,6 +2211,27 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                               </div>
                             ))}
                           </div>
+                        </div>
+                      )}
+                      */}
+                      {component.type === "process" && (
+                        <div>
+                          {component.sla && (
+                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                              <strong>SLA:</strong> {component.sla} minutes
+                            </div>
+                          )}
+                          {component.group && (
+                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                              <strong>Group:</strong> {component.group.join(", ")}
+                            </div>
+                          )}
+                          {component.pic && (
+                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                              <strong>PIC:</strong> {component.pic.join(", ")}
+                            </div>
+                          )}
+                          
                         </div>
                       )}
                       

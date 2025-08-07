@@ -1,13 +1,22 @@
 // /src/components/admin/UserManagement.tsx
-import React, { useEffect, useState } from "react";
+import React, {
+  // useCallback,
+  useEffect,
+  useState
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CheckLineIcon, ChevronUpIcon, CloseIcon, TimeIcon, UserIcon } from "@/icons";
 import { UserCard } from "@/components/admin/UserCard";
+import { usePermissions } from "@/hooks/usePermissions";
+import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
 import { isImageAvailable } from "@/utils/resourceValidators"
 // import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
-import type { CrudConfig } from "@/types/crud";
+import type {
+  CrudConfig,
+  // FilterConfig
+} from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
   // Address,
@@ -32,7 +41,13 @@ const UserManagementComponent: React.FC<{
   dept,
   role
 }) => {
+  const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
+  const permissions = usePermissions();
+
+  // const [filterValues, setFilterValues] = useState<FilterConfig>({});
+  // const [filteredData, setFilteredData] = useState<UserProfile[]>(usr);
+  // const [searchTerm, setSearchTerm] = useState("");
 
   // ===================================================================
   // Mock Data
@@ -242,14 +257,16 @@ const UserManagementComponent: React.FC<{
         label: "View",
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (userItem: UserProfile) => navigate(`/user/${userItem.id}`)
+        onClick: (userItem: UserProfile) => navigate(`/user/${userItem.id}`),
+        condition: () => (permissions.hasPermission("user.view") || isSystemAdmin) as boolean
       },
       {
         key: "update",
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (userItem: UserProfile) => navigate(`/user/edit/${userItem.id}`)
+        onClick: (userItem: UserProfile) => navigate(`/user/edit/${userItem.id}`),
+        condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
       },
       {
         key: "delete",
@@ -258,7 +275,8 @@ const UserManagementComponent: React.FC<{
         // icon: TrashBinIcon,
         onClick: (userItem: UserProfile) => {
           console.log("Delete user:", userItem.id);
-        }
+        },
+        condition: () => (permissions.hasPermission("user.delete") || isSystemAdmin) as boolean
       }
     ]
   };
@@ -329,7 +347,8 @@ const UserManagementComponent: React.FC<{
         onClick: (userItem: UserProfile, closePreview: () => void) => {
           closePreview();
           navigate(`/user/${userItem.id}`);
-        }
+        },
+        condition: () => (permissions.hasPermission("user.view") || isSystemAdmin) as boolean
       },
       {
         key: "update",
@@ -339,7 +358,8 @@ const UserManagementComponent: React.FC<{
         onClick: (userItem: UserProfile, closePreview: () => void) => {
           closePreview();
           navigate(`/user/edit/${userItem.id}`);
-        }
+        },
+        condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
       },
       {
         key: "delete",
@@ -349,7 +369,8 @@ const UserManagementComponent: React.FC<{
         onClick: (userItem: UserProfile, closePreview: () => void) => {
           closePreview();
           console.log("Delete user:", userItem.id);
-        }
+        },
+        condition: () => (permissions.hasPermission("user.delete") || isSystemAdmin) as boolean
       }
     ]
   };
@@ -364,23 +385,31 @@ const UserManagementComponent: React.FC<{
       label: "Role",
       type: "select" as const,
       options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
+      placeholder: "Select role",
     },
     {
       key: "department",
       label: "Department",
       type: "select" as const,
-      options: dept.map(department => ({ value: department.id, label: department.th || department.en }))
+      options: dept.map(department => ({ value: department.id, label: department.th || department.en })),
+      placeholder: "Select department",
     },
-    {
-      key: "status",
-      label: "Status",
-      type: "select" as const,
-      options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        // { value: "suspended", label: "Suspended" }
-      ]
-    },
+    // {
+    //   key: "active",
+    //   label: "Status",
+    //   type: "checkbox" as const,
+    //   placeholder: "Show only active users",
+    // },
+    // {
+    //   key: "status",
+    //   label: "Status",
+    //   type: "boolean" as const,
+    //   options: [
+    //     { value: "active", label: "Active" },
+    //     { value: "inactive", label: "Inactive" },
+    //     { value: "suspended", label: "Suspended" }
+    //   ]
+    // },
     // {
     //   key: "lastLogin",
     //   label: "Last Login",
@@ -476,6 +505,55 @@ const UserManagementComponent: React.FC<{
     // Handle user delete
     console.log("User deleted:", caseId);
   };
+
+  // Filter Logic Implementation
+  // const applyFilters = useCallback(() => {
+  //   let filtered = [...usr];
+  //   // Apply search filter
+  //   if (searchTerm.trim()) {
+  //     const search = searchTerm.toLowerCase().trim();
+  //     filtered = filtered.filter(user => 
+  //       `${user.firstName} ${user.lastName}`.toLowerCase().includes(search) ||
+  //       user.username.toLowerCase().includes(search)
+  //     );
+  //   }
+  //   // Apply advanced filters
+  //   Object.entries(filterValues).forEach(([key, value]) => {
+  //     if (!value || (Array.isArray(value) && value.length === 0)) return;
+  //     switch (key) {
+  //       case "search":
+  //         if (typeof value === 'string' && value.trim()) {
+  //           const searchTerm = value.toLowerCase().trim();
+  //           filtered = filtered.filter(user => 
+  //             `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm) ||
+  //             user.email.toLowerCase().includes(searchTerm)
+  //           );
+  //         }
+  //         break;
+  //       case "deptId":
+  //         if (typeof value === 'string') {
+  //           filtered = filtered.filter(user => user.deptId === value);
+  //         }
+  //         break;
+  //       case "roleId":
+  //         if (typeof value === 'string') {
+  //           filtered = filtered.filter(user => user.roleId === value);
+  //         }
+  //         break;
+  //       case "active":
+  //         if (typeof value === 'boolean') {
+  //           filtered = filtered.filter(user => user.active === value);
+  //         }
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   });
+  //   setFilteredData(filtered);
+  // }, [searchTerm, filterValues]);
+  // useEffect(() => {
+  //   applyFilters();
+  // }, [applyFilters]);
 
   // ===================================================================
   // Render Component

@@ -23,6 +23,7 @@ import type {
 // import workflowList from "@/mocks/workflowList.json";
 
 const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows }) => {
+  const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
 
@@ -153,19 +154,19 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         )
       },
     ],
-    filters: [
-      {
-        key: "status",
-        label: "Status",
-        type: "select" as const,
-        options: [
-          { value: "active", label: "Active" },
-          { value: "inactive", label: "Inactive" },
-          { value: "draft", label: "Draft" },
-          { value: "testing", label: "Testing" }
-        ]
-      }
-    ],
+    // filters: [
+    //   {
+    //     key: "status",
+    //     label: "Status",
+    //     type: "select" as const,
+    //     options: [
+    //       { value: "active", label: "Active" },
+    //       { value: "inactive", label: "Inactive" },
+    //       { value: "draft", label: "Draft" },
+    //       { value: "testing", label: "Testing" }
+    //     ]
+    //   }
+    // ],
     actions: [
       {
         key: "view",
@@ -181,7 +182,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}/edit`),
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || AuthService.isSystemAdmin()) as boolean
+        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
       {
         key: "delete",
@@ -192,7 +193,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           // This will be intercepted by the container"s handleItemAction
           console.log("Delete action triggered for:", workflow.id);
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || AuthService.isSystemAdmin()) as boolean
+        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
       }
     ]
   };
@@ -350,7 +351,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           closePreview();
           navigate(`/workflow/editor/v2/${workflow.id}/edit`);
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || AuthService.isSystemAdmin()) as boolean
+        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
       // {
       //   key: "duplicate",
@@ -372,7 +373,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           console.log("Deleting workflow:", workflow.id);
           closePreview();
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || AuthService.isSystemAdmin()) as boolean
+        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
       }
     ]
   };

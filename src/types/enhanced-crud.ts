@@ -28,19 +28,37 @@ export interface ExportOption {
   columns?: string[];
 }
 
+export interface AdvancedFilterOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+  color?: string;
+  icon?: React.ReactNode;
+}
+
 export interface AdvancedFilter {
   key: string;
   label: string;
-  type: "select" | "multiselect" | "customizable-select" | "date-range" | "number-range" | "text" | "boolean";
-  options?: { value: string; label: string }[];
+  // type: "select" | "multiselect" | "customizable-select" | "date-range" | "number-range" | "text" | "boolean";
+  type: "boolean" | "checkbox" | "checkbox-group" | "color" | "customizable-select"
+    | "date" | "date-range" | "multiselect" | "number" | "number-range"
+    | "radio" | "select" | "tags" | "text" | "toggle";
   placeholder?: string;
+  // options?: { value: string; label: string }[];
+  options?: AdvancedFilterOption[];
+  multiple?: boolean;
+  required?: boolean;
   min?: number;
   max?: number;
-  multiple?: boolean;
-  searchable?: boolean;
+  step?: number;
+  validation?: RegExp;
+  conditionalOn?: string;
+  description?: string;
+  groupBy?: string;
   clearable?: boolean;
-  maxSelections?: number;
   isFullscreen?: boolean;
+  maxSelections?: number;
+  searchable?: boolean;
 }
 
 export interface KeyboardShortcut {

@@ -27,10 +27,13 @@ import PageMeta from "@/components/common/PageMeta";
 import WorkflowListComponent from "@/components/workflow/list/List";
 
 const WorkflowListPage: React.FC = () => {
+  // ===================================================================
+  // API Data
+  // ===================================================================
   const { data: workflowsData } = useGetWorkflowsQuery("");
   const workflows = workflowsData?.data as unknown as Workflow[] || [];
 
-  return (
+  return workflows ? (
     <>
       <PageMeta
         title="React.js Workflow Management | TailAdmin - Next.js Admin Dashboard Template"
@@ -43,6 +46,8 @@ const WorkflowListPage: React.FC = () => {
         <WorkflowListComponent workflows={workflows} />
       </ProtectedRoute>
     </>
+  ) : (
+    <div>Loading...</div>
   );
 };
 

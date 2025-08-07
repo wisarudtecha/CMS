@@ -7,6 +7,7 @@ import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingS
 import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
 import { RoleCard } from "@/components/admin/RoleCard";
 import { ToastContainer } from "@/components/crud/ToastContainer";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import {
   // RolePermissionsCreateData,
@@ -18,6 +19,7 @@ import {
   // useDeleteUserRolePermissionsMutation,
   // useUpdateUserRolePermissionsMutation,
 } from "@/store/api/userApi";
+import { AuthService } from "@/utils/authService";
 import { SYSTEM_ROLE } from "@/utils/constants";
 // import type { ApiResponse } from "@/types";
 import type {
@@ -72,8 +74,9 @@ const RoleManagementComponent: React.FC<{
   rolesPerms,
   perms
 }) => {
+  const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
-
+  const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
 
   // const [trigger] = useLazyGetUserRolesPermissionsByRoleIdQuery();
@@ -166,57 +169,26 @@ const RoleManagementComponent: React.FC<{
       read: "/api/roles/:id",
       update: "/api/roles/:id",
       delete: "/api/roles/:id",
-      // bulkDelete: "/api/roles/bulk",
+      bulkDelete: "/api/roles/bulk",
       export: "/api/roles/export"
     },
-    columns: [
-      {
-        key: "id",
-        label: "ID"
-      },
-      {
-        key: "name",
-        label: "Name"
-      },
-      {
-        key: "description",
-        label: "Description"
-      },
-      {
-        key: "level",
-        label: "Level"
-      },
-      {
-        key: "color",
-        label: "Color"
-      },
-      {
-        key: "permission",
-        label: "Permission",
-      },
-      {
-        key: "isSystem",
-        label: "Is System",
-      },
-      {
-        key: "isTemplate",
-        label: "Is Template",
-      }
-    ],
+    columns: [],
     actions: [
       {
         key: "view",
         label: "View",
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`)
+        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`),
+        condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
       },
       {
         key: "update",
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`)
+        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
+        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
       },
       {
         key: "delete",
@@ -226,7 +198,7 @@ const RoleManagementComponent: React.FC<{
         onClick: (roleItem: Role) => {
           console.log("Delete role:", roleItem.id);
         },
-        condition: (roleItem: Role) => roleItem.id !== SYSTEM_ROLE
+        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
       }
     ]
   };
@@ -267,17 +239,19 @@ const RoleManagementComponent: React.FC<{
         onClick: (roleItem: Role, closePreview: () => void) => {
           closePreview();
           navigate(`/role/${roleItem.id}`);
-        }
+        },
+        condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
       },
       {
-        key: "edit",
+        key: "update",
         label: "Edit",
         // icon: PencilIcon,
         variant: "warning",
         onClick: (roleItem: Role, closePreview: () => void) => {
           closePreview();
           navigate(`/role/${roleItem.id}/edit`);
-        }
+        },
+        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
       },
       {
         key: "delete",
@@ -287,7 +261,8 @@ const RoleManagementComponent: React.FC<{
         onClick: (roleItem: Role, closePreview: () => void) => {
           console.log("Delete role:", roleItem.id);
           closePreview();
-        }
+        },
+        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
       }
     ]
   };

@@ -439,10 +439,10 @@ export class AuthService {
     try {
       const storage = localStorage || sessionStorage || null;
       const raw = storage.getItem("profile");
-      if (!raw) {
-        throw new Error("❌ No profile found");
-      }
-      const profile: User = await JSON.parse(raw);
+      // if (!raw) {
+      //   throw new Error("❌ No profile found");
+      // }
+      const profile: User = await JSON.parse(raw || "{}");
       return profile?.roleId === SYSTEM_ROLE;
     }
     catch (error) {

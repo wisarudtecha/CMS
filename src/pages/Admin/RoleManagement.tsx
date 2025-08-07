@@ -19,6 +19,7 @@
  */
 
 import React from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import {
   useGetUserRolesQuery,
   useGetUserRolesPermissionsQuery,
@@ -35,21 +36,17 @@ const RoleManagementPage: React.FC = () => {
   // ===================================================================
   const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 1000 });
   const permissions = permissionsData?.data as unknown as Permission[] || [];
-  // console.log(permissions);
 
   const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 100 });
   const rolesPermissions = rolesPermissionsData?.data as unknown as RolePermission[] || [];
-  // console.log(rolesPermissions);
 
   const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
-  // const roles = rolesData?.data as unknown as Role[] || [];
   const roles = rolesData?.data?.map((r) => ({
     ...r,
     permissions: rolesPermissions.filter(rp => rp.roleId === r.id).map(rp => rp.permId)
   })) as unknown as Role[] || [];
-  // console.log(roles);
 
-  return (
+  return (permissions && rolesPermissions && roles) ? (
     <>
       <PageMeta
         title="React.js Role Management | TailAdmin - Next.js Admin Dashboard Template"
@@ -58,12 +55,16 @@ const RoleManagementPage: React.FC = () => {
 
       <PageBreadcrumb pageTitle="Role Management" />
 
-      <RoleManagementComponent
-        role={roles}
-        rolesPerms={rolesPermissions}
-        perms={permissions}
-      />
+      <ProtectedRoute requiredPermissions={["role.view"]}>
+        <RoleManagementComponent
+          role={roles}
+          rolesPerms={rolesPermissions}
+          perms={permissions}
+        />
+      </ProtectedRoute>
     </>
+  ) : (
+    <div>Loading...</div>
   );
 };
 
