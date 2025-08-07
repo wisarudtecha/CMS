@@ -448,7 +448,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             return false;
         }
         const caseListData = localStorage.getItem("caseList") || "[]";
-        console.log(profile)
         if (caseListData) {
             const caseList = JSON.parse(caseListData) as CaseList[];
             caseList.push({ ...(createJson as object), createdAt: TodayDate() ,createdBy:profile?.username || ""} as CaseList);
