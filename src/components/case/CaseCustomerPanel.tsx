@@ -6,7 +6,7 @@ import {
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
-import locateImage from "@/icons/Location-image.jpeg"
+import locateImage from "../../../public/images/map/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "../function/Prioriy"
 import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"

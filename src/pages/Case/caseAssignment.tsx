@@ -130,9 +130,15 @@ export default function CasesView() {
   }
 
   const getCasesForColumn = (columnId: string) => {
-    const filteredCases = getFilteredCases();
-    return filteredCases.filter(c => getStatusKey(c) === columnId);
-  }
+  return getFilteredCases()
+    .filter(c => getStatusKey(c) === columnId)
+    .sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+}
 
   // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
@@ -249,7 +255,14 @@ export default function CasesView() {
             <select
               id="category-filter"
               value={selectedStatus ?? ""}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value === "") {
+                  setSelectedStatus(null)
+                }
+                else {
+                  setSelectedStatus(e.target.value)
+                }
+              }}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
             >
               <option value="">All Categories</option>
@@ -264,7 +277,6 @@ export default function CasesView() {
       </div>
     </Modal>)
   }
-
   // ... Rest of the component remains the same (CaseCard, KanbanView, ListView, JSX return)
   // No changes are needed below this line for the requested refactoring.
 
@@ -331,7 +343,7 @@ export default function CasesView() {
               <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
               <Badge color="primary">{getCasesForColumn(column.title).length}</Badge>
             </div>}
-            <div className="space-y-3 px-2">
+            <div className="space-y-3 px-2 md:overflow-y-auto md:h-100 custom-scrollbar">
               {getCasesForColumn(column.title).map((caseItem) => (
                 <CaseCard key={caseItem.id} caseItem={caseItem} />
               ))}
