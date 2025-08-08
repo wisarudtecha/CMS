@@ -64,7 +64,16 @@ export const workflowApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Workflow", id }],
     }),
 
-    createWorkflow: builder.mutation<ApiResponse<Workflow>, WorkflowCreateData>({
+    // createWorkflow: builder.mutation<ApiResponse<Workflow>, WorkflowCreateData>({
+    //   query: (data) => ({
+    //     url: "/workflows",
+    //     method: "POST",
+    //     body: data,
+    //   }),
+    //   invalidatesTags: ["Workflow"],
+    // }),
+
+    createWorkflow: builder.mutation<ApiResponse<Workflow>, WorkflowData>({
       query: (data) => ({
         url: "/workflows",
         method: "POST",

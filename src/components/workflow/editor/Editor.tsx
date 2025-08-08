@@ -2,8 +2,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AngleLeftIcon, AngleRightIcon, BoxCubeIcon, CheckLineIcon, CloseIcon, CopyIcon, DownloadIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useToast } from "@/hooks/useToast";
 import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Input from "@/components/form/input/InputField";
@@ -12,7 +14,8 @@ import Select from "@/components/form/Select";
 import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
 import workflowData from "@/mocks/workflowData.json";
-import workflowFormV02 from "@/mocks/workflowFormV02.json";
+// import workflowFormV02 from "@/mocks/workflowFormV02.json";
+import { useCreateWorkflowMutation } from "@/store/api/workflowApi";
 
 // Grid configuration
 const GRID_SIZE = 20;
@@ -137,6 +140,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   onSave 
 }) => {
   const permissions = usePermissions();
+  const { toasts, addToast, removeToast } = useToast();
+  const [createWorkflow] = useCreateWorkflowMutation();
 
   const [nodes, setNodes] = useState<WorkflowNode[]>(initialData.nodes);
   const [connections, setConnections] = useState<Connection[]>(initialData.connections);
@@ -159,6 +164,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   // const [currentPath, setCurrentPath] = useState<string[]>([]);
   // const [selectedTagsGroup, setSelectedTagsGroup] = useState<string[]>([]);
   // const [selectedTagsUser, setSelectedTagsUser] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -223,7 +229,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       loadWorkflowFromUrl();
     }
 
-    console.log(workflowId);
+    // console.log(workflowId);
   }, [workflowId]);
 
   // Validate workflow before saving
@@ -348,24 +354,24 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, [nodes, connections]);
 
   // Get form component configuration
-  const getFormComponentConfig = useCallback((formType: string) => {
-    interface FormFieldConfig {
-      name: string;
-      type: string;
-      label: string;
-      required?: boolean;
-      options?: string[];
-    }
+  // const getFormComponentConfig = useCallback((formType: string) => {
+  //   interface FormFieldConfig {
+  //     name: string;
+  //     type: string;
+  //     label: string;
+  //     required?: boolean;
+  //     options?: string[];
+  //   }
 
-    interface FormConfig {
-      fields: FormFieldConfig[];
-    }
+  //   interface FormConfig {
+  //     fields: FormFieldConfig[];
+  //   }
 
-    // const formConfigs: Record<string, FormConfig> = workflowForm;
-    const formConfigs: Record<string, FormConfig> = workflowFormV02;
+  //   // const formConfigs: Record<string, FormConfig> = workflowForm;
+  //   const formConfigs: Record<string, FormConfig> = workflowFormV02;
     
-    return formConfigs[formType] || { fields: [] };
-  }, []);
+  //   return formConfigs[formType] || { fields: [] };
+  // }, []);
 
   // Generate components preview based on workflow path
   const generateComponentsPreview = useCallback(() => {
@@ -427,7 +433,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         return;
       }
 
-      console.log(node.data.config);
+      // console.log(node.data.config);
 
       if (node.type === "start") {
         components.push({
@@ -489,7 +495,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     nodes,
     decisionSelections,
     getWorkflowPath,
-    getFormComponentConfig
+    // getFormComponentConfig
   ]);
 
   // Handle decision toggle in Components Preview
@@ -820,7 +826,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       setImportJsonText("");
       setShowImportDialog(false);
       
-      console.log("Workflow imported successfully");
+      // console.log("Workflow imported successfully");
     }
     catch (error) {
       alert("Invalid JSON format. Please check your input.");
@@ -887,7 +893,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   }, [nodes, connections, workflowMetadata]);
 
   // Save workflow
-  const saveWorkflow = useCallback(() => {
+  const saveWorkflow = useCallback(async () => {
     const errors = validateWorkflow();
     setValidationErrors(errors);
 
@@ -905,13 +911,33 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     };
     onSave?.(workflowData);
     setShowJsonPreview(false);
-    console.log("Workflow saved:", workflowData);
+    // console.log("Workflow saved:", workflowData);
+
+    try {
+      setLoading(true);
+      const response = await createWorkflow(workflowData).unwrap();
+
+      if (response?.status) {
+        addToast("success", `Workflow Management: ${response?.desc || response?.msg || "Save successfully"}`);
+      }
+      else {
+        throw new Error(response?.desc || response?.msg || "Unknown error");
+      }
+    }
+    catch (error) {
+      addToast("error", `Workflow Management: ${error}`);
+    }
+    finally {
+      setLoading(false);
+    }
   }, [
     nodes,
     connections,
     workflowMetadata,
+    addToast,
+    createWorkflow,
     onSave,
-    validateWorkflow
+    validateWorkflow,
   ]);
 
   // Update workflow metadata
@@ -1891,9 +1917,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           </div>
         </div>
 
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+
         {/* JSON Preview Dialog */}
         {showJsonPreview && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
-          <Modal isOpen={showJsonPreview} onClose={() => setShowJsonPreview(false)} className="max-w-4xl p-6">
+          <Modal isOpen={showJsonPreview} onClose={() => setShowJsonPreview(loading ? true : false)} className="max-w-4xl p-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">Workflow JSON Preview</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{workflowMetadata.title}</p>
@@ -1916,6 +1944,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <Button
                 onClick={() => setShowJsonPreview(false)}
                 variant="error"
+                disabled={loading}
               >
                 Cancel
               </Button>
@@ -1935,6 +1964,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <Button
                 onClick={downloadJsonWorkflow}
                 variant="outline"
+                disabled={loading}
               >
                 <DownloadIcon className="w-4 h-4" />
                 Download
@@ -1942,15 +1972,19 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
               <Button
                 onClick={saveWorkflow}
-                disabled={validationErrors.length > 0}
+                disabled={validationErrors.length > 0 || loading}
                 variant={`${
                   validationErrors.length > 0
                     ? "outline"
                     : "primary"
                 }`}
               >
-                <DownloadIcon className="w-4 h-4" />
-                Save
+                {loading ? "Saving..." : (
+                  <>
+                    <DownloadIcon className="w-4 h-4" />
+                    <span>Save</span>
+                  </>
+                )}
               </Button>
             </div>
           </Modal>
