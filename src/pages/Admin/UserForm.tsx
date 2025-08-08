@@ -19,18 +19,18 @@ interface UserFormData {
     email: string;
     empId: string;
     firstName: string;
-    gender: number | string;
+    gender: number | 0;
     lastName: string;
     middleName: string;
     mobileNo: string;
     orgId: string;
     password?: string;
     confirmPassword?: string;
-    photo: File | string | null;
+    photo: string | "" ;
     roleId: string;
     stnId: string;
     title: string;
-    userType: number | string;
+    userType: number | 0;
     username: string;
     createdAt?: string;
     updatedAt?: string;
@@ -110,9 +110,9 @@ const UserForm: React.FC = () => {
     // --- State ---
     const [formData, setFormData] = useState<UserFormData>({
         active: true, address: '', blood: '', bod: '', citizenId: '', commId: '', deptId: '',
-        displayName: '', email: '', empId: '', firstName: '', gender: '', lastName: '',
-        middleName: '', mobileNo: '', orgId: '', password: '', confirmPassword: '', photo: null,
-        roleId: '', stnId: '', title: '', userType: '', username: '',
+        displayName: '', email: '', empId: '', firstName: '', gender: 0, lastName: '',
+        middleName: '', mobileNo: '', orgId: '', password: '', confirmPassword: '', photo: "",
+        roleId: '', stnId: '', title: '', userType: 0, username: '',
     });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true); // Start loading initially
@@ -269,12 +269,17 @@ const UserForm: React.FC = () => {
         });
     };
 
+    //Mock up Photo
+    const storePhotoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf3hbXeK8w0ezCgtk3DLsksnNnxnRTrvqc4A&s";
+
+    
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setFormData(prev => ({ ...prev, photo: file }));
             // Create a temporary URL for preview
             setImagePreview(URL.createObjectURL(file));
+            //Function Store Photo
+            setFormData(prev => ({ ...prev, photo: storePhotoUrl}));
         }
     };
 
