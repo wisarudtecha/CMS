@@ -376,7 +376,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
                 </h4>
               )}
               */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {groupFilters.map(filter => (
                   <div key={filter.key} className="space-y-2">
                     <div className="flex items-center justify-between">

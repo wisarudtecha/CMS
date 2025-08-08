@@ -8,7 +8,7 @@ export { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 // Authentication Hooks
 export { useAuth } from "@/hooks/useAuth";
-// export { usePermissions } from "@/hooks/usePermissions";
+export { usePermissions } from "@/hooks/usePermissions";
 
 // Data Hooks
 // export { useTickets } from "@/hooks/useTickets";

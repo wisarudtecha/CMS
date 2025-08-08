@@ -580,7 +580,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         // loading={false}
         module="workflow"
         previewConfig={previewConfig}
-        searchFields={["name", "description", "category"]}
+        searchFields={["title", "desc"]}
         // customFilterFunction={() => true}
         onCreate={() => navigate("/workflow/editor/v2")}
         onDelete={handleDelete}

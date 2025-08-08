@@ -362,7 +362,7 @@ export const LoginForm: React.FC = () => {
                           onClick={() => {
                             setCredentials({
                               username: "wisarud.tec",
-                              password: "P@ssw0rd",
+                              password: "string",
                               organization: "SKY-AI",
                               rememberMe: true
                             });
