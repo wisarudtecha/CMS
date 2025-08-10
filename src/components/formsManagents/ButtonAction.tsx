@@ -1,6 +1,8 @@
 import React from 'react';
 import Button from '@/components/ui/button/Button';
 import { FormField, FormManager } from '../interface/FormField';
+import Switch from '../form/switch/Switch';
+
 
 interface TableRowActionsProps {
   form: FormManager;
@@ -22,47 +24,36 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
 
   // Handles toggling the active status of the form
   const handleToggleStatus = () => {
- 
+
     onSetStatusChange(form.formId, form.formName, !form.active);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        onClick={() => handleOnView?.()}
-        variant={`${style}-primary`}
-        title="View"
-      >
-        View
-      </Button>
-      <Button
-        onClick={() => handleOnEdit?.(form)}
-        variant={`${style}-warning`}
-        title="Edit"
-      >
-        Edit
-      </Button>
-      
-      {/* Conditionally render the status button based on the 'active' property */}
-      {form.active ? (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2">
         <Button
-          onClick={handleToggleStatus}
-          variant={`${style}-error`}
-          title="Set to Inactive"
+          onClick={() => handleOnView?.()}
+          variant={`${style}-primary`}
+          title="View"
         >
-          Inactive
+          View
         </Button>
-      ) : (
         <Button
-          onClick={handleToggleStatus}
-          variant={`${style}-success`}
-          title="Set to Active"
+          onClick={() => handleOnEdit?.(form)}
+          variant={`${style}-warning`}
+          title="Edit"
         >
-          Active
+          Edit
         </Button>
-      )}
+      </div>
+      <Switch
+        label="Active"
+        defaultChecked={form.active}
+        onChange={handleToggleStatus}
+      />
     </div>
   );
+
 };
 
 export default ButtonAction;

@@ -27,7 +27,7 @@ const FormCard: React.FC<FormCardProps> = ({
   onSetStatusInactive, // Destructure the new prop
 }) => {
 
-  const config = statusConfig[form.active===true?"active":"inactive"];
+  // const config = statusConfig[form.active===true?"active":"inactive"];
 
   return (
     <div
@@ -40,9 +40,9 @@ const FormCard: React.FC<FormCardProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.formName}</h3>
           </div>
           <div className="flex items-center gap-1">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+            {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
               {config.label}
-            </span>
+            </span> */}
             {form.versions=="draft"&&<span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig["draft"].color}`}>
               draft
             </span>}

@@ -16,18 +16,18 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     handleCustomerDataChange,
 }) => {
 
-    const contractMethodMock = [{name:"CALL",id:"01"}, {name:"MobileApp",id:"02"}, {name:"Social",id:"03"},{name:"METTRIQ",id:"04"},{name:"IOT-Alert",id:"05"},{name:"Other",id:"06"}];
+    const contractMethodMock = [{ name: "CALL", id: "01" }, { name: "MobileApp", id: "02" }, { name: "METTRIQ", id: "04" }, { name: "IOT-Alert", id: "05" }, { name: "Other", id: "06" }];
     const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         handleCustomerDataChange({
             ...customerData,
-            name: e.target.value 
+            name: e.target.value
         });
     };
 
 
 
     const handleCustomerDataContractMethodeChange = (data: contractMethod) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data});
+        handleCustomerDataChange({ ...customerData, contractMethod: data });
     };
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -36,30 +36,26 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             const matchingCustomer = listCustomerData.find(
                 (customer) => customer.mobileNo === value
             );
+            console.log(matchingCustomer,listCustomerData)
             if (matchingCustomer) {
                 updatedCustomerData = {
-                    ...updatedCustomerData,
+                    ...matchingCustomer,
                     name: `${matchingCustomer.firstName} ${matchingCustomer.lastName}`,
                     email: matchingCustomer.email,
                     photo: matchingCustomer.photo,
                     id: matchingCustomer.id,
+                    contractMethod: updatedCustomerData.contractMethod
                 };
             } else {
                 updatedCustomerData = {
-                    ...updatedCustomerData,
                     mobileNo: value,
-               
-                };
+
+                } as Custommer;
             }
         } else {
             updatedCustomerData = {
-                ...updatedCustomerData,
-                mobileNo: "",
-                name: "",
-                email: "",
-                id: "",
-                photo: "",
-            } ;
+
+            } as Custommer;
         }
         handleCustomerDataChange(updatedCustomerData);
     };

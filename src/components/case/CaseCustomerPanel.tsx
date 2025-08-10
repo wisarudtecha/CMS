@@ -1,7 +1,7 @@
 
-import {  useState } from "react" 
+import { useState } from "react"
 import {
-    X 
+    X
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
@@ -12,11 +12,13 @@ import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
 import type { Custommer } from "@/types";
 import React from "react"
+import DateStringToDateFormat from "../date/DateToString"
+import { mergeAddress } from "@/store/api/custommerApi"
 interface CustomerPanelProps {
-    customerData?:Custommer;
+    customerData?: Custommer;
     onClose: () => void; // Added onClose handler for mobile view
 }
-const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) => {
+const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("customer-info");
     const edittabs = [
@@ -31,7 +33,6 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) 
         { id: "FAQ", label: "FAQ" },
     ];
     const serviceHistory = CaseHistory;
-
     return (
         <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
             {/* Mobile-only header with a title and close button */}
@@ -116,7 +117,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) 
                                     <div className="flex flex-wrap gap-3 items-center">
                                         <Avatar
                                             src={
-                                                customerData?.photo 
+                                                customerData?.photo
                                                     ? customerData.photo
                                                     : "/images/user/unknow user.png"
                                             }
@@ -124,9 +125,9 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) 
                                         />
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                                                {customerData?.name  ? customerData?.name  : "-"}
+                                                {customerData?.name ? customerData?.name : "-"}
                                             </h3>
-                                            {customerData && (
+                                            {/* {customerData && (
                                                 <>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                                         Business ID: 123456789
@@ -135,23 +136,35 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({  onClose ,customerData}) 
                                                         Level: Premium
                                                     </div>
                                                 </>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="space-y-2 text-xs">
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">DOB</div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Date of birth</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {customerData ? "Jan 15, 1985" : "-"}
+                                                {customerData?.dob ? DateStringToDateFormat(customerData.dob) : "-"}
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Insurance</div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Email</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {customerData ? "INS-789-456" : "-"}
+                                                {customerData?.email ? customerData.email : "-"}
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Phone Number</div>
+                                        <div className="text-gray-900 dark:text-white">
+                                            {customerData?.mobileNo ? customerData.mobileNo : "-"}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
+                                        <div className="text-gray-900 dark:text-white">
+                                            {customerData?.address ? mergeAddress(customerData.address)  : "-"}
                                         </div>
                                     </div>
                                 </div>

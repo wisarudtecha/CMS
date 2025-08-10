@@ -40,6 +40,53 @@ export interface Address {
     subDistrict: string;
 }
 
+
+export function mergeAddress(address: Address): string {
+  const addressParts: string[] = [];
+
+  if (address.building) {
+    addressParts.push(address.building);
+  }
+  if (address.room && address.floor) {
+    addressParts.push(`Room ${address.room}, Floor ${address.floor}`);
+  } else if (address.room) {
+    addressParts.push(`Room ${address.room}`);
+  } else if (address.floor) {
+    addressParts.push(`Floor ${address.floor}`);
+  }
+
+  if (address.street) {
+    addressParts.push(address.street);
+  }
+  if (address.road) {
+    addressParts.push(address.road);
+  }
+  
+  const locationParts: string[] = [];
+  if (address.subDistrict) {
+    locationParts.push(address.subDistrict);
+  }
+  if (address.district) {
+    locationParts.push(address.district);
+  }
+  if (address.province) {
+    locationParts.push(address.province);
+  }
+
+  if (locationParts.length > 0) {
+    addressParts.push(locationParts.join(', '));
+  }
+
+  if (address.postalCode) {
+    addressParts.push(address.postalCode);
+  }
+  if (address.country) {
+    addressParts.push(address.country);
+  }
+
+  return addressParts.join(', ');
+}
+
 export interface PaginationParams {
     start?: number;
     length?: number;

@@ -71,11 +71,11 @@ export const useFetchCaseStatus = async () => {
 };
 
 
-export const caseApiSetup = () => {
-  useFetchCustomers();
-  useFetchCase({ start: 0, length: 100 });
-  useFetchTypeSubType();
-  useFetchDeptCommandStations();
-  useFetchCaseStatus();
-  useFetchSubTypeAllForm();
+export const caseApiSetup = async () => {
+  await useFetchCustomers();
+  await useFetchCase({ start: 0, length: 100 });
+  await useFetchTypeSubType();
+  await useFetchDeptCommandStations();
+  await useFetchCaseStatus();
+  await useFetchSubTypeAllForm();
 }

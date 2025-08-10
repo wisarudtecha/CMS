@@ -27,8 +27,8 @@ const statusColumns = [
   { title: "Assign", group: ["S002", "S009"] },
   { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] },
   { title: "Approve", group: ["S017", "S018"] },
-  { title: "Done", group: ["S007", "S016"] },
-  { title: "Cancel", group: ["S014"] },
+  // { title: "Done", group: ["S007", "S016"] },
+  // { title: "Cancel", group: ["S014"] },
 ]
 
 function createAvatarFromString(name: string): string {
@@ -41,7 +41,7 @@ function createAvatarFromString(name: string): string {
 }
 
 export default function CasesView() {
-  const [selectedCase, setSelectedCase] = useState<any>(null)
+  const [selectedCase, setSelectedCase] = useState<CaseList | null>(null)
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [showDynamicForm, setShowDynamicForm] = useState(false)
@@ -50,11 +50,13 @@ export default function CasesView() {
   const [sortField] = useState<"title" | "date">("date")
   const [sortOrder] = useState<"asc" | "desc">("asc")
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
+  const allowedStatusIds = statusColumns.flatMap(col => col.group);
 
-  // Convert caseData to a state variable to allow dynamic updates
   const [caseData, setCaseData] = useState<CaseList[]>(() => {
     const savedCases = localStorage.getItem("caseList");
-    return savedCases ? JSON.parse(savedCases) : [];
+    return savedCases
+      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
+      : [];
   });
 
   const [advancedFilters, setAdvancedFilters] = useState({
@@ -77,9 +79,9 @@ export default function CasesView() {
     return statusColumn ? statusColumn.title : "";
   };
 
-  const matchingSubTypesNames = (caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
-    const matchingSubType = caseTypeSupType.find(item => item.sTypeId === caseSTypeId);
-    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : caseSTypeId;
+  const matchingSubTypesNames = (caseTypeId: string, caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
+    const matchingSubType = caseTypeSupType.find(item => item.typeId === caseTypeId || item.sTypeId === caseSTypeId);
+    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : "Unknow";
   }
 
   const handleCaseClick = (caseItem: CaseList) => {
@@ -105,7 +107,7 @@ export default function CasesView() {
 
       // General search condition remains on the client side for instant feedback
       return (
-        matchingSubTypesNames(c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
+        matchingSubTypesNames(c.caseTypeId, c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
         c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
         c.statusId.toLowerCase().includes(generalSearchTerm) ||
         assigneeName.toLowerCase().includes(generalSearchTerm) ||
@@ -130,15 +132,22 @@ export default function CasesView() {
   }
 
   const getCasesForColumn = (columnId: string) => {
-  return getFilteredCases()
-    .filter(c => getStatusKey(c) === columnId)
-    .sort((a, b) => {
-      if (a.priority !== b.priority) {
-        return a.priority - b.priority;
-      }
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    });
-}
+    return getFilteredCases()
+      .filter(c => getStatusKey(c) === columnId)
+      .sort((a, b) => {
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+  }
+
+  const statusIdToStatusTitle = (statusId: string) => {
+
+    const status = statusColumns.find(col => col.group.includes(statusId));
+    return status ? status.title : statusId;
+
+  }
 
   // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
@@ -152,8 +161,12 @@ export default function CasesView() {
         detail: localFilters.descriptionSearch,
         start_date: localFilters.startDate ? new Date(localFilters.startDate).toISOString() : undefined,
         end_date: localFilters.endDate ? new Date(localFilters.endDate).toISOString() : undefined,
-        category: localFilters.category ? localFilters.category : undefined,
       });
+      if (localFilters.category !== "") {
+        setSelectedStatus(localFilters.category);
+      } else {
+        setSelectedStatus(null);
+      }
       const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
@@ -182,7 +195,7 @@ export default function CasesView() {
         caseSubtype: ""
       };
       setAdvancedFilters(clearedFilters);
-
+      setSelectedStatus(null)
       await useFetchCase({ start: 0, length: 100 });
       const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
       setCaseData(updatedCases);
@@ -207,12 +220,12 @@ export default function CasesView() {
               options={caseTypeOptions}
               value={
                 (() => {
-                  const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType && item.sTypeId === localFilters.caseSubtype);
+                  const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
                   return found ? mergeCaseTypeAndSubType(found) : "";
                 })()
               }
               onChange={(e) => handleCaseTypeChange(e)}
-              className="w-full  border-gray-200 bg-transparent  text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
               placeholder="Search by Case Type..."
             />
           </div>
@@ -254,15 +267,8 @@ export default function CasesView() {
             <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <select
               id="category-filter"
-              value={selectedStatus ?? ""}
-              onChange={(e) => {
-                if (e.target.value === "") {
-                  setSelectedStatus(null)
-                }
-                else {
-                  setSelectedStatus(e.target.value)
-                }
-              }}
+              value={localFilters.category}
+              onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
             >
               <option value="">All Categories</option>
@@ -288,7 +294,7 @@ export default function CasesView() {
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
-          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
+          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
         </div>
         <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caseDetail}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
@@ -309,10 +315,7 @@ export default function CasesView() {
           <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt)}</span>
           <Badge>
             {
-              (() => {
-                const status = statusColumns.find(col => col.group.includes(caseItem.statusId));
-                return status ? status.title : caseItem.statusId;
-              })()
+              statusIdToStatusTitle(caseItem.statusId)
             }
           </Badge>
         </div>
@@ -372,10 +375,10 @@ export default function CasesView() {
           onClick={() => handleCaseClick(caseItem)}
         >
           <div className="col-span-4 flex items-center">
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
+            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
           </div>
           <div className="flex col-span-2 items-center space-x-2">
-            <Badge color="primary">{caseItem.statusId}</Badge>
+            <Badge color="primary">{statusIdToStatusTitle(caseItem.statusId)}</Badge>
           </div>
           <div className="col-span-2 flex items-center mx-4">
             <div className={`w-2 h-2 rounded-full ${getPriorityColorClass(caseItem.priority)}`} />

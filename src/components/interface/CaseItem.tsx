@@ -69,4 +69,6 @@ export interface CaseList {
   createdBy: string;
   updatedBy: string;
   comments: number;
+  sop: string | null;
+  currentStage: string | null;
 }

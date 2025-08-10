@@ -10,7 +10,6 @@ React,
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
-import { Modal } from "@/components/ui/modal";
 import {
   AlertIcon,
   CheckCircleIcon,
@@ -52,13 +51,6 @@ interface PaginationConfig {
   pageSize: number;
 }
 
-interface ConfirmDialog {
-  isOpen: boolean;
-  type: 'delete' | 'status';
-  FormManagerId: string;
-  FormManagerName: string;
-  newStatus?: FormManager['active'];
-}
 
 interface Toast {
   id: string;
@@ -83,7 +75,7 @@ const FormListComponent: React.FC = () => {
   const [SelectForm, setSelectForm] = useState<FormField | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { data: AllFormsData } = useGetAllFormsQuery(null);
+  const { data: AllFormsData, isLoading } = useGetAllFormsQuery(null);
   const [displayMode, setDisplayMode] = useState<'card' | 'table'>('card');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
@@ -96,13 +88,6 @@ const FormListComponent: React.FC = () => {
   const [pagination, setPagination] = useState<PaginationConfig>({
     page: 1,
     pageSize: 10
-  });
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialog>({
-    isOpen: false,
-    type: 'delete',
-    FormManagerId: '',
-    FormManagerName: '',
-    newStatus: undefined
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
@@ -219,34 +204,41 @@ const FormListComponent: React.FC = () => {
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 
-  const handleUpdateStatus = async () => {
-    // if (!confirmDialog.newStatus) {
-    //   return;
-    // }
+  // Handles status update for a form
+  const handleUpdateStatus = async (
+    formId: string,
+    formName: string,
+    newStatus: FormManager['active']
+  ) => {
     try {
-     
-      if (typeof confirmDialog.newStatus === 'undefined') {
-        addToast('error', 'New status or Form ID is missing.');
-        return;
-      }
-
-      let response=await updateFormStatus({
-        formId: confirmDialog.FormManagerId,
-        active: confirmDialog.newStatus // This must be a boolean here
+      const response = await updateFormStatus({
+        formId,
+        active: newStatus,
       }).unwrap();
-      if (response?.data?.msg == "Success") {
-        setForms(prev => prev.map(f =>
-          f.formId === confirmDialog.FormManagerId
-            ? { ...f, active: confirmDialog.newStatus ?? f.active }
-            : f
-        ));
-       
-        addToast('error', 'Update Unsuccess');
+
+      if (response?.data?.msg === "Success") {
+        setForms(prev =>
+          prev.map(f =>
+            f.formId === formId
+              ? { ...f, active: newStatus }
+              : f
+          )
+        );
+        addToast(
+          'success',
+          `Form "${formName}" has been set to ${newStatus ? "Active" : "Inactive"}.`
+        );
+      } else {
+        addToast(
+          'error',
+          response?.data?.msg || `Failed to update status for "${formName}".`
+        );
       }
-      setConfirmDialog({ isOpen: false, type: 'status', FormManagerId: '', FormManagerName: '' });
-    }
-    catch (err) {
-      addToast('error', `Failed to update Flow status, ${err}`);
+    } catch (err) {
+      addToast(
+        'error',
+        `Failed to update status for "${formName}". ${(err as any)?.message || err}`
+      );
     }
   };
   const formatDate = (dateString: string) => {
@@ -264,9 +256,9 @@ const FormListComponent: React.FC = () => {
   const filteredAndSortedFormManagers = useMemo(() => {
     const filtered = forms.filter(form => {
       const matchesSearch = !filterConfig.search ||
-        form.formName.toLowerCase().includes(filterConfig.search.toLowerCase())||
+        form.formName.toLowerCase().includes(filterConfig.search.toLowerCase()) ||
         formatDate(form.createdAt!).toLowerCase().includes(filterConfig.search.toLowerCase());
-        ;
+      ;
 
       const matchesStatus = filterConfig.status === undefined || form.active === filterConfig.status; // Check for undefined to not filter if no status is selected
       const matchesDraft = filterConfig.isDraft === undefined || (form.versions === "draft" && filterConfig.isDraft) || (form.versions !== "draft" && !filterConfig.isDraft); // Assuming 'publish' being false means it's a draft
@@ -302,7 +294,7 @@ const FormListComponent: React.FC = () => {
   const endEntry = Math.min(pagination.page * pagination.pageSize, filteredAndSortedFormManagers.length);
 
 
-  
+
   // const getUniqueCategories = () => {
   //   return [...new Set(forms.map(w => w.type).filter(Boolean))];
   // };
@@ -313,15 +305,28 @@ const FormListComponent: React.FC = () => {
   //     value: category,
   //     label: category
   //   }));
-  const onSetStatusInactive = (formId: string, formName: string, newStatus: FormManager['active']) => {
-    setConfirmDialog({
-      isOpen: true,
-      type: 'status', // Set type to 'status' for status updates
-      FormManagerId: formId,
-      FormManagerName: formName,
-      newStatus: newStatus, // Pass 'inactive' as the new status
-    });
+  const onSetStatusInactive = async (formId: string, formName: string, newStatus: FormManager['active']) => {
+    // setConfirmDialog({
+    //   isOpen: true,
+    //   type: 'status', // Set type to 'status' for status updates
+    //   FormManagerId: formId,
+    //   FormManagerName: formName,
+    //   newStatus: newStatus, // Pass 'inactive' as the new status
+    // });
+    handleUpdateStatus(formId, formName, newStatus)
+
   };
+
+
+  // const onSetStatusInactive = (formId: string, formName: string, newStatus: FormManager['active']) => {)
+  //   setConfirmDialog({
+  //     isOpen: true,
+  //     type: 'status', // Set type to 'status' for status updates
+  //     FormManagerId: formId,
+  //     FormManagerName: formName,
+  //     newStatus: newStatus, // Pass 'inactive' as the new status
+  //   });
+  // };
   if (showDynamicForm) {
     return <OnBackOnly onBack={onBack}>
       <div className='rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12'>
@@ -335,10 +340,14 @@ const FormListComponent: React.FC = () => {
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
         <div className="mx-auto w-full">
           {/* Loading */}
-          {loading && (
-            <div className="text-center py-10">Loading forms...</div>
+          {(loading || isLoading) && (
+            <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                <div className="text-lg text-gray-700 font-semibold">Loading forms...</div>
+              </div>
+            </div>
           )}
-
           {/* Error */}
           {error && (
             <div className="text-center py-10 text-red-500">{error}</div>
@@ -673,7 +682,7 @@ const FormListComponent: React.FC = () => {
           </div>
 
           {/* Confirmation Dialog */}
-          {confirmDialog.isOpen && (
+          {/* {confirmDialog.isOpen && (
             <Modal isOpen={confirmDialog.isOpen} onClose={() => setConfirmDialog({ isOpen: false, type: 'delete', FormManagerId: '', FormManagerName: '' })} className="max-w-4xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div>
@@ -713,7 +722,7 @@ const FormListComponent: React.FC = () => {
                 </Button>
               </div>
             </Modal>
-          )}
+          )} */}
         </div>
       </div>
     </>

@@ -50,6 +50,101 @@ export interface ServiceCenter {
     name:string
 }
 
+export interface CaseSopParams {
+    caseId: string;
+}
+
+export interface SopNodeData {
+  data: {
+    description: string;
+    label: string;
+    config?: {
+      action: string;
+      formId: string;
+      pic?: string;
+      group?: string;
+      sla: string;
+      condition?: string;
+    };
+  };
+  id: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  type: string;
+}
+
+export interface CurrentStage {
+  caseId: string;
+  nodeId: string;
+  versions: string;
+  type: string;
+  section: string;
+  data: SopNodeData;
+  pic: string;
+  group: string | null;
+  formId: string;
+}
+
+export interface CaselocAddr {
+  number: string;
+  building: string;
+  road: string;
+  sub_district: string;
+  district: string;
+  province: string;
+  postal_code: string;
+  country: string;
+}
+
+
+export interface CaseSop {
+  id: string;
+  orgId: string;
+  caseId: string;
+  caseVersion: string;
+  referCaseId: string | null;
+  caseTypeId: string;
+  caseSTypeId: string;
+  priority: number;
+  wfId: string;
+  versions: string;
+  source: string;
+  deviceId: string;
+  phoneNo: string;
+  phoneNoHide: boolean;
+  caseDetail: string | null;
+  extReceive: string;
+  statusId: string;
+  caseLat: string;
+  caseLon: string;
+  caselocAddr: string | CaselocAddr;
+  caselocAddrDecs: string;
+  countryId: string;
+  provId: string;
+  distId: string;
+  caseDuration: number;
+  createdDate: string;
+  startedDate: string;
+  commandedDate: string;
+  receivedDate: string;
+  arrivedDate: string;
+  closedDate: string;
+  usercreate: string;
+  usercommand: string;
+  userreceive: string;
+  userarrive: string;
+  userclose: string;
+  resId: string;
+  resDetail: string | null; 
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  sop: any[];
+  currentStage: CurrentStage;
+}
 
 interface PaginationParams {
     start?: number;
@@ -82,6 +177,13 @@ export const dispantchApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Dispatch"],
         }),
+
+        getCaseSop: builder.query<ApiResponse<CaseSop[]>, CaseSopParams>({
+            query: (params) => ({
+                url: `/dispatch/${params.caseId}/SOP`,
+            }),
+            providesTags: ["Dispatch"],
+        }),
     }),
 });
 
@@ -89,5 +191,6 @@ export const {
     useGetCommandsQuery,
     useGetDepartmentQuery,
     useGetStationsQuery, 
+    useGetCaseSopQuery,
 } = dispantchApi;
 

@@ -1987,7 +1987,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         {currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
         ) : (
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
-            {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 p-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}>{renderFormField(field)}</div>))}
+            {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 px-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}>{renderFormField(field)}</div>))}
           </div>
         )}
       </div>
