@@ -339,20 +339,6 @@ const FormListComponent: React.FC = () => {
     <>
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
         <div className="mx-auto w-full">
-          {/* Loading */}
-          {(loading || isLoading) && (
-            <div className="fixed w-[70%] h-[70%] flex items-center justify-center bg-white bg-opacity-70 z-50">
-              <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                <div className="text-lg text-gray-700 font-semibold">Loading forms...</div>
-              </div>
-            </div>
-          )}
-          {/* Error */}
-          {error && (
-            <div className="text-center py-10 text-red-500">{error}</div>
-          )}
-
           {/* Toast Notifications */}
           <div className="fixed top-4 right-4 z-50 space-y-2">
             {toasts.map(toast => (
@@ -660,7 +646,7 @@ const FormListComponent: React.FC = () => {
               {/* No Results */}
               {paginatedFormManagers.length === 0 && !loading && !error && (
                 <div className="text-center py-12">
-                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No forms found</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading?"Loading...":"No forms found"}</div>
                   <p className="text-gray-400 dark:text-gray-500 mb-4">
                     {filterConfig.search || filterConfig.status || filterConfig.category
                       ? 'Try adjusting your filters or search terms'
