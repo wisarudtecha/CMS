@@ -341,7 +341,7 @@ const FormListComponent: React.FC = () => {
         <div className="mx-auto w-full">
           {/* Loading */}
           {(loading || isLoading) && (
-            <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
+            <div className="fixed w-[70%] h-[70%] flex items-center justify-center bg-white bg-opacity-70 z-50">
               <div className="flex flex-col items-center">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                 <div className="text-lg text-gray-700 font-semibold">Loading forms...</div>
