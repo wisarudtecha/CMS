@@ -36,7 +36,6 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             const matchingCustomer = listCustomerData.find(
                 (customer) => customer.mobileNo === value
             );
-            console.log(matchingCustomer,listCustomerData)
             if (matchingCustomer) {
                 updatedCustomerData = {
                     ...matchingCustomer,
@@ -48,13 +47,14 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 };
             } else {
                 updatedCustomerData = {
+                    ...updatedCustomerData,
                     mobileNo: value,
 
                 } as Custommer;
             }
         } else {
             updatedCustomerData = {
-
+                name:""
             } as Custommer;
         }
         handleCustomerDataChange(updatedCustomerData);
