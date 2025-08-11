@@ -178,7 +178,7 @@ export const dispantchApi = baseApi.injectEndpoints({
             providesTags: ["Dispatch"],
         }),
 
-        getCaseSop: builder.query<ApiResponse<CaseSop[]>, CaseSopParams>({
+        getCaseSop: builder.query<ApiResponse<CaseSop>, CaseSopParams>({
             query: (params) => ({
                 url: `/dispatch/${params.caseId}/SOP`,
             }),

@@ -27,7 +27,7 @@ import Comments from "../comment/Comment"
 // Corrected import path
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
-import DateStringToDateFormat, { TodayDate } from "../date/DateToString"
+import DateStringToDateFormat, { getLocalISOString, TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
 import ProgressStepPreview from "../progress/ProgressBar"
@@ -41,8 +41,9 @@ import PreviewDataBeforeSubmit from "./PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, DepartmentCommandStationData, DepartmentCommandStationDataMerged, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
-import { findCaseTypeSubType } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { useGetCaseSopQuery } from "@/store/api/dispatch"
+import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
+import { CaseSop, useGetCaseSopQuery } from "@/store/api/dispatch"
+import { statusIdToStatusTitle } from "../ui/status/status"
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const mockOfficers: Officer[] = [
     { id: '1', name: 'Somchai Srisuk', status: 'Available', department: 'Electrical', location: 'Sector 4', service: 'Power Grid', serviceProvider: 'City Power', workload: 2, distance: 3.5 },
@@ -53,8 +54,7 @@ const mockOfficers: Officer[] = [
 ];
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
-
-
+const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
 // function mergeCaseTypeAndSubType(
 //     caseTypes: CaseType[],
 //     caseSubTypes: CaseSubType[]
@@ -156,7 +156,7 @@ interface CaseCardProps {
     onAssignClick: () => void;
     onEditClick: () => void;
     setDisplayCaseData?: React.Dispatch<React.SetStateAction<CaseItem | undefined>>;
-    caseData: CaseItem;
+    caseData: CaseSop;
     editFormData: boolean;
 }
 
@@ -207,15 +207,23 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
         <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData.title}</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{
+                        mergeCaseTypeAndSubType(
+                            findCaseTypeSubTypeByTypeIdSubTypeId(
+                                caseTypeSupTypeData,
+                                caseData?.caseTypeId || "",
+                                caseData?.caseSTypeId || ""
+                            ) ?? ({} as CaseTypeSubType)
+                        )
+                    }</h2>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Create Date: {DateStringToDateFormat(caseData.date)}</span>
+                            <span>Create Date: {DateStringToDateFormat(caseData.createdAt)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User_Icon className="w-4 h-4" />
-                            <span>Created: {caseData.createBy}</span>
+                            <span>Created: {caseData.createdBy}</span>
                         </div>
                     </div>
                 </div>
@@ -224,7 +232,7 @@ const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseDat
                         {getTextPriority(caseData.priority).level} Priority
                     </Badge>
                     <Badge variant="outline" >
-                        {caseData.status}
+                        {statusIdToStatusTitle(caseData.statusId)}
                     </Badge>
                 </div>
             </div>
@@ -375,10 +383,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [updateCaseData, setUpdateCaseData] = useState<CaseItem | undefined>();
-    const { data: sopData } = useGetCaseSopQuery({ caseId: caseData?.caseId || "" });
-    console.log(sopData)
-    const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
-    // const caseTypeSupTypeData = getTypeSupType()
+    const { data: sopData, isFetching, isLoading } = useGetCaseSopQuery(
+        { caseId: caseData?.caseId || "" },
+        { refetchOnMountOrArgChange: true }
+    );
     const [createCase] = usePostCreateCaseMutation();
     const departmentCommandStations = JSON.parse(localStorage.getItem("DeptCommandStations_data") ?? "[]") as DepartmentCommandStationData[];
     const serviceCenter = departmentCommandStations.map((item) => ({
@@ -395,7 +403,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const [customerData, setCustomerData] = useState<Custommer>({
     } as Custommer);
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}");
-    const [listCustomerData,setListCustomerData] = useState<Customer[]>([])
+    const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     // const serviceCenterMock = ["Bankkok", "Phisanulok", "Chiang mai"];
 
     const createCaseAction = async (acton: "draft" | "submit") => {
@@ -453,37 +461,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     }
 
-
-    useEffect(() => {
-        // setDisplayedCaseData(caseData);
-        setListCustomerData(JSON.parse(localStorage.getItem("customer_data") ?? "[]") as Customer[])
-        // if (caseData) {
-        //     const newCaseType = caseData.caseType ?
-        //         { caseType: caseData.caseType.caseType || "", priority: caseData.caseType.priority || 0 } :
-        //         { caseType: "", priority: 0 };
-
-        //     setCaseType(newCaseType);
-        //     setCaseTypeData(caseData.caseType);
-        //     setFormData(caseData.formData);
-        //     setServiceCenterData(caseData.serviceCenter || {} as DepartmentCommandStationDataMerged);
-        //     { caseData.customerData && setCustomerData(caseData.customerData) }
-
-        // } else {
-        //     const draft = localStorage.getItem("Create Case");
-        //     if (draft) {
-        //         const parsedDraft = JSON.parse(draft) as CaseItem;
-        //         setCaseTypeData(parsedDraft.caseType);
-        //         setFormData(parsedDraft.formData);
-        //         setCaseType({ caseType: parsedDraft.caseType?.caseType || "", priority: parsedDraft.caseType?.priority || 0 });
-        //         setServiceCenterData(parsedDraft.serviceCenter || {} as DepartmentCommandStationDataMerged);
-        //         setCustomerData(parsedDraft.customerData || {} as Custommer);
-        //         setDisplayedCaseData(parsedDraft);
-        //     }
-        // }
-    }, [caseData]);
-
-
-    const selectedCaseTypeForm = useMemo(() => {
+    const getFormByCaseType = () => {
         if (caseTypeData?.caseType === caseType.caseType) {
             return caseTypeData;
         }
@@ -492,7 +470,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         if (!newCaseType?.sTypeId) {
             return;
         }
-
         const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
         let formField: FormField = {} as FormField;
 
@@ -503,12 +480,60 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         } catch (e) {
             console.error("Failed to parse formField JSON:", e);
         }
-
         return {
             ...newCaseType,
+            caseType: mergeCaseTypeAndSubType(newCaseType),
             formField,
-        } as formType;
-    }, [caseType, displayedCaseData]);
+        } as formType
+    }
+
+    useEffect(() => {
+        // setDisplayedCaseData(caseData);
+        setListCustomerData(JSON.parse(localStorage.getItem("customer_data") ?? "[]") as Customer[])
+        if (caseData) {
+            const newCaseType = caseData ?
+                {
+                    caseType: mergeCaseTypeAndSubType(
+                        findCaseTypeSubTypeByTypeIdSubTypeId(
+                            caseTypeSupTypeData,
+                            caseData?.caseTypeId || "",
+                            caseData?.caseSTypeId || ""
+                        ) ?? ({} as CaseTypeSubType)
+                    ) || "", priority: caseData.priority || 0
+                } :
+                { caseType: "", priority: 0 };
+
+            setCaseType(newCaseType);
+            // setCaseTypeData(caseData.caseType);
+            // setFormData(caseData.formData);
+            // setServiceCenterData(caseData.serviceCenter || {} as DepartmentCommandStationDataMerged);
+            const utcTimestamp: string | undefined = sopData?.data?.createdAt;
+            setDisplayedCaseData({
+                location: sopData?.data?.caselocAddr,
+                date: utcTimestamp && getLocalISOString(utcTimestamp),
+                caseType: getFormByCaseType(),
+                priority: sopData?.data?.priority,
+                description: sopData?.data?.caseDetail,
+            } as CaseItem);
+
+        }
+
+    }, [sopData, isFetching]);
+
+    useEffect(() => {
+        const result = listCustomerData.find(items => items.mobileNo === caseData?.phoneNo)
+        setCustomerData(result ? { ...result, name: `${result.firstName} ${result.lastName}` } as Custommer : {} as Custommer)
+        setDisplayedCaseData(result ? {
+            ...displayedCaseData,
+            customerData: result ? { ...result, name: `${result.firstName} ${result.lastName}` } as Custommer : {} as Custommer,
+            status: displayedCaseData?.status || "",
+        } as CaseItem : undefined)
+    }, [listCustomerData])
+
+
+    const selectedCaseTypeForm = useMemo(() => {
+        return getFormByCaseType()
+    }, [caseType]);
 
 
 
@@ -671,6 +696,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     //         return prevData;
     //     });
     // }, []);
+
     const handleIsFillGetType = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
     // const handleIsFillDynamicForm = useCallback((isFill: boolean) => setIsValueFill(prev => ({ ...prev, dynamicForm: isFill })), []);
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
@@ -741,173 +767,192 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             };
         });
     };
-    return (
-        <div className="flex flex-col h-screen">
-            <PageMeta title="Case Detail" description="Case Detail Page" />
-            {showToast && (
-                <Toast
-                    message={toastMessage}
-                    type={toastType}
-                    duration={3000}
-                    onClose={() => setShowToast(false)}
-                />
-            )}
 
-            <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="" />
-                <div className="px-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            {onBack && (
-                                <Button variant="ghost" size="sm" onClick={onBack}>
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back
-                                </Button>
-                            )}
-                            {/* {caseData && <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
-                                Case #{caseData.id.toString().padStart(10, '0')}
-                                <button className="ml-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">×</button>
-                            </div>} */}
-                        </div>
-                        <div className="md:hidden">
-                            <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
-                                <User_Icon className="w-4 h-4 mr-2" />
-                                View Customer
-                            </Button>
-                        </div>
+   if (isLoading || isFetching) {
+    return (
+        <div className="relative flex-1 min-h-screen">
+            <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                    <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">
+                        Loading forms...
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
 
-            <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
-                <div className="flex flex-col md:flex-row h-full gap-1 w-full">
-                    <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
-                        <div className="pr-0">
-                            <div className="px-4 pt-6">
-                                {(caseData ) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={displayedCaseData ||{} as CaseItem} editFormData={editFormData} setDisplayCaseData={setDisplayedCaseData} />}
-                                {(displayedCaseData?.attachFile && displayedCaseData.attachFile.length > 0 && displayedCaseData) && (
-                                    <div className="mx-3">
-                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                                            Attach File :
-                                        </span>
 
-                                        {Array.isArray(displayedCaseData.attachFile) && displayedCaseData.attachFile.length > 0 && (
-                                            <div className="mt-2 mb-3">
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {displayedCaseData.attachFile.map((file: File, index: number) => (
-                                                        <div key={file.name + index} className="relative group">
-                                                            <img
-                                                                src={URL.createObjectURL(file)}
-                                                                alt={`Upload ${index + 1}`}
-                                                                className="w-full h-20 object-cover rounded border border-gray-600"
-                                                            />
-                                                            <Button
-                                                                onClick={() => handleRemoveFile(index)}
-                                                                className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                size="sm"
-                                                                variant="error"
-                                                            >
-                                                                ×
-                                                            </Button>
-                                                        </div>
-                                                    ))}
-                                                </div>
+
+
+return (
+    <div className="flex flex-col h-screen">
+        <PageMeta title="Case Detail" description="Case Detail Page" />
+        {showToast && (
+            <Toast
+                message={toastMessage}
+                type={toastType}
+                duration={3000}
+                onClose={() => setShowToast(false)}
+            />
+        )}
+
+        <div className="flex-shrink-0">
+            <PageBreadcrumb pageTitle="" />
+            <div className="px-4 sm:px-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        {onBack && (
+                            <Button variant="ghost" size="sm" onClick={onBack}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Back
+                            </Button>
+                        )}
+                        {/* {caseData && <div className="relative bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-t-lg border-t border-l border-r border-gray-300 dark:border-gray-600 text-sm font-medium">
+                                Case #{caseData.id.toString().padStart(10, '0')}
+                                <button className="ml-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">×</button>
+                            </div>} */}
+                    </div>
+                    <div className="md:hidden">
+                        <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
+                            <User_Icon className="w-4 h-4 mr-2" />
+                            View Customer
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
+            <div className="flex flex-col md:flex-row h-full gap-1 w-full">
+                <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
+                    <div className="pr-0">
+                        <div className="px-4 pt-6">
+                            {(caseData) && <CaseCard onAssignClick={() => setShowAssignModal(true)} onEditClick={handleEditClick} caseData={sopData?.data || {} as CaseSop} editFormData={editFormData} setDisplayCaseData={setDisplayedCaseData} />}
+                            {(displayedCaseData?.attachFile && displayedCaseData.attachFile.length > 0 && displayedCaseData) && (
+                                <div className="mx-3">
+                                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                                        Attach File :
+                                    </span>
+
+                                    {Array.isArray(displayedCaseData.attachFile) && displayedCaseData.attachFile.length > 0 && (
+                                        <div className="mt-2 mb-3">
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {displayedCaseData.attachFile.map((file: File, index: number) => (
+                                                    <div key={file.name + index} className="relative group">
+                                                        <img
+                                                            src={URL.createObjectURL(file)}
+                                                            alt={`Upload ${index + 1}`}
+                                                            className="w-full h-20 object-cover rounded border border-gray-600"
+                                                        />
+                                                        <Button
+                                                            onClick={() => handleRemoveFile(index)}
+                                                            className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            size="sm"
+                                                            variant="error"
+                                                        >
+                                                            ×
+                                                        </Button>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-                                )}
-                                {(caseData && assignedOfficers.length > 0) && (
-                                    <div className="mb-4 flex flex-wrap gap-2 items-center">
-                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                                            Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
-                                        </span>
-                                        {assignedOfficers.map(officer => (
-                                            <div
-                                                key={officer.id}
-                                                className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
-                                            >   <div onClick={() => handleSelectOfficer(officer)}>
-                                                    {showOfficersData?.id === officer.id ? <ChevronUp /> : <ChevronDown />}
-                                                </div>
-                                                {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                                                {officer.name}
-                                                <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
-                                                <Button
-                                                    onClick={() => {
-
-                                                        setAssignedOfficers(prev => prev.filter(o => o.id !== officer.id));
-                                                        if (showOfficersData && showOfficersData.id === officer.id) {
-                                                            setShowOFFicersData(null)
-                                                        }
-                                                    }}
-                                                    className="ml-2"
-                                                    title="Remove"
-                                                    variant="outline-no-transparent"
-                                                    size="xxs"
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                {showOfficersData && <CommandInformation className="my-2" />}
-                            </div>
-                            <div className="px-4">
-                                {editFormData ? (
-                                    <>
-
-                                        <CaseTypeFormSection
-                                            caseType={caseType.caseType}
-                                            handleCaseTypeChange={handleCaseTypeChange}
-                                            handleGetTypeFormData={handleGetTypeFormData}
-                                            hadleIsFillGetType={handleIsFillGetType}
-                                            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
-                                            editFormData={editFormData}
-                                            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
-                                        />
-                                        <div className="pr-7">
-                                            <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Case Details: {requireElements}</h3>
-                                            <textarea
-                                                onChange={(e) => handleDetailChange(e.target.value)}
-                                                value={displayedCaseData?.description}
-                                                placeholder="Enter Location"
-                                                className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
-                                                required={true} // Added required attribute
-                                            ></textarea>
                                         </div>
-                                        <div className="sm:grid grid-cols-2">
-                                            <div >
-                                                <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
-                                                <SearchableSelect
-                                                    options={serviceCenter.map(item => item.name)}
-                                                    value={serviceCenterData.name || ""}
-                                                    onChange={handleSetServiceCenter}
-                                                    placeholder={"Select a Service Center"}
-                                                    className="2xsm:m-3"
-                                                />
-                                                <div className="pr-6">
-                                                    <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Location Infomation : </h3>
-                                                    <textarea
-                                                        onChange={(e) => handleLocationChange(e.target.value)}
-                                                        value={displayedCaseData?.location}
-                                                        placeholder="Enter Location"
-                                                        className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
-                                                    ></textarea>
-                                                </div>
-                                                <div className="px-3">
-                                                    <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Request Service Date : {requireElements}</h3>
-                                                    <Input
-                                                        required={true}
-                                                        type="datetime-local"
-                                                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                        onChange={(e) => handleServiceDateChange(e)}
-                                                        value={displayedCaseData?.date || handleServiceDateChangeDefault(TodayDate())}
-                                                    ></Input>
-                                                </div>
+                                    )}
+                                </div>
+                            )}
+                            {(caseData && assignedOfficers.length > 0) && (
+                                <div className="mb-4 flex flex-wrap gap-2 items-center">
+                                    <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                                        Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+                                    </span>
+                                    {assignedOfficers.map(officer => (
+                                        <div
+                                            key={officer.id}
+                                            className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
+                                        >   <div onClick={() => handleSelectOfficer(officer)}>
+                                                {showOfficersData?.id === officer.id ? <ChevronUp /> : <ChevronDown />}
                                             </div>
-                                            <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
+                                            {getAvatarIconFromString(officer.name, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                                            {officer.name}
+                                            <Button size="xxs" className="mx-1" variant="outline-no-transparent" >Acknowledge</Button>
+                                            <Button
+                                                onClick={() => {
+
+                                                    setAssignedOfficers(prev => prev.filter(o => o.id !== officer.id));
+                                                    if (showOfficersData && showOfficersData.id === officer.id) {
+                                                        setShowOFFicersData(null)
+                                                    }
+                                                }}
+                                                className="ml-2"
+                                                title="Remove"
+                                                variant="outline-no-transparent"
+                                                size="xxs"
+                                            >
+                                                Cancel
+                                            </Button>
                                         </div>
-                                        {/* <DynamicForm
+                                    ))}
+                                </div>
+                            )}
+                            {showOfficersData && <CommandInformation className="my-2" />}
+                        </div>
+                        <div className="px-4">
+                            {editFormData ? (
+                                <>
+
+                                    <CaseTypeFormSection
+                                        caseType={caseType.caseType}
+                                        handleCaseTypeChange={handleCaseTypeChange}
+                                        handleGetTypeFormData={handleGetTypeFormData}
+                                        hadleIsFillGetType={handleIsFillGetType}
+                                        selectedCaseTypeForm={selectedCaseTypeForm?.formField}
+                                        editFormData={editFormData}
+                                        caseTypeSupTypeData={caseTypeSupTypeData ?? []}
+                                    />
+                                    <div className="pr-7">
+                                        <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Case Details: {requireElements}</h3>
+                                        <textarea
+                                            onChange={(e) => handleDetailChange(e.target.value)}
+                                            value={displayedCaseData?.description}
+                                            placeholder="Enter Location"
+                                            className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                                            required={true} // Added required attribute
+                                        ></textarea>
+                                    </div>
+                                    <div className="sm:grid grid-cols-2">
+                                        <div >
+                                            <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
+                                            <SearchableSelect
+                                                options={serviceCenter.map(item => item.name)}
+                                                value={serviceCenterData.name || ""}
+                                                onChange={handleSetServiceCenter}
+                                                placeholder={"Select a Service Center"}
+                                                className="2xsm:m-3"
+                                            />
+                                            <div className="pr-6">
+                                                <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Location Infomation : </h3>
+                                                <textarea
+                                                    onChange={(e) => handleLocationChange(e.target.value)}
+                                                    value={displayedCaseData?.location}
+                                                    placeholder="Enter Location"
+                                                    className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                                                ></textarea>
+                                            </div>
+                                            <div className="px-3">
+                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Request Service Date : {requireElements}</h3>
+                                                <Input
+                                                    required={true}
+                                                    type="datetime-local"
+                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                                                    onChange={(e) => handleServiceDateChange(e)}
+                                                    value={displayedCaseData?.date || handleServiceDateChangeDefault(TodayDate())}
+                                                ></Input>
+                                            </div>
+                                        </div>
+                                        <CustomerInput listCustomerData={listCustomerData} handleCustomerDataChange={handleCustomerDataChange} customerData={customerData} />
+                                    </div>
+                                    {/* <DynamicForm
                                             initialForm={formData || createCaseJson}
                                             edit={false}
                                             editFormData={true}
@@ -916,28 +961,28 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                             returnFormAllFill={handleIsFillDynamicForm}
                                         /> */}
 
-                                        <div className="flex justify-end mt-20 mb-3 mr-3">
-                                            {caseData ? <Button variant="success" onClick={handlePreviewShow}>
-                                                Save Changes
-                                            </Button> :
-                                                <div className="flex justify-end">
-                                                    <div className="mx-3"><Button onClick={handleSaveDrafts} className="justify-end">Save As Draft</Button></div>
-                                                    <Button variant="success" onClick={handlePreviewShow}> {/* Changed onClick to handleSaveChanges */}
-                                                        Submit
-                                                    </Button>
+                                    <div className="flex justify-end mt-20 mb-3 mr-3">
+                                        {caseData ? <Button variant="success" onClick={handlePreviewShow}>
+                                            Save Changes
+                                        </Button> :
+                                            <div className="flex justify-end">
+                                                <div className="mx-3"><Button onClick={handleSaveDrafts} className="justify-end">Save As Draft</Button></div>
+                                                <Button variant="success" onClick={handlePreviewShow}> {/* Changed onClick to handleSaveChanges */}
+                                                    Submit
+                                                </Button>
 
-                                                </div>}
+                                            </div>}
 
-                                        </div>
-                                    </>
-                                ) : (
-                                    <FormFieldValueDisplay caseData={displayedCaseData} />
-                                )}
-                            </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <FormFieldValueDisplay caseData={displayedCaseData} />
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div className={`
+                <div className={`
                         fixed top-0 right-0 h-full w-[90%] max-w-md z-40
                         transition-transform duration-300 ease-in-out
                         md:relative md:h-auto md:w-1/3 lg:w-1/4 md:translate-x-0 md:z-auto
@@ -945,30 +990,30 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                         ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
                     `}>
 
-                        <CustomerPanel onClose={() => setIsCustomerPanelOpen(false)} customerData={customerData} />
+                    <CustomerPanel onClose={() => setIsCustomerPanelOpen(false)} customerData={customerData} />
 
-                    </div>
                 </div>
             </div>
-
-            {isCustomerPanelOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 z-30 md:hidden"
-                    onClick={() => setIsCustomerPanelOpen(false)}
-                ></div>
-            )}
-
-            <Modal isOpen={showPreviewData} onClose={() => setShowPreviewData(false)} className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar">
-                <PreviewDataBeforeSubmit caseData={updateCaseData} submitButton={caseData ? handleSaveChanges : handleCreateCase}></PreviewDataBeforeSubmit>
-            </Modal>
-
-            <AssignOfficerModal
-                open={showAssignModal}
-                onOpenChange={setShowAssignModal}
-                officers={mockOfficers}
-                onAssign={handleAssignOfficers}
-                assignedOfficers={assignedOfficers}
-            />
         </div>
-    );
+
+        {isCustomerPanelOpen && (
+            <div
+                className="fixed inset-0 bg-black/60 z-30 md:hidden"
+                onClick={() => setIsCustomerPanelOpen(false)}
+            ></div>
+        )}
+
+        <Modal isOpen={showPreviewData} onClose={() => setShowPreviewData(false)} className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar">
+            <PreviewDataBeforeSubmit caseData={updateCaseData} submitButton={caseData ? handleSaveChanges : handleCreateCase}></PreviewDataBeforeSubmit>
+        </Modal>
+
+        <AssignOfficerModal
+            open={showAssignModal}
+            onOpenChange={setShowAssignModal}
+            officers={mockOfficers}
+            onAssign={handleAssignOfficers}
+            assignedOfficers={assignedOfficers}
+        />
+    </div>
+);
 }

@@ -51,20 +51,19 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
 
 const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData }) => {
 
-
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Types : {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType}</div>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType||"-"}</div>
                 </div>
                 {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.description}
+                        {caseData?.description||"-"}
 
                     </div>
                 </div>
@@ -84,7 +83,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                 </div>
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.serviceCenter?.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.serviceCenter?.name||"-"}</div>
                 </div>
             </div>
             <div >
@@ -139,7 +138,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     <div className="mb-2">
                         <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
                         <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.customerData?.contractMethod.name || "-"}
+                            {caseData?.customerData?.contractMethod?.name || "-"}
                         </div>
                         {/* {caseData?.customerData?.contractMethod.name == "Email" ?
                             <>

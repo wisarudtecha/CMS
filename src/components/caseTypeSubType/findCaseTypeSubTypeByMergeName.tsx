@@ -7,3 +7,12 @@ export const findCaseTypeSubType = (
 ): CaseTypeSubType | undefined => {
     return list.find(item => mergeCaseTypeAndSubType(item) === targetKey);
 };
+
+
+export const findCaseTypeSubTypeByTypeIdSubTypeId = (
+    list: CaseTypeSubType[],
+    typeId: string,
+    subTypeId:string
+): CaseTypeSubType | undefined => {
+    return list.find(item => item.sTypeId===subTypeId && item.typeId===typeId);
+};

@@ -43,6 +43,9 @@ export interface CreateCase {
     nodeId: string;
     wfId: string;
     versions: string;
+    deptId: string,
+    commId: string,
+    stnId: string,
 }
 
 export interface Case {

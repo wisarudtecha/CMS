@@ -29,13 +29,13 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
       case "dateLocal":
       case "select":
       case "radio":
-        valueContent = field.value || "N/A";
+        valueContent = field.value || "-";
         break;
 
       case "option": // Multi-checkbox
         valueContent = Array.isArray(field.value) && field.value.length > 0
           ? field.value.join(", ")
-          : "N/A";
+          : "-";
         break;
 
       case "image":
@@ -96,7 +96,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
         return (
           <>
             {field.showLabel && renderLabel(field.label, field.required)}
-            <div className={valueTextClasses}>{field.value || "N/A"}</div>
+            <div className={valueTextClasses}>{field.value || "-"}</div>
             {selectedOption && Array.isArray(selectedOption.form) && selectedOption.form.length > 0 && (
               <>
                 <h4 className="text-md font-semibold mb-3 dark:text-gray-300">Details for "{field.value}"</h4>

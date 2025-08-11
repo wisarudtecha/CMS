@@ -21,15 +21,9 @@ import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/CaseApiManager"
 import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
+import { caseStatus, statusIdToStatusTitle } from "@/components/ui/status/status"
 
-const statusColumns = [
-  { title: "New", group: ["S001", "S008"] },
-  { title: "Assign", group: ["S002", "S009"] },
-  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] },
-  { title: "Approve", group: ["S017", "S018"] },
-  // { title: "Done", group: ["S007", "S016"] },
-  // { title: "Cancel", group: ["S014"] },
-]
+const statusColumns = caseStatus
 
 function createAvatarFromString(name: string): string {
   const words = name.trim().split(' ');
@@ -142,12 +136,6 @@ export default function CasesView() {
       });
   }
 
-  const statusIdToStatusTitle = (statusId: string) => {
-
-    const status = statusColumns.find(col => col.group.includes(statusId));
-    return status ? status.title : statusId;
-
-  }
 
   // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
