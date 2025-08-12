@@ -158,6 +158,16 @@ export const caseApi = baseApi.injectEndpoints({
         }),
 
 
+        patchUpdateCase: builder.mutation<ApiResponse<null>, { caseId: string; updateCase: CreateCase }>({
+            query: ({ caseId, updateCase }) => ({
+                url: `/case/${caseId}`,
+                method: "PATCH",
+                body: updateCase,
+            }),
+            invalidatesTags: ["Cases"],
+        }),
+
+
         postTypeSubType: builder.query<ApiResponse<CaseTypeSubType[]>, null>({
             query: () => "/casetypes_with_subtype",
             providesTags: ["Cases"],
@@ -189,6 +199,7 @@ export const {
     useGetSubTypeQuery,
     useGetTypeQuery,
     usePostCreateCaseMutation,
+    usePatchUpdateCaseMutation,
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,

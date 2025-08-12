@@ -3,6 +3,7 @@ import { ChangeEvent } from "react";
 import Input from "../form/input/InputField";
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/store/api/custommerApi";
+import { contractMethodMock } from "./source";
 
 interface CustomerInputProps {
     customerData: Custommer
@@ -16,7 +17,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     handleCustomerDataChange,
 }) => {
 
-    const contractMethodMock = [{ name: "CALL", id: "01" }, { name: "MobileApp", id: "02" }, { name: "METTRIQ", id: "04" }, { name: "IOT-Alert", id: "05" }, { name: "Other", id: "06" }];
+   
     const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         handleCustomerDataChange({
             ...customerData,

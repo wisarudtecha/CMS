@@ -394,13 +394,28 @@ export default function CasesView() {
       ))}
     </div>
   )
+  const onBackDynamic=()=>{
+    setShowDynamicForm(false)
+    const savedCases = localStorage.getItem("caseList");
+    setCaseData(savedCases
+      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
+      : [])
+  }
 
+  const onBackSelectedCase=()=>{
+    setSelectedCase(null)
+    const savedCases = localStorage.getItem("caseList");
+    setCaseData(savedCases
+      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
+      : [])
+  }
+  
   if (showDynamicForm) {
-    return <CaseDetailView onBack={() => setShowDynamicForm(false)} caseData={undefined} />
+    return <CaseDetailView onBack={onBackDynamic} caseData={undefined} />
   }
 
   if (selectedCase) {
-    return <CaseDetailView onBack={() => setSelectedCase(null)} caseData={selectedCase} />
+    return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} />
   }
 
   return (
