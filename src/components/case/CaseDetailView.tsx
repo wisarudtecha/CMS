@@ -772,12 +772,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     if (isLoading || isFetching) {
         return (
-            <div className="relative flex-1 min-h-screen">
-                <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50">
+            <div className="relative flex-1 min-h-screen ">
+                <div className="absolute inset-0 flex items-center justify-center  dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50 rounded-2xl">
                     <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                         <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">
-                            Loading forms...
+                            Loading Case...
                         </div>
                     </div>
                 </div>
