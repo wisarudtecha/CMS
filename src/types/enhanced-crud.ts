@@ -1,4 +1,6 @@
 // /src/types/enhanced-crud.ts
+import { Variant } from "@/types";
+
 export interface BaseEntity {
   id: string;
   createdAt: string;
@@ -10,10 +12,7 @@ export interface BulkAction<T> {
   label: string;
   icon?: React.ComponentType<unknown>;
   // variant: "primary" | "warning" | "error";
-  variant: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
-    | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
-    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
-    | "outline-no-transparent";
+  variant: Variant;
   onClick: (selectedItems: T[]) => Promise<void>;
   condition?: (selectedItems: T[]) => boolean;
   confirmationRequired?: boolean;
@@ -126,10 +125,7 @@ export interface PreviewAction<T> {
   key: string;
   label: string;
   icon?: React.ComponentType<unknown>;
-  variant: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
-    | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
-    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
-    | "outline-no-transparent";
+  variant: Variant;
   onClick: (item: T, closePreview: () => void) => void;
   condition?: (item: T) => boolean;
 }

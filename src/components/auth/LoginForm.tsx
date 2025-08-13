@@ -106,11 +106,12 @@ export const LoginForm: React.FC = () => {
                 <img className="dark:hidden" src="/images/logo/logo.png" alt="Logo" />
                 <img className="hidden dark:block" src="/images/logo/logo.png" alt="Logo" />
               </div>
+
               <div className="mb-5 sm:mb-8">
-                <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+                <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md cursor-default">
                   {showForgotPassword ? "Reset Password" : "Sign In"}
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 cursor-default">
                   {showForgotPassword ? "Enter your email to reset password" : "Enter your username, password, and organization to sign in!"}
                 </p>
               </div>
@@ -135,7 +136,7 @@ export const LoginForm: React.FC = () => {
 
               {/* Account lockout warning */}
               {state.isLocked && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg cursor-default">
                   <div className="flex items-center">
                     <AlertIcon className="w-5 h-5 text-red-500 mr-2" />
                     <span className="text-red-700 text-sm">
@@ -147,7 +148,7 @@ export const LoginForm: React.FC = () => {
 
               {/* Error message */}
               {state.error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg cursor-default">
                   <div className="flex items-center">
                     <AlertIcon className="w-5 h-5 text-red-500 mr-2" />
                     <span className="text-red-700 text-sm">{state.error}</span>
@@ -157,7 +158,7 @@ export const LoginForm: React.FC = () => {
 
               {/* Network error */}
               {validationErrors.network && (
-                <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg cursor-default">
                   <div className="flex items-center">
                     <CloseIcon className="w-5 h-5 text-orange-500 mr-2" />
                     <span className="text-orange-700 text-sm">{validationErrors.network}</span>
@@ -172,33 +173,34 @@ export const LoginForm: React.FC = () => {
                     {isPasswordResetSent ? (
                       <div className="text-center">
                         <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <p className="text-green-700 text-sm">
+                          <p className="text-green-700 text-sm cursor-default">
                             Password reset instructions have been sent to your email address.
                           </p>
                         </div>
-                        <button
+                        <Button
+                          variant="primary"
                           onClick={() => {
                             setShowForgotPassword(false);
                             setIsPasswordResetSent(false);
                             setForgotEmail("");
                           }}
-                          className="text-indigo-600 hover:text-indigo-500 font-medium"
                         >
                           Back to Sign In
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <Label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">
                             Email Address
-                          </label>
+                          </Label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                               <EnvelopeIcon className="h-5 w-5 text-gray-400" />
                             </div>
-                            <input
+                            <Input
                               type="email"
+                              id="forgot-email"
                               value={forgotEmail}
                               onChange={(e) => setForgotEmail(e.target.value)}
                               className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
@@ -208,23 +210,25 @@ export const LoginForm: React.FC = () => {
                             />
                           </div>
                           {validationErrors.forgotEmail && (
-                            <p className="mt-1 text-sm text-red-600">{validationErrors.forgotEmail}</p>
+                            <div className="relative flex justify-center text-sm text-red-600 dark:text-red-300">
+                              {validationErrors.forgotEmail}
+                            </div>
                           )}
                         </div>
 
                         <div className="flex space-x-3">
-                          <button
+                          <Button
                             onClick={handleForgotPassword}
-                            className="flex-1 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            variant="primary"
                           >
                             Send Reset Email
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => setShowForgotPassword(false)}
-                            className="flex-1 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            variant="outline"
                           >
                             Cancel
-                          </button>
+                          </Button>
                         </div>
                       </>
                     )}
@@ -233,10 +237,11 @@ export const LoginForm: React.FC = () => {
                   <div className="space-y-6">
                     {/* Username field */}
                     <div>
-                      <Label>
+                      <Label htmlFor="username">
                         Username <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <Input
+                        id="username"
                         value={credentials.username}
                         onChange={(e) => handleInputChange("username", e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -253,12 +258,13 @@ export const LoginForm: React.FC = () => {
 
                     {/* Password field */}
                     <div>
-                      <Label>
+                      <Label htmlFor="password">
                         Password <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
+                          id="password"
                           value={credentials.password}
                           onChange={(e) => handleInputChange("password", e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -286,10 +292,11 @@ export const LoginForm: React.FC = () => {
 
                     {/* Organization field */}
                     <div>
-                      <Label>
+                      <Label htmlFor="organization">
                         Organization <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <Autocomplete
+                        id="organization"
                         value={credentials.organization}
                         onSelect={(value) => handleInputChange("organization", value)}
                         placeholder="Type an organization..."
@@ -312,7 +319,7 @@ export const LoginForm: React.FC = () => {
                           onChange={(checked) => handleInputChange("rememberMe", checked)}
                           disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                         />
-                        <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-200">
+                        <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-200 cursor-default">
                           Keep me logged in
                         </span>
                       </div>
@@ -338,7 +345,7 @@ export const LoginForm: React.FC = () => {
                     </div>
 
                     {!API_CONFIG.DEMO_MODE && (
-                      <div className="bg-yellow-100 dark:bg-yellow-800 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                      <div className="bg-yellow-100 dark:bg-yellow-800 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3 cursor-default">
                         <p className="text-xs text-yellow-700 dark:text-yellow-200 mb-2">API Mode Active:</p>
                         <div className="text-xs text-yellow-600 dark:text-yellow-300">
                           <p>• Backend: {API_CONFIG.BASE_URL}</p>
@@ -350,12 +357,12 @@ export const LoginForm: React.FC = () => {
                     )}
 
                     {/* Demo credentials */}
-                    <div className="bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
+                    <div className="bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-700 rounded-lg p-3 cursor-default">
                       <p className="text-xs text-blue-700 dark:text-blue-200 mb-2">Demo credentials:</p>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-xs text-blue-600 dark:text-blue-300">Username: wisarud.tec</p>
-                          <p className="text-xs text-blue-600 dark:text-blue-300">Password: P@ssw0rd</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-300">Password: string</p>
                           <p className="text-xs text-blue-600 dark:text-blue-300">Organization: SKY-AI</p>
                         </div>
                         <Button
@@ -380,7 +387,7 @@ export const LoginForm: React.FC = () => {
                 )}
 
                 <div className="mt-5">
-                  <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+                  <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start cursor-default">
                     Don&apos;t have an account? {""}
                     <a
                       // href="/signup"

@@ -1,4 +1,6 @@
 // /src/types/crud.ts
+import { Variant } from "@/types";
+
 export interface BaseEntity {
   id: string;
   createdAt: string;
@@ -87,10 +89,7 @@ export interface FilterDefinition {
 export interface CrudAction<T> {
   key: string;
   label: string;
-  variant: "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
-    | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
-    | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
-    | "outline-no-transparent";
+  variant: Variant;
   icon?: React.ComponentType<unknown>;
   onClick: (item: T) => void;
   condition?: (item: T) => boolean;

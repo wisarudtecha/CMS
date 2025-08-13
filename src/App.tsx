@@ -38,7 +38,7 @@ import Kanban from "./pages/Task/kanban";
 // import CasesView from "./pages/Case/caseView";
 
 // Dashboard Imports
-import Dashboard from "./components/dashboard/Dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 // Dashboard Mock Data (Archived) Imports
 import AgentStatusDashboard from "@/components/dashboard/AgentStatusDashboard";
 import AnalyticsDashboard from "@/components/dashboard/AnalyticsDashboard";
@@ -51,10 +51,10 @@ import FormManagement from "./pages/Forms/FormManagement"
 import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm";
 
 // Workflow Imports
-import WorkflowListPage from "./pages/Workflow/List";
-import WorkflowEditorPage from "./pages/Workflow/Editor";
+import WorkflowListPage from "@/pages/Workflow/List";
+import WorkflowEditorPage from "@/pages/Workflow/Editor";
 // Workflow (Archived Version) Imports
-import WorkflowEditorV1Page from "./pages/Workflow/v1/Editor";
+import WorkflowEditorV1Page from "@/pages/Workflow/v1/Editor";
 
 // User Management Imports
 import UserManagementPage from "./pages/Admin/UserManagement";
@@ -62,22 +62,25 @@ import UserForm from "./pages/Admin/UserForm";
 import RoleManagementPage from "./pages/Admin/RoleManagement";
 
 // Security & Error Handling Imports
-import ErrorBoundary from "./components/security/ErrorBoundary";
-import LoadingSystem from "./components/ui/loading/LoadingSystem";
-import SecurityAlerts from "./components/security/SecurityAlerts";
-import OfflineState from "./components/offline/OfflineManager";
+import ErrorBoundary from "@/components/security/ErrorBoundary";
+import LoadingSystem from "@/components/ui/loading/LoadingSystem";
+import SecurityAlerts from "@/components/security/SecurityAlerts";
+import OfflineState from "@/components/offline/OfflineManager";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
 // import { I18nProvider } from "@lingui/react";
-// import { messages as enMessages } from "./locales/en/messages";
-// import { messages as thMessages } from "./locales/th/messages";
-// import Lingui from "./pages/Test/Lingui";
+// import { messages as enMessages } from "@/locales/en/messages";
+// import { messages as thMessages } from "@/locales/th/messages";
+// import Lingui from "@/pages/Test/Lingui";
 // i18n.load({
 //   en: enMessages,
 //   th: thMessages,
 // });
 // i18n.activate("en");
+
+// Custom Theme Imports
+import ThemeDebugger from "@/components/debug/ThemeDebugger";
 
 export default function App() {
   return (
@@ -163,6 +166,8 @@ export default function App() {
             {/* Test Page */}
             {/* Lingui (No Longer Used) */}
             {/* <Route path="/test/lingui" element={<Lingui />} /> */}
+            {/* Custom Theme */}
+            <Route path="/theme-debugger" element={<ThemeDebugger />} />
           </Route>
 
           {/* Auth Layout */}

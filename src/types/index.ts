@@ -537,3 +537,9 @@ export interface InputProps extends BaseComponentProps {
   onBlur?: () => void;
   onFocus?: () => void;
 }
+
+export type Variant = "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
+  | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
+  | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
+  | "secondary" | "emergency"
+  | "outline-no-transparent";

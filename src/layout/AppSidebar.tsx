@@ -279,6 +279,11 @@ const AppSidebar: React.FC = () => {
         { name: "Offline Handling", path: "/security/offline-state", },
       ],
     },
+    {
+      icon: <BoxCubeIcon />,
+      name: "Theme Debugger",
+      path: "/theme-debugger",
+    },
   ], [t]);
 
   const archivesItems: NavItem[] = [

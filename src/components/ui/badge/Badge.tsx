@@ -1,9 +1,10 @@
 import React from 'react';
 
 type BadgeVariant = "light" | "solid" | "outline";
-type BadgeSize = "sm" | "md";
+type BadgeSize = "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
 type BadgeColor =
   | "primary"
+  | "secondary"
   | "success"
   | "error"
   | "warning"
@@ -12,7 +13,8 @@ type BadgeColor =
   | "dark"
   | "high"
   | "medium"
-  | "low"; // ✅ Added new priority variants
+  | "low"
+  | "ghost"; // ✅ Added new priority variants
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -37,13 +39,18 @@ const Badge: React.FC<BadgeProps> = ({
     "inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium";
 
   const sizeStyles = {
-    sm: "text-theme-xs",
-    md: "text-sm",
+    xxs: "text-xxs",
+    xs: "text-xs",
+    sm: "text-sm",
+    md: "text-md",
+    lg: "text-lg",
+    xl: "text-xl",
   };
 
   const variants = {
     light: {
       primary: "bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-400",
+      secondary: "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80",
       success: "bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500",
       error: "bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500",
       warning: "bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400",
@@ -53,9 +60,11 @@ const Badge: React.FC<BadgeProps> = ({
       high: "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400",
       medium: "bg-yellow-100 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400",
       low: "bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
+      ghost: "text-gray-700 dark:text-white/80",
     },
     solid: {
       primary: "bg-brand-500 text-white dark:text-white",
+      secondary: "bg-gray-400 dark:bg-white/5 text-white dark:text-white/80",
       success: "bg-success-500 text-white dark:text-white",
       error: "bg-error-500 text-white dark:text-white",
       warning: "bg-warning-500 text-white dark:text-white",
@@ -65,9 +74,11 @@ const Badge: React.FC<BadgeProps> = ({
       high: "bg-red-600 text-white dark:text-white",
       medium: "bg-yellow-500 text-white dark:text-white",
       low: "bg-blue-600 text-white dark:text-white",
+      ghost: "text-white dark:text-white/80",
     },
     outline: {
       primary: "border border-brand-500 text-brand-500 dark:text-brand-400",
+      secondary: "border border-gray-300 text-gray-700 dark:border-white/10 dark:text-white/70",
       success: "border border-success-500 text-success-500 dark:text-success-400",
       error: "border border-error-500 text-error-500 dark:text-error-400",
       warning: "border border-warning-500 text-warning-500 dark:text-orange-400",
@@ -77,6 +88,7 @@ const Badge: React.FC<BadgeProps> = ({
       high: "border border-red-600 text-red-600 dark:border-red-400 dark:text-red-400",
       medium: "border border-yellow-500 text-yellow-500 dark:border-yellow-400 dark:text-yellow-400",
       low: "border border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400",
+      ghost: "text-gray-700 dark:text-white/70",
     },
   };
 

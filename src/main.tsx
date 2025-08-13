@@ -6,7 +6,7 @@ import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { AppWrapper } from "@/components/common/PageMeta.tsx";
 import { TranslationLoader } from "@/components/common/TranslationLoader";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { ThemeProvider } from "@/context/ThemeContext.tsx";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { store } from "@/store";
 import App from "@/App.tsx";

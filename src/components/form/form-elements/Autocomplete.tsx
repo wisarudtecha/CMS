@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Input from "@/components/form/input/InputField";
 
 type AutocompleteProps = {
+  id?: string;
   // suggestions: string[];
   value?: string;
   onSelect: (value: string) => void;
@@ -12,6 +13,7 @@ type AutocompleteProps = {
 };
 
 export const Autocomplete: React.FC<AutocompleteProps> = ({
+  id = "",
   // suggestions,
   value = "",
   onSelect,
@@ -75,7 +77,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
               setFiltered(result);
               setShowList(result.length > 0);
               setLoading(false);
-            }, debounceTimeWaiting * 1000);
+            }, debounceTimeWaiting * 1);
           }
         }, debounceTimeWaiting * 1000);
 
@@ -119,6 +121,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   return (
     <div className="relative w-full max-w-md">
       <Input
+        id={id}
         // className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         placeholder={placeholder}
         value={query}

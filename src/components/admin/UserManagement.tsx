@@ -28,9 +28,9 @@ import type {
 } from "@/types/user";
 import AuditTrailViewer from "@/components/admin/AuditTrailViewer";
 import MetricsView from "@/components/admin/MetricsView";
-// import UserAddressCard from "@/components/UserProfile/UserAddressCard";
-// import UserInfoCard from "@/components/UserProfile/UserInfoCard";
-// import UserMetaCard from "@/components/UserProfile/UserMetaCard";
+import UserInfoCard from "@/components/UserProfile/UserInfoCard";
+import UserMetaCard from "@/components/UserProfile/UserMetaCard";
+import UserOrganizationCard from "@/components/UserProfile/UserOrganizationCardCard";
 
 const UserManagementComponent: React.FC<{
   usr: UserProfile[];
@@ -314,9 +314,9 @@ const UserManagementComponent: React.FC<{
           // const address: string = location ? formatAddress(location) : "";
           return (
             <>
-              {/* <UserMetaCard meta={meta} /> */}
-              {/* <UserInfoCard info={info} role={roleConfig} editable={false} /> */}
-              {/* <UserAddressCard address={address} location={location} editable={false} /> */}
+              <UserMetaCard />
+              <UserInfoCard />
+              <UserOrganizationCard />
             </>
           )
         }
