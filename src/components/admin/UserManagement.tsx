@@ -1,9 +1,5 @@
 // /src/components/admin/UserManagement.tsx
-import React, {
-  // useCallback,
-  useEffect,
-  useState
-} from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CheckLineIcon, ChevronUpIcon, CloseIcon, TimeIcon, UserIcon } from "@/icons";
@@ -11,18 +7,14 @@ import { UserCard } from "@/components/admin/UserCard";
 import { usePermissions } from "@/hooks/usePermissions";
 import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
-import { isImageAvailable } from "@/utils/resourceValidators"
-// import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
-import type {
-  CrudConfig,
-  // FilterConfig
-} from "@/types/crud";
+import { isImageAvailable } from "@/utils/resourceValidators";
+import type { CrudConfig } from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Role } from "@/types/role";
 import type {
   // Address,
   Department,
   // Meta,
-  Role,
   UserMetrics,
   UserProfile
 } from "@/types/user";
@@ -36,11 +28,7 @@ const UserManagementComponent: React.FC<{
   usr: UserProfile[];
   dept: Department[];
   role: Role[];
-}> = ({
-  usr,
-  dept,
-  role
-}) => {
+}> = ({ usr, dept, role }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -271,7 +259,7 @@ const UserManagementComponent: React.FC<{
       {
         key: "delete",
         label: "Delete",
-        variant: "error" as const,
+        variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (userItem: UserProfile) => {
           console.log("Delete user:", userItem.id);
@@ -365,7 +353,7 @@ const UserManagementComponent: React.FC<{
         key: "delete",
         label: "Delete",
         // icon: CheckLineIcon,
-        variant: "error",
+        variant: "outline",
         onClick: (userItem: UserProfile, closePreview: () => void) => {
           closePreview();
           console.log("Delete user:", userItem.id);

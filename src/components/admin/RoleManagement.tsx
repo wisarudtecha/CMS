@@ -11,7 +11,6 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import {
   // RolePermissionsCreateData,
-  RolesPermissionsUpdateData,
   // useCreateUserRolePermissionsMutation,
   useUpdateUserRolesPermissionsMutation,
   // useLazyGetUserRolesPermissionsByRoleIdQuery,
@@ -21,20 +20,9 @@ import {
 } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import { SYSTEM_ROLE } from "@/utils/constants";
-// import type { ApiResponse } from "@/types";
-import type {
-  PreviewConfig
-} from "@/types/enhanced-crud";
-import type {
-  Permission,
-  Role,
-  RoleAnalytics,
-  RolePermission,
-  // LoadingStates
-} from "@/types/role";
+import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Permission, Role, RoleAnalytics, RolePermission, RolesPermissionsUpdateData } from "@/types/role";
 import MetricsView from "@/components/admin/MetricsView";
-// import allPermissions from "@/mocks/allPermissions.json";
-// import roles from "@/mocks/roles.json";
 
 // ===================================================================
 // Utility Functions
@@ -69,11 +57,7 @@ const RoleManagementComponent: React.FC<{
   role: Role[];
   rolesPerms: RolePermission[];
   perms: Permission[];
-}> = ({
-  role,
-  rolesPerms,
-  perms
-}) => {
+}> = ({ role, rolesPerms, perms }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -193,7 +177,7 @@ const RoleManagementComponent: React.FC<{
       {
         key: "delete",
         label: "Delete",
-        variant: "error" as const,
+        variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (roleItem: Role) => {
           console.log("Delete role:", roleItem.id);
@@ -257,7 +241,7 @@ const RoleManagementComponent: React.FC<{
         key: "delete",
         label: "Delete",
         // icon: CheckLineIcon,
-        variant: "error",
+        variant: "outline",
         onClick: (roleItem: Role, closePreview: () => void) => {
           console.log("Delete role:", roleItem.id);
           closePreview();

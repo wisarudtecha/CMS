@@ -126,9 +126,9 @@ const ticketSlice = createSlice({
       state.selectedTickets = state.selectedTickets.filter(id => id !== ticketId);
     },
 
-    selectAllTickets: (state) => {
-      state.selectedTickets = state.tickets.map(ticket => ticket.id);
-    },
+    // selectAllTickets: (state) => {
+    //   state.selectedTickets = state.tickets.map(ticket => ticket.id);
+    // },
 
     clearSelection: (state) => {
       state.selectedTickets = [];
@@ -146,13 +146,13 @@ const ticketSlice = createSlice({
     },
 
     // Bulk operations
-    updateMultipleTickets: (state, action: PayloadAction<{ ids: string[]; updates: Partial<Ticket> }>) => {
-      const { ids, updates } = action.payload;
+    // updateMultipleTickets: (state, action: PayloadAction<{ ids: string[]; updates: Partial<Ticket> }>) => {
+    //   const { ids, updates } = action.payload;
       
-      state.tickets = state.tickets.map(ticket => 
-        ids.includes(ticket.id) ? { ...ticket, ...updates } : ticket
-      );
-    },
+    //   state.tickets = state.tickets.map(ticket => 
+    //     ids.includes(ticket.id) ? { ...ticket, ...updates } : ticket
+    //   );
+    // },
 
     // Reset state
     resetTicketState: (state) => {
@@ -176,12 +176,12 @@ export const {
   removeFilter,
   clearFilters,
   setFilters,
-  selectTicket,
+  // selectTicket,
   deselectTicket,
-  selectAllTickets,
+  // selectAllTickets,
   clearSelection,
   toggleTicketSelection,
-  updateMultipleTickets,
+  // updateMultipleTickets,
   resetTicketState,
 } = ticketSlice.actions;
 

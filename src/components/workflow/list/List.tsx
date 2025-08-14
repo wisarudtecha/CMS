@@ -173,7 +173,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         label: "View",
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}`),
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.wfId}`),
         condition: () => permissions.hasPermission("workflow.view")
       },
       {
@@ -181,17 +181,17 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.id}/edit`),
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.wfId}/edit`),
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
       {
         key: "delete",
         label: "Delete",
-        variant: "error" as const,
+        variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (workflow: Workflow) => {
           // This will be intercepted by the container"s handleItemAction
-          console.log("Delete action triggered for:", workflow.id);
+          console.log("Delete action triggered for:", workflow.wfId);
         },
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
       }
@@ -349,7 +349,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "primary",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
-          navigate(`/workflow/editor/v2/${workflow.id}/edit`);
+          navigate(`/workflow/editor/v2/${workflow.wfId}/edit`);
         },
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
@@ -359,7 +359,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       //   // icon: CopyIcon,
       //   variant: "light",
       //   onClick: (workflow: Workflow, closePreview: () => void) => {
-      //     console.log("Duplicating workflow:", workflow.id);
+      //     console.log("Duplicating workflow:", workflow.wfId);
       //     closePreview();
       //   },
       //   condition: () => permissions.hasPermission("workflow.create")
@@ -368,9 +368,9 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         key: "delete",
         label: "Delete",
         // icon: TrashBinIcon,
-        variant: "error",
+        variant: "outline",
         onClick: (workflow: Workflow, closePreview: () => void) => {
-          console.log("Deleting workflow:", workflow.id);
+          console.log("Deleting workflow:", workflow.wfId);
           closePreview();
         },
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
@@ -529,7 +529,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
 
   // Handle deletion and other actions
   const handleAction = (actionKey: string, workflow: Workflow) => {
-    console.log(`Action ${actionKey} triggered for workflow:`, workflow.id);
+    console.log(`Action ${actionKey} triggered for workflow:`, workflow.wfId);
     // Add any custom action handling here
   };
 

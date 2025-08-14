@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { CheckLineIcon, CloseLineIcon } from "@/icons";
 import { formatLastLogin } from "@/utils/crud";
 import { isImageAvailable } from "@/utils/resourceValidators";
-import type { Role, UserProfile } from "@/types/user";
+import type { Role } from "@/types/role";
+import type { UserProfile } from "@/types/user";
 
 export const UserCard: React.FC<{
   user: UserProfile;

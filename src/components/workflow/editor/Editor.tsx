@@ -6,6 +6,7 @@ import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
+import { useCreateWorkflowMutation } from "@/store/api/workflowApi";
 import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Input from "@/components/form/input/InputField";
@@ -13,9 +14,6 @@ import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
 import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
-import workflowData from "@/mocks/workflowData.json";
-// import workflowFormV02 from "@/mocks/workflowFormV02.json";
-import { useCreateWorkflowMutation } from "@/store/api/workflowApi";
 
 // Grid configuration
 const GRID_SIZE = 20;
@@ -34,88 +32,10 @@ const workflowStatuses = [
 const nodeTypes = {
   start: { button: "bg-success-500 text-white dark:text-white hover:bg-success-600", color: "bg-success-500 dark:bg-success-400", label: "Start" },
   process: { button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600", color: "bg-brand-500 dark:bg-brand-400", label: "Process" },
+  sla: { button: "bg-purple-500 text-white dark:text-white hover:bg-purple-600", color: "bg-purple-500 dark:bg-purple-400", label: "SLA" },
   decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
   end: { button: "bg-error-500 text-white dark:text-white hover:bg-error-600", color: "bg-error-500 dark:bg-error-400", label: "End" }
-};
-
-const actionOptions = [
-  { value: "create_case", label: "Create Case" },
-  { value: "assign_case", label: "Assign Case" },
-  { value: "investigate", label: "Investigate" },
-  { value: "collect_evidence", label: "Collect Evidence" },
-  { value: "review_case", label: "Review Case" },
-  { value: "escalate", label: "Escalate Case" },
-  { value: "approve", label: "Approve" },
-  { value: "reject", label: "Reject" },
-  { value: "resolve_case", label: "Resolve Case" },
-  { value: "close_case", label: "Close Case" },
-  { value: "reopen_case", label: "Reopen Case" },
-  { value: "send_notification", label: "Send Notification" },
-  { value: "schedule_hearing", label: "Schedule Hearing" },
-  { value: "update_status", label: "Update Status" }
-];
-
-// const formOptions = [
-//   { value: "case_intake", label: "Form - Case Intake" },
-//   { value: "case_assignment", label: "Form - Case Assignment" },
-//   { value: "investigation_report", label: "Form - Investigation Report" },
-//   { value: "evidence_collection", label: "Form - Evidence Collection" },
-//   { value: "case_review", label: "Form - Case Review" },
-//   { value: "escalation_request", label: "Form - Escalation Request" },
-//   { value: "approval_decision", label: "Form - Approval Decision" },
-//   { value: "case_resolution", label: "Form - Case Resolution" },
-//   { value: "case_closure", label: "Form - Case Closure" },
-//   { value: "communication_log", label: "Form - Communication Log" },
-//   { value: "hearing_schedule", label: "Form - Hearing Schedule" },
-//   { value: "status_update", label: "Button - Status Update" },
-//   { value: "notification", label: "Toast - Notification" },
-//   { value: "document_upload", label: "File - Document Upload" }
-// ];
-
-const GroupOptions = [
-  { value: "case_manager", label: "Case Manager" },
-  { value: "investigator", label: "Investigator" },
-  { value: "supervisor", label: "Supervisor" },
-  { value: "legal_advisor", label: "Legal Advisor" },
-  { value: "compliance_officer", label: "Compliance Officer" },
-  { value: "senior_manager", label: "Senior Manager" },
-  { value: "external_reviewer", label: "External Reviewer" },
-  { value: "director", label: "Director" }
-];
-
-// Case Management System options
-// const casePriorityOptions = [
-//   { value: "low", label: "Low Priority" },
-//   { value: "medium", label: "Medium Priority" },
-//   { value: "high", label: "High Priority" },
-//   { value: "critical", label: "Critical Priority" },
-//   { value: "urgent", label: "Urgent Priority" }
-// ];
-
-// const caseCategoryOptions = [
-//   { value: "bug", label: "Bug Report" },
-//   { value: "feature", label: "Feature Request" },
-//   { value: "support", label: "Support Request" },
-//   { value: "maintenance", label: "Maintenance" },
-//   { value: "investigation", label: "Investigation" },
-//   { value: "incident", label: "Incident" },
-//   { value: "change_request", label: "Change Request" },
-//   { value: "consultation", label: "Consultation" },
-//   { value: "escalation", label: "Escalation" }
-// ];
-
-// const targetCaseStatusOptions = [
-//   { value: "open", label: "Open" },
-//   { value: "assigned", label: "Assigned" },
-//   { value: "in_progress", label: "In Progress" },
-//   { value: "under_review", label: "Under Review" },
-//   { value: "escalated", label: "Escalated" },
-//   { value: "pending_approval", label: "Pending Approval" },
-//   { value: "resolved", label: "Resolved" },
-//   { value: "closed", label: "Closed" },
-//   { value: "suspended", label: "Suspended" },
-//   { value: "reopened", label: "Reopened" }
-// ];
+} as const;
 
 const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   caseStatuses,
@@ -127,21 +47,18 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       title: "Untitled Workflow",
       description: "",
       status: "draft",
-      createdAt: new Date().toISOString(),
-      // casePriority: "",
-      // caseCategory: "",
-      // targetCaseStatus: ""
-    },
-    // group: [],
-    // pic: [],
+      createdAt: new Date().toISOString()
+    }
   },
   users,
+  userGroup,
+  workflowData,
   workflowId,
-  onSave 
+  onSave
 }) => {
+  const [createWorkflow] = useCreateWorkflowMutation();
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
-  const [createWorkflow] = useCreateWorkflowMutation();
 
   const [nodes, setNodes] = useState<WorkflowNode[]>(initialData.nodes);
   const [connections, setConnections] = useState<Connection[]>(initialData.connections);
@@ -161,9 +78,6 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   const [draggedNodeType, setDraggedNodeType] = useState<WorkflowNode["type"] | null>(null);
   // Enhanced state for Components Preview
   const [decisionSelections, setDecisionSelections] = useState<Record<string, "yes" | "no">>({});
-  // const [currentPath, setCurrentPath] = useState<string[]>([]);
-  // const [selectedTagsGroup, setSelectedTagsGroup] = useState<string[]>([]);
-  // const [selectedTagsUser, setSelectedTagsUser] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   
   const svgRef = useRef<SVGSVGElement>(null);
@@ -181,6 +95,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   const userOptions = users?.map((user) => {
     return { value: user?.username || "", label: user?.displayName || user?.username || "" };
+  }) || [];
+
+  const groupOptions = userGroup?.map((ug) => {
+    return { value: ug?.grpId || "", label: ug?.th || ug?.en || "" };
   }) || [];
 
   // Prepare workflow status options for Select component
@@ -228,9 +146,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       
       loadWorkflowFromUrl();
     }
-
-    // console.log(workflowId);
-  }, [workflowId]);
+  }, [workflowData, workflowId]);
 
   // Validate workflow before saving
   const validateWorkflow = useCallback((): string[] => {
@@ -353,26 +269,6 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     return path;
   }, [nodes, connections]);
 
-  // Get form component configuration
-  // const getFormComponentConfig = useCallback((formType: string) => {
-  //   interface FormFieldConfig {
-  //     name: string;
-  //     type: string;
-  //     label: string;
-  //     required?: boolean;
-  //     options?: string[];
-  //   }
-
-  //   interface FormConfig {
-  //     fields: FormFieldConfig[];
-  //   }
-
-  //   // const formConfigs: Record<string, FormConfig> = workflowForm;
-  //   const formConfigs: Record<string, FormConfig> = workflowFormV02;
-    
-  //   return formConfigs[formType] || { fields: [] };
-  // }, []);
-
   // Generate components preview based on workflow path
   const generateComponentsPreview = useCallback(() => {
     const startNodes = nodes.filter(n => n.type === "start");
@@ -383,47 +279,38 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     const pathNodes = getWorkflowPath(startNodes[0].id, decisionSelections);
 
     type PreviewComponent =
-      | {
-          id: string;
-          type: "start";
-          label: string;
-          description?: string;
-          continueFromWorkflow?: boolean;
-          sourceWorkflowId?: string;
-        }
-      // | {
-      //     id: string;
-      //     type: "form";
-      //     label: string;
-      //     form: string;
-      //     formConfig: ReturnType<typeof getFormComponentConfig>;
-      //     sla?: string | number;
-      //     pic?: string;
-      //   }
-      | {
-          id: string;
-          type: "process";
-          label: string;
-          action?: string
-          formId?: string;
-          sla?: number;
-          group?: string[];
-          pic?: string[];
-        }
-      | {
-          id: string;
-          type: "decision";
-          label: string;
-          condition?: string;
-        }
-      | {
-          id: string;
-          type: "end";
-          label: string;
-          description?: string;
-          allowContinuation?: boolean;
-          nextWorkflowId?: string;
-        };
+      {
+        id: string;
+        type: "start";
+        label: string;
+        description?: string;
+        continueFromWorkflow?: boolean;
+        sourceWorkflowId?: string;
+      } |
+      {
+        id: string;
+        type: "process";
+        label: string;
+        action?: string
+        formId?: string;
+        sla?: number;
+        group?: string[];
+        pic?: string[];
+      } |
+      {
+        id: string;
+        type: "decision";
+        label: string;
+        condition?: string;
+      } |
+      {
+        id: string;
+        type: "end";
+        label: string;
+        description?: string;
+        allowContinuation?: boolean;
+        nextWorkflowId?: string;
+      };
 
     const components: PreviewComponent[] = [];
 
@@ -1733,7 +1620,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     : <div
                         className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
                       >
-                        {actionOptions.find(a => a.value === selectedNode.data.config?.action)?.label || ""}
+                        {caseStatusOptions.find(a => a.value === selectedNode.data.config?.action)?.label || ""}
                       </div>
                     }
                   </div>
@@ -1761,14 +1648,18 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   </div>
 
                   <div>
-                    <label htmlFor="selectedNode.data.config.sla" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    <label
+                      // htmlFor="selectedNode.data.config.sla"
+                      // className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+                      className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 line-through cursor-not-allowed"
+                    >
                       {/* SLA (Hours) */}
                       SLA (Minutes)
                     </label>
                     {permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Input
                         type="number"
-                        id="selectedNode.data.config.sla"
+                        // id="selectedNode.data.config.sla"
                         value={typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : undefined}
                         onChange={(e) => updateNodeData(selectedNode.id, { 
                           config: { ...selectedNode.data.config, sla: e.target.value }
@@ -1777,6 +1668,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                         placeholder="Enter SLA in minutes..."
                         min="1"
                         max="720"
+                        className="line-through"
+                        disabled
                       />
                     : <div
                         className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
@@ -1796,12 +1689,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       //   onChange={(value) => updateNodeData(selectedNode.id, { 
                       //     config: { ...selectedNode.data.config, group: value }
                       //   })}
-                      //   options={GroupOptions}
+                      //   options={groupOptions}
                       //   placeholder="Select Group"
                       //   className="bg-white dark:bg-gray-900 cursor-pointer"
                       // />
                       <CustomizableSelect
-                        options={GroupOptions}
+                        options={groupOptions}
                         value={Array.isArray(selectedNode.data.config?.group) ? selectedNode.data.config.group : []}
                         onChange={(value) => updateNodeData(selectedNode.id, { 
                           config: { ...selectedNode.data.config, group: value }
@@ -1815,7 +1708,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     : <div
                         className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
                       >
-                        {GroupOptions.find(g => g.value === selectedNode.data.config?.group)?.label || ""}
+                        {groupOptions.find(g => g.value === selectedNode.data.config?.group)?.label || ""}
                       </div>
                     }
                   </div>

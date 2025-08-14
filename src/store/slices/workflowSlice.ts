@@ -5,7 +5,11 @@
  */
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { WorkflowState, Workflow, WorkflowStep } from "@/types";
+import type {
+  WorkflowState,
+  // WorkflowStep
+} from "@/types";
+import type { Workflow } from "@/types/workflow"
 
 const initialState: WorkflowState = {
   workflows: [],
@@ -83,39 +87,39 @@ const workflowSlice = createSlice({
     },
 
     // Workflow Steps Management (for designer)
-    addWorkflowStep: (state, action: PayloadAction<WorkflowStep>) => {
-      if (state.currentWorkflow) {
-        state.currentWorkflow.steps.push(action.payload);
-      }
-    },
+    // addWorkflowStep: (state, action: PayloadAction<WorkflowStep>) => {
+    //   if (state.currentWorkflow) {
+    //     state.currentWorkflow.steps.push(action.payload);
+    //   }
+    // },
 
-    updateWorkflowStep: (state, action: PayloadAction<{ stepId: string; updates: Partial<WorkflowStep> }>) => {
-      const { stepId, updates } = action.payload;
+    // updateWorkflowStep: (state, action: PayloadAction<{ stepId: string; updates: Partial<WorkflowStep> }>) => {
+    //   const { stepId, updates } = action.payload;
       
-      if (state.currentWorkflow) {
-        const stepIndex = state.currentWorkflow.steps.findIndex(step => step.id === stepId);
-        if (stepIndex !== -1) {
-          state.currentWorkflow.steps[stepIndex] = {
-            ...state.currentWorkflow.steps[stepIndex],
-            ...updates
-          };
-        }
-      }
-    },
+    //   if (state.currentWorkflow) {
+    //     const stepIndex = state.currentWorkflow.steps.findIndex(step => step.id === stepId);
+    //     if (stepIndex !== -1) {
+    //       state.currentWorkflow.steps[stepIndex] = {
+    //         ...state.currentWorkflow.steps[stepIndex],
+    //         ...updates
+    //       };
+    //     }
+    //   }
+    // },
 
-    removeWorkflowStep: (state, action: PayloadAction<string>) => {
-      const stepId = action.payload;
+    // removeWorkflowStep: (state, action: PayloadAction<string>) => {
+    //   const stepId = action.payload;
       
-      if (state.currentWorkflow) {
-        state.currentWorkflow.steps = state.currentWorkflow.steps.filter(step => step.id !== stepId);
-      }
-    },
+    //   if (state.currentWorkflow) {
+    //     state.currentWorkflow.steps = state.currentWorkflow.steps.filter(step => step.id !== stepId);
+    //   }
+    // },
 
-    reorderWorkflowSteps: (state, action: PayloadAction<WorkflowStep[]>) => {
-      if (state.currentWorkflow) {
-        state.currentWorkflow.steps = action.payload;
-      }
-    },
+    // reorderWorkflowSteps: (state, action: PayloadAction<WorkflowStep[]>) => {
+    //   if (state.currentWorkflow) {
+    //     state.currentWorkflow.steps = action.payload;
+    //   }
+    // },
 
     // Templates
     setTemplates: (state, action: PayloadAction<Workflow[]>) => {
@@ -145,10 +149,10 @@ export const {
   setCurrentWorkflow,
   openDesigner,
   closeDesigner,
-  addWorkflowStep,
-  updateWorkflowStep,
-  removeWorkflowStep,
-  reorderWorkflowSteps,
+  // addWorkflowStep,
+  // updateWorkflowStep,
+  // removeWorkflowStep,
+  // reorderWorkflowSteps,
   setTemplates,
   addTemplate,
   resetWorkflowState,

@@ -166,7 +166,7 @@ const CaseHistoryComponent: React.FC = () => {
       {
         key: "delete",
         label: "Cancel",
-        variant: "error" as const,
+        variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (caseItem: CaseEntity) => {
           console.log("Delete case:", caseItem.id);
@@ -493,7 +493,7 @@ const CaseHistoryComponent: React.FC = () => {
         key: "edit",
         label: "Edit Case",
         // icon: PencilIcon,
-        variant: "primary",
+        variant: "warning",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           closePreview();
           navigate(`/cases/${caseItem.id}/edit`);
@@ -504,7 +504,7 @@ const CaseHistoryComponent: React.FC = () => {
         key: "assign",
         label: "Assign",
         // icon: UserIcon,
-        variant: "light",
+        variant: "error",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           console.log("Assigning case:", caseItem.id);
           // Would open assignment modal
@@ -516,12 +516,23 @@ const CaseHistoryComponent: React.FC = () => {
         key: "close",
         label: "Close Case",
         // icon: CheckCircleIcon,
-        variant: "warning",
+        variant: "success",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           console.log("Closing case:", caseItem.id);
           closePreview();
         },
         condition: (caseItem: CaseEntity) => caseItem.status !== "closed" && caseItem.status !== "resolved" && permissions.hasPermission("case.close")
+      },
+      {
+        key: "cancel",
+        label: "Cancel Case",
+        // icon: TimeIcon,
+        variant: "outline",
+        onClick: (caseItem: CaseEntity, closePreview: () => void) => {
+          console.log("Canceling case:", caseItem.id);
+          closePreview();
+        },
+        condition: (caseItem: CaseEntity) => caseItem.status !== "closed" && caseItem.status !== "resolved" && permissions.hasPermission("case.delete")
       }
     ]
   };

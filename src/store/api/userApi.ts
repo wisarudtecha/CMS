@@ -5,77 +5,26 @@
  */
 
 import { baseApi } from "@/store/api/baseApi";
+import type { ApiResponse, User } from "@/types";
 import type {
-  ApiResponse,
-  User,
-  // UserRole
-} from "@/types";
-import type { Permission, Role, RolePermission } from "@/types/role";
-
-// export interface UserCreateData {
-//   name: string;
-//   email: string;
-//   password: string;
-//   role: UserRole;
-//   department: string;
-//   permissions?: Permission[];
-// }
-
-// export interface UserUpdateData {
-//   name?: string;
-//   email?: string;
-//   role?: UserRole;
-//   department?: string;
-//   permissions?: Permission[];
-//   isActive?: boolean;
-// }
-
-export interface UserQueryParams {
-  start?: number;
-  length?: number;
-  // role?: UserRole;
-  role?: string;
-  department?: string;
-  isActive?: boolean;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
-
-export interface RoleQueryParams {
-  start?: number;
-  length?: number;
-}
-
-export interface RolePermissionQueryParams {
-  start?: number;
-  length?: number;
-  id?: number;
-  roleId?: string;
-}
-
-export interface PermissionCreateData {
-  permId: string;
-  active: boolean;
-}
-
-export interface RolePermissionsCreateData {
-  roleId: string;
-  permissions: PermissionCreateData[];
-}
-
-export interface RolePermissionsUpdateData {
-  permissions: RolePermissionsCreateData[];
-}
-
-export interface RolesPermissionsUpdateData {
-  body: RolePermissionsCreateData[];
-}
-
-export interface PermissionQueryParams {
-  start?: number;
-  length?: number;
-}
+  Permission,
+  // PermissionCreateData,
+  PermissionQueryParams,
+  Role,
+  RolePermission,
+  RolePermissionQueryParams,
+  RolePermissionsCreateData,
+  RolePermissionsUpdateData,
+  RolesPermissionsUpdateData,
+  RoleQueryParams,
+} from "@/types/role";
+import type {
+  // UserCreateData,
+  UserGroup,
+  UserGroupQueryParams,
+  UserQueryParams,
+  // UserUpdateData
+} from "@/types/user";
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -131,6 +80,22 @@ export const userApi = baseApi.injectEndpoints({
         body: { isActive },
       }),
       invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
+    }),
+
+    // ===================================================================
+    // User Group
+    // ===================================================================
+
+    getUserGroup: builder.query<ApiResponse<UserGroup[]>, UserGroupQueryParams>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/user_groups/all?${searchParams.toString()}`;
+      },
     }),
 
     // ===================================================================
@@ -324,6 +289,7 @@ export const {
   // useUpdateUserMutation,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
+  useGetUserGroupQuery,
   useGetUserRolesQuery,
   useGetUserRolesPermissionsQuery,
   useCreateUserRolePermissionsMutation,

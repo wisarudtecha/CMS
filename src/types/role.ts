@@ -11,14 +11,15 @@ export interface Permission {
   updatedBy: string;
 }
 
-// export interface PermissionCategory {
-//   id: string;
-//   name: string;
-//   description: string;
-//   // icon: React.ComponentType<any>;
-//   icon?: string;
-//   color: string;
-// }
+export interface PermissionCreateData {
+  permId: string;
+  active: boolean;
+}
+
+export interface PermissionQueryParams {
+  start?: number;
+  length?: number;
+}
 
 export interface Role {
   id: string;
@@ -38,7 +39,6 @@ export interface RoleAnalytics {
   systemRoles: number;
   customRoles: number;
   averagePermissions: number;
-  // mostUsedRole: Role;
   mostUsedRole: string;
   recentChanges?: number;
 }
@@ -70,15 +70,30 @@ export interface RolePermission {
   updatedBy: string;
 }
 
-// export interface RoleTemplate {
-//   id: string;
-//   name: string;
-//   description: string;
-//   category: string;
-//   permissions: string[];
-//   usageCount: number;
-//   rating: number;
-// }
+export interface RolePermissionsCreateData {
+  roleId: string;
+  permissions: PermissionCreateData[];
+}
+
+export interface RolePermissionQueryParams {
+  start?: number;
+  length?: number;
+  id?: number;
+  roleId?: string;
+}
+
+export interface RolePermissionsUpdateData {
+  permissions: RolePermissionsCreateData[];
+}
+
+export interface RolesPermissionsUpdateData {
+  body: RolePermissionsCreateData[];
+}
+
+export interface RoleQueryParams {
+  start?: number;
+  length?: number;
+}
 
 export interface LoadingStates {
   roles: boolean;

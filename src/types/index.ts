@@ -5,55 +5,49 @@
  */
 
 import { Customer } from "@/store/api/custommerApi";
+import type { Workflow } from "@/types/workflow";
 
+export type ChartType = "line" | "bar" | "pie" | "area" | "scatter" | "gauge" | "heatmap";
+export type EscalationAction = "notify_manager" | "reassign" | "increase_priority" | "send_email";
+export type FilterOperator = "equals" | "not_equals" | "contains" | "not_contains" | "greater_than" | "less_than" | "between" | "in" | "not_in" | "is_null" | "is_not_null";
+export type FormFieldType = "text" | "email" | "password" | "number" | "date" | "time" | "select" | "multiselect" | "checkbox" | "radio" | "textarea" | "file" | "location";
+export type NotificationChannel = "ticket_assigned" | "ticket_updated" | "sla_breach" | "workflow_completed";
+export type NotificationPriority = "low" | "medium" | "high" | "urgent";
+export type NotificationType = "info" | "success" | "warning" | "error" | "system";
+export type Permission = "read" | "write" | "delete" | "admin" | "manage_users" | "manage_workflows";
+export type Role = string;
+export type SLAStatus = "on_time" | "warning" | "breached";
+export type TicketCategory = "bug" | "feature" | "support" | "incident" | "change_request";
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
+export type TicketStatus = "open" | "in_progress" | "pending" | "resolved" | "closed";
+export type TimelineAction = "created" | "updated" | "assigned" | "commented" | "status_changed" | "completed";
+export type TriggerEvent = "ticket_created" | "ticket_updated" | "status_changed" | "sla_warning" | "manual";
+export type Variant = "primary" | "success" | "error" | "warning" | "info" | "light" | "dark" | "outline" | "outline-primary" | "outline-success" | "outline-error"
+  | "outline-warning" | "outline-info" | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info" | "secondary" | "emergency"
+  | "outline-no-transparent";
+export type WidgetType = "chart" | "table" | "metric" | "map" | "timeline" | "kanban" | "custom";
+export type WorkflowStepType = "start" | "end" | "task" | "decision" | "parallel" | "merge" | "timer";
+
+// ===================================================================
 // Base Entity Types
+// ===================================================================
+
 export interface BaseEntity {
-  id: string;
+  id: string | number;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
   updatedBy: string;
 }
 
-// User & Authentication Types
-export interface User extends BaseEntity {
-  user: string;
-  name: string;
-  avatar?: string;
-  role: Role;
-  mobileNo?:string
-  firstName?:string
-  lastName?:string
-  department: string;
-  email?: string;
-  permissions: Permission[];
-  lastLogin?: Date;
-  isActive: boolean;
-  photo:string;
-  preferences: UserPreferences;
-}
-
-export type Role = string;
-
-
 export interface contractMethod {
   id: string;
   name: string;
 }
 
-export interface Custommer  extends Customer{
-  contractMethod:contractMethod;
+export interface Custommer extends Customer {
+  contractMethod: contractMethod;
   name: string; 
-}
-
-export type UserRole = "admin" | "manager" | "agent" | "viewer";
-export type Permission = "read" | "write" | "delete" | "admin" | "manage_users" | "manage_workflows";
-
-export interface UserPreferences {
-  theme: "light" | "dark" | "auto";
-  language: "en" | "th" | "zh";
-  notifications: NotificationPreferences;
-  dashboard: DashboardPreferences;
 }
 
 export interface NotificationPreferences {
@@ -64,14 +58,77 @@ export interface NotificationPreferences {
   channels: NotificationChannel[];
 }
 
-export type NotificationChannel = "ticket_assigned" | "ticket_updated" | "sla_breach" | "workflow_completed";
+export interface WidgetConfig {
+  title: string;
+  dataSource: DataSource;
+  chartType?: ChartType;
+  filters?: WidgetFilter[];
+  refreshInterval?: number;
+  customSettings?: Record<string, unknown>;
+}
+
+export interface WidgetLayout {
+  id: string;
+  type: WidgetType;
+  position: { x: number; y: number; w: number; h: number };
+  config: WidgetConfig;
+}
 
 export interface DashboardPreferences {
   layout: WidgetLayout[];
   defaultView: "dashboard" | "tickets" | "workflows";
 }
 
+// ===================================================================
+// User & Authentication Types
+// ===================================================================
+
+export interface UserPreferences {
+  theme: "light" | "dark" | "auto";
+  language: "en" | "th" | "zh";
+  notifications: NotificationPreferences;
+  dashboard: DashboardPreferences;
+}
+
+export interface User extends BaseEntity {
+  user: string;
+  name: string;
+  avatar?: string;
+  role: Role;
+  mobileNo?: string;
+  firstName?: string;
+  lastName?: string;
+  department: string;
+  email?: string;
+  permissions: Permission[];
+  lastLogin?: Date;
+  isActive: boolean;
+  photo:string;
+  preferences: UserPreferences;
+}
+
+// ===================================================================
 // Ticket Management Types
+// ===================================================================
+
+export interface Attachment {
+  id: string;
+  filename: string;
+  url: string;
+  size: number;
+  mimeType: string;
+  uploadedBy: string;
+  uploadedAt: Date;
+}
+
+export interface Comment extends BaseEntity {
+  ticketId: string;
+  content: string;
+  author: User;
+  isInternal: boolean;
+  attachments: Attachment[];
+}
+
 export interface Ticket extends BaseEntity {
   title: string;
   description: string;
@@ -93,42 +150,29 @@ export interface Ticket extends BaseEntity {
   timeline: TimelineEvent[];
 }
 
-export type TicketStatus = "open" | "in_progress" | "pending" | "resolved" | "closed";
-export type TicketPriority = "low" | "medium" | "high" | "urgent";
-export type TicketCategory = "bug" | "feature" | "support" | "incident" | "change_request";
-
-export interface Comment extends BaseEntity {
-  ticketId: string;
-  content: string;
-  author: User;
-  isInternal: boolean;
-  attachments: Attachment[];
-}
-
-export interface Attachment {
-  id: string;
-  filename: string;
-  url: string;
-  size: number;
-  mimeType: string;
-  uploadedBy: string;
-  uploadedAt: Date;
-}
-
+// ===================================================================
 // Workflow Types
-export interface Workflow extends BaseEntity {
-  name: string;
-  description: string;
-  version: string;
-  isActive: boolean;
-  steps: WorkflowStep[];
-  triggers: WorkflowTrigger[];
-  variables: WorkflowVariable[];
-  category: string;
-  complexity: "simple" | "intermediate" | "advanced";
-  usageCount: number;
-  rating: number;
-  tags: string[];
+// ===================================================================
+
+export interface EscalationRule {
+  level: number;
+  triggerAfter: number;
+  assignTo: string;
+  actions: EscalationAction[];
+}
+
+export interface WorkflowStepConfig {
+  assignee?: string;
+  requiredFields?: string[];
+  autoComplete?: boolean;
+  timeLimit?: number;
+  escalationRules?: EscalationRule[];
+}
+
+export interface WorkflowCondition {
+  field: string;
+  operator: "equals" | "not_equals" | "contains" | "greater_than" | "less_than";
+  value: unknown;
 }
 
 export interface WorkflowStep {
@@ -141,28 +185,10 @@ export interface WorkflowStep {
   conditions?: WorkflowCondition[];
 }
 
-export type WorkflowStepType = "start" | "end" | "task" | "decision" | "parallel" | "merge" | "timer";
-
-export interface WorkflowStepConfig {
-  assignee?: string;
-  requiredFields?: string[];
-  autoComplete?: boolean;
-  timeLimit?: number;
-  escalationRules?: EscalationRule[];
-}
-
 export interface WorkflowTrigger {
   id: string;
   event: TriggerEvent;
   conditions: WorkflowCondition[];
-}
-
-export type TriggerEvent = "ticket_created" | "ticket_updated" | "status_changed" | "sla_warning" | "manual";
-
-export interface WorkflowCondition {
-  field: string;
-  operator: "equals" | "not_equals" | "contains" | "greater_than" | "less_than";
-  value: unknown;
 }
 
 export interface WorkflowVariable {
@@ -172,36 +198,37 @@ export interface WorkflowVariable {
   required: boolean;
 }
 
+// ===================================================================
 // SLA & Monitoring Types
+// ===================================================================
+
+export interface BusinessHours {
+  timezone: string;
+  workdays: number[];
+  startTime: string;
+  endTime: string;
+  holidays: Date[];
+}
+
 export interface SLAConfig {
   id: string;
   name: string;
-  responseTime: number; // in minutes
-  resolutionTime: number; // in minutes
+  responseTime: number;
+  resolutionTime: number;
   businessHours: BusinessHours;
   escalationRules: EscalationRule[];
   status: SLAStatus;
 }
 
-export interface BusinessHours {
-  timezone: string;
-  workdays: number[]; // 0-6 (Sunday-Saturday)
-  startTime: string; // HH:mm format
-  endTime: string; // HH:mm format
-  holidays: Date[];
-}
-
-export interface EscalationRule {
-  level: number;
-  triggerAfter: number; // minutes
-  assignTo: string;
-  actions: EscalationAction[];
-}
-
-export type EscalationAction = "notify_manager" | "reassign" | "increase_priority" | "send_email";
-export type SLAStatus = "on_time" | "warning" | "breached";
-
+// ===================================================================
 // Dashboard & Widget Types
+// ===================================================================
+
+export interface DashboardFilter extends Filter {
+  global: boolean;
+  widgetIds?: string[];
+}
+
 export interface DashboardConfig {
   id: string;
   name: string;
@@ -212,37 +239,17 @@ export interface DashboardConfig {
   sharedWith: string[];
 }
 
-export interface WidgetLayout {
-  id: string;
-  type: WidgetType;
-  position: { x: number; y: number; w: number; h: number };
-  config: WidgetConfig;
+export interface DataAggregation {
+  groupBy: string[];
+  metrics: MetricDefinition[];
+  timeRange: TimeRange;
 }
-
-export type WidgetType = "chart" | "table" | "metric" | "map" | "timeline" | "kanban" | "custom";
-
-export interface WidgetConfig {
-  title: string;
-  dataSource: DataSource;
-  chartType?: ChartType;
-  filters?: WidgetFilter[];
-  refreshInterval?: number;
-  customSettings?: Record<string, unknown>;
-}
-
-export type ChartType = "line" | "bar" | "pie" | "area" | "scatter" | "gauge" | "heatmap";
 
 export interface DataSource {
   type: "tickets" | "workflows" | "users" | "sla" | "custom";
   endpoint?: string;
   query?: string;
   aggregation?: DataAggregation;
-}
-
-export interface DataAggregation {
-  groupBy: string[];
-  metrics: MetricDefinition[];
-  timeRange: TimeRange;
 }
 
 export interface MetricDefinition {
@@ -257,19 +264,15 @@ export interface TimeRange {
   period?: "hour" | "day" | "week" | "month" | "quarter" | "year";
 }
 
+// ===================================================================
 // GIS & Location Types
+// ===================================================================
+
 export interface GeoLocation {
   latitude: number;
   longitude: number;
   address?: string;
   accuracy?: number;
-}
-
-export interface MapConfig {
-  center: GeoLocation;
-  zoom: number;
-  basemap: string;
-  layers: MapLayer[];
 }
 
 export interface MapLayer {
@@ -281,7 +284,23 @@ export interface MapLayer {
   opacity: number;
 }
 
+export interface MapConfig {
+  center: GeoLocation;
+  zoom: number;
+  basemap: string;
+  layers: MapLayer[];
+}
+
+// ===================================================================
 // Notification Types
+// ===================================================================
+
+export interface NotificationAction {
+  label: string;
+  action: string;
+  style: "primary" | "secondary" | "danger";
+}
+
 export interface Notification extends BaseEntity {
   title: string;
   message: string;
@@ -293,16 +312,17 @@ export interface Notification extends BaseEntity {
   metadata?: Record<string, unknown>;
 }
 
-export type NotificationType = "info" | "success" | "warning" | "error" | "system";
-export type NotificationPriority = "low" | "medium" | "high" | "urgent";
+// ===================================================================
+// Timeline & Activity Types
+// ===================================================================
 
-export interface NotificationAction {
-  label: string;
-  action: string;
-  style: "primary" | "secondary" | "danger";
+export interface FieldChange {
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+  displayName: string;
 }
 
-// Timeline & Activity Types
 export interface TimelineEvent {
   id: string;
   timestamp: Date;
@@ -314,29 +334,9 @@ export interface TimelineEvent {
   metadata?: Record<string, unknown>;
 }
 
-export type TimelineAction = "created" | "updated" | "assigned" | "commented" | "status_changed" | "completed";
-
-export interface FieldChange {
-  field: string;
-  oldValue: unknown;
-  newValue: unknown;
-  displayName: string;
-}
-
+// ===================================================================
 // Form & UI Types
-export interface FormField {
-  name: string;
-  type: FormFieldType;
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  validation?: ValidationRule[];
-  options?: SelectOption[];
-  dependsOn?: string[];
-  conditional?: ConditionalRule;
-}
-
-export type FormFieldType = "text" | "email" | "password" | "number" | "date" | "time" | "select" | "multiselect" | "checkbox" | "radio" | "textarea" | "file" | "location";
+// ===================================================================
 
 export interface ValidationRule {
   type: "required" | "min" | "max" | "pattern" | "custom";
@@ -358,7 +358,22 @@ export interface ConditionalRule {
   action: "show" | "hide" | "enable" | "disable" | "require";
 }
 
+export interface FormField {
+  name: string;
+  type: FormFieldType;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  validation?: ValidationRule[];
+  options?: SelectOption[];
+  dependsOn?: string[];
+  conditional?: ConditionalRule;
+}
+
+// ===================================================================
 // Filter Types
+// ===================================================================
+
 export interface Filter {
   id: string;
   field: string;
@@ -367,32 +382,13 @@ export interface Filter {
   displayName: string;
 }
 
-export type FilterOperator = "equals" | "not_equals" | "contains" | "not_contains" | "greater_than" | "less_than" | "between" | "in" | "not_in" | "is_null" | "is_not_null";
-
-export interface DashboardFilter extends Filter {
-  global: boolean;
-  widgetIds?: string[];
-}
-
 export interface WidgetFilter extends Filter {
   locked: boolean;
 }
 
+// ===================================================================
 // API Response Types
-export interface ApiResponse<T> {
-  success?: boolean;
-  status?: boolean;
-  message?: string;
-  msg?: string;
-  data?: T;
-  errors?: Record<string, string[]>;
-  desc?: string;
-  pagination?: PaginationInfo;
-  meta?: {
-    timestamp: string;
-    requestId: string;
-  };
-}
+// ===================================================================
 
 export interface PaginationInfo {
   page: number;
@@ -410,15 +406,24 @@ export interface ApiError {
   timestamp: Date;
 }
 
-// State Management Types
-export interface AppState {
-  auth: AuthState;
-  tickets: TicketState;
-  workflows: WorkflowState;
-  notifications: NotificationState;
-  ui: UIState;
-  realtime: RealtimeState;
+export interface ApiResponse<T> {
+  success?: boolean;
+  status?: boolean;
+  message?: string;
+  msg?: string;
+  data?: T;
+  errors?: Record<string, string[]>;
+  desc?: string;
+  pagination?: PaginationInfo;
+  meta?: {
+    timestamp: string;
+    requestId: string;
+  };
 }
+
+// ===================================================================
+// State Management Types
+// ===================================================================
 
 export interface AuthState {
   user: User | null;
@@ -456,7 +461,6 @@ export interface NotificationState {
   preferences?: NotificationPreferences;
   isLoading?: boolean;
   error?: string | null;
-  
   show?: boolean;
   type?: "success" | "error" | "warning" | "info";
   title?: string;
@@ -479,6 +483,15 @@ export interface RealtimeState {
   events: RealtimeEvent[];
 }
 
+export interface AppState {
+  auth: AuthState;
+  tickets: TicketState;
+  workflows: WorkflowState;
+  notifications: NotificationState;
+  ui: UIState;
+  realtime: RealtimeState;
+}
+
 export interface ToastMessage {
   id: string;
   type: NotificationType;
@@ -495,17 +508,14 @@ export interface RealtimeEvent {
   timestamp: Date;
 }
 
+// ===================================================================
 // Component Props Types
+// ===================================================================
+
 export interface BaseComponentProps {
   className?: string;
   children?: React.ReactNode;
   testId?: string;
-}
-
-export interface LoadingProps extends BaseComponentProps {
-  size?: "sm" | "md" | "lg";
-  variant?: "spinner" | "skeleton" | "dots";
-  text?: string;
 }
 
 export interface ButtonProps extends BaseComponentProps {
@@ -538,8 +548,8 @@ export interface InputProps extends BaseComponentProps {
   onFocus?: () => void;
 }
 
-export type Variant = "primary" | "success" | "error" | "warning" | "info" | "light" | "dark"
-  | "outline" | "outline-primary" | "outline-success" | "outline-error" | "outline-warning" | "outline-info"
-  | "ghost" | "ghost-primary" | "ghost-success" | "ghost-error" | "ghost-warning" | "ghost-info"
-  | "secondary" | "emergency"
-  | "outline-no-transparent";
+export interface LoadingProps extends BaseComponentProps {
+  size?: "sm" | "md" | "lg";
+  variant?: "spinner" | "skeleton" | "dots";
+  text?: string;
+}

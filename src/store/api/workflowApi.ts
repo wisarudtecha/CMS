@@ -5,33 +5,8 @@
  */
 
 import { baseApi } from "@/store/api/baseApi";
-import type { 
-  Workflow, 
-  WorkflowStep,
-  WorkflowTrigger,
-  WorkflowVariable,
-  // WorkflowTemplate,
-  // WorkflowExecution,
-  ApiResponse 
-} from "@/types";
-import { WorkflowData } from "@/types/workflow";
-
-export interface WorkflowCreateData {
-  name: string;
-  description: string;
-  category: string;
-  steps: WorkflowStep[];
-  triggers: WorkflowTrigger[];
-  variables?: WorkflowVariable[];
-  tags?: string[];
-}
-
-export interface WorkflowExecutionData {
-  workflowId: string;
-  contextData: Record<string, unknown>;
-  triggerType: "manual" | "automatic";
-  triggeredBy?: string;
-}
+import type { ApiResponse, WorkflowStep, WorkflowTrigger } from "@/types";
+import type { Workflow, WorkflowData, WorkflowCreateData } from "@/types/workflow";
 
 export const workflowApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -59,9 +34,8 @@ export const workflowApi = baseApi.injectEndpoints({
       query: () => `/workflows`,
     }),
 
-    getWorkflow: builder.query<Workflow, string>({
+    getWorkflow: builder.query<ApiResponse<Workflow>, string>({
       query: (id) => `/workflows/${id}`,
-      providesTags: (_result, _error, id) => [{ type: "Workflow", id }],
     }),
 
     // createWorkflow: builder.mutation<ApiResponse<Workflow>, WorkflowCreateData>({
@@ -99,15 +73,6 @@ export const workflowApi = baseApi.injectEndpoints({
       invalidatesTags: ["Workflow"],
     }),
 
-    // Workflow execution
-    // executeWorkflow: builder.mutation<ApiResponse<WorkflowExecution>, WorkflowExecutionData>({
-    //   query: (data) => ({
-    //     url: "/workflows/execute",
-    //     method: "POST",
-    //     body: data,
-    //   }),
-    // }),
-
     // getWorkflowExecution: builder.query<WorkflowExecution, string>({
     //   query: (executionId) => `/workflows/executions/${executionId}`,
     // }),
@@ -126,23 +91,6 @@ export const workflowApi = baseApi.injectEndpoints({
     //       }
     //     });
     //     return `/workflows/executions?${searchParams.toString()}`;
-    //   },
-    // }),
-
-    // Workflow templates
-    // getWorkflowTemplates: builder.query<ApiResponse<WorkflowTemplate[]>, {
-    //   category?: string;
-    //   complexity?: "simple" | "intermediate" | "advanced";
-    //   search?: string;
-    // }>({
-    //   query: (params) => {
-    //     const searchParams = new URLSearchParams();
-    //     Object.entries(params).forEach(([key, value]) => {
-    //       if (value !== undefined) {
-    //         searchParams.append(key, String(value));
-    //       }
-    //     });
-    //     return `/workflows/templates?${searchParams.toString()}`;
     //   },
     // }),
 
@@ -231,7 +179,6 @@ export const {
   // useExecuteWorkflowMutation,
   // useGetWorkflowExecutionQuery,
   // useGetWorkflowExecutionsQuery,
-  // useGetWorkflowTemplatesQuery,
   useCreateWorkflowFromTemplateMutation,
   useValidateWorkflowMutation,
   useGetWorkflowAnalyticsQuery,
