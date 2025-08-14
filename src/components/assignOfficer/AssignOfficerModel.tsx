@@ -6,6 +6,8 @@ import {
   ChevronUp,
   ChevronDown,
   X,
+  LayoutGrid,
+  List,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Checkbox from "@/components/form/input/Checkbox"
@@ -20,7 +22,7 @@ import {
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
-import {  getAvatarIconFromString } from "../avatar/createAvatarFromString"
+import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 
 // Define the shape of an Officer object
 export interface Officer {
@@ -168,18 +170,37 @@ export default function AssignOfficerModal({
         </DialogHeader>
 
         {/* Search Bar */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-            <Input
-              placeholder="Search officers by name, department, or service..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 pl-10 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-            />
+        <div className="flex items-center">
+          <div className="flex-grow mr-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+              <Input
+                placeholder="Search officers by name, department, or service..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className=" bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 pl-10 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+              />
+            </div>
+          </div>
+          <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-xl">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={undefined}
+              className="bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+            >
+              Recommend Unit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={undefined}
+              className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              All Unit
+            </Button>
           </div>
         </div>
-
         {/* Officers Table */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
           {/* Table Header */}
