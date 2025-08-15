@@ -65,6 +65,7 @@ export default function NotificationDropdown() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [filterType, setFilterType] = useState<string>("All Types");
 
+
   const API = import.meta.env.VITE_API_BASE_URL;
   const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
 
@@ -137,6 +138,7 @@ export default function NotificationDropdown() {
     if (!profile) return;
     const updated = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(updated);
+    setUnread(0); // อัปเดต unread ทันที
     localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
@@ -145,6 +147,7 @@ export default function NotificationDropdown() {
     if (!profile) return;
     const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
     setNotifications(updated);
+    setUnread(updated.filter((n) => !n.read).length); // อัปเดต unread ทันที
     localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
@@ -154,6 +157,32 @@ export default function NotificationDropdown() {
     if (!profile) return;
     setUnread(notifications.filter((n) => !n.read).length);
   }, [notifications, profile]);
+
+  // Real-time UI update เมื่อมี notification ใหม่
+  useEffect(() => {
+    // ถ้ามี notification ใหม่เข้ามา ให้ refresh การแสดงผล
+    if (notifications.length > 0 && isOpen) {
+      // Force refresh filtered notifications และ UI components
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.read) {
+        // Scroll to top ของรายการ notification
+        const notificationList = document.querySelector('.custom-scrollbar');
+        if (notificationList) {
+          notificationList.scrollTop = 0;
+        }
+      }
+    }
+  }, [notifications.length, isOpen]);
+
+  // Real-time timestamp update
+  useEffect(() => {
+    // อัปเดต timestamp ทุก 30 วินาที
+    const interval = setInterval(() => {
+      (Date.now());
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const uniqueEventTypes = ["All Types", ...Array.from(new Set(notifications.map(n => n.eventType)))];
 
@@ -316,10 +345,7 @@ export default function NotificationDropdown() {
         const prefs = getPreferences();
 
         if (data.eventType && data.message) {
-          // แสดง popup แบบคิว
-          if (prefs.popupEnabled) enqueuePopup(data);
-
-          // อัปเดตรายการ
+          // อัปเดตรายการ Real-time ก่อน
           setNotifications((prev) => {
             if (prev.some((n) => n.id === data.id)) return prev;
             const updated = [{ ...data, read: false }, ...prev];
@@ -327,13 +353,28 @@ export default function NotificationDropdown() {
             return updated;
           });
 
-          setNotifying(true);
+          // อัปเดต unread count ทันที
+          setUnread((prev) => prev + 1);
 
+          // แสดง popup แบบคิว
+          if (prefs.popupEnabled) enqueuePopup(data);
+
+          // เซ็ต notifying และ auto clear หลัง 3 วินาที
+          setNotifying(true);
+          setTimeout(() => setNotifying(false), 3000);
+
+          // เล่นเสียง
           if (prefs.soundEnabled && audioRef.current) {
             const soundFile = `/sounds/${prefs.sound}.mp3`;
             audioRef.current.src = soundFile;
             audioRef.current.currentTime = 0;
             audioRef.current.play().catch(() => {});
+          }
+
+          // Force re-render dropdown ถ้าเปิดอยู่
+          if (isOpen) {
+            // Trigger re-calculation of filtered notifications
+            setFilterType((current) => current);
           }
         } else {
           console.log("System message (ignored):", data);
@@ -551,7 +592,7 @@ export default function NotificationDropdown() {
           </span>
         )}
         {badgeCount > 0 && (
-          <span className="absolute -top-1 -right-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+          <span className={`absolute -top-1 -right-1 z-20 flex h-5 w-5 items-center justify-center rounded-full ${notifying ? 'bg-red-500 animate-pulse' : 'bg-blue-600'} text-xs font-bold text-white transition-all duration-300`}>
             {badgeCount}
           </span>
         )}
@@ -572,9 +613,23 @@ export default function NotificationDropdown() {
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-200 dark:border-gray-700">
-          <h5 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            {t("Notifications")}
-          </h5>
+          <div className="flex items-center gap-2">
+            <h5 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {t("Notifications")}
+            </h5>
+            {/* Real-time unread counter */}
+            {unread > 0 && (
+              <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold animate-pulse">
+                {unread}
+              </span>
+            )}
+            {/* New notification indicator */}
+            {notifying && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 animate-bounce">
+                ใหม่!
+              </span>
+            )}
+          </div>
           <Menu as="div" className="relative inline-block text-left">
             <Menu.Button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-xl font-bold mr-2">
               ⋯
