@@ -57,6 +57,7 @@ export default function NotificationDropdown() {
   const [searchTerm, setSearchTerm] = useState("");
   const socketRef = useRef<WebSocket | null>(null);
   const [unread, setUnread] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
   const hasInitialized = useRef(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -337,6 +338,7 @@ export default function NotificationDropdown() {
       const payload = { orgId: profile.orgId, username: profile.username };
       ws.send(JSON.stringify(payload));
       isConnectingRef.current = false;
+      setIsConnected(true);
     };
 
     ws.onmessage = (event) => {
@@ -387,6 +389,7 @@ export default function NotificationDropdown() {
     ws.onclose = () => {
       socketRef.current = null;
       isConnectingRef.current = false;
+      setIsConnected(false);
     };
 
     socketRef.current = ws;
@@ -395,6 +398,7 @@ export default function NotificationDropdown() {
       ws.close();
       socketRef.current = null;
       isConnectingRef.current = false;
+      setIsConnected(false);
       // ล้างทุก timer
       Object.keys(itemTimersRef.current).forEach((id) => {
         clearTimeout(itemTimersRef.current[id]);
@@ -483,17 +487,17 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = "border-l-4 border-yellow-400 dark:border-yellow-300";
-              badgeColor = "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-yellow-400 dark:border-yellow-300";
+              badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = "border-l-4 border-red-500 dark:border-red-400";
-              badgeColor = "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-red-500 dark:border-red-400";
+              badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
-              borderColor = "border-l-4 border-teal-500 dark:border-teal-400";
-              badgeColor = "bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
+              badgeColor = "bg-gradient-to-r from-teal-100 to-cyan-100 dark:bg-gradient-to-r dark:from-teal-900 dark:to-cyan-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-600";
             } else {
               borderColor = "";
-              badgeColor = "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300";
+              badgeColor = "bg-gradient-to-r from-indigo-100 to-blue-100 dark:bg-gradient-to-r dark:from-indigo-900 dark:to-blue-900 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-600";
             }
 
             return (
@@ -544,7 +548,7 @@ export default function NotificationDropdown() {
                     <div className="flex flex-col w-full gap-1">
                       <div className="flex justify-between items-center">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badgeColor}`}
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${badgeColor}`}
                         >
                           {noti.eventType}
                         </span>
@@ -586,8 +590,11 @@ export default function NotificationDropdown() {
         aria-label="Toggle notifications"
         type="button"
       >
+        {/* WebSocket Connection Status - ล่างขวา */}
+        <span className={`absolute bottom-0 right-0 z-40 h-3 w-3 rounded-full border-2 border-white dark:border-gray-900 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}>
+        </span>
         {notifying && (
-          <span className="absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400">
+          <span className="absolute right-0.5 top-1 z-10 h-2 w-2 rounded-full bg-orange-400">
             <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
           </span>
         )}
@@ -617,18 +624,6 @@ export default function NotificationDropdown() {
             <h5 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {t("Notifications")}
             </h5>
-            {/* Real-time unread counter */}
-            {unread > 0 && (
-              <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold animate-pulse">
-                {unread}
-              </span>
-            )}
-            {/* New notification indicator */}
-            {notifying && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 animate-bounce">
-                ใหม่!
-              </span>
-            )}
           </div>
           <Menu as="div" className="relative inline-block text-left">
             <Menu.Button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-xl font-bold mr-2">
@@ -709,17 +704,17 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = "border-l-4 border-yellow-400 dark:border-yellow-300";
-              badgeColor = "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-yellow-400 dark:border-yellow-300";
+              badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = "border-l-4 border-red-500 dark:border-red-400";
-              badgeColor = "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-red-500 dark:border-red-400";
+              badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
-              borderColor = "border-l-4 border-teal-500 dark:border-teal-400";
-              badgeColor = "bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300";
+              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
+              badgeColor = "bg-gradient-to-r from-teal-100 to-cyan-100 dark:bg-gradient-to-r dark:from-teal-900 dark:to-cyan-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-600";
             } else {
               borderColor = "";
-              badgeColor = "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300";
+              badgeColor = "bg-gradient-to-r from-indigo-100 to-blue-100 dark:bg-gradient-to-r dark:from-indigo-900 dark:to-blue-900 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-600";
             }
             return (
               <li
