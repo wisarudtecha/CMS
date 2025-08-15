@@ -1,6 +1,7 @@
 import { Custommer } from "@/types"
 import {  FormField, formType } from "./FormField"
 import { DepartmentCommandStationDataMerged } from "@/store/api/caseApi"
+import { Area } from "@/store/api/area"
 interface assignee{
   name: string
   color: string
@@ -24,6 +25,15 @@ export interface CaseItem {
   customerData?:Custommer
   location?:string
   attachFile?:File[]
+  requireSchedule?:boolean
+  area?:Area
+  scheduleDate?:string
+  workOrderNummber?:string
+  workOrderRef?:string
+  workOrderDate?:string
+  iotDevice?:string
+  iotDate?:string
+  attachFileResult?:File[]
 }
 
 

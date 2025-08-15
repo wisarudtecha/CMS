@@ -20,17 +20,19 @@ interface CustomerPanelProps {
 }
 const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
-    const [activeTab, setActiveTab] = useState("customer-info");
+    const [activeTab, setActiveTab] = useState("Device info");
     const edittabs = [
-        { id: "customer-info", label: "Info" },
-        { id: "Location", label: "Location" },
-        { id: "Knowledge Base", label: "Knowledge Base" },
+        // { id: "customer-info", label: "Info" },
+        { id: "Device info", label: "Device info" },
+        // { id: "Location", label: "Location" },
+        // { id: "Knowledge Base", label: "Knowledge Base" },
     ];
     const addTab = [
-        { id: "customer-info", label: "Info" },
-        { id: "Location", label: "Location" },
-        { id: "Knowledge Base", label: "Knowledge Base" },
-        { id: "FAQ", label: "FAQ" },
+        // { id: "customer-info", label: "Info" },
+        { id: "Device info", label: "Device info" },
+        // { id: "Location", label: "Location" },
+        // { id: "Knowledge Base", label: "Knowledge Base" },
+        // { id: "FAQ", label: "FAQ" },
     ];
     const serviceHistory = CaseHistory;
     return (
@@ -174,7 +176,45 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
                             <div className="text-center py-4">
                                 <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
                             </div>
-                        ) : (
+                        ) 
+                        :activeTab ==="Device info"?(
+                            <>
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
+                                        Device info
+                                    </span>
+                                </div>
+                                
+                                <div className="space-y-2 text-xs">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Device ID</div>
+                                            <div className="text-gray-900 dark:text-white">
+                                                WS-001-ABC789
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Device Type</div>
+                                            <div className="text-gray-900 dark:text-white">
+                                                waterSensor
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Model</div>
+                                        <div className="text-gray-900 dark:text-white">
+                                            WS-Model-X
+                                        </div>
+                                    </div>
+                                    {/* <div>
+                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
+                                        <div className="text-gray-900 dark:text-white">
+                                            {customerData?.address ? mergeAddress(customerData.address)  : "-"}
+                                        </div>
+                                    </div> */}
+                                </div>
+                            </>
+                        ): (
                             <div className="text-center py-4">
                                 <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
                             </div>

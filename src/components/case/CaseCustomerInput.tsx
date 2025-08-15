@@ -1,9 +1,9 @@
-import { contractMethod, Custommer } from "@/types";
+import { Custommer } from "@/types";
 import { ChangeEvent } from "react";
 import Input from "../form/input/InputField";
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
+// import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/store/api/custommerApi";
-import { contractMethodMock } from "./source";
+// import { contractMethodMock } from "./source";
 
 interface CustomerInputProps {
     customerData: Custommer
@@ -18,18 +18,18 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
 }) => {
 
    
-    const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-        handleCustomerDataChange({
-            ...customerData,
-            name: e.target.value
-        });
-    };
+    // const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    //     handleCustomerDataChange({
+    //         ...customerData,
+    //         name: e.target.value
+    //     });
+    // };
 
 
 
-    const handleCustomerDataContractMethodeChange = (data: contractMethod) => {
-        handleCustomerDataChange({ ...customerData, contractMethod: data });
-    };
+    // const handleCustomerDataContractMethodeChange = (data: contractMethod) => {
+    //     handleCustomerDataChange({ ...customerData, contractMethod: data });
+    // };
     const handleCustomerDataPhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         let updatedCustomerData = { ...customerData, mobileNo: value };
@@ -68,27 +68,25 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
 
     return (
         <div className=" text-gray-900 dark:text-gray-400 mx-3">
-            <div className="w-auto md:mr-2">
-                <h3 className="mb-2 ">Customer Name : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+            {/* <div className="w-auto md:mr-2">
+                <h3 className="mb-2 ">Customer Name :</h3>
                 <Input
                     value={customerData.name}
                     onChange={(e) => { handleCustomerDataNameChange(e) }}
                     className={`${commonInputCss}`}
                     placeholder={"Enter Customer Name"}
-                    required={true}
                 />
-            </div>
+            </div> */}
             <div className="w-auto md:mr-2">
-                <h3 className="my-2 ">Phone Number : <span className=" text-red-500 text-sm font-bold">*</span></h3>
+                <h3 className="my-2 ">Phone Number :</h3>
                 <Input
                     value={customerData.mobileNo ?? ""}
                     onChange={(e) => { handleCustomerDataPhoneChange(e) }}
                     className={`${commonInputCss}`}
                     placeholder={"Enter Customer Phone Number"}
-                    required={true}
                 />
             </div>
-            <div className="w-auto md:mr-2">
+            {/* <div className="w-auto md:mr-2">
                 <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                 <SearchableSelect
                     options={contractMethodMock.map(m => m.name)}
@@ -103,7 +101,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                         }
                     }}
                 />
-            </div>
+            </div> */}
             {customerData.contractMethod?.name === "Email" &&
                 <div className="w-auto md:mr-2  ">
                     <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>

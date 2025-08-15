@@ -3,6 +3,7 @@ import { caseApi, CaseListParams } from "@/store/api/caseApi";
 import { customerApi } from "@/store/api/custommerApi";
 import { formApi } from "@/store/api/formApi";
 import { CaseTypeSubType } from "../interface/CaseType";
+import { areaApi } from "@/store/api/area";
 
 
 export const useFetchCustomers = async () => {
@@ -71,6 +72,14 @@ export const useFetchCaseStatus = async () => {
 };
 
 
+export const useFetchArea = async () => {
+  const result = await store.dispatch(
+    areaApi.endpoints.getArea.initiate(null)
+  );
+  localStorage.setItem("area", JSON.stringify(result.data?.data))
+
+};
+
 export const caseApiSetup = async () => {
   await useFetchCustomers();
   await useFetchCase({ start: 0, length: 100 });
@@ -78,4 +87,5 @@ export const caseApiSetup = async () => {
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();
   await useFetchSubTypeAllForm();
+  await useFetchArea();
 }

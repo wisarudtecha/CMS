@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import {
-  MessageCircle,
   Plus,
   List,
   LayoutGrid,
@@ -49,8 +48,11 @@ export default function CasesView() {
   const [caseData, setCaseData] = useState<CaseList[]>(() => {
     const savedCases = localStorage.getItem("caseList");
     return savedCases
-      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
-      : [];
+      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId)).sort((a, b) => {
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        } return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }) : [];
   });
 
   const [advancedFilters, setAdvancedFilters] = useState({
@@ -284,7 +286,7 @@ export default function CasesView() {
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
         </div>
-        <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caseDetail}</p>
+        <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caselocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (
             <div className="flex items-center space-x-2">
@@ -294,10 +296,10 @@ export default function CasesView() {
               <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <MessageCircle className="w-3 h-3" />
             <span>{caseItem.comments ?? 0}</span>
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center justify-between pt-2">
           <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt)}</span>
@@ -334,7 +336,7 @@ export default function CasesView() {
               <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
               <Badge color="primary">{getCasesForColumn(column.title).length}</Badge>
             </div>}
-            <div className="space-y-3 px-2 md:overflow-y-auto md:h-100 custom-scrollbar">
+            <div className="space-y-3 px-2 md:overflow-y-auto md:h-fit custom-scrollbar">
               {getCasesForColumn(column.title).map((caseItem) => (
                 <CaseCard key={caseItem.id} caseItem={caseItem} />
               ))}
@@ -352,11 +354,16 @@ export default function CasesView() {
         <div className="col-span-2">Status</div>
         <div className="col-span-2">Priority</div>
         <div className="col-span-2">Assignee</div>
-        <div className="col-span-1">Due Date</div>
-        <div className="col-span-1">Comments</div>
+        <div className="col-span-2">Due Date</div>
+        {/* <div className="col-span-1">Comments</div> */}
       </div>
 
-      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).map((caseItem) => (
+      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).sort((a, b) => {
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }).map((caseItem) => (
         <div
           key={caseItem.id}
           className="grid grid-cols-12 gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 hover:cursor-pointer"
@@ -386,15 +393,15 @@ export default function CasesView() {
           <div className="col-span-1 flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.createdAt)}</span>
           </div>
-          <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+          {/* <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
             <MessageCircle className="w-3 h-3" />
             <span>{caseItem?.comments ?? 0}</span>
-          </div>
+          </div> */}
         </div>
       ))}
     </div>
   )
-  const onBackDynamic=()=>{
+  const onBackDynamic = () => {
     setShowDynamicForm(false)
     const savedCases = localStorage.getItem("caseList");
     setCaseData(savedCases
@@ -402,16 +409,16 @@ export default function CasesView() {
       : [])
   }
 
-  const onBackSelectedCase=()=>{
+  const onBackSelectedCase = () => {
     setSelectedCase(null)
     const savedCases = localStorage.getItem("caseList");
     setCaseData(savedCases
       ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
       : [])
   }
-  
+
   if (showDynamicForm) {
-    return <CaseDetailView onBack={onBackDynamic} caseData={undefined} />
+    return <CaseDetailView onBack={onBackDynamic} />
   }
 
   if (selectedCase) {

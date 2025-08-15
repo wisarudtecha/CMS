@@ -4,6 +4,7 @@ import FormViewer from "../form/dynamic-form/FormViewValue";
 import { getTextPriority } from "../function/Prioriy";
 import { CaseItem } from "../interface/CaseItem";
 import { IndividualFormField } from "../interface/FormField";
+import { mergeArea } from "@/store/api/area";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseItem;
@@ -83,7 +84,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                 </div>
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.serviceCenter?.name||"-"}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area)||"-"}</div>
                 </div>
             </div>
             <div >
@@ -120,23 +121,23 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     </div>
                 </div> */}
                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
-                    <div className="mb-2">
+                    {/* <div className="mb-2">
                         <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
-                    </div>
-                    <div className="mb-2">
+                    </div> */}
+                    {/* <div className="mb-2">
                         <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
                         <div className="text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.name || "-"}
                         </div>
-                    </div>
+                    </div> */}
 
-                    <span className="text-md text-gray-500 dark:text-gray-400">Customer Phone Number</span>
+                    <span className="text-md text-gray-500 dark:text-gray-400">Phone Number</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
                         {caseData?.customerData?.mobileNo || "-"}
                     </div>
 
                     <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Customer Contact Method</span>
+                        <span className="text-md text-gray-500 dark:text-gray-400">Contact Method</span>
                         <div className="text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.contractMethod?.name || "-"}
                         </div>

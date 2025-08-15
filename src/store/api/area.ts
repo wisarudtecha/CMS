@@ -6,6 +6,7 @@ export interface Area {
   orgId: string;
   countryId: string;
   provId: string;
+  distId:string;
   districtEn: string;
   districtTh: string;
   districtActive: boolean;
@@ -17,6 +18,11 @@ export interface Area {
   countryActive: boolean;
 }
 
+export const mergeArea = (data: Area) => {
+    return `${data.countryTh ? `${data.countryTh}` : ""}` +
+        `${data.provinceTh ? `-${data.provinceTh}` : ""}` +
+        `${data.districtTh ? `-${data.districtTh}` : ""}`
+}
 
 export const areaApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({

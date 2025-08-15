@@ -46,6 +46,9 @@ export interface CreateCase {
     deptId: string,
     commId: string,
     stnId: string,
+    caseId: string
+    schedule: true,
+    scheduleDate: string,
 }
 
 export interface Case {
@@ -91,6 +94,12 @@ export interface Case {
     updatedBy: string;
 }
 
+export const mergeDeptCommandStation = (data: DepartmentCommandStationData) => {
+    return `${data.deptTh ? `${data.deptTh}` : ""}` +
+        `${data.commandTh ? `-${data.commandTh}` : ""}` +
+        `${data.stationTh ? `-${data.stationTh}` : ""}`
+}
+
 export interface DepartmentCommandStationData {
     id: string;
     orgId: string;
@@ -132,6 +141,18 @@ export interface CaseListParams extends PaginationParams {
     category?: string;
     caseType?: string;
     caseSType?: string;
+}
+
+interface CaseComment {
+    id: number;
+    orgId: string;
+    caseId: string;
+    username: string;
+    type: string;
+    fullMsg: string;
+    jsonData: any;
+    createdAt: string;
+    createdBy: string;
 }
 
 export const caseApi = baseApi.injectEndpoints({
@@ -193,6 +214,13 @@ export const caseApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Cases"],
         }),
+
+        getComment: builder.query<ApiResponse<CaseComment[]>, { caseId: string }>({
+            query: (params) => ({
+                url: `/case_history${params.caseId}`,
+            }),
+            providesTags: ["Cases"],
+        }),
     }),
 });
 export const {
@@ -203,5 +231,6 @@ export const {
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,
+    useGetCommentQuery,
 } = caseApi;
 

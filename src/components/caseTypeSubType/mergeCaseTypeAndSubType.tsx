@@ -5,7 +5,7 @@ export const mergeCaseTypeAndSubType = (data: CaseTypeSubType) => {
     //     `${data.sTypeCode ? `-${data.sTypeCode}` : ""}` +
     //     `${data.subTypeTh ? `_${data.subTypeTh}` : ""}`
 
-        return `${data.sTypeCode ? `${data.sTypeCode}` : ""}`+`-${data.th ?? ""}` 
+        return `${data.sTypeCode ? `${data.sTypeCode}` : ""}`+`-${data.th ?? ""}`+`-${data.subTypeTh}` 
         
         
 }
