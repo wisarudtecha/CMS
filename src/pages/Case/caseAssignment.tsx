@@ -5,6 +5,7 @@ import {
   Plus,
   List,
   LayoutGrid,
+  Filter,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
@@ -12,7 +13,7 @@ import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import CaseDetailView from "../../components/case/CaseDetailView"
 
-import { getPriorityBorderColorClass, getPriorityColorClass } from "@/components/function/Prioriy"
+import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
 import DateStringToDateFormat from "@/components/date/DateToString"
 import { CaseList } from "@/components/interface/CaseItem"
@@ -348,59 +349,196 @@ export default function CasesView() {
   }
 
   const ListView = () => (
-    <div className="space-y-2">
-      <div className="grid grid-cols-12 gap-4 p-3 text-xs font-medium text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
-        <div className="col-span-4">Case</div>
+    <div className="space-y-3 ">
+      {/* Desktop Header - Hidden on mobile */}
+      <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
+        <div className="col-span-3">Case Type</div>
+        <div className="col-span-2">Location</div>
         <div className="col-span-2">Status</div>
         <div className="col-span-2">Priority</div>
         <div className="col-span-2">Assignee</div>
-        <div className="col-span-2">Due Date</div>
-        {/* <div className="col-span-1">Comments</div> */}
+        <div className="col-span-1">Create Date</div>
       </div>
 
-      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).sort((a, b) => {
-        if (a.priority !== b.priority) {
-          return a.priority - b.priority;
-        }
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }).map((caseItem) => (
-        <div
-          key={caseItem.id}
-          className="grid grid-cols-12 gap-4 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 hover:cursor-pointer"
-          onClick={() => handleCaseClick(caseItem)}
-        >
-          <div className="col-span-4 flex items-center">
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h4>
-          </div>
-          <div className="flex col-span-2 items-center space-x-2">
-            <Badge color="primary">{statusIdToStatusTitle(caseItem.statusId)}</Badge>
-          </div>
-          <div className="col-span-2 flex items-center mx-4">
-            <div className={`w-2 h-2 rounded-full ${getPriorityColorClass(caseItem.priority)}`} />
-          </div>
-          <div className="col-span-2 flex items-center space-x-2">
-            {caseItem.createdBy ? (
-              <>
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center dark:bg-blue-700">
-                  <span className="text-white text-xs">{createAvatarFromString(caseItem.createdBy)}</span>
+      {/* Cases */}
+      <div className="space-y-2">
+        {getFilteredCases()
+          .filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus)
+          .sort((a, b) => {
+            if (a.priority !== b.priority) {
+              return a.priority - b.priority;
+            }
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          })
+          .map((caseItem) => (
+            <div
+              key={caseItem.id}
+              className="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:shadow-lg"
+              onClick={() => handleCaseClick(caseItem)}
+            >
+              {/* Desktop Layout */}
+              <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-4">
+                {/* Case Type */}
+                <div className="col-span-3 flex items-center">
+                  <div className="flex items-center space-x-3">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}
+                      </h4>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.createdBy}</span>
-              </>
-            ) : (
-              <div className="ml-4 text-gray-500 dark:text-gray-400">-</div>
-            )}
-          </div>
-          <div className="col-span-1 flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{DateStringToDateFormat(caseItem.createdAt)}</span>
-          </div>
-          {/* <div className="col-span-1 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
-            <MessageCircle className="w-3 h-3" />
-            <span>{caseItem?.comments ?? 0}</span>
-          </div> */}
+
+                {/* Location */}
+                <div className="col-span-2 flex items-center">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-300 ">
+                      {caseItem.caselocAddr || 'No location'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="col-span-2 flex items-center">
+                  <Badge
+                    color="primary"
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                  >
+                    {statusIdToStatusTitle(caseItem.statusId)}
+                  </Badge>
+                </div>
+
+                {/* Priority */}
+                <div className="col-span-2 flex items-center">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${getPriorityColorClass(caseItem.priority)} shadow-sm`} />
+                    <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                      Priority {getTextPriority(caseItem.priority).level}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Assignee */}
+                <div className="col-span-2 flex items-center">
+                  {caseItem.createdBy ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-sm dark:from-blue-600 dark:to-blue-700">
+                        <span className="text-white text-xs font-semibold">
+                          {createAvatarFromString(caseItem.createdBy)}
+                        </span>
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate">
+                        {caseItem.createdBy}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2 text-gray-400 dark:text-gray-500">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center dark:bg-gray-700">
+                        <span className="text-gray-400 text-xs">?</span>
+                      </div>
+                      <span className="text-sm">Unassigned</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Date */}
+                <div className="col-span-1 flex items-center">
+                  <div className="flex items-center space-x-1">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      {DateStringToDateFormat(caseItem.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Layout */}
+              <div className="md:hidden p-4 space-y-3">
+                {/* Mobile Header Row */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                      {matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}
+                    </h4>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <div className={`w-2 h-2 rounded-full ${getPriorityColorClass(caseItem.priority)} shadow-sm`} />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {getTextPriority(caseItem.priority).level} Priority
+                      </span>
+                    </div>
+                  </div>
+                  <Badge
+                    color="primary"
+                    className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                  >
+                    {statusIdToStatusTitle(caseItem.statusId)}
+                  </Badge>
+                </div>
+
+                {/* Mobile Location Row */}
+                {caseItem.caselocAddr && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="truncate">{caseItem.caselocAddr}</span>
+                  </div>
+                )}
+
+                {/* Mobile Bottom Row */}
+                <div className="flex items-center justify-between">
+                  {/* Assignee */}
+                  <div className="flex items-center space-x-2">
+                    {caseItem.createdBy ? (
+                      <>
+                        <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-sm dark:from-blue-600 dark:to-blue-700">
+                          <span className="text-white text-xs font-semibold">
+                            {createAvatarFromString(caseItem.createdBy)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-600 dark:text-gray-300 font-medium truncate max-w-[100px]">
+                          {caseItem.createdBy}
+                        </span>
+                      </>
+                    ) : (
+                      <div className="flex items-center space-x-2 text-gray-400 dark:text-gray-500">
+                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center dark:bg-gray-700">
+                          <span className="text-gray-400 text-xs">?</span>
+                        </div>
+                        <span className="text-xs">Unassigned</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Date */}
+                  <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{DateStringToDateFormat(caseItem.createdAt)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
+
+      {/* Empty State */}
+      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+          <svg className="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3 className="text-lg font-medium mb-1">No cases found</h3>
+          <p className="text-sm text-center px-4">Try adjusting your filters or create a new case.</p>
         </div>
-      ))}
+      )}
     </div>
-  )
+  );
+
   const onBackDynamic = () => {
     setShowDynamicForm(false)
     const savedCases = localStorage.getItem("caseList");
@@ -426,97 +564,120 @@ export default function CasesView() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
-      <PageBreadcrumb pageTitle="Cases" />
-      <div className="relative ">
-        <div className="flex flex-col gap-y-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode("kanban")}
-                  className={
-                    viewMode === "kanban"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }
-                >
-                  <LayoutGrid className="w-4 h-4 mr-2" />
-                  Kanban
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className={
-                    viewMode === "list"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  List
-                </Button>
-              </div>
-              <div className="space-x-2 flex items-center">
-                <input
-                  type="text"
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
-                  placeholder="Search cases..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-                <Button variant="outline" onClick={() => { setShowAdvanceFilter(true) }}>
-                  Advance Filtering
-                </Button>
-              </div>
-            </div>
-
-            <Button
-              className="flex items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-              onClick={() => setShowDynamicForm(true)}
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Case
-            </Button>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-6">
-              <div
-                className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === null ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                onClick={() => setSelectedStatus(null)}
+  <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
+    <PageBreadcrumb pageTitle="Cases" />
+    <div className="relative px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-y-4 mb-6">
+        {/* Top Section - Mobile Responsive */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Left Side - View Mode & Search */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+            {/* View Mode Buttons */}
+            <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode("kanban")}
+                className={`flex-1 sm:flex-none ${
+                  viewMode === "kanban"
+                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                }`}
               >
-                <span className="text-sm">All Cases</span>
-                <Badge color="primary">
-                  {getFilteredCases().length}
-                </Badge>
-              </div>
-              {statusColumns.map((col) => (
-                <div
-                  key={col.title}
-                  className={`flex items-center space-x-2 cursor-pointer ${selectedStatus === col.title ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                  onClick={() => setSelectedStatus(col.title)}
-                >
-                  <span className="text-sm">{col.title}</span>
-                  <Badge color="primary">{getCasesForColumn(col.title).length}</Badge>
-                </div>
-              ))}
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Kanban
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className={`flex-1 sm:flex-none ${
+                  viewMode === "list"
+                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                }`}
+              >
+                <List className="w-4 h-4 mr-2" />
+                List
+              </Button>
+            </div>
+
+            {/* Search & Filter */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
+                placeholder="Search cases..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => { setShowAdvanceFilter(true) }}
+                className="w-full sm:w-auto whitespace-nowrap"
+                size="sm"
+              >
+                <Filter className="w-4 h-4 mr-2 sm:mr-1" />
+                <span className="sm:hidden">Advanced Filters</span>
+                <span className="hidden sm:inline">Advance Filtering</span>
+              </Button>
             </div>
           </div>
+
+          {/* Add New Case Button */}
+          <Button
+            className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+            onClick={() => setShowDynamicForm(true)}
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Case
+          </Button>
         </div>
 
-        <div className="relative grid h-full">
-          {viewMode === "kanban" ? <KanbanView /> : <ListView />}
+        {/* Status Filter Tabs - Mobile Responsive */}
+        <div className="w-full overflow-x-auto">
+          <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
+            <div
+              className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${
+                selectedStatus === null 
+                  ? 'font-semibold text-blue-600 dark:text-blue-400' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              onClick={() => setSelectedStatus(null)}
+            >
+              <span className="text-sm">All Cases</span>
+              <Badge color="primary">
+                {getFilteredCases().length}
+              </Badge>
+            </div>
+            {statusColumns.map((col) => (
+              <div
+                key={col.title}
+                className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${
+                  selectedStatus === col.title 
+                    ? 'font-semibold text-blue-600 dark:text-blue-400' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                onClick={() => setSelectedStatus(col.title)}
+              >
+                <span className="text-sm">{col.title}</span>
+                <Badge color="primary">{getCasesForColumn(col.title).length}</Badge>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      {
-        showAdvanceFilter ? <AdvanceFilter></AdvanceFilter> : null
-      }
+
+      {/* Main Content Area */}
+      <div className="relative w-full h-full">
+        {viewMode === "kanban" ? <KanbanView /> : <ListView />}
+      </div>
     </div>
-  )
+
+    {/* Advanced Filter Modal */}
+    {showAdvanceFilter && <AdvanceFilter />}
+  </div>
+);
 }
