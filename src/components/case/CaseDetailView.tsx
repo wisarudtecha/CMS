@@ -39,7 +39,7 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSop, Unit, useGetCaseSopQuery, useGetUintQuery } from "@/store/api/dispatch"
+import { CaseSop, Unit, useGetCaseSopQuery, useGetUnitQuery } from "@/store/api/dispatch"
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { contractMethodMock } from "./source"
 import { Area, mergeArea } from "@/store/api/area"
@@ -299,10 +299,11 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         }
     );
 
-    const { data: unit } = useGetUintQuery(
+    const { data: unit } = useGetUnitQuery(
         { caseId: caseData?.caseId || "" },
         { skip: !caseData?.caseId }
     )
+
 
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation()

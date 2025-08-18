@@ -221,7 +221,7 @@ export const dispantchApi = baseApi.injectEndpoints({
             providesTags: ["Dispatch"],
         }),
 
-        getUint: builder.query<ApiResponse<Unit[]>, {caseId:string}>({
+        getUnit: builder.query<ApiResponse<Unit[]>, {caseId:string}>({
             query: (params) => ({
                 url: `/dispatch/${params.caseId}/units`,
             }),
@@ -235,6 +235,6 @@ export const {
     useGetDepartmentQuery,
     useGetStationsQuery, 
     useGetCaseSopQuery,
-    useGetUintQuery
+    useGetUnitQuery
 } = dispantchApi;
 
