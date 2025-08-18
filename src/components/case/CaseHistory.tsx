@@ -1,5 +1,7 @@
 // /src/components/case/CaseHistory.tsx
-import React from "react";
+import React
+  // , { useEffect, useState }
+from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { AlertHexaIcon, CalenderIcon, ChatIcon, CheckCircleIcon, TimeIcon, UserIcon } from "@/icons";
@@ -103,20 +105,39 @@ const CaseHistoryComponent: React.FC<{
       th: caseTypeSubType?.th || "",
       subTypeEn: caseTypeSubType?.subTypeEn || "",
       subTypeTh: caseTypeSubType?.subTypeTh || "",
-      sTypeCode: caseTypeSubType?.sTypeCode || ""
+      sTypeCode: caseTypeSubType?.sTypeCode || "",
+      sTypeId: caseTypeSubType?.sTypeId || ""
     })) : []
   }
 
   const typeSubTypeConfigs = generateTypeSubTypeConfigs(caseTypesSubTypes);
 
+  // const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
+  //   return typeSubTypeConfigs.find(config => config.sTypeCode === caseItem.caseSTypeId) || { en: "", th: "", subTypeEn: "", subTypeTh: "", sTypeCode : "" };
+  // };
+
   const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
-    return typeSubTypeConfigs.find(config => config.sTypeCode === caseItem.caseSTypeId) || { en: "", th: "", subTypeEn: "", subTypeTh: "", sTypeCode : "" };
+    const found = typeSubTypeConfigs.find(config => 
+      config.sTypeId === caseItem.caseSTypeId
+    );
+    return found || { 
+      en: "", 
+      th: "", 
+      subTypeEn: "", 
+      subTypeTh: "", 
+      sTypeCode: "" 
+    };
   };
 
+  // const caseTitle = (data: CaseEntity) => {
+  //   return `${getTypeSubTypeConfig(data).sTypeCode}-${getTypeSubTypeConfig(data).th || getTypeSubTypeConfig(data).en}`;
+  // };
+
   const caseTitle = (data: CaseEntity) => {
-    const fullCaseTitle = `${getTypeSubTypeConfig(data).sTypeCode}-${getTypeSubTypeConfig(data).th || getTypeSubTypeConfig(data).en}`;
-    console.log(fullCaseTitle);
-    return fullCaseTitle;
+    const config = getTypeSubTypeConfig(data);
+    const sTypeCode = config.sTypeCode || "UNKNOWN";
+    const displayName = config.th || config.en || "Unknown Type";
+    return `${sTypeCode}-${displayName}`;
   };
 
   // ===================================================================
@@ -162,6 +183,7 @@ const CaseHistoryComponent: React.FC<{
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {caseTitle(caseItem)}
+                {/* {caseTitle(caseItem.caseSTypeId)} */}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-xs">
                 {caseItem.caseDetail}
@@ -285,6 +307,7 @@ const CaseHistoryComponent: React.FC<{
   const previewConfig: PreviewConfig<CaseEntity> = {
     // title: (caseItem: CaseEntity) => `${caseItem.caseNumber}: ${caseItem.title}`,
     title: (caseItem: CaseEntity) => `${caseTitle(caseItem)}`,
+    // title: (caseItem: CaseEntity) => `${caseTitle(caseItem.caseSTypeId)}`,
     // subtitle: (caseItem: CaseEntity) => `${caseItem.category} • Assigned to ${caseItem.assignedTo}`,
     subtitle: (caseItem: CaseEntity) => `${caseItem.caselocAddr}`,
     avatar: (caseItem: CaseEntity) => {
@@ -341,7 +364,7 @@ const CaseHistoryComponent: React.FC<{
                     <div>
                       <span className="text-gray-900 dark:text-white text-sm">Service Type:</span>
                       <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {getTypeSubTypeConfig(caseItem).subTypeTh || getTypeSubTypeConfig(caseItem).subTypeEn}
+                        {/* {getTypeSubTypeConfig(caseItem).subTypeTh || getTypeSubTypeConfig(caseItem).subTypeEn} */}
                       </div>
                     </div>
                     <div>
@@ -771,6 +794,7 @@ const CaseHistoryComponent: React.FC<{
             <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                 {/* {caseItem.caseNumber} */}
+                {caseTitle(caseItem)}
               </h3>
               {/*
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
