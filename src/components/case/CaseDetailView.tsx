@@ -1,12 +1,9 @@
 "use client"
 
-import { useCallback, useMemo, useState, useEffect, ChangeEvent, useRef } from "react"
+import { useCallback, useMemo, useState, useEffect, ChangeEvent } from "react"
 import {
     ArrowLeft,
-    Clock,
     User as User_Icon,
-    MessageSquare,
-    Paperclip,
     ChevronDown,
     ChevronUp,
 } from "lucide-react"
@@ -16,18 +13,15 @@ import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField } from "@/components/interface/FormField"
-import Badge from "@/components/ui/badge/Badge"
 import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
-import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "../function/Prioriy"
+import { getPriorityColorClass } from "../function/Prioriy"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CommandInformation } from "../assignOfficer/CommandInformation"
-import Comments from "../comment/Comment"
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
-import DateStringToDateFormat, { getLocalISOString, TodayDate } from "../date/DateToString"
+import { getLocalISOString, TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 import { Modal } from "../ui/modal"
-import ProgressStepPreview from "../progress/ProgressBar"
 import { CaseTypeSubType } from "../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -36,152 +30,22 @@ import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
 import PreviewDataBeforeSubmit from "./PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
-import { CreateCase, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
+import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 import { CaseSop, Unit, useGetCaseSopQuery, useGetUnitQuery } from "@/store/api/dispatch"
-import { statusIdToStatusTitle } from "../ui/status/status"
 import { contractMethodMock } from "./source"
 import { Area, mergeArea } from "@/store/api/area"
 // import Checkbox from "../form/input/Checkbox"
 // import { data } from "react-router"
 import DragDropFileUpload from "../d&d upload/dndUpload"
+import { CaseCard } from "./sopCard"
 
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 
-interface CaseCardProps {
-    onAssignClick: () => void;
-    onEditClick: () => void;
-    setCaseData?: React.Dispatch<React.SetStateAction<CaseItem | undefined>>;
-    caseData: CaseSop;
-    editFormData: boolean;
-}
 
-const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseData, editFormData, setCaseData }) => {
-    const [showComment, setShowComment] = useState<boolean>(false);
-    const caseTypeSupTypeData = useMemo(() =>
-        JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
-    );
-
-    const handleCommentToggle = () => {
-        setShowComment(!showComment);
-    };
-
-    const progressSteps = [
-        { id: 1, title: "Received", completed: true },
-        { id: 2, title: "Assigned", completed: true },
-        { id: 3, title: "Acknowledged", completed: false, current: true },
-        { id: 4, title: "En Route", completed: false },
-        { id: 5, title: "On Site", completed: false },
-        { id: 6, title: "Completed", completed: false }
-    ];
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleButtonClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-
-        if (files && files.length > 0) {
-            const newFilesArray = Array.from(files);
-
-            setCaseData?.((prev) => {
-                if (!prev) return prev;
-
-                const currentFiles = prev.attachFileResult ?? [];
-
-                return {
-                    ...prev,
-                    attachFileResult: [...currentFiles, ...newFilesArray],
-                };
-            });
-            e.target.value = '';
-        }
-    };
-
-    return (
-        <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
-                <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{
-                        mergeCaseTypeAndSubType(
-                            findCaseTypeSubTypeByTypeIdSubTypeId(
-                                caseTypeSupTypeData,
-                                caseData?.caseTypeId || "",
-                                caseData?.caseSTypeId || ""
-                            ) ?? ({} as CaseTypeSubType)
-                        )
-                    }</h2>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>Create Date: {DateStringToDateFormat(caseData.createdAt)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                            <User_Icon className="w-4 h-4" />
-                            <span>Created: {caseData.createdBy}</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
-                    <Badge color={`${getTextPriority(caseData.priority).color}`}>
-                        {getTextPriority(caseData.priority).level} Priority
-                    </Badge>
-                    <Badge variant="outline">
-                        {statusIdToStatusTitle(caseData.statusId)}
-                    </Badge>
-                </div>
-            </div>
-
-            <ProgressStepPreview progressSteps={progressSteps} />
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
-                <div className="flex flex-wrap gap-2">
-                    <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                        {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Comment
-                    </Button>
-                    {/* Show Attach File button only in edit mode for existing cases */}
-                    {editFormData && (
-                        <div>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
-                                onClick={handleButtonClick}
-                            >
-                                <Paperclip className="w-4 h-4 mr-2" />
-                                Attach File
-                            </Button>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                multiple
-                                onChange={handleFileChange}
-                                style={{ display: "none" }}
-                            />
-                        </div>
-                    )}
-                    <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                        {editFormData ? "Cancel Edit" : "Edit"}
-                    </Button>
-                </div>
-                <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
-                    <User_Icon className="w-4 h-4" />
-                    <span>Assign</span>
-                </Button>
-            </div>
-            {showComment && <Comments />}
-        </div>
-    );
-};
 
 interface CaseTypeFormSectionProps {
     caseType: string;
@@ -304,6 +168,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         { skip: !caseData?.caseId }
     )
 
+    const { data: comments } = useGetCaseHistoryQuery(
+        { caseId: caseData?.caseId || "" },
+        { skip: !caseData?.caseId }
+    )
 
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation()
@@ -387,10 +255,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 caseType: getFormByCaseType(),
                 priority: sopLocal?.priority || 0,
                 description: sopLocal?.caseDetail || "",
-                workOrderNummber:sopLocal?.caseId||"",
-                workOrderRef:sopLocal?.referCaseId||"",
-                iotDevice:sopLocal?.deviceId||"",
-                iotDate:sopLocal?.startedDate||"",
+                workOrderNummber: sopLocal?.caseId || "",
+                workOrderRef: sopLocal?.referCaseId || "",
+                iotDevice: sopLocal?.deviceId || "",
+                iotDate: sopLocal?.startedDate || "",
                 area: area,
                 status: "",
                 attachFile: [] as File[], // For new cases (edit mode)
@@ -403,7 +271,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     // Update customer data ONLY when necessary data is available
     useEffect(() => {
-        if (listCustomerData.length > 0 ) {
+        if (listCustomerData.length > 0) {
             const result = listCustomerData.find(items => items.mobileNo === caseData?.phoneNo)
             const customerData = result ? {
                 ...result,
@@ -461,7 +329,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             errorMessage = "Please select a Case Type.";
         } else if (!caseState?.description?.trim()) {
             errorMessage = "Please enter Case Details.";
-        }  else if (!caseState?.customerData?.contractMethod?.name.trim()) {
+        } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
         } else if ((!isValueFill.dynamicForm && caseState?.formData) || (!isValueFill.getType && selectedCaseTypeForm)) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
@@ -473,7 +341,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         let errorMessage = "";
         if (!caseType.caseType) {
             errorMessage = "Please select a Service Type.";
-        }  else if (!caseState?.customerData?.mobileNo) {
+        } else if (!caseState?.customerData?.mobileNo) {
             errorMessage = "Please enter Phone Number.";
         }
         return errorMessage;
@@ -586,7 +454,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     phoneNo: updateJson.phoneNo,
                     priority: updateJson.priority,
                     startedDate: updateJson.startedDate,
-                    source: updateJson.source ,
+                    source: updateJson.source,
                     usercommand: updateJson.usercommand,
                     caseSTypeId: updateJson.caseSTypeId,
                     caseTypeId: updateJson.caseTypeId,
@@ -930,6 +798,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                     caseData={sopLocal}
                                     editFormData={editFormData}
                                     setCaseData={setCaseState}
+                                    comment={comments?.data}
                                 />}
 
                                 {/* Display attachFileResult files for existing cases (both edit and view mode) */}
@@ -1216,7 +1085,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     `}>
                         <CustomerPanel
                             onClose={() => setIsCustomerPanelOpen(false)}
-                            caseItem={caseState || {} as  CaseItem}
+                            caseItem={caseState || {} as CaseItem}
                         />
                     </div>
                 </div>

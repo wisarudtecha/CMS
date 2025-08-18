@@ -336,7 +336,7 @@ export default function CasesView() {
               <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
               <Badge color="primary">{getCasesForColumn(column.title).length}</Badge>
             </div>}
-            <div className="space-y-3 px-2 md:overflow-y-auto md:h-fit custom-scrollbar">
+            <div className="space-y-3 px-2 md:overflow-y-auto md:h-150  custom-scrollbar ">
               {getCasesForColumn(column.title).map((caseItem) => (
                 <CaseCard key={caseItem.id} caseItem={caseItem} />
               ))}

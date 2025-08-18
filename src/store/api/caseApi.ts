@@ -121,6 +121,14 @@ export interface DepartmentCommandStationDataMerged extends DepartmentCommandSta
     name: string;
 }
 
+export interface AddComment {
+    caseId: string;
+    fullMsg: string;
+    jsonData: string;
+    type: string;
+    username: string;
+}
+
 export interface CaseStatus {
     id: string;
     statusId: string;
@@ -143,7 +151,7 @@ export interface CaseListParams extends PaginationParams {
     caseSType?: string;
 }
 
-interface CaseComment {
+export interface CaseHistory {
     id: number;
     orgId: string;
     caseId: string;
@@ -215,11 +223,20 @@ export const caseApi = baseApi.injectEndpoints({
             providesTags: ["Cases"],
         }),
 
-        getComment: builder.query<ApiResponse<CaseComment[]>, { caseId: string }>({
+        getCaseHistory: builder.query<ApiResponse<CaseHistory[]>, { caseId: string }>({
             query: (params) => ({
-                url: `/case_history${params.caseId}`,
+                url: `/case_history/${params.caseId}`,
             }),
             providesTags: ["Cases"],
+        }),
+
+        postAddCaseHistory: builder.mutation<ApiResponse<null>, AddComment>({
+            query: (params) => ({
+                url: `/case_history/add`,
+                method: 'POST', 
+                body: params
+            }),
+            invalidatesTags: ["Cases"],
         }),
     }),
 });
@@ -231,6 +248,7 @@ export const {
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,
-    useGetCommentQuery,
+    useGetCaseHistoryQuery,
+    usePostAddCaseHistoryMutation
 } = caseApi;
 

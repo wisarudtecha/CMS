@@ -1,8 +1,9 @@
 interface ProgressSteps {
-    id: number,
+    id: string,
     title:string,
     completed:boolean
     current?:boolean
+    type?:string
 }
 
 interface ProgressStepPrevieProps {
@@ -16,7 +17,7 @@ const ProgressStepPreview: React.FC<ProgressStepPrevieProps> = ({
     className
 
 }) => {
-   
+
     const currentStepIndex = progressSteps.findIndex(step => step.current);
     const progressWidth = currentStepIndex !== -1 ? ((currentStepIndex) / (progressSteps.length - 1)) * 100 : 0;
     return (
