@@ -637,7 +637,7 @@ export default function CasesView() {
         </div>
 
         {/* Status Filter Tabs - Mobile Responsive */}
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-x-auto custom-scrollbar">
           <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
             <div
               className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${

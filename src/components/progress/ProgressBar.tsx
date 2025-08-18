@@ -14,14 +14,13 @@ interface ProgressStepPrevieProps {
 
 const ProgressStepPreview: React.FC<ProgressStepPrevieProps> = ({
     progressSteps,
-    className
 
 }) => {
 
     const currentStepIndex = progressSteps.findIndex(step => step.current);
     const progressWidth = currentStepIndex !== -1 ? ((currentStepIndex) / (progressSteps.length - 1)) * 100 : 0;
     return (
-                <div className={`${className} mb-4 overflow-x-auto custom-scrollbar`}>
+                <div className={` mb-4 `}>
                 <div className="relative pt-4">
                     <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
                     <div
