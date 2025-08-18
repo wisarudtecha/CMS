@@ -33,8 +33,8 @@ const workflowStatuses = [
 const nodeTypes = {
   start: { button: "bg-success-500 text-white dark:text-white hover:bg-success-600", color: "bg-success-500 dark:bg-success-400", label: "Start" },
   process: { button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600", color: "bg-brand-500 dark:bg-brand-400", label: "Process" },
-  decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
   sla: { button: "bg-purple-500 text-white dark:text-white hover:bg-purple-600", color: "bg-purple-500 dark:bg-purple-400", label: "SLA" },
+  decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
   end: { button: "bg-error-500 text-white dark:text-white hover:bg-error-600", color: "bg-error-500 dark:bg-error-400", label: "End" }
 } as const;
 
@@ -183,10 +183,18 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     
     nodes.forEach(node => {
       const count = connectionCounts[node.id] || 0;
-      if ((node.type === "start" || node.type === "process" || node.type === "sla" || node.type === "end") && count > 1) {
+      if ((
+        node.type === "start"
+        || node.type === "process"
+        // || node.type === "sla"
+        || node.type === "end"
+      ) && count > 1) {
         errors.push(`${node.data.label} can only have 1 outgoing connection`);
       }
-      if (node.type === "decision" && count > 2) {
+      if ((
+        node.type === "decision"
+        || node.type === "sla"
+      ) && count > 2) {
         errors.push(`${node.data.label} can only have 2 outgoing connections (Yes/No)`);
       }
     });
@@ -262,7 +270,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       
       const outgoingConnections = connections.filter(c => c.source === nodeId);
       
-      if (node.type === "decision") {
+      if (
+        node.type === "decision"
+        || node.type === "sla"
+      ) {
         const selectedPath = decisions[nodeId] || "yes"; // Default to yes
         const connection = outgoingConnections.find(c => c.label === selectedPath);
         if (connection) {
@@ -475,6 +486,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         nextWorkflowId: ""
       };
     }
+    // SLA nodes now get the same initial config as decision nodes
+    else if (type === "decision") {
+      initialConfig = {
+        condition: ""
+      };
+    }
 
     const newNode: WorkflowNode = {
       id: `node-${Date.now()}`,
@@ -562,15 +579,21 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
       // Check connection limits
       const outgoingConnections = connections.filter(conn => conn.source === nodeId);
-      const maxConnections = node.type === "decision" ? 2 : 1;
+      // const maxConnections = node.type === "decision" ? 2 : 1;
+      const maxConnections = (node.type === "decision" || node.type === "sla") ? 2 : 1;
       
       if (outgoingConnections.length >= maxConnections) {
-        alert(`${node.type === "decision" ? "Decision" : "This"} node already has maximum connections`);
+        // alert(`${node.type === "decision" ? "Decision" : "This"} node already has maximum connections`);
+        const nodeTypeName = node.type === "decision" ? "Decision" : node.type === "sla" ? "SLA" : "This";
+        alert(`${nodeTypeName} node already has maximum connections`);
         return;
       }
       
       // For decision nodes, determine Yes/No connection
-      if (node.type === "decision") {
+      if (
+        node.type === "decision"
+        || node.type === "sla"
+      ) {
         const hasYes = outgoingConnections.some(conn => conn.label === "yes");
         const hasNo = outgoingConnections.some(conn => conn.label === "no");
         
@@ -581,7 +604,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           setConnectingFrom("no");
         }
         else {
-          alert("Decision node already has both Yes and No connections");
+          // alert("Decision node already has both Yes and No connections");
+          const nodeTypeName = node.type === "decision" ? "Decision" : "SLA";
+          alert(`${nodeTypeName} node already has both Yes and No connections`);
           return;
         }
       }
@@ -1148,7 +1173,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <p>• Click to select nodes</p>
                 <p>• Drag to move nodes (snaps to grid)</p>
                 <p>• Shift+click to connect nodes</p>
-                <p>• Decision nodes have Yes/No connectors</p>
+                {/* <p>• Decision nodes have Yes/No connectors</p> */}
+                <p>• Decision and SLA nodes have Yes/No connectors</p>
                 <p className="text-gray-600 dark:text-gray-300"><strong>Workflow Features:</strong></p>
                 {/* <p>• Start nodes can continue from other workflows</p> */}
                 {/* <p>• End nodes can allow workflow continuation</p> */}
@@ -1159,7 +1185,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 </p>
                 */}
                 <p>• Start/End nodes required for save</p>
-                <p>• Max connections: 1 (normal), 2 (decision)</p>
+                {/* <p>• Max connections: 1 (normal), 2 (decision)</p> */}
+                <p>• Max connections: 1 (normal), 2 (decision/SLA)</p>
                 <p>• Import/Export JSON workflows</p>
                 <p>• Preview form components</p>
                 <p>• Scroll for large workflows</p>
@@ -1352,13 +1379,17 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   }}
                   onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                 >
-                  {node.type === "decision" ? (
+                  {
+                    // node.type === "decision"
+                    (node.type === "decision" || node.type === "sla")
+                  ? (
                     // Diamond shape for decision nodes
                     <div className="relative w-24 h-16 flex items-center justify-center">
                       <svg width="96" height="64" className="absolute inset-0">
                         <polygon
                           points="48,4 88,32 48,60 8,32"
-                          fill="rgb(234 179 8)"
+                          // fill="rgb(234 179 8)"
+                          fill={node.type === "decision" ? "rgb(234 179 8)" : "rgb(168 85 247)"}
                           stroke="white"
                           strokeWidth="2"
                           className="drop-shadow-lg"
@@ -1849,8 +1880,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>
                     Outgoing: {connections.filter(c => c.source === selectedNode.id).length}
-                    {selectedNode.type === "decision" && " / 2 (Yes/No)"}
-                    {selectedNode.type !== "decision" && " / 1"}
+                    {/* {selectedNode.type === "decision" && " / 2 (Yes/No)"} */}
+                    {/* {selectedNode.type !== "decision" && " / 1"} */}
+                    {(selectedNode.type === "decision" || selectedNode.type === "sla") && " / 2 (Yes/No)"}
+                    {selectedNode.type !== "decision" && selectedNode.type !== "sla" && " / 1"}
                   </div>
                   <div>Incoming: {connections.filter(c => c.target === selectedNode.id).length}</div>
                 </div>
@@ -2262,6 +2295,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           )}
                         </div>
                       )}
+
+                      {/*
                       {component.type === "sla" && (
                         <div>
                           {component.SLA && (
@@ -2269,6 +2304,51 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                               <strong>SLA:</strong> {component.SLA} minutes
                             </div>
                           )}
+                        </div>
+                      )}
+                      */}
+
+                      {/* SLA Component  */}
+                      {component.type === "sla" && (
+                        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded border">
+                          <div className="text-sm text-gray-700 dark:text-gray-200">
+                            <strong>SLA Time:</strong> {component.SLA || "Not specified"} minutes
+                          </div>
+                          {component.SLA && (
+                            <div className="text-sm text-gray-700 dark:text-gray-200 mt-1">
+                              <strong>SLA:</strong> {component.SLA}
+                            </div>
+                          )}
+
+                          {/* Interactive Toggle Buttons */}
+                          <div className="mb-4 mt-3">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                              SLA Decision Path:
+                            </label>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleDecisionToggle(component.id, "yes")}
+                                variant={decisionSelections[component.id] === "yes" ? "success" : "outline-success"}
+                                size="xs"
+                              >
+                                <CheckLineIcon className="w-4 h-4" />
+                                Met SLA (YES)
+                              </Button>
+                              <Button
+                                onClick={() => handleDecisionToggle(component.id, "no")}
+                                variant={decisionSelections[component.id] === "no" ? "error" : "outline-error"}
+                                size="xs"
+                              >
+                                <CloseIcon className="w-4 h-4" />
+                                Exceeded SLA (NO)
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Current Selection Display */}
+                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                            Current path: <strong>{decisionSelections[component.id] === "no" ? "Exceeded SLA" : "Met SLA"}</strong>
+                          </div>
                         </div>
                       )}
                       
@@ -2361,7 +2441,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                   <span>
                     Decisions: {Object.entries(decisionSelections).map(([id, decision]) => {
                       const node = nodes.find(n => n.id === id);
-                      return `${node?.data.label}: ${decision.toUpperCase()}`;
+                      // return `${node?.data.label}: ${decision.toUpperCase()}`;
+                      const nodeTypeName = node?.type === "sla" ? "SLA" : "Decision";
+                      return `${node?.data.label} (${nodeTypeName}): ${decision.toUpperCase()}`;
                     }).join(", ")}
                   </span>
                 )}
