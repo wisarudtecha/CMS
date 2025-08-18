@@ -45,41 +45,39 @@ const UnifiedCheckbox = ({
 
   return (
   <div className="relative">
-    <input
-      ref={checkboxRef}
-      type="checkbox"
-      checked={checked}
-      onChange={onChange}
-      className={`w-5 h-5 appearance-none rounded-md cursor-pointer transition-all duration-200 
-        border-gray-300 text-blue-600 bg-white
-        focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
-        checked:bg-blue-600 checked:border-blue-600
-        hover:border-blue-400
-        dark:border-gray-500 dark:bg-gray-700 dark:text-blue-400
-        dark:checked:bg-blue-500 dark:checked:border-blue-500
-        dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800
-        dark:hover:border-blue-400 ${className}`}
-      {...props}
-    />
-    {checked && (
-      <svg
-        className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none top-1/2 left-1/2"
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 14 14"
-        fill="none"
-      >
-        <path
-          d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-          stroke="white"
-          strokeWidth="1.94437"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )}
-  </div>
+  <input
+    ref={checkboxRef}
+    type="checkbox"
+    checked={checked}
+    onChange={onChange}
+    className={`w-5 h-5 appearance-none rounded-md cursor-pointer transition-all duration-200 
+      bg-gray-200  border-gray-300 
+      focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
+      checked:bg-blue-600 checked:border-blue-600
+      hover:border-blue-400
+      dark:border-gray-500 dark:bg-gray-700 
+      dark:checked:bg-blue-500 dark:checked:border-blue-500
+      dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800
+      dark:hover:border-blue-400 ${className}`}
+    {...props}
+  />
+  {checked && (
+    <svg
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none w-fit h-3/5 pb-1"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 14 14"
+      fill="none"
+    >
+      <path
+        d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+        stroke="white"
+        strokeWidth="1.94437"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )}
+</div>
   )
 }
 

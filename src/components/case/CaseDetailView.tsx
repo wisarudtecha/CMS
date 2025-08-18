@@ -766,7 +766,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             )}
 
             <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="Create Case" />
+                <PageBreadcrumb pageTitle="Case" />
                 <div className="px-4 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
