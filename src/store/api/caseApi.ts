@@ -47,7 +47,7 @@ export interface CreateCase {
     commId: string,
     stnId: string,
     caseId: string
-    schedule: true,
+    scheduleFlag: true,
     scheduleDate: string,
 }
 

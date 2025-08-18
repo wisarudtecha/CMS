@@ -10,15 +10,15 @@ import locateImage from "../../../public/images/map/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "../function/Prioriy"
 import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
-import type { Custommer } from "@/types";
 import React from "react"
 import DateStringToDateFormat from "../date/DateToString"
 import { mergeAddress } from "@/store/api/custommerApi"
+import { CaseItem } from "../interface/CaseItem"
 interface CustomerPanelProps {
-    customerData?: Custommer;
+    caseItem?: CaseItem;
     onClose: () => void; // Added onClose handler for mobile view
 }
-const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) => {
+const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("Device info");
     const edittabs = [
@@ -76,7 +76,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
             >
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                     <div className="flex overflow-x-auto custom-scrollbar">
-                        {customerData ? (
+                        {caseItem ? (
                             edittabs.map((tab) => (
                                 <button
                                     key={tab.id}
@@ -119,15 +119,15 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
                                     <div className="flex flex-wrap gap-3 items-center">
                                         <Avatar
                                             src={
-                                                customerData?.photo
-                                                    ? customerData.photo
+                                                caseItem?.customerData?.photo
+                                                    ? caseItem?.customerData.photo
                                                     : "/images/user/unknow user.png"
                                             }
                                             size="xxlarge"
                                         />
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                                                {customerData?.name ? customerData?.name : "-"}
+                                                {caseItem?.customerData?.name ? caseItem?.customerData?.name : "-"}
                                             </h3>
                                             {/* {customerData && (
                                                 <>
@@ -147,26 +147,26 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Date of birth</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {customerData?.dob ? DateStringToDateFormat(customerData.dob) : "-"}
+                                                {caseItem?.customerData?.dob ? DateStringToDateFormat(caseItem?.customerData.dob) : "-"}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Email</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {customerData?.email ? customerData.email : "-"}
+                                                {caseItem?.customerData?.email ? caseItem?.customerData.email : "-"}
                                             </div>
                                         </div>
                                     </div>
                                     <div>
                                         <div className="text-blue-500 dark:text-blue-400 mb-1">Phone Number</div>
                                         <div className="text-gray-900 dark:text-white">
-                                            {customerData?.mobileNo ? customerData.mobileNo : "-"}
+                                            {caseItem?.customerData?.mobileNo ? caseItem?.customerData.mobileNo : "-"}
                                         </div>
                                     </div>
                                     <div>
                                         <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
                                         <div className="text-gray-900 dark:text-white">
-                                            {customerData?.address ? mergeAddress(customerData.address)  : "-"}
+                                            {caseItem?.customerData?.address ? mergeAddress(caseItem?.customerData.address)  : "-"}
                                         </div>
                                     </div>
                                 </div>
@@ -188,9 +188,9 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
                                 <div className="space-y-2 text-xs">
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Device ID</div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">IoT Device</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                WS-001-ABC789
+                                                {caseItem?.iotDevice||"-"}
                                             </div>
                                         </div>
                                         <div>
@@ -233,7 +233,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, customerData }) 
                 </div>
                 <ScrollArea className="flex-1">
                     <div className="p-3 space-y-3">
-                        {customerData?.name ? serviceHistory.map((historyItem) => (
+                        {caseItem?.customerData?.name ? serviceHistory.map((historyItem) => (
                             <div
                                 key={historyItem.id}
                                 className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(historyItem.priority)} group`}

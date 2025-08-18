@@ -386,6 +386,10 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 caseType: getFormByCaseType(),
                 priority: sopLocal?.priority || 0,
                 description: sopLocal?.caseDetail || "",
+                workOrderNummber:sopLocal?.caseId||"",
+                workOrderRef:sopLocal?.referCaseId||"",
+                iotDevice:sopLocal?.deviceId||"",
+                iotDate:sopLocal?.startedDate||"",
                 area: area,
                 status: "",
                 attachFile: [] as File[], // For new cases (edit mode)
@@ -398,7 +402,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     // Update customer data ONLY when necessary data is available
     useEffect(() => {
-        if (listCustomerData.length > 0 && sopLocal && caseState && !caseState.customerData?.mobileNo) {
+        if (listCustomerData.length > 0 ) {
             const result = listCustomerData.find(items => items.mobileNo === caseData?.phoneNo)
             const customerData = result ? {
                 ...result,
@@ -414,14 +418,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     name: contractMethodMock.find((items) => items.id === sopLocal?.source)?.name || ""
                 },
             } as Custommer;
-
             setCaseState(prev => prev ? {
                 ...prev,
                 customerData: customerData,
                 status: prev.status || "",
             } as CaseItem : prev);
         }
-    }, [listCustomerData.length, sopLocal?.phoneNo, sopLocal?.source, caseData?.phoneNo, caseState?.customerData?.mobileNo]);
+    }, [listCustomerData.length, sopLocal, caseState?.customerData?.mobileNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
     const handleFilesChange = useCallback((newFiles: File[]) => {
@@ -515,7 +518,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             versions: caseState?.caseType?.formField.versions || "",
             caseId: caseState?.workOrderNummber || "",
             createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
-            schedule: caseState.requireSchedule,
+            scheduleFlag: caseState.requireSchedule,
             scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
         } as CreateCase;
 
@@ -573,7 +576,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
             caseList[caseIndex] = updatedCase;
             localStorage.setItem("caseList", JSON.stringify(caseList));
-
             if (sopLocal) {
                 const updatedSopLocal: CaseSop = {
                     ...sopLocal,
@@ -583,7 +585,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     phoneNo: updateJson.phoneNo,
                     priority: updateJson.priority,
                     startedDate: updateJson.startedDate,
-                    source: updateJson.source,
+                    source: updateJson.source ,
                     usercommand: updateJson.usercommand,
                     caseSTypeId: updateJson.caseSTypeId,
                     caseTypeId: updateJson.caseTypeId,
@@ -679,7 +681,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             stnId: caseState?.serviceCenter?.stnId || undefined,
             caseId: caseState?.workOrderNummber || "",
             createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
-            schedule: caseState.requireSchedule,
+            scheduleFlag: caseState.requireSchedule,
             scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
         } as CreateCase;
 
@@ -1071,7 +1073,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
 
                                             <div className="px-3">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Iot Device : </h3>
+                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">IoT Device : </h3>
                                                 <Input
                                                     required={true}
                                                     type="text"
@@ -1082,7 +1084,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                 ></Input>
                                             </div>
                                             <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Iot Alert Date : </h3>
+                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">IoT Alert Date : </h3>
                                                 <Input
                                                     required={true}
                                                     type="datetime-local"
@@ -1213,7 +1215,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     `}>
                         <CustomerPanel
                             onClose={() => setIsCustomerPanelOpen(false)}
-                            customerData={caseState?.customerData || {} as Custommer}
+                            caseItem={caseState || {} as  CaseItem}
                         />
                     </div>
                 </div>
