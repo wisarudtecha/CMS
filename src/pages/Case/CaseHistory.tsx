@@ -20,11 +20,26 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useGetListCaseQuery } from "@/store/api/caseApi";
+import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
+import type { CaseEntity, CaseStatus, CaseTypeSubType } from "@/types/case";
+import CaseHistoryComponent from "@/components/case/CaseHistory";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
-import CaseHistoryComponent from "@/components/case/CaseHistory";
 
 const CaseHistoryPage: React.FC = () => {
+  // ===================================================================
+  // API Data
+  // ===================================================================
+  const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
+  const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
+
+  const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
+  const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
+
+  const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
+  const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+
   return (
     <>
       <PageMeta
@@ -35,7 +50,11 @@ const CaseHistoryPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["case.view_history"]}>
         <PageBreadcrumb pageTitle="Case History" />
 
-        <CaseHistoryComponent />
+        <CaseHistoryComponent
+          caseHistories={caseHistories}
+          caseStatuses={caseStatuses}
+          caseTypesSubTypes={caseTypesSubTypes}
+        />
       </ProtectedRoute>
     </>
   );

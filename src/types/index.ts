@@ -34,8 +34,8 @@ export type WorkflowStepType = "start" | "end" | "task" | "decision" | "parallel
 
 export interface BaseEntity {
   id: string | number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   createdBy: string;
   updatedBy: string;
 }

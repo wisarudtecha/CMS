@@ -56,10 +56,10 @@ export const workflowApi = baseApi.injectEndpoints({
       invalidatesTags: ["Workflow"],
     }),
 
-    updateWorkflow: builder.mutation<ApiResponse<Workflow>, { id: string; data: Partial<WorkflowCreateData> }>({
+    updateWorkflow: builder.mutation<ApiResponse<Workflow>, { id: string; data: WorkflowData }>({
       query: ({ id, data }) => ({
         url: `/workflows/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [{ type: "Workflow", id }],

@@ -29,7 +29,8 @@ export const useApi = <T = unknown>(
       const result = await apiFunction(...args);
       setState({ data: result, loading: false, error: null });
       return result;
-    } catch (error) {
+    }
+    catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred";
       setState(prev => ({ ...prev, loading: false, error: errorMessage }));
       throw error;

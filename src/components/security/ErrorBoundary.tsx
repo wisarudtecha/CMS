@@ -25,7 +25,7 @@ import { ErrorReportingService } from "@/components/security/withErrorBoundary";
 import { InlineErrorFallback } from "@/components/security/InlineErrorFallback";
 import Button from "@/components/ui/button/Button";
 
-class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   private retryTimeoutId: number | null = null;
 
   constructor(props: Props) {

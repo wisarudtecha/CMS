@@ -629,7 +629,9 @@ const RoleManagementComponent: React.FC<{
         // loading={false}
         module="role"
         previewConfig={previewConfig}
-        searchFields={["name", "description"]}
+        // previewConfig={previewConfig as PreviewConfig<Role & { id: string }>}
+        // searchFields={["name", "description"]}
+        searchFields={["roleName"]}
         // customFilterFunction={() => true}
         onCreate={() => navigate("/role/create")}
         onDelete={handleDelete}

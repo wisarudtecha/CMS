@@ -1,5 +1,5 @@
 // /src/components/workflow/list/List.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import {
@@ -12,6 +12,10 @@ import {
   VideoIcon
 } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
+import {
+  // useDeleteWorkflowMutation,
+  useGetWorkflowsQuery
+} from "@/store/api/workflowApi";
 import { AuthService } from "@/utils/authService";
 import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
@@ -23,9 +27,12 @@ import type {
 // import workflowList from "@/mocks/workflowList.json";
 
 const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows }) => {
+  // const [deleteWorkflow] = useDeleteWorkflowMutation();
+  const { refetch: getWorkflows } = useGetWorkflowsQuery("");
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
+  const [data, setData] = useState<(Workflow & { id: string })[]>([]);
 
   // ===================================================================
   // Mock Data
@@ -37,7 +44,16 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   // Real Functionality Data
   // ===================================================================
 
-  const data: Workflow[] = workflows as Workflow[];
+  // const data: Workflow[] = workflows as Workflow[];
+  const tmp: (Workflow & { id: string })[] = workflows.map(w => ({
+    ...w,
+    id: typeof w.id === "string" ? w.id : w.wfId?.toString?.() ?? w.id?.toString?.() ?? "",
+  }));
+
+  useEffect(() => {
+    setData(tmp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workflows]);
 
   const statusConfig = [
     {
@@ -87,13 +103,13 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     entityName: "Workflow",
     entityNamePlural: "Workflows",
     apiEndpoints: {
-      list: "/api/workflows",
-      create: "/api/workflows",
-      read: "/api/workflows/:id",
-      update: "/api/workflows/:id",
-      delete: "/api/workflows/:id",
-      bulkDelete: "/api/workflows/bulk",
-      export: "/api/workflows/export"
+      list: "/workflows",
+      create: "/workflows",
+      read: "/workflows/:id",
+      update: "/workflows/:id",
+      delete: "/workflows/:id",
+      bulkDelete: "/workflows/bulk",
+      export: "/workflows/export"
     },
     columns: [
       {
@@ -534,9 +550,15 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   };
 
   // Handle deletion
-  const handleDelete = (workflowId: string) => {
+  const handleDelete = async (workflowId: string) => {
     console.log("Workflow deleted:", workflowId);
     // In a real app, might want to update local state or refetch data
+    // setData(prevData => prevData.filter(w => w.id !== workflowId));
+    const workflowsData = await getWorkflows().unwrap();
+    const workflows = (workflowsData?.data as unknown as Workflow[]) || [];
+    setData(
+      workflows.map((w) => ({ ...w, id: w.wfId?.toString() ?? w.id?.toString() ?? '' })),
+    );
   };
 
   // ===================================================================
@@ -550,13 +572,13 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            list: "/workflow",
-            create: "/workflow",
-            read: "/workflow/:id",
-            update: "/workflow/:id",
-            delete: "/workflow/:id",
-            bulkDelete: "/workflow/bulk",
-            export: "/workflow/export"
+            list: "/workflows",
+            create: "/workflows",
+            read: "/workflows/:id",
+            update: "/workflows/:id",
+            delete: "/workflows/:id",
+            bulkDelete: "/workflows/bulk",
+            export: "/workflows/export"
           }
         }}
         // bulkActions={bulkActions}
@@ -579,16 +601,19 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         // keyboardShortcuts={[]}
         // loading={false}
         module="workflow"
-        previewConfig={previewConfig}
+        // previewConfig={previewConfig}
+        previewConfig={previewConfig as PreviewConfig<Workflow & { id: string }>}
         searchFields={["title", "desc"]}
         // customFilterFunction={() => true}
         onCreate={() => navigate("/workflow/editor/v2")}
         onDelete={handleDelete}
         onItemAction={handleAction}
+        // onItemAction={handleAction as (action: string, item: { wfId: string }) => void}
         // onItemClick={(item) => navigate(`/role/${item.id}`)}
         onRefresh={() => window.location.reload()}
         // onUpdate={() => {}}
         renderCard={renderCard}
+        // renderCard={renderCard as (item: Workflow) => React.ReactNode}
       />
     </>
   );

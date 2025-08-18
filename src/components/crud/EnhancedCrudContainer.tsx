@@ -62,11 +62,13 @@ interface EnhancedCrudContainerProps<T> {
   loading?: boolean;
   module?: string;
   previewConfig?: PreviewConfig<T>;
-  // searchFields?: (keyof T)[];
-  searchFields?: unknown;
-  customFilterFunction?: (item: T, filters: unknown) => boolean;
+  searchFields?: (keyof T)[];
+  // searchFields?: unknown;
+  // customFilterFunction?: (item: T, filters: unknown) => boolean;
+  customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
   onCreate?: () => void;
   onDelete?: (id: string) => void;
+  // onItemAction?: (action: string, item: T) => void;
   onItemAction?: (action: string, item: T) => void;
   onItemClick?: (item: T) => void;
   onRefresh?: () => void;
@@ -91,8 +93,9 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   loading = false,
   module,
   previewConfig,
+  // searchFields,
+  searchFields = [],
   // searchFields = ["name", "description", "title"] as (keyof T)[],
-  searchFields,
   customFilterFunction,
   onCreate,
   onDelete,
@@ -131,7 +134,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   const { confirmDialog, closeConfirmDialog, handleConfirm, openConfirmDialog } = useConfirmDialog();
   // const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
-  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields as unknown as (keyof T)[]);
+  // const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields as unknown as (keyof T)[]);
+  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(
+    data, 
+    customFilterFunction, 
+    searchFields
+  );
   const { sortConfig, sortedData, handleSort } = useSort(filteredData);
   const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(sortedData.length);
   const { toasts, addToast, removeToast } = useToast();
@@ -152,8 +160,9 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   // API functionality
   const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
-  const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
-  
+  // const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
+  const deleteApi = useApi(((endpoint: string) => apiService.delete(endpoint)) as (...args: unknown[]) => Promise<unknown>);
+
   // ===================================================================
   // Debug
   // ===================================================================
@@ -242,19 +251,26 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // Handle delete item
   const handleDeleteItem = useCallback(async (item: T) => {
     console.log("handleDeleteItem called for item:", item);
-    
+
+    const id = (module === "workflow" && "wfId" in item) ? (item as { wfId: string }).wfId : item.id;
+
     openConfirmDialog({
       type: "delete",
-      entityId: item.id,
-      entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
+      // entityId: item.id,
+      entityId: id,
+      // entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
+      entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id,
       onConfirm: async () => {
-        console.log("Delete confirmed for item:", item.id);
+        // console.log("Delete confirmed for item:", item.id);
+        console.log("Delete confirmed for item:", id);
         try {
           if (apiConfig) {
-            await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
+            // await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
+            await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);
           }
           if (onDelete) {
-            onDelete(item.id);
+            // onDelete(item.id);
+            onDelete(id);
           }
           addToast("success", `${config.entityName} deleted successfully`);
         }
@@ -264,7 +280,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         }
       }
     });
-  }, [apiConfig, config, deleteApi, addToast, onDelete, openConfirmDialog]);
+  }, [apiConfig, config, deleteApi, module, addToast, onDelete, openConfirmDialog]);
 
   // Handle export
   const handleExport = useCallback(async (option: ExportOption, exportData: T[]) => {
@@ -344,7 +360,9 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   // Create enhanced actions with proper delete handling
   const enhancedActions = useMemo(() => {
-    if (!config.actions) return undefined;
+    if (!config.actions) {
+      return undefined;
+    }
 
     return config.actions.map(action => ({
       ...action,
@@ -574,9 +592,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         ) 
         : displayMode === "hierarchy" && renderHierarchy ? (
           // Hierarchy View
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8">
-            {/* <RoleHierarchyView /> */}
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8"></div>
         ) : (
           // Table View (Default)
           config?.columns ? (

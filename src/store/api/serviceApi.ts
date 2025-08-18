@@ -6,12 +6,7 @@
 
 import { baseApi } from "@/store/api/baseApi";
 import type { ApiResponse } from "@/types";
-import type { CaseStatus } from "@/types/case";
-
-export interface CaseStatusQueryParams {
-  start?: number;
-  length?: number;
-}
+import type { CaseStatus, CaseStatusQueryParams, CaseTypeSubType } from "@/types/case";
 
 export const serviceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -29,9 +24,18 @@ export const serviceApi = baseApi.injectEndpoints({
       providesTags: ["Cases"],
     }),
 
+    // Case Type and Sub-Type Management
+    getCaseTypesSubTypes: builder.query<ApiResponse<CaseTypeSubType[]>, null>({
+      query: () => {
+        return "/casetypes_with_subtype";
+      },
+      providesTags: ["Cases"],
+    }),
+
   }),
 });
 
 export const {
   useGetCaseStatusesQuery,
+  useGetCaseTypesSubTypesQuery,
 } = serviceApi;

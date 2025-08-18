@@ -182,7 +182,7 @@ export interface StatusInfo {
 }
 
 export interface UserProfile {
-  id: string;
+  id: string | number;
   orgId: string;
   displayName: string;
   title: string;
@@ -212,8 +212,8 @@ export interface UserProfile {
   signupStamp: string | null;
   islogin: boolean;
   lastLogin: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   createdBy: string;
   updatedBy: string;
   meta?: Meta;

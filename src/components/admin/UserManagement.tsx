@@ -1,6 +1,6 @@
 // /src/components/admin/UserManagement.tsx
-import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CheckLineIcon, ChevronUpIcon, CloseIcon, TimeIcon, UserIcon } from "@/icons";
 import { UserCard } from "@/components/admin/UserCard";
@@ -8,8 +8,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
 import { isImageAvailable } from "@/utils/resourceValidators";
-import Toast from "@/components/toast/Toast";
-import type { CrudConfig } from "@/types/crud";
+// import type { CrudConfig } from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Role } from "@/types/role";
 import type {
@@ -32,27 +31,7 @@ const UserManagementComponent: React.FC<{
 }> = ({ usr, dept, role }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
-  const location = useLocation();
   const permissions = usePermissions();
-
-  // Toast state
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error" | "info";
-  } | null>(null);
-
-  // Check for toast message from navigation state
-  useEffect(() => {
-    if (location.state?.toast) {
-      setToast({
-        message: location.state.toast.message,
-        type: location.state.toast.type
-      });
-      
-      // Clear the navigation state to prevent toast from showing again on refresh
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [location.state]);
 
   // const [filterValues, setFilterValues] = useState<FilterConfig>({});
   // const [filteredData, setFilteredData] = useState<UserProfile[]>(usr);
@@ -106,6 +85,11 @@ const UserManagementComponent: React.FC<{
     suspendedUsers: usr.filter(u => !u.active).length || 0,
     lastMonthGrowth: countUsersByMonth(usr)?.lastMonth || 0
   };
+
+  const data: (UserProfile & { id: string })[] = usr.map(u => ({
+    ...u,
+    id: typeof u.id === "string" ? u.id : u.id?.toString?.() ?? u.id?.toString?.() ?? "",
+  }));
 
   // ===================================================================
   // CRUD Configuration
@@ -495,13 +479,7 @@ const UserManagementComponent: React.FC<{
 
   const renderCard = (userItem: UserProfile) => {
     const roleData = role.find(r => r.id === userItem.roleId);
-    // Convert the role type to match UserCard expectations
-    const userRole = roleData ? {
-      ...roleData,
-      createdAt: roleData.createdAt || new Date().toISOString()
-    } : undefined;
-    
-    return <UserCard user={userItem as UserProfile} role={userRole as any} />;
+    return <UserCard user={userItem as UserProfile} role={roleData as Role} />;
   };
 
   // ===================================================================
@@ -574,20 +552,6 @@ const UserManagementComponent: React.FC<{
   // Render Component
   // ===================================================================
 
-  // Memoize Toast component to prevent recreation on scroll/re-renders
-  const toastComponent = useMemo(() => {
-    if (!toast) return null;
-    
-    return (
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        duration={3000}
-        onClose={() => setToast(null)}
-      />
-    );
-  }, [toast?.message, toast?.type]); // Only recreate when toast content changes
-
   const attrMetrics = [
     { key: "totalUsers", title: "Total Users", icon: UserIcon, color: "blue", className: "text-blue-600" },
     { key: "activeUsers", title: "Active Users", icon: CheckLineIcon, color: "green", className: "text-green-600" },
@@ -614,8 +578,10 @@ const UserManagementComponent: React.FC<{
           }
         }}
         // bulkActions={bulkActions}
-        config={config as unknown as CrudConfig<{ id: string; }>}
-        data={usr as unknown as { id: string }[]}
+        // config={config as unknown as CrudConfig<{ id: string; }>}
+        config={config}
+        // data={usr as unknown as { id: string }[]}
+        data={data}
         displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
@@ -633,7 +599,8 @@ const UserManagementComponent: React.FC<{
         // keyboardShortcuts={[]}
         loading={!usr}
         module="user"
-        previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
+        // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
+        previewConfig={previewConfig as PreviewConfig<UserProfile & { id: string }>}
         searchFields={["firstName", "lastName", "email"]}
         // customFilterFunction={() => true}
         onCreate={() => navigate("/user/create")}
@@ -644,9 +611,6 @@ const UserManagementComponent: React.FC<{
         // onUpdate={() => {}}
         renderCard={renderCard as unknown as (item: { id: string }) => React.ReactNode}
       />
-
-      {/* Toast Notification */}
-      {toastComponent}
     </>
   );
 };

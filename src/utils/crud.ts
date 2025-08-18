@@ -1,5 +1,5 @@
 // /src/utils/crud.ts
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string | Date) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -9,7 +9,7 @@ export const formatDate = (dateString: string) => {
   });
 };
 
-export const formatLastLogin = (dateString: string) => {
+export const formatLastLogin = (dateString: string | Date) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));

@@ -12,7 +12,7 @@ import { useGetDepartmentsQuery, useGetUsersQuery } from "@/store/api/userApi";
 import { formatLastLogin } from "@/utils/crud";
 import { isImageAvailable } from "@/utils/resourceValidators"
 // import { mapUsersWithRoles } from "@/utils/dataMappers";
-import type { CrudConfig } from "@/types/crud";
+// import type { CrudConfig } from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
   // UserEntity,
@@ -74,7 +74,11 @@ const UserManagementComponent: React.FC = () => {
     start: 0,
     length: 10
   });
-  const data: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
+  // const data: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
+  const data: (UserProfile & { id: string })[] = (usersData?.data as unknown as UserProfile[] || [])?.map(u => ({
+    ...u,
+    id: typeof u.id === "string" ? u.id : u.id?.toString?.() ?? u.id?.toString?.() ?? "",
+  }));
 
   // ===================================================================
   // CRUD Configuration
@@ -591,9 +595,10 @@ const UserManagementComponent: React.FC = () => {
           }
         }}
         bulkActions={bulkActions}
-        config={config as unknown as CrudConfig<{ id: string; }>}
-        // data={data}
-        data={data as unknown as { id: string }[]}
+        // config={config as unknown as CrudConfig<{ id: string; }>}
+        config={config}
+        data={data}
+        // data={data as unknown as { id: string }[]}
         displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
@@ -612,7 +617,8 @@ const UserManagementComponent: React.FC = () => {
         // loading={false}
         loading={!usersData || !data || !usersData}
         // previewConfig={previewConfig}
-        previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
+        // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
+        previewConfig={previewConfig as PreviewConfig<UserProfile & { id: string }>}
         // searchFields={["firstName", "lastName", "email", "department", "jobTitle"]}
         searchFields={["firstName", "lastName", "email"]}
         // customFilterFunction={() => true}

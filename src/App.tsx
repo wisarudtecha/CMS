@@ -127,7 +127,7 @@ export default function App() {
             {/* Workflow Builder (Latest Version: v0.2.0) */}
             <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />
             <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorPage />} />
-            <Route path="/workflow/editor/v2/:id/edit" element={<WorkflowEditorPage />} />
+            <Route path="/workflow/editor/v2/:id/:action" element={<WorkflowEditorPage />} />
             {/* Workflow Builder (Archived Version: v0.1.0) */}
             <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
 

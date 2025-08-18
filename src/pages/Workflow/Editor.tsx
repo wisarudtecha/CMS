@@ -39,7 +39,13 @@ const threeLayerBreadcrumb = [
 ];
 
 const WorkflowEditorPage: React.FC = () => {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string, action: string }>();
+
+  const id = params?.id;
+  const action = params?.action;
+
+  const workflowId = id || "new";
+  const workflowAction = id && action || "";
 
   // ===================================================================
   // API Data
@@ -56,7 +62,7 @@ const WorkflowEditorPage: React.FC = () => {
   const { data: userGroupData } = useGetUserGroupQuery({ start: 0, length: 10 });
   const userGroup = userGroupData?.data as unknown as UserGroup[] || [];
 
-  const { data: workflowData } = useGetWorkflowQuery(params?.id || "", { skip: !params?.id });
+  const { data: workflowData } = useGetWorkflowQuery(id || "", { skip: !id });
   const workflow = workflowData?.data as unknown as WorkflowData || {};
 
   return (
@@ -70,7 +76,8 @@ const WorkflowEditorPage: React.FC = () => {
         <PageBreadcrumb items={threeLayerBreadcrumb} />
 
         <WorkflowEditorComponent
-          workflowId={params?.id || "new"}
+          workflowId={workflowId}
+          workflowAction={workflowAction}
           workflowData={workflow}
           forms={forms}
           users={users}

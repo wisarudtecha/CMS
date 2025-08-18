@@ -1,0 +1,153 @@
+[
+  {
+    "id": "CASE-001",
+    "caseNumber": "CS-2025-001",
+    "title": "Login System Malfunction",
+    "description": "Users unable to log into the system, experiencing timeout errors",
+    "status": "in-progress",
+    "priority": "high",
+    "category": "Technical Support",
+    "assignedTo": "John Smith",
+    "reporter": "Jane Doe",
+    "createdAt": "2025-01-15T09:30:00Z",
+    "updatedAt": "2025-01-15T14:20:00Z",
+    "dueDate": "2025-01-17T17:00:00Z",
+    "tags": ["urgent", "login", "system"],
+    "attachments": [
+      {
+        "id": "att-1",
+        "filename": "error-logs.txt",
+        "size": 2048,
+        "type": "text/plain",
+        "uploadedAt": "2025-01-15T10:00:00Z",
+        "uploadedBy": "Jane Doe"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-1",
+        "content": "Initial investigation shows database connection issues",
+        "author": "John Smith",
+        "createdAt": "2025-01-15T11:00:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "affectedUsers": 150,
+      "businessImpact": "High",
+      "escalationLevel": 1
+    },
+    "location": "Data Center A",
+    "department": "IT Support",
+    "estimatedHours": 8,
+    "actualHours": 4
+  },
+  {
+    "id": "CASE-002",
+    "caseNumber": "CS-2025-002",
+    "title": "New Feature Request - Dashboard Analytics",
+    "description": "Request to add new analytics dashboard for sales team",
+    "status": "open",
+    "priority": "medium",
+    "category": "Feature Request",
+    "assignedTo": "Alice Johnson",
+    "reporter": "Bob Wilson",
+    "createdAt": "2025-01-14T14:00:00Z",
+    "updatedAt": "2025-01-14T14:00:00Z",
+    "dueDate": "2025-02-14T17:00:00Z",
+    "tags": ["enhancement", "dashboard", "analytics"],
+    "attachments": [
+      {
+        "id": "att-2",
+        "filename": "dashboard-mockup.png",
+        "size": 512000,
+        "type": "image/png",
+        "uploadedAt": "2025-01-14T14:30:00Z",
+        "uploadedBy": "Bob Wilson"
+      }
+    ],
+    "comments": [],
+    "customFields": {
+      "requestedBy": "Sales Team",
+      "businessValue": "Medium",
+      "complexity": "High"
+    },
+    "department": "Product Development",
+    "estimatedHours": 40
+  },
+  {
+    "id": "CASE-003",
+    "caseNumber": "CS-2025-003",
+    "title": "Security Vulnerability Report",
+    "description": "Potential SQL injection vulnerability in user registration form",
+    "status": "escalated",
+    "priority": "critical",
+    "category": "Security",
+    "assignedTo": "Security Team",
+    "reporter": "External Researcher",
+    "createdAt": "2025-01-13T08:45:00Z",
+    "updatedAt": "2025-01-13T16:30:00Z",
+    "dueDate": "2025-01-14T12:00:00Z",
+    "tags": ["security", "vulnerability", "sql-injection"],
+    "attachments": [
+      {
+        "id": "att-3",
+        "filename": "vulnerability-report.pdf",
+        "size": 1024000,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-13T09:00:00Z",
+        "uploadedBy": "External Researcher"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-2",
+        "content": "Vulnerability confirmed and patch in development",
+        "author": "Security Team",
+        "createdAt": "2025-01-13T12:00:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "severityScore": 8.5,
+      "cveId": "CVE-2025-0001",
+      "affectedVersions": ["v1.2.0", "v1.2.1"]
+    },
+    "department": "Security",
+    "estimatedHours": 16,
+    "actualHours": 8
+  },
+  {
+    "id": "CASE-004",
+    "caseNumber": "CS-2025-004",
+    "title": "Email Delivery Issues",
+    "description": "Customers not receiving confirmation emails after purchase",
+    "status": "resolved",
+    "priority": "high",
+    "category": "Technical Support",
+    "assignedTo": "Mike Davis",
+    "reporter": "Customer Service",
+    "createdAt": "2025-01-10T10:00:00Z",
+    "updatedAt": "2025-01-12T15:30:00Z",
+    "resolvedAt": "2025-01-12T15:30:00Z",
+    "dueDate": "2025-01-12T17:00:00Z",
+    "tags": ["email", "delivery", "smtp"],
+    "attachments": [],
+    "comments": [
+      {
+        "id": "comment-3",
+        "content": "SMTP server configuration issue resolved",
+        "author": "Mike Davis",
+        "createdAt": "2025-01-12T15:30:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "affectedEmails": 245,
+      "resolution": "Configuration fix"
+    },
+    "department": "IT Infrastructure",
+    "estimatedHours": 4,
+    "actualHours": 6
+  }
+]

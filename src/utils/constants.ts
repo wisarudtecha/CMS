@@ -17,8 +17,8 @@ export const APP_CONFIG = {
       return "/api/v1";
       
       // Option 2: Direct URL (requires server CORS configuration)
-      console.log("Option 2: Direct URL: http://localhost:8080/api/v1");
-      return "http://localhost:8080/api/v1";
+      // console.log("Option 2: Direct URL: http://localhost:8080/api/v1");
+      // return "http://localhost:8080/api/v1";
     }
     
     // Production: Use production API URL
@@ -27,32 +27,6 @@ export const APP_CONFIG = {
   })(),
 
   WS_URL: import.meta.env.VITE_WS_URL || "ws://cmsapi-production-488d.up.railway.app",
-} as const;
-
-// Development configuration
-export const DEV_CONFIG = {
-  MOCK_API: import.meta.env.VITE_MOCK_API === "true",
-  API_DELAY: parseInt(import.meta.env.VITE_API_DELAY || "0"),
-  ENABLE_DEVTOOLS: import.meta.env.DEV,
-} as const;
-
-// CORS-safe endpoints for development
-export const CORS_SAFE_ENDPOINTS = [
-  "/health",
-  "/status",
-  "/version",
-] as const;
-
-export const ROUTES = {
-  HOME: "/",
-  LOGIN: "/login",
-  REGISTER: "/register",
-  DASHBOARD: "/dashboard",
-  TICKETS: "/tickets",
-  WORKFLOWS: "/workflows",
-  USERS: "/users",
-  SETTINGS: "/settings",
-  PROFILE: "/profile",
 } as const;
 
 export const API_ENDPOINTS = {
@@ -86,7 +60,30 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
-export const SYSTEM_ROLE = "d6381714-8e89-47de-9d16-859131cdc5dc";
+export const CASE_CANNOT_DELETE = ["S007", "S013", "S014", "S016"] as const;
+
+export const DEFAULT_PAGINATION = {
+  page: 1,
+  limit: 20,
+  total: 0,
+  totalPages: 0,
+  hasNext: false,
+  hasPrev: false,
+} as const;
+
+// CORS-safe endpoints for development
+export const CORS_SAFE_ENDPOINTS = [
+  "/health",
+  "/status",
+  "/version",
+] as const;
+
+// Development configuration
+export const DEV_CONFIG = {
+  MOCK_API: import.meta.env.VITE_MOCK_API === "true",
+  API_DELAY: parseInt(import.meta.env.VITE_API_DELAY || "0"),
+  ENABLE_DEVTOOLS: import.meta.env.DEV,
+} as const;
 
 export const PERMISSIONS = {
   TICKETS: {
@@ -115,6 +112,41 @@ export const PERMISSIONS = {
     SETTINGS: "admin:settings",
   },
 } as const;
+
+export const PRIORITY_COLORS = {
+  low: "text-gray-600 bg-gray-50",
+  medium: "text-blue-600 bg-blue-50",
+  high: "text-orange-600 bg-orange-50",
+  urgent: "text-red-600 bg-red-50",
+} as const;
+
+export const ROUTES = {
+  HOME: "/",
+  LOGIN: "/login",
+  REGISTER: "/register",
+  DASHBOARD: "/dashboard",
+  TICKETS: "/tickets",
+  WORKFLOWS: "/workflows",
+  USERS: "/users",
+  SETTINGS: "/settings",
+  PROFILE: "/profile",
+} as const;
+
+export const SLA_STATUS_COLORS = {
+  on_time: "text-green-600 bg-green-50",
+  warning: "text-yellow-600 bg-yellow-50",
+  breached: "text-red-600 bg-red-50",
+} as const;
+
+export const STATUS_COLORS = {
+  open: "text-blue-600 bg-blue-50",
+  in_progress: "text-yellow-600 bg-yellow-50",
+  pending: "text-orange-600 bg-orange-50",
+  resolved: "text-green-600 bg-green-50",
+  closed: "text-gray-600 bg-gray-50",
+} as const;
+
+export const SYSTEM_ROLE = "d6381714-8e89-47de-9d16-859131cdc5dc" as const;
 
 export const THEME_CONFIG = {
   COLORS: {
@@ -159,34 +191,4 @@ export const VALIDATION_RULES = {
   },
   // PHONE: /^\+?[\d\s\-\(\)]+$/,
   PHONE: /^\+?[\d\s\-()]+$/,
-} as const;
-
-export const DEFAULT_PAGINATION = {
-  page: 1,
-  limit: 20,
-  total: 0,
-  totalPages: 0,
-  hasNext: false,
-  hasPrev: false,
-} as const;
-
-export const SLA_STATUS_COLORS = {
-  on_time: "text-green-600 bg-green-50",
-  warning: "text-yellow-600 bg-yellow-50",
-  breached: "text-red-600 bg-red-50",
-} as const;
-
-export const PRIORITY_COLORS = {
-  low: "text-gray-600 bg-gray-50",
-  medium: "text-blue-600 bg-blue-50",
-  high: "text-orange-600 bg-orange-50",
-  urgent: "text-red-600 bg-red-50",
-} as const;
-
-export const STATUS_COLORS = {
-  open: "text-blue-600 bg-blue-50",
-  in_progress: "text-yellow-600 bg-yellow-50",
-  pending: "text-orange-600 bg-orange-50",
-  resolved: "text-green-600 bg-green-50",
-  closed: "text-gray-600 bg-gray-50",
 } as const;

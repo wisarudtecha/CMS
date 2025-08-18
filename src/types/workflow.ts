@@ -1,11 +1,10 @@
 // /src/types/workflow.ts
 import { FormManager } from "@/components/interface/FormField";
-import type { WorkflowStep, WorkflowTrigger, WorkflowVariable } from "@/types";
+import type { BaseEntity, WorkflowStep, WorkflowTrigger, WorkflowVariable } from "@/types";
 import type { CaseStatus } from "@/types/case";
 import type { UserGroup, UserProfile } from "@/types/user";
 
-export interface Workflow {
-  id: string;
+export interface Workflow extends BaseEntity {
   orgId: string;
   wfId: string;
   title: string;
@@ -14,10 +13,6 @@ export interface Workflow {
   publish: boolean;
   locks: boolean;
   versions: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
 }
 
 export interface Position {
@@ -27,7 +22,7 @@ export interface Position {
 
 export interface WorkflowNode {
   id: string;
-  type: "start" | "process" | "decision" | "end";
+  type: "start" | "process" | "decision" | "sla" | "end";
   position: Position;
   data: {
     label: string;
@@ -73,6 +68,7 @@ export interface WorkflowEditorComponentProps {
   initialData?: WorkflowData;
   users?: UserProfile[];
   userGroup?: UserGroup[];
+  workflowAction?: string;
   workflowData?: WorkflowData;
   workflowId?: string;
   onSave?: (data: WorkflowData) => void;
@@ -91,7 +87,7 @@ export type NodeType = {
   position: { x: number; y: number };
   data: {
     label: string;
-    description: string;
+    description?: string;
     config?: Record<string, unknown>;
   };
 };

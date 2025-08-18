@@ -1,39 +1,77 @@
 // /src/types/case.ts
-export interface CaseEntity {
-  id: string;
-  caseNumber: string;
-  title: string;
-  description: string;
-  status: "open" | "in-progress" | "resolved" | "closed" | "escalated";
-  priority: "low" | "medium" | "high" | "critical";
-  category: string;
-  assignedTo: string;
-  reporter: string;
-  createdAt: string;
-  updatedAt: string;
-  dueDate?: string;
-  resolvedAt?: string;
-  tags: string[];
-  attachments: Attachment[];
-  comments: Comment[];
-  customFields: Record<string, unknown>;
-  location?: string;
-  department?: string;
-  estimatedHours?: number;
-  actualHours?: number;
+import { BaseEntity } from "@/types";
+
+export interface CaseEntity extends BaseEntity {
+  orgId: string;
+  caseId: string;
+  caseVersion: string;
+  referCaseId: string;
+  caseTypeId: string;
+  caseSTypeId: string;
+  priority: number;
+  wfId: string;
+  versions: string | null;
+  source: string;
+  deviceId: string;
+  phoneNo: string;
+  phoneNoHide: boolean;
+  caseDetail: string;
+  extReceive: string;
+  statusId: string;
+  caseLat: string;
+  caseLon: string;
+  caselocAddr: string;
+  caselocAddrDecs: string;
+  countryId: string;
+  provId: string;
+  distId: string;
+  caseDuration: number;
+  createdDate: string;
+  startedDate: string;
+  commandedDate: string | null;
+  receivedDate: string | null;
+  arrivedDate: string | null;
+  closedDate: string | null;
+  usercreate: string;
+  usercommand: string;
+  userreceive: string;
+  userarrive: string;
+  userclose: string;
+  resId: string | null;
+  resDetail: string;
+  sop: string | null;
+  currentStage: string | null;
 }
 
-export interface CaseStatus {
-  id: string;
+export interface CaseStatus extends BaseEntity {
   statusId: string;
   th: string;
   en: string;
   color: string;
   active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
+}
+
+export interface CaseStatusQueryParams {
+  start?: number;
+  length?: number;
+}
+
+export interface CaseTypeSubType {
+  typeId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  sTypeId: string;
+  sTypeCode: string;
+  subTypeEn: string;
+  subTypeTh: string;
+  wfId: string;
+  caseSla: string;
+  priority: number;
+  userSkillList: string[];
+  unitPropLists: string[];
+  subTypeActive: boolean;
 }
 
 export interface Attachment {

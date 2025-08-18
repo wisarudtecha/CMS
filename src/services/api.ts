@@ -1,9 +1,19 @@
 // /src/services/api.ts
+import { APP_CONFIG } from "@/utils/constants";
+
 class ApiService {
   private baseUrl: string;
   private headers: Record<string, string>;
 
-  constructor(baseUrl: string = "/api", headers: Record<string, string> = {}) {
+  // constructor(baseUrl: string = "/api", headers: Record<string, string> = {}) {
+  //   this.baseUrl = baseUrl;
+  //   this.headers = {
+  //     "Content-Type": "application/json",
+  //     ...headers
+  //   };
+  // }
+
+  constructor(baseUrl: string = APP_CONFIG.API_BASE_URL, headers: Record<string, string> = {}) {
     this.baseUrl = baseUrl;
     this.headers = {
       "Content-Type": "application/json",
@@ -16,12 +26,15 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+    const storage = localStorage || sessionStorage;
+    const token = storage.getItem("access_token");
+
     const response = await fetch(url, {
       ...options,
       headers: {
         ...this.headers,
-        ...options.headers
+        ...options.headers,
+        Authorization: `Bearer ${token}`
       }
     });
 
