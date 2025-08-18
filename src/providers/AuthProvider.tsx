@@ -222,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.user
       );
 
-      caseApiSetup();
+      await caseApiSetup();
 
 
       dispatch({ 
