@@ -11,16 +11,16 @@ interface CommentsProps {
     onCommentAdded?: () => void;
 }
 
-export const Comments: React.FC<CommentsProps> = ({ 
-    comment, 
-    caseId, 
+export const Comments: React.FC<CommentsProps> = ({
+    comment,
+    caseId,
     currentUsername = "Current User",
-    onCommentAdded 
+    onCommentAdded
 }) => {
     const [newCommentMessage, setNewCommentMessage] = useState<string>('');
     const commentsContainerRef = useRef<HTMLDivElement>(null);
     const [commentsData, setCommentsData] = useState<CaseHistory[]>(comment || []);
-    
+
 
     const [addCaseHistory, { isLoading, error }] = usePostAddCaseHistoryMutation();
 
@@ -48,8 +48,8 @@ export const Comments: React.FC<CommentsProps> = ({
 
             const result = await addCaseHistory(newCommentData).unwrap();
             setNewCommentMessage('');
-            
-       
+
+
             const optimisticComment: CaseHistory = {
                 id: Date.now(),
                 orgId: commentsData[0]?.orgId || "",
@@ -61,16 +61,16 @@ export const Comments: React.FC<CommentsProps> = ({
                 createdAt: new Date().toISOString(),
                 createdBy: currentUsername
             };
-            
+
             setCommentsData((prevComments) => [...prevComments, optimisticComment]);
-            
+
             // Call the callback to refresh data from parent
             if (onCommentAdded) {
                 onCommentAdded();
             }
-            
+
             console.log('Comment added successfully:', result);
-            
+
         } catch (err) {
             console.error('Failed to add comment:', err);
         }
@@ -93,6 +93,12 @@ export const Comments: React.FC<CommentsProps> = ({
         });
     };
 
+    const handleKeyDownComment = (event: any) => {
+        if (event.key === 'Enter') {
+            handleNewComment()
+        }
+    };
+
     return (
         <div>
             <div
@@ -104,17 +110,17 @@ export const Comments: React.FC<CommentsProps> = ({
                     <div className="flex justify-center items-center h-full">
                         <div className="text-center">
                             <div className="text-gray-400 dark:text-gray-500 text-sm mb-1">
-                                <svg 
-                                    className="mx-auto h-8 w-8 mb-2" 
-                                    fill="none" 
-                                    stroke="currentColor" 
+                                <svg
+                                    className="mx-auto h-8 w-8 mb-2"
+                                    fill="none"
+                                    stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
-                                    <path 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        strokeWidth={1.5} 
-                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                                     />
                                 </svg>
                             </div>
@@ -128,8 +134,8 @@ export const Comments: React.FC<CommentsProps> = ({
                     </div>
                 )}
                 {commentsData.map((comment: CaseHistory) => (
-                    <div 
-                        key={comment.id} 
+                    <div
+                        key={comment.id}
                         className="p-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150"
                     >
                         <div className="flex items-center justify-between mb-1">
@@ -146,20 +152,21 @@ export const Comments: React.FC<CommentsProps> = ({
                     </div>
                 ))}
             </div>
-            
+
             {/* Show error message if there's an error */}
             {error && (
                 <div className="text-red-500 text-sm mb-2">
                     Failed to add comment. Please try again.
                 </div>
             )}
-            
+
             <div className="flex gap-3 mt-3">
                 <div className="flex-1">
                     <Input
                         placeholder="Enter your comment..."
                         value={newCommentMessage}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCommentMessage(e.target.value)}
+                        onKeyDown={handleKeyDownComment}
                         className="border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800"
                         disabled={isLoading}
                     />
@@ -180,17 +187,17 @@ export const Comments: React.FC<CommentsProps> = ({
                         </>
                     ) : (
                         <div className="flex text-gray-900 dark:text-gray-300">
-                            <svg 
-                                className="w-4  mr-2" 
-                                fill="none" 
-                                stroke="currentColor" 
+                            <svg
+                                className="w-4  mr-2"
+                                fill="none"
+                                stroke="currentColor"
                                 viewBox="0 0 24 24"
                             >
-                                <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                                 />
                             </svg>
                             <span>Comment</span>
