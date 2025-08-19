@@ -8,7 +8,7 @@ import {
     ChevronUp,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
-import { CaseItem, CaseList } from "@/components/interface/CaseItem"
+import { CaseItem } from "@/components/interface/CaseItem"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
@@ -40,8 +40,9 @@ import { Area, mergeArea } from "@/store/api/area"
 // import { data } from "react-router"
 import DragDropFileUpload from "../d&d upload/dndUpload"
 import { CaseCard } from "./sopCard"
+import { CaseEntity } from "@/types/case"
 
-const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
+const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 
@@ -104,7 +105,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     );
 };
 
-export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseList }) {
+export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseEntity }) {
     // Initialize state with proper defaults
     const [caseState, setCaseState] = useState<CaseItem | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
@@ -327,7 +328,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         let errorMessage = "";
         if (!caseType.caseType) {
             errorMessage = "Please select a Case Type.";
-        } else if (!caseState?.description?.trim()) {
+        } else if (!caseState?.workOrderNummber) {
+            errorMessage = "Please enter Work Order Number.";
+        }else if (!caseState?.description?.trim()) {
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
@@ -341,9 +344,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         let errorMessage = "";
         if (!caseType.caseType) {
             errorMessage = "Please select a Service Type.";
-        } else if (!caseState?.customerData?.mobileNo) {
-            errorMessage = "Please enter Phone Number.";
-        }
+        } 
         return errorMessage;
     }, [caseType.caseType, caseState]);
 
@@ -402,8 +403,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
         const caseListData = localStorage.getItem("caseList") || "[]";
         if (caseListData) {
-            const caseList = JSON.parse(caseListData) as CaseList[];
-            caseList.push({ ...(createJson as object), createdAt: TodayDate(), createdBy: profile?.username || "" } as CaseList);
+            const caseList = JSON.parse(caseListData) as CaseEntity[];
+            caseList.push({ ...(createJson as object), createdAt: TodayDate(), createdBy: profile?.username || "" } as CaseEntity);
             localStorage.setItem("caseList", JSON.stringify(caseList));
         }
         return true;
@@ -412,7 +413,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const updateCaseInLocalStorage = useCallback((updateJson: CreateCase) => {
         try {
             const caseListData = localStorage.getItem("caseList");
-            const caseList: CaseList[] = caseListData ? JSON.parse(caseListData) : [];
+            const caseList: CaseEntity[] = caseListData ? JSON.parse(caseListData) : [];
 
             const caseIdToUpdate = sopLocal?.id || sopLocal?.caseId;
 
@@ -436,7 +437,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 ...originalCase,
                 ...updateJson,
                 id: originalCase.id,
-                caseId: originalCase.caseId || originalCase.id,
+                caseId: originalCase.caseId ,
                 createdAt: originalCase.createdAt,
                 createdBy: originalCase.createdBy,
                 updatedAt: TodayDate(),

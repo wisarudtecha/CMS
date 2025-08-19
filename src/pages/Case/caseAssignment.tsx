@@ -16,12 +16,13 @@ import CaseDetailView from "../../components/case/CaseDetailView"
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
 import DateStringToDateFormat from "@/components/date/DateToString"
-import { CaseList } from "@/components/interface/CaseItem"
+
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/CaseApiManager"
 import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
 import { caseStatus, statusIdToStatusTitle } from "@/components/ui/status/status"
+import { CaseEntity } from "@/types/case"
 
 const statusColumns = caseStatus
 
@@ -35,7 +36,7 @@ function createAvatarFromString(name: string): string {
 }
 
 export default function CasesView() {
-  const [selectedCase, setSelectedCase] = useState<CaseList | null>(null)
+  const [selectedCase, setSelectedCase] = useState<CaseEntity | null>(null)
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [showDynamicForm, setShowDynamicForm] = useState(false)
@@ -46,10 +47,10 @@ export default function CasesView() {
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
   const allowedStatusIds = statusColumns.flatMap(col => col.group);
 
-  const [caseData, setCaseData] = useState<CaseList[]>(() => {
+  const [caseData, setCaseData] = useState<CaseEntity[]>(() => {
     const savedCases = localStorage.getItem("caseList");
     return savedCases
-      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId)).sort((a, b) => {
+      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)).sort((a, b) => {
         if (a.priority !== b.priority) {
           return a.priority - b.priority;
         } return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -69,7 +70,7 @@ export default function CasesView() {
 
   const uniqueCategories = statusColumns.map(col => col.title);
 
-  const getStatusKey = (caseItem: CaseList): string => {
+  const getStatusKey = (caseItem: CaseEntity): string => {
     const statusColumn = statusColumns.find(column =>
       column.group.includes((caseItem as any).statusId)
     );
@@ -81,7 +82,7 @@ export default function CasesView() {
     return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : "Unknow";
   }
 
-  const handleCaseClick = (caseItem: CaseList) => {
+  const handleCaseClick = (caseItem: CaseEntity) => {
     setSelectedCase(caseItem)
   }
 
@@ -91,7 +92,7 @@ export default function CasesView() {
 
   // Refactored to remove advanced filtering logic, which is now handled by the API
   const getFilteredCases = () => {
-    let allCases: CaseList[] = caseData.map(c => ({
+    let allCases: CaseEntity[] = caseData.map(c => ({
       ...c,
       assignee: c.createdBy ? c.createdBy : [{ name: "", color: "" }]
     }));
@@ -108,7 +109,7 @@ export default function CasesView() {
         c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
         c.statusId.toLowerCase().includes(generalSearchTerm) ||
         assigneeName.toLowerCase().includes(generalSearchTerm) ||
-        DateStringToDateFormat(c.createdAt).toLowerCase().includes(generalSearchTerm)
+        DateStringToDateFormat(c.createdAt as string).toLowerCase().includes(generalSearchTerm)
       );
     });
 
@@ -277,7 +278,7 @@ export default function CasesView() {
   // ... Rest of the component remains the same (CaseCard, KanbanView, ListView, JSX return)
   // No changes are needed below this line for the requested refactoring.
 
-  const CaseCard = ({ caseItem }: { caseItem: CaseList }) => (
+  const CaseCard = ({ caseItem }: { caseItem: CaseEntity }) => (
     <div className="space-y-2">
       <div className="text-xs text-gray-500 font-medium"></div>
       <div
@@ -303,7 +304,7 @@ export default function CasesView() {
           </div> */}
         </div>
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt)}</span>
+          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt as string)}</span>
           <Badge>
             {
               statusIdToStatusTitle(caseItem.statusId)
@@ -448,7 +449,7 @@ export default function CasesView() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {DateStringToDateFormat(caseItem.createdAt)}
+                      {DateStringToDateFormat(caseItem.createdAt as string)}
                     </span>
                   </div>
                 </div>
@@ -518,7 +519,7 @@ export default function CasesView() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>{DateStringToDateFormat(caseItem.createdAt)}</span>
+                    <span>{DateStringToDateFormat(caseItem.createdAt as string)}</span>
                   </div>
                 </div>
               </div>
@@ -543,7 +544,7 @@ export default function CasesView() {
     setShowDynamicForm(false)
     const savedCases = localStorage.getItem("caseList");
     setCaseData(savedCases
-      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
+      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
       : [])
   }
 
@@ -551,7 +552,7 @@ export default function CasesView() {
     setSelectedCase(null)
     const savedCases = localStorage.getItem("caseList");
     setCaseData(savedCases
-      ? (JSON.parse(savedCases) as CaseList[]).filter(c => allowedStatusIds.includes(c.statusId))
+      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
       : [])
   }
 
