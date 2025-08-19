@@ -54,6 +54,16 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                <span className=" text-md text-blue-500 dark:text-blue-400 " >Workflow Infomation</span>
+                <div className="mb-2">
+                    <span className="text-md text-gray-500 dark:text-gray-400">Workflow Order Number : </span>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.workOrderNummber||"-"}</div>
+                </div>
+               
+                
+           
+            </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
                 <div className="mb-2">
