@@ -1227,7 +1227,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           >
             <svg
               ref={svgRef}
-              className="xl:absolute inset-0 pointer-events-none"
+              // className="xl:absolute inset-0 pointer-events-none"
+              className="xl:absolute inset-0"
               style={{ width: "2000px", height: "2000px", zIndex: 1 }}
             >
               {/* Grid Pattern */}
@@ -1369,8 +1370,8 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 <div
                   key={node.id}
                   data-node-id={node.id}
-                  className={`absolute pointer-events-auto select-none transition-all rounded-lg ${
-                    isSelected ? "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
+                  className={`absolute pointer-events-auto select-none transition-all rounded-lg ${isSelected ?
+                    "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
                   } ${editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ? (isDragging === node.id ? "cursor-grabbing" : "cursor-grab") : "cursor-default"}`}
                   style={{
                     left: node.position.x,
