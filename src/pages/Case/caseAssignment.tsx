@@ -289,6 +289,7 @@ export default function CasesView() {
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
         </div>
+        <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p>
         <p className="text-sm text-gray-400 leading-relaxed">{caseItem.caselocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (

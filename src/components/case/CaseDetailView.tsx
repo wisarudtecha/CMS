@@ -118,6 +118,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 priority: 0,
                 description: "",
                 area: undefined,
+                workOrderNummber:genCaseID(),
                 status: "",
                 scheduleDate: "",
                 customerData: {} as Custommer,
@@ -268,14 +269,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             } as CaseDetails;
 
             setCaseState(newCaseState);
-        }else if( caseData ===undefined){
-            const newCaseState: CaseDetails = {
-                
-                workOrderNummber: genCaseID(),
-                
-            } as CaseDetails;
-
-            setCaseState(newCaseState);
         }
     }, [sopLocal, caseData, areaList.length, getFormByCaseType]);
 
@@ -303,7 +296,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 status: prev.status || "",
             } as CaseDetails : prev);
         }
-    }, [listCustomerData.length, sopLocal, caseState?.customerData?.mobileNo]);
+    }, [listCustomerData.length, sopLocal]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
     const handleFilesChange = useCallback((newFiles: File[]) => {
