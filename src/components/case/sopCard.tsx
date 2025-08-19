@@ -490,7 +490,12 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, 
                         Comment
                     </Button>
                     {/* Show Attach File button only in edit mode for existing cases */}
-                    {editFormData && (
+                   
+                    <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                        {editFormData ? "Cancel Edit" : "Edit"}
+                    </Button>
+
+                     {editFormData && (
                         <div>
                             <Button
                                 size="sm"
@@ -511,9 +516,6 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, 
                             />
                         </div>
                     )}
-                    <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                        {editFormData ? "Cancel Edit" : "Edit"}
-                    </Button>
                 </div>
                 <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
                     <User_Icon className="w-4 h-4" />

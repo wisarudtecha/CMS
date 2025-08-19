@@ -316,7 +316,11 @@ const FormListComponent: React.FC = () => {
     handleUpdateStatus(formId, formName, newStatus)
 
   };
-
+  const handleKeyDown = (event: any) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   // const onSetStatusInactive = (formId: string, formName: string, newStatus: FormManager['active']) => {)
   //   setConfirmDialog({
@@ -377,6 +381,7 @@ const FormListComponent: React.FC = () => {
                       onChange={(e) => setSearchInput(e.target.value)}
                       placeholder="Search FormManager..."
                       className="w-full sm:w-auto"
+                      onKeyDown={handleKeyDown}
                     />
                     <Button
                       onClick={handleSearch}
@@ -646,7 +651,7 @@ const FormListComponent: React.FC = () => {
               {/* No Results */}
               {paginatedFormManagers.length === 0 && !loading && !error && (
                 <div className="text-center py-12">
-                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading?"Loading...":"No forms found"}</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading ? "Loading..." : "No forms found"}</div>
                   <p className="text-gray-400 dark:text-gray-500 mb-4">
                     {filterConfig.search || filterConfig.status || filterConfig.category
                       ? 'Try adjusting your filters or search terms'
