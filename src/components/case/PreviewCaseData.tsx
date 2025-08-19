@@ -2,14 +2,14 @@ import {
     Clock,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
-import { CaseItem } from "@/components/interface/CaseItem"
 import Badge from "@/components/ui/badge/Badge"
 import DateStringToDateFormat from "../date/DateToString"
 import React from "react"
 import { getTextPriority } from "../function/Prioriy"
 import FormFieldValueDisplay from "./CaseDisplay"
+import { CaseDetails } from "@/types/case"
 interface PreviewDataBeforeSubmitProps {
-    caseData?: CaseItem;
+    caseData?: CaseDetails;
     submitButton?: () => void;
 }
 

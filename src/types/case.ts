@@ -1,5 +1,8 @@
 // /src/types/case.ts
-import { BaseEntity } from "@/types";
+import { FormField, formType } from "@/components/interface/FormField";
+import { Area } from "@/store/api/area";
+import { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
+import { BaseEntity, Custommer } from "@/types";
 
 export interface CaseEntity extends BaseEntity {
   orgId: string;
@@ -118,4 +121,35 @@ export interface ProgressTimelineProps {
   animated?: boolean;
   className?: string;
   onStepClick?: (step: TimelineStep, index: number) => void;
+}
+
+
+
+export interface CaseDetails {
+  status: string
+  priority: number
+  createBy: string
+  id: number
+  title: string
+  description: string
+  date: string
+  comments: number
+  category: string
+  categoryColor: string
+  priorityColor: string
+  formData?: FormField
+  caseType?: formType
+  serviceCenter?:DepartmentCommandStationDataMerged
+  customerData?:Custommer
+  location?:string
+  attachFile?:File[]
+  requireSchedule?:boolean
+  area?:Area
+  scheduleDate?:string
+  workOrderNummber?:string
+  workOrderRef?:string
+  workOrderDate?:string
+  iotDevice?:string
+  iotDate?:string
+  attachFileResult?:File[]
 }

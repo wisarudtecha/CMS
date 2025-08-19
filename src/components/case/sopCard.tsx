@@ -10,7 +10,7 @@ import {
     ChevronDown,
     ChevronUp,
 } from "lucide-react"
-import { CaseItem } from "../interface/CaseItem";
+
 import { useMemo, useRef, useState } from "react";
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType";
 import Badge from "../ui/badge/Badge";
@@ -22,6 +22,7 @@ import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "../progress/ProgressBar";
 import { statusIdToStatusTitle } from "../ui/status/status";
 import { CaseHistory } from "@/store/api/caseApi";
+import { CaseDetails } from "@/types/case";
 
 interface ProgressSteps {
     id: number;
@@ -388,7 +389,7 @@ const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections:
 interface CaseCardProps {
     onAssignClick: () => void;
     onEditClick: () => void;
-    setCaseData?: React.Dispatch<React.SetStateAction<CaseItem | undefined>>;
+    setCaseData?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
     caseData: CaseSop;
     editFormData: boolean;
     comment?: CaseHistory[];

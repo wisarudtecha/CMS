@@ -2,12 +2,12 @@ import { MapPin } from "lucide-react";
 import DateStringToDateFormat from "../date/DateToString";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 import { getTextPriority } from "../function/Prioriy";
-import { CaseItem } from "../interface/CaseItem";
 import { IndividualFormField } from "../interface/FormField";
 import { mergeArea } from "@/store/api/area";
+import { CaseDetails } from "@/types/case";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
-    caseData?: CaseItem;
+    caseData?: CaseDetails;
 }
 
 const renderField = (field: IndividualFormField): Record<string, any> => {

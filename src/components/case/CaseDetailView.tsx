@@ -8,7 +8,7 @@ import {
     ChevronUp,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
-import { CaseItem } from "@/components/interface/CaseItem"
+
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
@@ -40,7 +40,7 @@ import { Area, mergeArea } from "@/store/api/area"
 // import { data } from "react-router"
 import DragDropFileUpload from "../d&d upload/dndUpload"
 import { CaseCard } from "./sopCard"
-import { CaseEntity } from "@/types/case"
+import { CaseDetails, CaseEntity } from "@/types/case"
 
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
@@ -107,7 +107,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 
 export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseEntity }) {
     // Initialize state with proper defaults
-    const [caseState, setCaseState] = useState<CaseItem | undefined>(() => {
+    const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!caseData) {
             return {
@@ -122,7 +122,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 customerData: {} as Custommer,
                 attachFile: [] as File[], // For new cases (edit mode)
                 attachFileResult: [] as File[] // For existing cases (view/edit mode)
-            } as CaseItem;
+            } as CaseDetails;
         }
         return undefined;
     });
@@ -250,7 +250,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 sopLocal.countryId === items.countryId
             );
 
-            const newCaseState: CaseItem = {
+            const newCaseState: CaseDetails = {
                 location: sopLocal?.caselocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
                 caseType: getFormByCaseType(),
@@ -264,7 +264,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 status: "",
                 attachFile: [] as File[], // For new cases (edit mode)
                 attachFileResult: [] as File[] // Initialize as empty array for view mode
-            } as CaseItem;
+            } as CaseDetails;
 
             setCaseState(newCaseState);
         }
@@ -292,7 +292,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 ...prev,
                 customerData: customerData,
                 status: prev.status || "",
-            } as CaseItem : prev);
+            } as CaseDetails : prev);
         }
     }, [listCustomerData.length, sopLocal, caseState?.customerData?.mobileNo]);
 
@@ -622,7 +622,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [caseTypeSupTypeData]);
 
     // Update handlers to work with single state
-    const updateCaseState = useCallback((updates: Partial<CaseItem>) => {
+    const updateCaseState = useCallback((updates: Partial<CaseDetails>) => {
         setCaseState(prev => prev ? { ...prev, ...updates } : prev);
     }, []);
 
@@ -1022,7 +1022,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                             setCaseState(prevState => ({
                                                                 ...prevState,
                                                                 requireSchedule: !prevState?.requireSchedule
-                                                            } as CaseItem));
+                                                            } as CaseDetails));
                                                         }}
                                                     />
                                                 </div>
@@ -1086,7 +1086,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                     `}>
                         <CustomerPanel
                             onClose={() => setIsCustomerPanelOpen(false)}
-                            caseItem={caseState || {} as CaseItem}
+                            caseItem={caseState || {} as CaseDetails}
                         />
                     </div>
                 </div>

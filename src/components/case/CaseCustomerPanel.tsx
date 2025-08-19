@@ -13,9 +13,11 @@ import Avatar from "../ui/avatar/Avatar"
 import React from "react"
 import DateStringToDateFormat from "../date/DateToString"
 import { mergeAddress } from "@/store/api/custommerApi"
-import { CaseItem } from "../interface/CaseItem"
+import { CaseDetails } from "@/types/case"
+
+
 interface CustomerPanelProps {
-    caseItem?: CaseItem;
+    caseItem?: CaseDetails;
     onClose: () => void; // Added onClose handler for mobile view
 }
 const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
