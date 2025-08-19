@@ -41,6 +41,7 @@ import { Area, mergeArea } from "@/store/api/area"
 import DragDropFileUpload from "../d&d upload/dndUpload"
 import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity } from "@/types/case"
+import { genCaseID } from "../genCaseId/genCaseId"
 
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
@@ -895,8 +896,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     type="text"
                                                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                                                     onChange={(e) => handleWorkOrderNumber(e)}
-                                                    value={caseState?.workOrderNummber || ""}
+                                                    value={caseState?.workOrderNummber || genCaseID()}
                                                     placeholder="Work Order Number"
+                                                    disabled={true}
                                                 ></Input>
                                             </div>
                                             <div className="px-3 ">
