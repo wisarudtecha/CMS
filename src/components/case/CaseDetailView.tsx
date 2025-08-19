@@ -268,8 +268,16 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             } as CaseDetails;
 
             setCaseState(newCaseState);
+        }else if( caseData ===undefined){
+            const newCaseState: CaseDetails = {
+                
+                workOrderNummber: genCaseID(),
+                
+            } as CaseDetails;
+
+            setCaseState(newCaseState);
         }
-    }, [sopLocal, caseData, areaList.length, caseState, getFormByCaseType]);
+    }, [sopLocal, caseData, areaList.length, getFormByCaseType]);
 
     // Update customer data ONLY when necessary data is available
     useEffect(() => {
@@ -715,6 +723,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [areaList, updateCaseState]);
 
     const handleCustomerDataChange = useCallback((data: Custommer) => {
+        // console.log(data)
         updateCaseState({ customerData: data });
     }, [updateCaseState]);
 
@@ -896,7 +905,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                                                     type="text"
                                                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                                                     onChange={(e) => handleWorkOrderNumber(e)}
-                                                    value={caseState?.workOrderNummber || genCaseID()}
+                                                    value={caseState?.workOrderNummber || ""}
                                                     placeholder="Work Order Number"
                                                     disabled={true}
                                                 ></Input>
