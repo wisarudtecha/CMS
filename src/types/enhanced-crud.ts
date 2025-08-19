@@ -1,12 +1,6 @@
 // /src/types/enhanced-crud.ts
 import { Variant } from "@/types";
 
-export interface BaseEntity {
-  id: string;
-  createdAt: string;
-  updatedAt?: string;
-}
-
 export interface BulkAction<T> {
   key: string;
   label: string;
@@ -83,13 +77,13 @@ export interface CrudFeatures {
 export interface ApiConfig {
   baseUrl: string;
   endpoints: {
-    list: string;
-    create: string;
-    read: string;
-    update: string;
-    delete: string;
-    bulkDelete: string;
-    export: string;
+    list?: string;
+    create?: string;
+    read?: string;
+    update?: string;
+    delete?: string;
+    bulkDelete?: string;
+    export?: string;
   };
   headers?: Record<string, string>;
 }
@@ -113,7 +107,8 @@ export interface PreviewTab<T = string> {
 
 export interface PreviewConfig<T> {
   title: (item: T) => string;
-  subtitle?: (item: T) => string;
+  // subtitle?: (item: T) => string;
+  subtitle?: (item: T) => React.ReactNode | string;
   avatar?: (item: T) => React.ReactNode;
   tabs: PreviewTab<T>[];
   actions?: PreviewAction<T>[];

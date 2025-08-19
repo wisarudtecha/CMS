@@ -1,12 +1,6 @@
 // /src/types/crud.ts
 import { Variant } from "@/types";
 
-export interface BaseEntity {
-  id: string;
-  createdAt: string;
-  updatedAt?: string;
-}
-
 export interface SortConfig<T> {
   key: keyof T | null;
   direction: "asc" | "desc";
@@ -44,11 +38,13 @@ export interface CrudConfig<T> {
   entityName: string;
   entityNamePlural: string;
   apiEndpoints: {
-    list: string;
-    create: string;
-    read: string;
-    update: string;
-    delete: string;
+    list?: string;
+    create?: string;
+    read?: string;
+    update?: string;
+    delete?: string;
+    bulkDelete?: string;
+    export?: string;
   };
   columns: TableColumn<T>[];
   filters?: FilterDefinition[];

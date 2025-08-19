@@ -54,6 +54,7 @@ interface EnhancedCrudContainerProps<T> {
   // config: CrudConfig<{ id: string; }>;
   data: T[];
   displayModes?: ("card" | "table" | "matrix" | "hierarchy")[];
+  displayModeDefault?: "card" | "table" | "matrix" | "hierarchy";
   enableDebug?: boolean;
   error?: string | null;
   exportOptions?: ExportOption[];
@@ -85,6 +86,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   config,
   data,
   displayModes = ["card", "table", "matrix", "hierarchy"],
+  displayModeDefault = "card",
   enableDebug = false,
   error = null,
   exportOptions = [],
@@ -107,7 +109,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   renderHierarchy,
   renderMatrix
 }: EnhancedCrudContainerProps<T>) => {
-  const [displayMode, setDisplayMode] = useState<"card" | "table" | "matrix" | "hierarchy">("card");
+  const [displayMode, setDisplayMode] = useState<"card" | "table" | "matrix" | "hierarchy">(displayModeDefault);
   const [searchInput, setSearchInput] = useState<string>("");
 
   // ===================================================================
@@ -264,8 +266,10 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         // console.log("Delete confirmed for item:", item.id);
         console.log("Delete confirmed for item:", id);
         try {
-          if (apiConfig) {
-            // await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
+          // if (apiConfig) {
+          //   await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
+          // }
+          if (apiConfig?.endpoints?.delete) {
             await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);
           }
           if (onDelete) {
@@ -592,7 +596,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         ) 
         : displayMode === "hierarchy" && renderHierarchy ? (
           // Hierarchy View
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6 mb-8"></div>
+          <></>
         ) : (
           // Table View (Default)
           config?.columns ? (

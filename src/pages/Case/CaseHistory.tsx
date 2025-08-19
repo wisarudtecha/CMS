@@ -24,7 +24,7 @@ import { useGetListCaseQuery } from "@/store/api/caseApi";
 import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
 import type { CaseEntity, CaseStatus, CaseTypeSubType } from "@/types/case";
 import CaseHistoryComponent from "@/components/case/CaseHistory";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+// import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const CaseHistoryPage: React.FC = () => {
@@ -48,7 +48,7 @@ const CaseHistoryPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["case.view_history"]}>
-        <PageBreadcrumb pageTitle="Case History" />
+        {/* <PageBreadcrumb pageTitle="Case History" /> */}
 
         <CaseHistoryComponent
           caseHistories={caseHistories}

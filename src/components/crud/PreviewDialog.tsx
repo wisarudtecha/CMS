@@ -154,7 +154,7 @@ export const PreviewDialog = <T extends { id: string }>({
                 {config.avatar(item)}
               </div>
             )}
-            <div className="min-w-0 max-w-80 xl:max-w-full flex-1">
+            <div className="min-w-0 xl:max-w-full flex-1">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white xl:truncate">
                 {config.title(item)}
               </h2>

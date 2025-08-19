@@ -30,6 +30,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onChange={(value) => onChange(filter.key, value)}
               options={filter.options}
               placeholder={filter.placeholder || `Select ${filter.label}`}
+              className="cursor-pointer"
             />
           )}
         </div>

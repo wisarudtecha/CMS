@@ -46,6 +46,18 @@ export interface CaseEntity extends BaseEntity {
   currentStage: string | null;
 }
 
+export interface CaseHistory {
+  id: number | string;
+  orgId: string;
+  caseId: string;
+  username: string;
+  type: string;
+  fullMsg: string;
+  jsonData?: Record<string, string> | string;
+  createdAt: string | Date;
+  createdBy: string;
+}
+
 export interface CaseStatus extends BaseEntity {
   statusId: string;
   th: string;
