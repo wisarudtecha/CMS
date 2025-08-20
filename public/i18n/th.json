@@ -248,7 +248,7 @@
     "refresh": "รีเฟรช",
     "search_users": "ค้นหาผู้ใช้...",
     "filters_cleared": "ล้างตัวกรองเรียบร้อยแล้ว",
-    "query_success": "โหลดข้อมูลสำเร็จ {{count}} รายการ",
+    "query_success": "โหลดข้อมูลการทำธุรกรรมสำเร็จ {{count}} รายการ",
     "user_transaction": "ผู้ใช้ / ธุรกรรม",
     "time": "เวลา",
     "loading_data": "กำลังโหลดข้อมูล...",

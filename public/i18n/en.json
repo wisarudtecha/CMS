@@ -237,6 +237,7 @@
     "search_users": "Search users...",
     "filters_cleared": "Filters cleared successfully",
     "query_success": "Successfully loaded {{count}} records",
+    "audit_log_query_success": "Successfully loaded audit log {{count}} records",
     "user_transaction": "User / Transaction",
     "time": "Time",
     "loading_data": "Loading Data...",
