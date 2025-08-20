@@ -332,10 +332,10 @@ export default function AuditLog() {
     const getActionIcon = (action: string) => {
         switch (action.toLowerCase()) {
             case 'create': return { icon: Plus, color: 'text-green-500' };
-            case 'update': return { icon: RefreshCw, color: 'text-blue-500' };
+            case 'update': return { icon: RefreshCw, color: 'text-orange-500' };
             case 'delete': return { icon: Trash2, color: 'text-red-500' };
-            case 'login': return { icon: User, color: 'text-indigo-500' };
-            default: return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
+            case 'login': return { icon: User, color: 'text-blue-500' };
+            default: return { icon: Activity, color: 'text-blue-500' };
         }
     };
 
