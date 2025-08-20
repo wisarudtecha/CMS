@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 // Since this is a self-contained example, we'll mock the Link component.
 import {
     Search,
@@ -119,12 +119,14 @@ export default function AuditLog() {
     const [usernameSearch, setUsernameSearch] = useState('');
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-    // Toast state
+    // Toast state - simplified for single toast management
     const [toast, setToast] = useState<{
         message: string;
         type: "success" | "error" | "info";
         show: boolean;
     }>({ message: "", type: "info", show: false });
+    
+    const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Translation hook
     const { t } = useTranslation();
@@ -132,9 +134,21 @@ export default function AuditLog() {
     // --- DATA HANDLING ---
     const API = import.meta.env.VITE_API_BASE_URL || 'https://cmsapi-production-488d.up.railway.app';
 
-    // Show toast function
+    // Show toast function - ensure only one toast at a time
     const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
-        setToast({ message, type, show: true });
+        // Clear any existing timeout first
+        if (toastTimeoutRef.current) {
+            clearTimeout(toastTimeoutRef.current);
+            toastTimeoutRef.current = null;
+        }
+        
+        // Hide current toast immediately
+        setToast({ message: "", type: "info", show: false });
+        
+        // Show new toast after a tiny delay to ensure previous one is cleared
+        toastTimeoutRef.current = setTimeout(() => {
+            setToast({ message, type, show: true });
+        }, 50);
     };
 
     // Get authentication headers
@@ -270,6 +284,15 @@ export default function AuditLog() {
         };
     }, [showUserDropdown]);
 
+    // Cleanup toast timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (toastTimeoutRef.current) {
+                clearTimeout(toastTimeoutRef.current);
+            }
+        };
+    }, []);
+
     // --- MEMOIZED COMPUTATIONS ---
     const uniqueValues = useMemo(() => {
         return {
@@ -383,12 +406,12 @@ export default function AuditLog() {
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 <PageBreadcrumb items={breadcrumbItems} />
 
-                {/* Toast */}
+                {/* Toast - Only show when needed */}
                 {toast.show && (
                     <Toast
                         message={toast.message}
                         type={toast.type}
-                        onClose={() => setToast({ ...toast, show: false })}
+                        onClose={() => setToast({ message: "", type: "info", show: false })}
                         duration={4000}
                     />
                 )}
