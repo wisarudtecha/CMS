@@ -116,13 +116,15 @@ const AppSidebar: React.FC = () => {
       ],
     },
     {
-      icon: <FileIcon />,
-      name: "Report",
-      path: "/report",
-      permission: permissions.hasAnyPermission([
-        "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
-      ]),
-    },
+  icon: <FileIcon />,
+  name: "Report",
+  permission: permissions.hasAnyPermission([
+    "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
+  ]),
+  subItems: [
+   
+  ],
+},
     {
       icon: <ListIcon />,
       name: "Form Builder",
