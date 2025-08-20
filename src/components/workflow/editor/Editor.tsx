@@ -33,6 +33,7 @@ const workflowStatuses = [
 const nodeTypes = {
   start: { button: "bg-success-500 text-white dark:text-white hover:bg-success-600", color: "bg-success-500 dark:bg-success-400", label: "Start" },
   process: { button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600", color: "bg-brand-500 dark:bg-brand-400", label: "Process" },
+  dispatch: { button: "bg-gray-500 text-white dark:text-white hover:bg-gray-600", color: "bg-gray-500 dark:bg-gray-400", label: "Dispatch" },
   sla: { button: "bg-purple-500 text-white dark:text-white hover:bg-purple-600", color: "bg-purple-500 dark:bg-purple-400", label: "SLA" },
   decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
   end: { button: "bg-error-500 text-white dark:text-white hover:bg-error-600", color: "bg-error-500 dark:bg-error-400", label: "End" }
@@ -186,6 +187,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       if ((
         node.type === "start"
         || node.type === "process"
+        || node.type === "dispatch"
         // || node.type === "sla"
         || node.type === "end"
       ) && count > 1) {
@@ -321,6 +323,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       } |
       {
         id: string;
+        type: "dispatch";
+        label: string;
+        action?: string
+        formId?: string;
+        sla?: string | number;
+        group?: string[];
+        pic?: string[];
+      } |
+      {
+        id: string;
         type: "sla";
         label: string;
         SLA?: string | number;
@@ -374,10 +386,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       //     pic: typeof node.data.config?.pic === "string" ? node.data.config.pic : undefined
       //   });
       // }
-      else if (node.type === "process") {
+      else if (node.type === "process" || node.type === "dispatch") {
         components.push({
           id: node.id,
-          type: "process",
+          // type: "process",
+          type: node.type === "dispatch" ? "dispatch" : "process",
           label: node.data.label,
           formId: typeof node.data.config?.formId === "string" ? node.data.config.formId : "",
           sla: typeof node.data.config?.sla === "number" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
@@ -1720,7 +1733,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 </div>
               )}
 
-              {selectedNode.type === "process" && (
+              {(selectedNode.type === "process" || selectedNode.type === "dispatch") && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -2149,14 +2162,23 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
                             Action: {component?.action || "N/A"}{" "}
                             Form: {component?.formId || "N/A"}{" "}
-                            {/* SLA: {component?.sla || "N/A"} minutes{" "} */}
+                            SLA: {component?.sla || "0"} minutes{" "}
+                            Group: {component?.group || "N/A"}{" "}
+                            PIC: {component?.pic || "N/A"}
+                          </span>
+                        )}
+                        {component.type === "dispatch" && (
+                          <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-xs font-medium px-2 py-1 rounded-full">
+                            Dispatch: {component?.action || "N/A"}{" "}
+                            Form: {component?.formId || "N/A"}{" "}
+                            SLA: {component?.sla || "0"} minutes{" "}
                             Group: {component?.group || "N/A"}{" "}
                             PIC: {component?.pic || "N/A"}
                           </span>
                         )}
                         {component.type === "sla" && (
                           <span className="bg-green-100 dark:bg-purple-800 text-purple-800 dark:text-purple-100 text-xs font-medium px-2 py-1 rounded-full">
-                            SLA: {component?.SLA || "N/A"} minutes{" "}
+                            SLA: {component?.SLA || "0"} minutes{" "}
                           </span>
                         )}
                         {component.type === "decision" && (

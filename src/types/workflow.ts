@@ -22,7 +22,7 @@ export interface Position {
 
 export interface WorkflowNode {
   id: string;
-  type: "start" | "process" | "decision" | "sla" | "end";
+  type: "start" | "process" | "dispatch" | "sla" | "decision" | "end";
   position: Position;
   data: {
     label: string;
