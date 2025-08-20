@@ -612,6 +612,7 @@ const RoleManagementComponent: React.FC<{
         data={role}
         // displayModes={["card", "matrix", "hierarchy"]}
         displayModes={["card", "matrix"]}
+        displayModeDefault="matrix"
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
         // exportOptions={exportOptions}

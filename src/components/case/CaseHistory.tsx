@@ -1,6 +1,6 @@
 // /src/components/case/CaseHistory.tsx
 import React, {
-  // useEffect,
+  useEffect,
   useState
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,12 +8,15 @@ import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { AlertHexaIcon, CalenderIcon, ChatIcon, CheckCircleIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useGetCaseHistoryQuery } from "@/store/api/caseApi";
+import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
+import type { CaseSop } from "@/store/api/dispatch"; 
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import CaseDetailView from "@/components/case/CaseDetailView";
@@ -32,6 +35,20 @@ const CaseHistoryComponent: React.FC<{
   const [caseData, setCaseData] = useState<CaseEntity | null>(null);
   const [crudOpen, setCrudOpen] = useState("block");
   const [viewOpen, setViewOpen] = useState("hidden");
+
+  const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
+  const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
+
+  const { data: dispatchSOPsData } = useGetCaseSopQuery(
+    { caseId: selectedCaseForSop ?? "" }, 
+    { skip: !selectedCaseForSop }
+  );
+  
+  const { data: caseHistoriesData } = useGetCaseHistoryQuery(
+    { caseId: selectedCaseForHistory ?? ""  }, 
+    { skip: !selectedCaseForHistory }
+  );
+
   const isCancelAvailable = (data: CaseEntity) => {
     return (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean && !CASE_CANNOT_DELETE.includes(data.statusId as typeof CASE_CANNOT_DELETE[number])
   }
@@ -118,10 +135,6 @@ const CaseHistoryComponent: React.FC<{
 
   const typeSubTypeConfigs = generateTypeSubTypeConfigs(caseTypesSubTypes);
 
-  // const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
-  //   return typeSubTypeConfigs.find(config => config.sTypeCode === caseItem.caseSTypeId) || { en: "", th: "", subTypeEn: "", subTypeTh: "", sTypeCode : "" };
-  // };
-
   const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
     const found = typeSubTypeConfigs.find(config => 
       config.sTypeId === caseItem.caseSTypeId
@@ -135,15 +148,14 @@ const CaseHistoryComponent: React.FC<{
     };
   };
 
-  // const caseTitle = (data: CaseEntity) => {
-  //   return `${getTypeSubTypeConfig(data).sTypeCode}-${getTypeSubTypeConfig(data).th || getTypeSubTypeConfig(data).en}`;
-  // };
-
   const caseTitle = (data: CaseEntity) => {
     const config = getTypeSubTypeConfig(data);
-    const sTypeCode = config.sTypeCode || "UNKNOWN";
-    const displayName = config.subTypeTh || config.subTypeEn || data.caseId ||  "UNKNOWN";
-    return `${sTypeCode}-${displayName}`;
+    // const sTypeCode = config.sTypeCode || "Loading...";
+    const sTypeCode = config.sTypeCode || "";
+    // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "Loading...";
+    const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "";
+    // return `${sTypeCode}-${displayName}`;
+    return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
   };
 
   const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes) ? caseTypesSubTypes.map((caseTypeSubType) => ({
@@ -161,7 +173,6 @@ const CaseHistoryComponent: React.FC<{
   // Case History Real Functionality Data
   // ===================================================================
 
-  // const data: CaseEntity[] = caseHistories as unknown as CaseEntity[];
   const data: (CaseEntity & { id: string })[] = caseHistories.map(c => ({
     ...c,
     id: typeof c.id === "string" ? c.id : c.caseId?.toString?.() ?? c.id?.toString?.() ?? "",
@@ -194,13 +205,12 @@ const CaseHistoryComponent: React.FC<{
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {caseTitle(caseItem)}
-                {/* {caseTitle(caseItem.caseSTypeId)} */}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-xs">
-                {caseItem.caseDetail}
+                {caseItem.caseDetail || ""}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                {caseItem.caselocAddr}
+                {caseItem.caselocAddr || ""}
               </div>
             </div>
           </div>
@@ -227,7 +237,6 @@ const CaseHistoryComponent: React.FC<{
           return (
             <div className={`flex gap-1 items-center ${getPriorityConfig(caseItem).color}`}>
               <Icon className="w-4 h-4" />
-              {/* <span className="capitalize font-medium text-sm">{caseItem.priority}</span> */}
               <span className="capitalize font-medium text-sm">{getPriorityConfig(caseItem).label}</span>
             </div>
           );
@@ -308,17 +317,166 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const getTimelineSteps = (caseItem: CaseEntity) => {
-    const timelineSteps = CaseTimelineSteps(
-      caseItem.statusId,
-      caseItem.createdAt as string,
-      // caseItem.resolvedAt
-    );
+    const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
+    const timelineSteps = CaseTimelineSteps(sopData);
     return timelineSteps;
   };
 
+  const OverviewTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
+    useEffect(() => {
+      setSelectedCaseForSop(caseItem.caseId);
+    }, [caseItem.caseId]);
+
+    return (
+      <>
+        <PermissionGate module="case" action="view_timeline">
+          <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
+            {/* Progress Timeline and Progress Line */}
+            {getTimelineSteps(caseItem).length > 0 ? (
+              <>
+                <div className="hidden xl:block">
+                  <ProgressTimeline
+                    steps={getTimelineSteps(caseItem)}
+                    orientation="horizontal"
+                    size="md"
+                    showTimestamps={false}
+                    showDescriptions={false}
+                  />
+                </div>
+                <div className="block xl:hidden">
+                  <ProgressTimeline
+                    steps={getTimelineSteps(caseItem)}
+                    orientation="vertical"
+                    size="sm"
+                    showTimestamps={false}
+                    showDescriptions={false}
+                    className="mb-2"
+                  />
+                </div>
+              </>
+            ) : ""}
+          </div>
+        </PermissionGate>
+
+        {/* Content */}
+        <div>
+          <div className="grid grid-cols-1 gap-6">
+            {/* Case Information */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                Case Information
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created At:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {formatDate(caseItem.createdAt) || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created By:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.createdBy || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Location:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Detail:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.caseDetail || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer / Device Information */}
+            {(caseItem.deviceId || caseItem.phoneNo) && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                  Customer / Device Information
+                </h4>
+                <div className="grid grid-cols-1 space-y-3">
+                  {caseItem.deviceId ? (
+                    <div className="xl:flex items-left justify-left">
+                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Device ID:</span>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                        {caseItem.deviceId || ""}
+                      </div>
+                    </div>
+                  ) : caseItem.phoneNo ? (
+                    <div className="xl:flex items-left justify-left">
+                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Phone No.:</span>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                        {caseItem.phoneNo || ""}
+                      </div>
+                    </div>
+                  ) : ("")}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Attachments Section */}
+          {/*
+          {caseItem.attachments.length && (
+            <div className="mt-6">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <h4 className="font-medium text-blue-500 dark:text-blue-400">
+                    Attachments ({caseItem.attachments.length})
+                  </h4>
+                </div>
+                
+                {caseItem.attachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {caseItem.attachments.map(attachment => (
+                      <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-center gap-3">
+                          <FileIcon className="w-4 h-4 text-gray-500" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {attachment.filename}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          Download
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
+                )}
+              </div>
+            </div>
+          )}
+          */}
+        </div>
+      </>
+    );
+  };
+
+  const ActivityTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
+    useEffect(() => {
+      setSelectedCaseForHistory(caseItem.caseId);
+    }, [caseItem.caseId]);
+
+    return (<CaseHistoryActivity caseItem={caseItem} />)
+  };
+
   const CaseHistoryActivity: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
-    const { data: caseHistoriesData } = useGetCaseHistoryQuery({ caseId: caseItem.caseId }, { skip: !caseItem.caseId });
-    const caseHistories = caseHistoriesData?.data as unknown as CaseHistory[] || [];
+    const caseHistories = (selectedCaseForHistory === caseItem.caseId) 
+      ? caseHistoriesData?.data as unknown as CaseHistory[] || []
+      : [];
 
     return (
       <div className="space-y-6">
@@ -401,11 +559,7 @@ const CaseHistoryComponent: React.FC<{
   }
 
   const previewConfig: PreviewConfig<CaseEntity> = {
-    // title: (caseItem: CaseEntity) => `${caseItem.caseNumber}: ${caseItem.title}`,
     title: (caseItem: CaseEntity) => `${caseTitle(caseItem)} (${getTypeSubTypeConfig(caseItem).th || getTypeSubTypeConfig(caseItem).en || ""})`,
-    // title: (caseItem: CaseEntity) => `${caseTitle(caseItem.caseSTypeId)}`,
-    // subtitle: (caseItem: CaseEntity) => `${caseItem.category} • Assigned to ${caseItem.assignedTo}`,
-    // subtitle: (caseItem: CaseEntity) => `${caseItem.caseId || ""} • ${getStatusConfig(caseItem).label || ""} • ${getPriorityConfig(caseItem).label || ""} `,
     subtitle: (caseItem: CaseEntity) => {
       return (
         <>
@@ -430,167 +584,16 @@ const CaseHistoryComponent: React.FC<{
         key: "overview",
         label: "Overview",
         // icon: InfoIcon,
-        render: (caseItem: CaseEntity) => (
-          <>
-            <PermissionGate module="case" action="view_timeline">
-              <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
-                {/* Progress Timeline and Progress Line */}
-                <div className="hidden xl:block">
-                  <ProgressTimeline
-                    steps={getTimelineSteps(caseItem)}
-                    orientation="horizontal"
-                    size="md"
-                    showTimestamps={false}
-                    showDescriptions={false}
-                  />
-                </div>
-                <div className="block xl:hidden">
-                  <ProgressTimeline
-                    steps={getTimelineSteps(caseItem)}
-                    orientation="vertical"
-                    size="sm"
-                    showTimestamps={false}
-                    showDescriptions={false}
-                    className="mb-2"
-                  />
-                </div>
-              </div>
-            </PermissionGate>
-
-            {/* Content */}
-            <div>
-              <div className="grid grid-cols-1 gap-6">
-                {/* Case Information */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                    Case Information
-                  </h4>
-                  <div className="grid grid-cols-1 space-y-3">
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created At:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {formatDate(caseItem.createdAt) || ""}
-                      </div>
-                    </div>
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created By:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {caseItem.createdBy || ""}
-                      </div>
-                    </div>
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Location:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {caseItem.caselocAddrDecs || caseItem.caselocAddr || ""}
-                      </div>
-                    </div>
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Detail:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {caseItem.caseDetail || ""}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customer / Device Information */}
-                {(caseItem.deviceId || caseItem.phoneNo) && (
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                      Customer / Device Information
-                    </h4>
-                    <div className="grid grid-cols-1 space-y-3">
-                      {caseItem.deviceId ? (
-                        <div className="xl:flex items-left justify-left">
-                          <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Device ID:</span>
-                          <div className="text-gray-600 dark:text-gray-300 text-sm">
-                            {caseItem.deviceId || ""}
-                          </div>
-                        </div>
-                      ) : caseItem.phoneNo ? (
-                        <div className="xl:flex items-left justify-left">
-                          <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Phone No.:</span>
-                          <div className="text-gray-600 dark:text-gray-300 text-sm">
-                            {caseItem.phoneNo || ""}
-                          </div>
-                        </div>
-                      ) : ("")}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Attachments Section */}
-              {/*
-              {caseItem.attachments.length && (
-                <div className="mt-6">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <h4 className="font-medium text-blue-500 dark:text-blue-400">
-                        Attachments ({caseItem.attachments.length})
-                      </h4>
-                    </div>
-                    
-                    {caseItem.attachments.length > 0 ? (
-                      <div className="space-y-2">
-                        {caseItem.attachments.map(attachment => (
-                          <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                            <div className="flex items-center gap-3">
-                              <FileIcon className="w-4 h-4 text-gray-500" />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {attachment.filename}
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                  {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
-                                </div>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm">
-                              Download
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              */}
-            </div>
-          </>
-        )
+        render: (caseItem: CaseEntity) => {
+          return (<OverviewTab caseItem={caseItem} />)
+        }
       },
-      // {
-      //   key: "details",
-      //   label: "Details",
-      //   // icon: PencilIcon,
-      //   fields: [
-      //     {
-      //       key: "estimatedHours",
-      //       label: "Estimated Hours",
-      //       type: "number" as const
-      //     },
-      //     {
-      //       key: "actualHours",
-      //       label: "Actual Hours",
-      //       type: "number" as const
-      //     },
-      //     {
-      //       key: "customFields",
-      //       label: "Custom Fields",
-      //       type: "json" as const
-      //     }
-      //   ]
-      // },
       {
         key: "activity",
         label: "Activity",
         // icon: PieChartIcon,
         render: (caseItem: CaseEntity) => {
-          return (<CaseHistoryActivity caseItem={caseItem} />)
+          return (<ActivityTab caseItem={caseItem} />)
 
           // return (
           //   <div className="space-y-6">
@@ -682,29 +685,6 @@ const CaseHistoryComponent: React.FC<{
         },
         condition: () => permissions.hasPermission("case.update")
       },
-      // {
-      //   key: "assign",
-      //   label: "Assign",
-      //   // icon: UserIcon,
-      //   variant: "error",
-      //   onClick: (caseItem: CaseEntity, closePreview: () => void) => {
-      //     console.log("Assigning case:", caseItem.id);
-      //     // Would open assignment modal
-      //     closePreview();
-      //   },
-      //   condition: () => permissions.hasPermission("case.assign")
-      // },
-      // {
-      //   key: "close",
-      //   label: "Close Case",
-      //   // icon: CheckCircleIcon,
-      //   variant: "success",
-      //   onClick: (caseItem: CaseEntity, closePreview: () => void) => {
-      //     console.log("Closing case:", caseItem.id);
-      //     closePreview();
-      //   },
-      //   condition: (caseItem: CaseEntity) => caseItem.status !== "closed" && caseItem.status !== "resolved" && permissions.hasPermission("case.close")
-      // },
       {
         key: "cancel",
         label: "Cancel Case",
@@ -729,30 +709,7 @@ const CaseHistoryComponent: React.FC<{
       label: "Type",
       type: "select" as const,
       options: caseTypesSubTypesOptions
-    },
-    // {
-    //   key: "assignedTo",
-    //   label: "Assigned To",
-    //   type: "select" as const,
-    //   options: [
-    //     { value: "John Smith", label: "John Smith" },
-    //     { value: "Alice Johnson", label: "Alice Johnson" },
-    //     { value: "Mike Davis", label: "Mike Davis" },
-    //     { value: "Security Team", label: "Security Team" }
-    //   ]
-    // },
-    // {
-    //   key: "createdAt",
-    //   label: "Created Date",
-    //   type: "date-range" as const
-    // },
-    // {
-    //   key: "estimatedHours",
-    //   label: "Estimated Hours",
-    //   type: "number-range" as const,
-    //   min: 0,
-    //   max: 100
-    // }
+    }
   ];
 
   // ===================================================================
@@ -766,7 +723,6 @@ const CaseHistoryComponent: React.FC<{
       variant: "primary" as const,
       onClick: async (items: CaseEntity[]) => {
         console.log("Bulk assigning cases:", items.map(c => c.id));
-        // Would open assignment modal
       }
     },
     {
@@ -778,8 +734,7 @@ const CaseHistoryComponent: React.FC<{
       },
       // condition: (items: CaseEntity[]) => items.some(c => c.status !== "closed"),
       confirmationRequired: true,
-      confirmationMessage: (items: CaseEntity[]) => 
-        `Are you sure you want to close ${items.length} cases? This action will update their status to closed.`
+      confirmationMessage: (items: CaseEntity[]) => `Are you sure you want to close ${items.length} cases? This action will update their status to closed.`
     },
     {
       key: "bulk-priority",
@@ -857,56 +812,22 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const renderCard = (caseItem: CaseEntity) => {
-    // const statusConfig = {
-    //   "open": { icon: FolderIcon, color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800", label: "Open" },
-    //   "in-progress": { icon: TimeIcon, color: "text-yellow-600 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-800", label: "In Progress" },
-    //   "resolved": { icon: CheckCircleIcon, color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800", label: "Resolved" },
-    //   "closed": { icon: CheckCircleIcon, color: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800", label: "Closed" },
-    //   "escalated": { icon: AlertHexaIcon, color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800", label: "Escalated" }
-    // }[caseItem.status];
-
-    // const priorityConfig = {
-    //   "low": { color: "text-green-600", label: "Low" },
-    //   "medium": { color: "text-yellow-600", label: "Medium" },
-    //   "high": { color: "text-orange-600", label: "High" },
-    //   "critical": { color: "text-red-600", label: "Critical" }
-    // }[caseItem.priority];
-
-    // const Icon = statusConfig.icon;
-
     return (
       <>
         <div className="xl:flex items-start justify-between mb-2">
           <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
-            {/* <Icon className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 hidden xl:block" /> */}
             <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                {/* {caseItem.caseNumber} */}
                 {caseTitle(caseItem)}
               </h3>
-              {/*
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                {caseItem.title}
-              </p>
-              */}
             </div>
           </div>
         </div>
 
         <div className="xl:flex gap-1 flex-shrink-0 mb-4">
-          {/*
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color} mr-2 xl:mr-0`}>
-            {statusConfig.label}
-          </span>
-          */}
           <Badge className={`${getStatusConfig(caseItem)?.color} text-xs`}>
             {getStatusConfig(caseItem)?.label}
           </Badge>
-          {/*
-          <span className={`py-1 text-xs font-medium ${priorityConfig.color} ml-2`}>
-            {priorityConfig.label}
-          </span>
-          */}
           <span className={`py-1 text-xs font-medium ${getPriorityConfig(caseItem)?.color} ml-2`}>
             {getPriorityConfig(caseItem)?.label}
           </span>
@@ -939,7 +860,6 @@ const CaseHistoryComponent: React.FC<{
         <div className="xl:flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
           <div className="xl:flex items-center gap-1">
             <UserIcon className="w-4 h-4 hidden xl:block" />
-            {/* <span>{caseItem.assignedTo}</span> */}
             <span>{caseItem.createdBy}</span>
           </div>
           <div className="xl:flex items-center gap-1">

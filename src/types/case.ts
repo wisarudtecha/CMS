@@ -1,8 +1,9 @@
 // /src/types/case.ts
 import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
-import { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
-import { BaseEntity, Custommer } from "@/types";
+import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
+import type { CaseSop } from "@/store/api/dispatch"; 
+import type { BaseEntity, Custommer } from "@/types";
 
 export interface CaseEntity extends BaseEntity {
   orgId: string;
@@ -115,13 +116,14 @@ export interface ProgressStep {
 }
 
 export interface TimelineStep {
-  id: string;
-  label: string;
+  id?: string;
+  label?: string;
   description?: string;
   timestamp?: string;
   status: "completed" | "active" | "pending" | "error";
   icon?: React.ComponentType<{ className?: string }>;
   metadata?: Record<string, unknown>;
+  sop?: CaseSop;
 }
 
 export interface ProgressTimelineProps {
@@ -134,8 +136,6 @@ export interface ProgressTimelineProps {
   className?: string;
   onStepClick?: (step: TimelineStep, index: number) => void;
 }
-
-
 
 export interface CaseDetails {
   status: string

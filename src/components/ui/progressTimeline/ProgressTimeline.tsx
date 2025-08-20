@@ -164,16 +164,16 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Progress line background */}
-      <div className={`absolute top-1/4 left-0 right-0 ${sizeClasses.line} bg-gray-200 dark:bg-gray-700 transform -translate-y-1/4`}></div>
+      <div className={`absolute top-1/5 left-0 right-0 ${sizeClasses.line} bg-gray-200 dark:bg-gray-700 transform -translate-y-1/4`}></div>
       
       {/* Progress line fill */}
       <div 
-        className={`absolute top-1/4 left-0 ${sizeClasses.line} bg-blue-500 transform -translate-y-1/4 ${animated ? 'transition-all duration-500' : ''}`}
+        className={`absolute top-1/5 left-0 ${sizeClasses.line} bg-blue-500 transform -translate-y-1/4 ${animated ? 'transition-all duration-500' : ''}`}
         style={{ width: `${progressPercentage}%` }}
       ></div>
 
       {/* Steps */}
-      <div className="flex items-center justify-between relative z-10">
+      <div className="flex items-start justify-between relative z-10">
         {steps.map((step, index) => {
           const statusConfig = getStatusConfig(step.status);
           const Icon = step.icon || statusConfig.icon;
