@@ -165,7 +165,7 @@ const AppSidebar: React.FC = () => {
       icon: <PlugInIcon />,
       name: "System Configuration",
       permission: permissions.hasAnyPermission([
-        "user.view", "role.view", "organization.view", "unit.view", "service.view",
+        "user.view", "role.view", "organization.view", "unit.view", "service.view", "auditlog.view",
       ]),
       subItems: [
         {
@@ -192,6 +192,11 @@ const AppSidebar: React.FC = () => {
           name: "Service Management",
           path: "/service",
           permission: permissions.hasPermission("service.view"),
+        },
+        {
+          name: "Audit Log",
+          path: "/audit",
+          permission: permissions.hasPermission("auditlog.view"),
         },
       ],
     },
