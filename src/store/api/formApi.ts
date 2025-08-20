@@ -1,4 +1,4 @@
-import { ApiResponse} from "@/types";
+import { ApiResponse } from "@/types";
 import { baseApi } from "./baseApi";
 import { FormField, FormManager, IndividualFormField } from "@/components/interface/FormField";
 
@@ -12,7 +12,7 @@ export interface UpdataFormResponse {
     status: string;
     msg: string;
     desc: string;
-    data:any;
+    data: any;
 }
 export const formApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -24,74 +24,85 @@ export const formApi = baseApi.injectEndpoints({
         }),
 
         updateStatus: builder.mutation<ApiResponse<UpdataStatusResponse>, { //
-            active: boolean; 
+            active: boolean;
             formId: string;
         }>({
             query: ({ formId, active }) => ({ //
                 url: "/forms/active",
                 method: "PATCH",
-                body: { formId, active }, 
+                body: { formId, active },
             }),
-            invalidatesTags: ["Form and Workflow"], 
+            invalidatesTags: ["Form and Workflow"],
         }),
 
         updateForm: builder.mutation<UpdataFormResponse, { //
             formId: string;
-            active: boolean; 
-            formColSpan:number;
-            formFieldJson:IndividualFormField[];
-            formName:string;
-            locks:boolean;
-            publish:boolean;
+            active: boolean;
+            formColSpan: number;
+            formFieldJson: IndividualFormField[];
+            formName: string;
+            locks: boolean;
+            publish: boolean;
         }>({
             query: ({ formId, active, formColSpan, formFieldJson, formName, locks, publish }) => ({ //
                 url: `/forms/${formId}`,
                 method: "PATCH",
-                body: { 
-                    active, 
-                    formColSpan, 
-                    formFieldJson, 
-                    formName, 
-                    locks, 
-                    publish 
-                }, 
+                body: {
+                    active,
+                    formColSpan,
+                    formFieldJson,
+                    formName,
+                    locks,
+                    publish
+                },
             }),
-            invalidatesTags: ["Form and Workflow"], 
+            invalidatesTags: ["Form and Workflow"],
         }),
 
         createForm: builder.mutation<UpdataFormResponse, { //
-            active: boolean; 
-            formColSpan:number;
-            formFieldJson:IndividualFormField[];
-            formName:string;
-            locks:boolean;
-            publish:boolean;
+            active: boolean;
+            formColSpan: number;
+            formFieldJson: IndividualFormField[];
+            formName: string;
+            locks: boolean;
+            publish: boolean;
         }>({
-            query: ({  active, formColSpan, formFieldJson, formName, locks, publish }) => ({ //
+            query: ({ active, formColSpan, formFieldJson, formName, locks, publish }) => ({ //
                 url: `/forms`,
                 method: "POST",
-                body: { 
-                    active, 
-                    formColSpan, 
-                    formFieldJson, 
-                    formName, 
-                    locks, 
-                    publish 
-                }, 
+                body: {
+                    active,
+                    formColSpan,
+                    formFieldJson,
+                    formName,
+                    locks,
+                    publish
+                },
             }),
-            invalidatesTags: ["Form and Workflow"], 
+            invalidatesTags: ["Form and Workflow"],
         }),
 
         postSubTypeForm: builder.mutation<ApiResponse<FormField>, string>({
-                    query: (subType) => ({
-                        url: "/forms/casesubtype",
-                        method: "POST",
-                        body: {
-                            caseSubType: subType
-                        },
-                    }),
-                    invalidatesTags: ["Form and Workflow"],
-                }),
+            query: (subType) => ({
+                url: "/forms/casesubtype",
+                method: "POST",
+                body: {
+                    caseSubType: subType
+                },
+            }),
+            invalidatesTags: ["Form and Workflow"],
+        }),
+
+        getTypeSubType: builder.query<ApiResponse<FormField>, string>({
+            query: (subType) => ({
+                url: "/forms/casesubtype",
+                method: "POST", // or GET if it should be a GET request
+                body: {
+                    caseSubType: subType
+                },
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
 
         // getTicket: builder.query<FormField, string>({
         //   query: (id) => `/tickets/${id}`,
@@ -282,5 +293,7 @@ export const {
     useUpdateStatusMutation,
     useUpdateFormMutation,
     useCreateFormMutation,
+    usePostSubTypeFormMutation,
+    useGetTypeSubTypeQuery
 } = formApi;
 

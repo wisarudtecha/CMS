@@ -86,6 +86,6 @@ export const caseApiSetup = async () => {
   await useFetchTypeSubType();
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();
-  await useFetchSubTypeAllForm();
+  // await useFetchSubTypeAllForm();
   await useFetchArea();
 }

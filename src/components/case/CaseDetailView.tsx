@@ -42,6 +42,8 @@ import DragDropFileUpload from "../d&d upload/dndUpload"
 import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { genCaseID } from "../genCaseId/genCaseId"
+import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
+
 
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
@@ -118,7 +120,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 priority: 0,
                 description: "",
                 area: undefined,
-                workOrderNummber:genCaseID(),
+                workOrderNummber: genCaseID(),
                 status: "",
                 scheduleDate: "",
                 customerData: {} as Custommer,
@@ -177,7 +179,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     )
 
     const [createCase] = usePostCreateCaseMutation();
-    const [updateCase] = usePatchUpdateCaseMutation()
+    const [updateCase] = usePatchUpdateCaseMutation();
 
     // Initialize customer data ONCE
     useEffect(() => {
@@ -187,6 +189,26 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             setIsInitialized(true);
         }
     }, [isInitialized]);
+
+    const [triggerFetch, setTriggerFetch] = useState<string | null>(null);
+
+    const {
+        data: apiFormData,
+        error,
+        isLoading: apiIsLoading
+    } = useGetTypeSubTypeQuery(triggerFetch || '', {
+        skip: !triggerFetch,
+    });
+
+    useEffect(() => {
+        if (apiFormData?.data && triggerFetch) {
+            localStorage.setItem(
+                "subTypeForm-" + triggerFetch,
+                JSON.stringify(apiFormData.data)
+            );
+            setTriggerFetch(null);
+        }
+    }, [apiFormData, triggerFetch]);
 
     // Initialize sopLocal from API data ONLY when sopData changes
     useEffect(() => {
@@ -215,32 +237,59 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     // Memoize getFormByCaseType to prevent infinite loops
     const getFormByCaseType = useCallback(() => {
-        if (!caseType.caseType || !caseTypeSupTypeData.length) return undefined;
+        if (!caseType.caseType || !caseTypeSupTypeData.length) {
+            return undefined;
+        }
 
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType);
+
         if (!newCaseType?.sTypeId) {
             return undefined;
         }
-        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
-        let formField: FormField = {} as FormField;
 
-        try {
-            if (formFieldStr && formFieldStr !== "undefined") {
-                formField = JSON.parse(formFieldStr);
+        // Check localStorage first
+        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
+
+        if (formFieldStr && formFieldStr !== "undefined") {
+            try {
+                const formField: FormField = JSON.parse(formFieldStr);
+                return {
+                    ...newCaseType,
+                    caseType: mergeCaseTypeAndSubType(newCaseType),
+                    formField,
+                    isLoading: false,
+                    error: null,
+                } as formType & { isLoading: boolean; error: any };
+            } catch (e) {
+                console.error("Failed to parse formField JSON:", e);
+                localStorage.removeItem("subTypeForm-" + newCaseType.sTypeId);
             }
-        } catch (e) {
-            console.error("Failed to parse formField JSON:", e);
         }
+
+        // Trigger API fetch if data not in localStorage
+        if (formFieldStr === null) {
+            setTriggerFetch(newCaseType.sTypeId);
+        }
+
+        // Return partial data with loading state
         return {
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType),
-            formField,
-        } as formType
-    }, [caseType.caseType, caseTypeSupTypeData]);
+            formField: apiFormData?.data || ({} as FormField),
+            isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
+            error: error,
+        } as formType & { isLoading: boolean; error: any };
+    }, [caseType.caseType, caseTypeSupTypeData, triggerFetch, apiFormData, apiIsLoading, error]);
 
     const selectedCaseTypeForm = useMemo(() => {
         return getFormByCaseType()
     }, [getFormByCaseType]);
+
+    useEffect(() => {
+        if (selectedCaseTypeForm == undefined) {
+            handleIsFillGetType(true)
+        }
+    }, [selectedCaseTypeForm])
 
     // Initialize case state from sopLocal data ONLY when all required data is available
     useEffect(() => {
@@ -332,7 +381,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             errorMessage = "Please select a Case Type.";
         } else if (!caseState?.workOrderNummber) {
             errorMessage = "Please enter Work Order Number.";
-        }else if (!caseState?.description?.trim()) {
+        } else if (!caseState?.description?.trim()) {
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
@@ -346,7 +395,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         let errorMessage = "";
         if (!caseType.caseType) {
             errorMessage = "Please select a Service Type.";
-        } 
+        }
         return errorMessage;
     }, [caseType.caseType, caseState]);
 
@@ -439,7 +488,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 ...originalCase,
                 ...updateJson,
                 id: originalCase.id,
-                caseId: originalCase.caseId ,
+                caseId: originalCase.caseId,
                 createdAt: originalCase.createdAt,
                 createdBy: originalCase.createdBy,
                 updatedAt: TodayDate(),
@@ -702,6 +751,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
     const handleIsFillGetType = useCallback((isFill: boolean) =>
         setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
+
 
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseType.caseType } as formType;
