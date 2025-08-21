@@ -15,7 +15,7 @@ import { useMemo, useRef, useState } from "react";
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType";
 import Badge from "../ui/badge/Badge";
 import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName";
-import {Comments} from "../comment/Comment";
+import { Comments } from "../comment/Comment";
 import DateStringToDateFormat from "../date/DateToString";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
@@ -56,88 +56,88 @@ interface ProgressLane {
 
 
 const mapSopToProgressSteps = (sopData: CaseSop): Array<{
-  id: string;
-  title: string;
-  completed: boolean;
-  current?: boolean;
-  description?: string;
-  type?: string;
-}> => {
-  if (!sopData?.sop || !sopData?.currentStage) {
-    return [];
-  }
-
-  // Get workflow connections to understand the flow order
-  const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-  
-  // Extract nodes and build a flow map
-  const nodes = sopData.sop.filter(item => 
-    item.section === "nodes" && 
-    item.type !== "start" && 
-    item.type !== "end"
-  );
-
-  // Build execution order based on connections starting from start node
-  const buildExecutionOrder = () => {
-    const orderMap: string[] = [];
-    const visited = new Set<string>();
-    
-    // Find start node
-    const startNode = sopData.sop.find(item => item.type === "start");
-    if (!startNode) return nodes.map(n => n.nodeId);
-    
-    const traverse = (nodeId: string) => {
-      if (visited.has(nodeId)) return;
-      visited.add(nodeId);
-      
-      const node = nodes.find(n => n.nodeId === nodeId);
-      if (node) {
-        orderMap.push(nodeId);
-      }
-      
-      // Find next nodes from connections
-      const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
-      nextConnections.forEach((conn: any) => {
-        traverse(conn.target);
-      });
-    };
-    
-    // Start traversal from start node's targets
-    const startConnections = connections.filter((conn: any) => conn.source === startNode.nodeId);
-    startConnections.forEach((conn: any) => {
-      traverse(conn.target);
-    });
-    
-    return orderMap;
-  };
-
-  const executionOrder = buildExecutionOrder();
-  const currentNodeId = sopData.currentStage.nodeId;
-  const currentIndex = executionOrder.indexOf(currentNodeId);
-
-  return executionOrder.map((nodeId, index) => {
-    const node = nodes.find(n => n.nodeId === nodeId);
-    if (!node) return null;
-
-    const isCompleted = index < currentIndex;
-    const isCurrent = index === currentIndex;
-
-    return {
-      id: node.nodeId,
-      title: node.data?.data?.label || `Step ${index + 1}`,
-      description: node.data?.data?.description,
-      completed: isCompleted,
-      current: isCurrent,
-      type: node.type,
-    };
-  }).filter(Boolean) as Array<{
     id: string;
     title: string;
     completed: boolean;
     current?: boolean;
     description?: string;
     type?: string;
-  }>;
+}> => {
+    if (!sopData?.sop || !sopData?.currentStage) {
+        return [];
+    }
+
+    // Get workflow connections to understand the flow order
+    const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
+
+    // Extract nodes and build a flow map
+    const nodes = sopData.sop.filter(item =>
+        item.section === "nodes" &&
+        item.type !== "start" &&
+        item.type !== "end"
+    );
+
+    // Build execution order based on connections starting from start node
+    const buildExecutionOrder = () => {
+        const orderMap: string[] = [];
+        const visited = new Set<string>();
+
+        // Find start node
+        const startNode = sopData.sop.find(item => item.type === "start");
+        if (!startNode) return nodes.map(n => n.nodeId);
+
+        const traverse = (nodeId: string) => {
+            if (visited.has(nodeId)) return;
+            visited.add(nodeId);
+
+            const node = nodes.find(n => n.nodeId === nodeId);
+            if (node) {
+                orderMap.push(nodeId);
+            }
+
+            // Find next nodes from connections
+            const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
+            nextConnections.forEach((conn: any) => {
+                traverse(conn.target);
+            });
+        };
+
+        // Start traversal from start node's targets
+        const startConnections = connections.filter((conn: any) => conn.source === startNode.nodeId);
+        startConnections.forEach((conn: any) => {
+            traverse(conn.target);
+        });
+
+        return orderMap;
+    };
+
+    const executionOrder = buildExecutionOrder();
+    const currentNodeId = sopData.currentStage.nodeId;
+    const currentIndex = executionOrder.indexOf(currentNodeId);
+
+    return executionOrder.map((nodeId, index) => {
+        const node = nodes.find(n => n.nodeId === nodeId);
+        if (!node) return null;
+
+        const isCompleted = index < currentIndex;
+        const isCurrent = index === currentIndex;
+
+        return {
+            id: node.nodeId,
+            title: node.data?.data?.label || `Step ${index + 1}`,
+            description: node.data?.data?.description,
+            completed: isCompleted,
+            current: isCurrent,
+            type: node.type,
+        };
+    }).filter(Boolean) as Array<{
+        id: string;
+        title: string;
+        completed: boolean;
+        current?: boolean;
+        description?: string;
+        type?: string;
+    }>;
 };
 
 export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
@@ -147,8 +147,8 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
 
     // Get only process nodes (skip decisions for simplicity)
     const processNodes = sopData.sop
-        .filter(item => 
-            item.section === "nodes" && 
+        .filter(item =>
+            item.section === "nodes" &&
             item.type === "process" // Only show process steps
         )
         .sort((a, b) => {
@@ -170,7 +170,7 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
 
         if (nextConnections.length > 0) {
             // For simplicity, take the first connection
-            
+
             const nextNodeId = nextConnections[0].target;
             const nextNode = processNodes.find(n => n.nodeId === nextNodeId);
             if (nextNode) {
@@ -184,7 +184,7 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
     return processNodes.map((node, index) => {
         const isCompleted = !foundCurrent && node.nodeId !== currentProcessNode;
         const isCurrent = node.nodeId === currentProcessNode;
-        
+
         if (isCurrent) {
             foundCurrent = true;
         }
@@ -205,19 +205,19 @@ export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSt
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
-   
+
     // Get connections to understand the flow
     const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-    const nodes = sopData.sop.filter(item => 
-        item.section === "nodes" && 
-        item.type !== "start" && 
+    const nodes = sopData.sop.filter(item =>
+        item.section === "nodes" &&
+        item.type !== "start" &&
         item.type !== "end"
     );
 
     // Build the current execution path only
     const buildCurrentPath = (currentNodeId: string): string[] => {
         const visited = new Set<string>();
-        
+
         // Find start node
         const startNode = sopData.sop.find(item => item.type === "start");
         if (!startNode) return [];
@@ -226,9 +226,9 @@ export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSt
         const traceToTarget = (nodeId: string, targetId: string, currentPath: string[]): string[] | null => {
             if (visited.has(nodeId)) return null;
             visited.add(nodeId);
-            
+
             const newPath = [...currentPath, nodeId];
-            
+
             if (nodeId === targetId) {
                 return newPath;
             }
@@ -240,7 +240,7 @@ export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSt
                     return result;
                 }
             }
-            
+
             return null;
         };
 
@@ -287,9 +287,9 @@ export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSt
 // Multi-lane progress for complex workflows
 export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
     const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-    const nodes = sopData.sop.filter(item => 
-        item.section === "nodes" && 
-        item.type !== "start" && 
+    const nodes = sopData.sop.filter(item =>
+        item.section === "nodes" &&
+        item.type !== "start" &&
         item.type !== "end"
     );
 
@@ -307,14 +307,14 @@ export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
 
     // Build separate lanes for each decision branch
     const lanes: ProgressLane[] = [];
-    
+
     decisionNodes.forEach(decisionNode => {
         const branches = connections.filter((conn: any) => conn.source === decisionNode.nodeId);
-        
+
         branches.forEach((branch: any, index: number) => {
             const laneName = branch.label || `Option ${index + 1}`;
             const isActiveLane = isNodeInCurrentPath(branch.target, sopData.currentStage.nodeId, connections, nodes);
-            
+
             lanes.push({
                 id: `${decisionNode.nodeId}-${index}`,
                 name: laneName,
@@ -330,16 +330,16 @@ export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
 // Helper function to check if a node is in the current execution path
 const isNodeInCurrentPath = (nodeId: string, currentNodeId: string, connections: any[], _nodes: any[]): boolean => {
     const visited = new Set<string>();
-    
+
     const canReach = (fromId: string, toId: string): boolean => {
         if (fromId === toId) return true;
         if (visited.has(fromId)) return false;
         visited.add(fromId);
-        
+
         const nextConnections = connections.filter((conn: any) => conn.source === fromId);
         return nextConnections.some((conn: any) => canReach(conn.target, toId));
     };
-    
+
     return canReach(nodeId, currentNodeId);
 };
 
@@ -347,34 +347,34 @@ const isNodeInCurrentPath = (nodeId: string, currentNodeId: string, connections:
 const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections: any[], nodes: any[]): ProgressSteps[] => {
     const branchNodes: string[] = [];
     const visited = new Set<string>();
-    
+
     const traverse = (nodeId: string) => {
         if (visited.has(nodeId)) return;
         visited.add(nodeId);
-        
+
         const node = nodes.find((n: any) => n.nodeId === nodeId);
         if (node) {
             branchNodes.push(nodeId);
         }
-        
+
         const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
         nextConnections.forEach((conn: any) => {
             traverse(conn.target);
         });
     };
-    
+
     traverse(startNodeId);
-    
+
     const currentNodeId = sopData.currentStage.nodeId;
     const currentIndex = branchNodes.indexOf(currentNodeId);
-    
+
     return branchNodes.map((nodeId, index) => {
         const node = nodes.find((n: any) => n.nodeId === nodeId);
         if (!node) return null;
-        
+
         const isCompleted = currentIndex !== -1 && index < currentIndex;
         const isCurrent = index === currentIndex;
-        
+
         return {
             id: index + 1,
             title: node.data?.data?.label || `Step ${index + 1}`,
@@ -387,6 +387,7 @@ const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections:
 };
 
 interface CaseCardProps {
+    onAddSubCase?: () => void;
     onAssignClick: () => void;
     onEditClick: () => void;
     setCaseData?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
@@ -395,7 +396,7 @@ interface CaseCardProps {
     comment?: CaseHistory[];
 }
 
-export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, caseData, editFormData, setCaseData ,comment}) => {
+export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick, onEditClick, caseData, editFormData, setCaseData, comment }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
@@ -445,7 +446,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, 
             e.target.value = '';
         }
     };
-    
+
     return (
         <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData.priority)}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
@@ -490,12 +491,12 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, 
                         Comment
                     </Button>
                     {/* Show Attach File button only in edit mode for existing cases */}
-                   
+
                     <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>
 
-                     {editFormData && (
+                    {editFormData && (
                         <div>
                             <Button
                                 size="sm"
@@ -517,12 +518,20 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAssignClick, onEditClick, 
                         </div>
                     )}
                 </div>
-                <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
-                    <User_Icon className="w-4 h-4" />
-                    <span>Assign</span>
-                </Button>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
+                    {onAddSubCase &&
+                        <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
+                            <span>Add SupCase</span>
+                        </Button>}
+                    <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
+                        <User_Icon className="w-4 h-4" />
+                        <span>Assign</span>
+                    </Button>
+                </div>
             </div>
             {showComment && <Comments caseId={caseData.caseId} comment={comment} />}
         </div>
     );
 };
+
+

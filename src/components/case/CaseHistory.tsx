@@ -998,7 +998,7 @@ const CaseHistoryComponent: React.FC<{
       </div>
 
       <div className={viewOpen}>
-        <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} />
+        <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} isCreate={false}/>
       </div>
     </>
   );

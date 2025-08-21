@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState, useEffect, ChangeEvent } from "react"
+import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
 import {
     ArrowLeft,
     User as User_Icon,
@@ -43,6 +43,8 @@ import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { genCaseID } from "../genCaseId/genCaseId"
 import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
+import CreateSubCaseModel from "./subCase/subCaseModel"
+
 
 
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
@@ -67,7 +69,6 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     handleGetTypeFormData,
     hadleIsFillGetType,
     selectedCaseTypeForm,
-    editFormData,
     caseTypeSupTypeData
 }) => {
     const caseTypeOptions = useMemo(() => {
@@ -87,8 +88,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     options={caseTypeOptions}
                     value={caseType}
                     onChange={handleCaseTypeChange}
-                    placeholder={"Select a FormType"}
-                    disabled={!editFormData}
+                    placeholder={"Select a CaseType"}
                     className=" 2xsm:mx-3 mb-2"
                 />
             </div>
@@ -108,8 +108,412 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     );
 };
 
-export default function CaseDetailView({ onBack, caseData }: { onBack?: () => void, caseData?: CaseEntity }) {
+// ## START: Refactored Components ##
+
+// Memoized Header Component
+const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
+    disablePageMeta?: boolean;
+    onBack?: () => void;
+    onOpenCustomerPanel: () => void;
+}) => (
+    <div className="flex-shrink-0">
+        {!disablePageMeta && <PageBreadcrumb pageTitle="Case" />}
+        <div className="px-4 sm:px-6">
+            <div className="flex items-center justify-between">
+                {!disablePageMeta && (
+                    <div className="flex items-center space-x-4">
+                        {onBack && (
+                            <Button variant="ghost" size="sm" onClick={onBack}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Back
+                            </Button>
+                        )}
+                    </div>
+                )}
+                <div className="md:hidden">
+                    <Button
+                        className="mb-2"
+                        variant="outline"
+                        size="sm"
+                        onClick={onOpenCustomerPanel}
+                    >
+                        <User_Icon className="w-4 h-4 mr-2" />
+                        View Customer
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </div>
+));
+CaseHeader.displayName = 'CaseHeader';
+
+// Memoized Attached Files Component
+const AttachedFiles = memo(({ files, editFormData, onRemove }: {
+    files?: File[];
+    editFormData: boolean;
+    onRemove: (index: number) => void;
+}) => {
+    if (!files?.length) return null;
+
+    return (
+        <div className="mx-3">
+            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                Attach File :
+            </span>
+            <div className="mt-2 mb-3">
+                <div className="grid grid-cols-3 gap-2">
+                    {files.map((file, index) => (
+                        <div key={`${file.name}-${index}`} className="relative group">
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Upload ${index + 1}`}
+                                className="w-full h-20 object-cover rounded border border-gray-600"
+                            />
+                            {editFormData && (
+                                <Button
+                                    onClick={() => onRemove(index)}
+                                    className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                    size="sm"
+                                    variant="error"
+                                >
+                                    ×
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+});
+AttachedFiles.displayName = 'AttachedFiles';
+
+
+// Memoized Assigned Officers Component
+const AssignedOfficers = memo(({
+    assignedOfficers,
+    showOfficersData,
+    onSelectOfficer,
+    onRemoveOfficer
+}: {
+    assignedOfficers: Unit[];
+    showOfficersData: Unit | null;
+    onSelectOfficer: (officer: Unit) => void;
+    onRemoveOfficer: (officer: Unit) => void;
+}) => {
+    if (!assignedOfficers.length) return null;
+
+    return (
+        <div className="mb-4 flex flex-wrap gap-2 items-center">
+            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+            </span>
+            {assignedOfficers.map(officer => (
+                <div
+                    key={officer.unitId}
+                    className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
+                >
+                    <div onClick={() => onSelectOfficer(officer)} className="cursor-pointer">
+                        {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
+                    </div>
+                    {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                    {officer.username}
+                    <Button size="xxs" className="mx-1" variant="outline-no-transparent">
+                        Acknowledge
+                    </Button>
+                    <Button
+                        onClick={() => onRemoveOfficer(officer)}
+                        className="ml-2"
+                        title="Remove"
+                        variant="outline-no-transparent"
+                        size="xxs"
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            ))}
+        </div>
+    );
+});
+AssignedOfficers.displayName = 'AssignedOfficers';
+
+
+// Props interface for the form fields component
+interface CaseFormFieldsProps {
+    caseState: CaseDetails;
+    caseData?: CaseEntity;
+    setCaseState: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
+    caseType: { caseType: string; priority: number };
+    selectedCaseTypeForm: formType | undefined;
+    caseTypeSupTypeData: CaseTypeSubType[];
+    areaList: Area[];
+    listCustomerData: Customer[];
+    isCreate: boolean;
+    editFormData: boolean;
+    // Handlers
+    handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleWorkOrderDate: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleContactMethodChange: (data: { name: string, id: string }) => void;
+    handleIotDevice: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleIotDeviceDate: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleCaseTypeChange: (newValue: string) => void;
+    handleGetTypeFormData: (getTypeData: FormField) => void;
+    handleIsFillGetType: (isFill: boolean) => void;
+    handleDetailChange: (data: string) => void;
+    handleSetArea: (selectedName: string) => void;
+    handleCustomerDataChange: (data: Custommer) => void;
+    handleLocationChange: (data: string) => void;
+    handleScheduleDate: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleWorkOrderDateChangeDefault: (date: string) => string;
+    handleIotDateChangeDefault: (date: string) => string;
+    handleScheduleDateChangeDefault: (date: string) => string;
+    handleFilesChange: (newFiles: File[]) => void;
+    handlePreviewShow: () => void;
+    handleSaveDrafts: () => Promise<void>;
+}
+
+
+// Memoized Form Fields Component
+const CaseFormFields = memo<CaseFormFieldsProps>(({
+    caseState, caseData, setCaseState, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
+    areaList, listCustomerData, isCreate, editFormData, handleWorkOrderNumber,
+    handleWorkOrderDate, handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
+    handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
+    handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
+    handleWorkOrderDateChangeDefault, handleIotDateChangeDefault, handleScheduleDateChangeDefault,
+    handleFilesChange, handlePreviewShow, handleSaveDrafts
+}) => (
+    <>
+        {/* Priority Section */}
+        {selectedCaseTypeForm && (
+            <div className="flex items-end justify-end">
+                <span className="mr-2 text-gray-900 dark:text-gray-400">Priority</span>
+                <div
+                    className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
+                        caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType.caseType)?.priority ?? -1
+                    )} rounded-lg`}
+                />
+            </div>
+        )}
+
+        {/* Form Grid */}
+        <div className="xsm:grid grid-cols-2">
+            {/* Work Order Number */}
+            <div className="px-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                    Work Order Number : {requireElements}
+                </h3>
+                <Input
+                    required
+                    type="text"
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleWorkOrderNumber}
+                    value={caseState?.workOrderNummber || ""}
+                    placeholder="Work Order Number"
+                    disabled
+                />
+            </div>
+
+            {/* Work Order Reference */}
+            {caseData?.referCaseId && (
+                <div className="px-3">
+                    <h3 className="text-gray-900 dark:text-gray-400 mb-3">Work Order Reference :</h3>
+                    <Input
+                        required
+                        type="text"
+                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                        value={caseState?.workOrderRef || ""}
+                        placeholder="Work Order Reference"
+                        disabled={true}
+                    />
+                </div>
+            )}
+
+            {/* Create Date */}
+            <div className="px-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">Create Date :</h3>
+                <Input
+                    required
+                    type="datetime-local"
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleWorkOrderDate}
+                    disabled
+                    value={caseState?.workOrderDate || handleWorkOrderDateChangeDefault(TodayDate())}
+                    placeholder="Work Order"
+                />
+            </div>
+
+            {/* Contract Method */}
+            <div className="px-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                    Contract Method : {requireElements}
+                </h3>
+                <SearchableSelect
+                    options={contractMethodMock.map(m => m.name)}
+                    className="sm:my-3"
+                    value={caseState?.customerData?.contractMethod?.name ?? ""}
+                    onChange={(selectedName) => {
+                        const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+                        if (selectedMethod) handleContactMethodChange(selectedMethod);
+                    }}
+                />
+            </div>
+
+            {/* IoT Device */}
+            <div className="px-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">IoT Device :</h3>
+                <Input
+                    required
+                    type="text"
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleIotDevice}
+                    value={caseState?.iotDevice || ""}
+                    placeholder="IoT Device Name"
+                />
+            </div>
+
+            {/* IoT Alert Date */}
+            <div className="px-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">IoT Alert Date :</h3>
+                <Input
+                    required
+                    type="datetime-local"
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleIotDeviceDate}
+                    disabled
+                    value={caseState?.iotDate || handleIotDateChangeDefault(TodayDate())}
+                    placeholder="Work Order"
+                />
+            </div>
+        </div>
+
+        {/* Case Type Form Section */}
+        <CaseTypeFormSection
+            caseType={caseType.caseType}
+            handleCaseTypeChange={handleCaseTypeChange}
+            handleGetTypeFormData={handleGetTypeFormData}
+            hadleIsFillGetType={handleIsFillGetType}
+            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
+            editFormData={editFormData}
+            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
+        />
+
+        {/* Case Details */}
+        <div className="pr-7">
+            <h3 className="text-gray-900 dark:text-gray-400 mx-3">
+                Case Details: {requireElements}
+            </h3>
+            <textarea
+                onChange={(e) => handleDetailChange(e.target.value)}
+                value={caseState?.description || ""}
+                placeholder="Enter Case Details"
+                className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                required
+            />
+        </div>
+
+        {/* Service Center and Customer */}
+        <div className="sm:grid grid-cols-2">
+            <div>
+                <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3">Service Center :</h3>
+                <SearchableSelect
+                    options={areaList.map(item => mergeArea(item))}
+                    value={caseState?.area ? mergeArea(caseState.area) : ""}
+                    onChange={handleSetArea}
+                    placeholder="Select a Service Center"
+                    className="2xsm:m-3"
+                />
+            </div>
+            <CustomerInput
+                listCustomerData={listCustomerData}
+                handleCustomerDataChange={handleCustomerDataChange}
+                customerData={caseState?.customerData || {} as Custommer}
+            />
+
+            {/* Location Information */}
+            <div className="pr-6 col-span-2">
+                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Location Information :</h3>
+                <textarea
+                    onChange={(e) => handleLocationChange(e.target.value)}
+                    value={caseState?.location || ""}
+                    placeholder="Enter Location"
+                    className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                />
+            </div>
+
+            {/* Schedule Date */}
+            <div className="px-3">
+                <div className="flex mb-3">
+                    <h3 className="text-gray-900 dark:text-gray-400 mr-2">Request Schedule date :</h3>
+                    <input
+                        type="checkbox"
+                        className="mx-3"
+                        checked={caseState?.requireSchedule || false}
+                        onChange={() => {
+                            setCaseState(prevState => ({
+                                ...prevState,
+                                requireSchedule: !prevState?.requireSchedule
+                            } as CaseDetails));
+                        }}
+                    />
+                </div>
+                <Input
+                    required
+                    type="datetime-local"
+                    disabled={!caseState?.requireSchedule}
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleScheduleDate}
+                    value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
+                    min={new Date().toISOString().slice(0, 16)}
+                />
+            </div>
+        </div>
+
+        {/* File Upload for new cases */}
+        {!caseData && (
+            <div className="px-3 my-6">
+                <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-3">
+                    Attach Files:
+                </h3>
+                <DragDropFileUpload
+                    files={caseState?.attachFile || []}
+                    onFilesChange={handleFilesChange}
+                    accept="image/*,.pdf,.doc,.docx,.txt"
+                    maxSize={10}
+                    className="mb-4"
+                    disabled={false}
+                />
+            </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end mt-20 mb-3 mr-3">
+            {!isCreate ? (
+                <Button variant="success" onClick={handlePreviewShow}>
+                    Save Changes
+                </Button>
+            ) : (
+                <div className="flex justify-end">
+                    <Button onClick={handleSaveDrafts} className="mx-3">
+                        Save As Draft
+                    </Button>
+                    <Button variant="success" onClick={handlePreviewShow}>
+                        Submit
+                    </Button>
+                </div>
+            )}
+        </div>
+    </>
+));
+CaseFormFields.displayName = 'CaseFormFields';
+
+
+// ## END: Refactored Components ##
+
+
+export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
+
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!caseData) {
@@ -132,6 +536,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     });
 
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [showCreateSupCase, setShowCreateSupCase] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(!caseData);
     const [assignedOfficers, setAssignedOfficers] = useState<Unit[]>([]);
     const [showOfficersData, setShowOFFicersData] = useState<Unit | null>(null);
@@ -164,18 +569,18 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         { caseId: caseData?.caseId || "" },
         {
             refetchOnMountOrArgChange: true,
-            skip: !caseData?.caseId
+            skip: !caseData?.caseId || isCreate
         }
     );
 
     const { data: unit } = useGetUnitQuery(
         { caseId: caseData?.caseId || "" },
-        { skip: !caseData?.caseId }
+        { skip: !caseData?.caseId || isCreate }
     )
 
     const { data: comments } = useGetCaseHistoryQuery(
         { caseId: caseData?.caseId || "" },
-        { skip: !caseData?.caseId }
+        { skip: !caseData?.caseId || isCreate }
     )
 
     const [createCase] = usePostCreateCaseMutation();
@@ -233,9 +638,27 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
 
             setCaseType(newCaseType);
         }
-    }, [caseData?.caseTypeId, caseData?.caseSTypeId, caseData?.priority, caseTypeSupTypeData.length, caseType.caseType, sopLocal]);
+    }, []);
 
-    // Memoize getFormByCaseType to prevent infinite loops
+    useEffect(() => {
+
+        if (!caseType.caseType || !caseTypeSupTypeData.length) {
+            return;
+        }
+
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType);
+
+        if (!newCaseType?.sTypeId) {
+            return;
+        }
+
+        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
+        if (formFieldStr === null && triggerFetch !== newCaseType.sTypeId) {
+            setTriggerFetch(newCaseType.sTypeId);
+        }
+    }, [caseType.caseType, caseTypeSupTypeData, triggerFetch]);
+
+
     const getFormByCaseType = useCallback(() => {
         if (!caseType.caseType || !caseTypeSupTypeData.length) {
             return undefined;
@@ -263,15 +686,11 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             } catch (e) {
                 console.error("Failed to parse formField JSON:", e);
                 localStorage.removeItem("subTypeForm-" + newCaseType.sTypeId);
+                // Continue to the fetch logic below
             }
         }
 
-        // Trigger API fetch if data not in localStorage
-        if (formFieldStr === null) {
-            setTriggerFetch(newCaseType.sTypeId);
-        }
-
-        // Return partial data with loading state
+        // Return data based on the current API state
         return {
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType),
@@ -279,17 +698,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
             error: error,
         } as formType & { isLoading: boolean; error: any };
-    }, [caseType.caseType, caseTypeSupTypeData, triggerFetch, apiFormData, apiIsLoading, error]);
+    }, [caseType.caseType, triggerFetch, apiFormData, apiIsLoading, error]);
 
     const selectedCaseTypeForm = useMemo(() => {
         return getFormByCaseType()
     }, [getFormByCaseType]);
 
-    useEffect(() => {
-        if (selectedCaseTypeForm == undefined) {
-            handleIsFillGetType(true)
-        }
-    }, [selectedCaseTypeForm])
+
 
     // Initialize case state from sopLocal data ONLY when all required data is available
     useEffect(() => {
@@ -318,8 +733,27 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             } as CaseDetails;
 
             setCaseState(newCaseState);
+        } 
+        else if (isSubCase) {
+            const newCaseState: CaseDetails = {
+
+                workOrderNummber: caseData?.caseId || "",
+                workOrderRef: caseData?.referCaseId || "",
+            } as CaseDetails;
+
+            setCaseState(newCaseState);
         }
-    }, [sopLocal, caseData, areaList.length, getFormByCaseType]);
+
+    }, [sopLocal, caseData, areaList.length]);
+
+
+    useEffect(() => {
+        if (selectedCaseTypeForm === undefined ||
+            selectedCaseTypeForm.formField === undefined ||
+            Object.keys(selectedCaseTypeForm.formField || {}).length === 0) {
+            setIsValueFill(prev => ({ ...prev, DynamicForm: true }));
+        }
+    }, [selectedCaseTypeForm]);
 
     // Update customer data ONLY when necessary data is available
     useEffect(() => {
@@ -345,7 +779,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 status: prev.status || "",
             } as CaseDetails : prev);
         }
-    }, [listCustomerData.length, sopLocal]);
+    }, [listCustomerData.length, sopLocal, caseData?.phoneNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
     const handleFilesChange = useCallback((newFiles: File[]) => {
@@ -375,6 +809,13 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         setShowOFFicersData(prev => (prev?.unitId === selectedOfficer.unitId ? null : selectedOfficer));
     }, []);
 
+    const handleRemoveOfficer = useCallback((officerToRemove: Unit) => {
+        setAssignedOfficers(prev => prev.filter(o => o.unitId !== officerToRemove.unitId));
+        if (showOfficersData?.unitId === officerToRemove.unitId) {
+            setShowOFFicersData(null);
+        }
+    }, [showOfficersData?.unitId]);
+
     const handleCheckRequiredFields = useCallback(() => {
         let errorMessage = "";
         if (!caseType.caseType) {
@@ -397,7 +838,7 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             errorMessage = "Please select a Service Type.";
         }
         return errorMessage;
-    }, [caseType.caseType, caseState]);
+    }, [caseType.caseType]);
 
     const createCaseAction = useCallback(async (action: "draft" | "submit") => {
         if (!caseState) return false;
@@ -434,9 +875,9 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             usercommand: caseState?.serviceCenter?.commandTh || "",
             usercreate: profile?.username || "",
             userreceive: "",
-            nodeId: caseState?.caseType?.formField.nextNodeId || "",
-            wfId: caseState?.caseType?.formField.wfId || "",
-            versions: caseState?.caseType?.formField.versions || "",
+            nodeId: caseState?.caseType?.formField?.nextNodeId || "",
+            wfId: caseState?.caseType?.wfId || "",
+            versions: caseState?.caseType?.formField?.versions || "",
             caseId: caseState?.workOrderNummber || "",
             createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
             scheduleFlag: caseState.requireSchedule,
@@ -594,8 +1035,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
             usercommand: caseState?.serviceCenter?.commandTh || "",
             usercreate: profile?.username || "",
             userreceive: "",
-            nodeId: caseState?.caseType?.formField.nextNodeId || "",
-            wfId: caseState?.caseType?.formField.wfId || "",
+            nodeId: caseState?.caseType?.formField?.nextNodeId || "",
+            wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField.versions || "",
             deptId: caseState?.serviceCenter?.deptId || undefined,
             commId: caseState?.serviceCenter?.commId || undefined,
@@ -652,15 +1093,8 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [handleCheckRequiredFields]);
 
     const handleEditClick = useCallback(() => {
-        if (caseState) {
-            const newCaseType = caseState.caseType ?
-                { caseType: caseState.caseType.caseType || "", priority: caseState.caseType.priority || 0 } :
-                { caseType: "", priority: 0 };
-
-            setCaseType(newCaseType);
-        }
         setEditFormData(prev => !prev);
-    }, [caseState]);
+    }, []);
 
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
@@ -669,10 +1103,18 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 ...prevCaseType,
                 caseType: newValue
             }));
+            setCaseState(
+                prev => prev ? {
+                    ...prev,
+                    caseType: {
+                        ...newCaseType,
+                        caseType: mergeCaseTypeAndSubType(newCaseType)
+                    } as formType
+                } : prev
+            )
         }
     }, [caseTypeSupTypeData]);
 
-    // Update handlers to work with single state
     const updateCaseState = useCallback((updates: Partial<CaseDetails>) => {
         setCaseState(prev => prev ? { ...prev, ...updates } : prev);
     }, []);
@@ -685,29 +1127,23 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         updateCaseState({ description: data });
     }, [updateCaseState]);
 
-    // const handleServiceDateChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    //     const value = e.target.value === "" ? "" : e.target.value;
-    //     updateCaseState({ date: value });
-    // }, [updateCaseState]);
-
     const handleContactMethodChange = useCallback((data: { name: string, id: string }) => {
-        updateCaseState({
-            customerData: {
-                ...caseState?.customerData,
-                contractMethod: data
-            } as Custommer
+        setCaseState(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                customerData: {
+                    ...prev.customerData,
+                    contractMethod: data
+                } as Custommer
+            };
         });
-    }, [updateCaseState, caseState?.customerData]);
+    }, []);
 
     const handleScheduleDate = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value === "" ? "" : e.target.value;
         updateCaseState({ scheduleDate: value });
     }, [updateCaseState]);
-
-    // const handleServiceDateChangeDefault = useCallback((date: string) => {
-    //     updateCaseState({ date: date });
-    //     return date
-    // }, [updateCaseState]);
 
     const handleWorkOrderDateChangeDefault = useCallback((date: string) => {
         updateCaseState({ workOrderDate: date });
@@ -722,11 +1158,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleWorkOrderNumber = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value === "" ? "" : e.target.value;
         updateCaseState({ workOrderNummber: value });
-    }, [updateCaseState]);
-
-    const handleWorkOrderRef = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? "" : e.target.value;
-        updateCaseState({ workOrderRef: value });
     }, [updateCaseState]);
 
     const handleWorkOrderDate = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -752,7 +1183,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     const handleIsFillGetType = useCallback((isFill: boolean) =>
         setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
 
-
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseType.caseType } as formType;
         updateCaseState({ caseType: newData });
@@ -766,7 +1196,6 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
     }, [areaList, updateCaseState]);
 
     const handleCustomerDataChange = useCallback((data: Custommer) => {
-        // console.log(data)
         updateCaseState({ customerData: data });
     }, [updateCaseState]);
 
@@ -807,9 +1236,12 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
         );
     }
 
+    // Main component
     return (
         <div className="flex flex-col h-screen">
-            <PageMeta title="Case Detail" description="Case Detail Page" />
+            {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
+
+            {/* Toast */}
             {showToast && (
                 <Toast
                     message={toastMessage}
@@ -819,317 +1251,91 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 />
             )}
 
-            <div className="flex-shrink-0">
-                <PageBreadcrumb pageTitle="Case" />
-                <div className="px-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            {onBack && (
-                                <Button variant="ghost" size="sm" onClick={onBack}>
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back
-                                </Button>
-                            )}
-                        </div>
-                        <div className="md:hidden">
-                            <Button className="mb-2" variant="outline" size="sm" onClick={() => setIsCustomerPanelOpen(true)}>
-                                <User_Icon className="w-4 h-4 mr-2" />
-                                View Customer
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Header */}
+            <CaseHeader
+                disablePageMeta={disablePageMeta}
+                onBack={onBack}
+                onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+            />
 
+            {/* Main Content */}
             <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
                 <div className="flex flex-col md:flex-row h-full gap-1 w-full">
+
+                    {/* Left Panel */}
                     <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
                         <div className="pr-0">
                             <div className="px-4 pt-6">
-                                {(caseData && sopLocal) && <CaseCard
-                                    onAssignClick={() => setShowAssignModal(true)}
-                                    onEditClick={handleEditClick}
-                                    caseData={sopLocal}
+
+                                {/* Case Card */}
+                                {(caseData && sopLocal) && (
+                                    <CaseCard
+                                        onAddSubCase={() => setShowCreateSupCase(true)}
+                                        onAssignClick={() => setShowAssignModal(true)}
+                                        onEditClick={handleEditClick}
+                                        caseData={sopLocal}
+                                        editFormData={editFormData}
+                                        setCaseData={setCaseState}
+                                        comment={comments?.data}
+                                    />
+                                )}
+
+                                <AttachedFiles
+                                    files={caseState?.attachFileResult}
                                     editFormData={editFormData}
-                                    setCaseData={setCaseState}
-                                    comment={comments?.data}
-                                />}
+                                    onRemove={handleRemoveFileResult}
+                                />
+                                <AssignedOfficers
+                                    assignedOfficers={assignedOfficers}
+                                    showOfficersData={showOfficersData}
+                                    onSelectOfficer={handleSelectOfficer}
+                                    onRemoveOfficer={handleRemoveOfficer}
+                                />
 
-                                {/* Display attachFileResult files for existing cases (both edit and view mode) */}
-                                {caseData && caseState?.attachFileResult && caseState.attachFileResult.length > 0 && (
-                                    <div className="mx-3">
-                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                                            Attach File :
-                                        </span>
-
-                                        {Array.isArray(caseState.attachFileResult) && caseState.attachFileResult.length > 0 && (
-                                            <div className="mt-2 mb-3">
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {caseState.attachFileResult.map((file: File, index: number) => (
-                                                        <div key={file.name + index} className="relative group">
-                                                            <img
-                                                                src={URL.createObjectURL(file)}
-                                                                alt={`Upload ${index + 1}`}
-                                                                className="w-full h-20 object-cover rounded border border-gray-600"
-                                                            />
-                                                            {editFormData && (
-                                                                <Button
-                                                                    onClick={() => handleRemoveFileResult(index)}
-                                                                    className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    size="sm"
-                                                                    variant="error"
-                                                                >
-                                                                    ×
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {(caseData && assignedOfficers.length > 0) && (
-                                    <div className="mb-4 flex flex-wrap gap-2 items-center">
-                                        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                                            Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
-                                        </span>
-                                        {assignedOfficers.map(officer => (
-                                            <div
-                                                key={officer.unitId}
-                                                className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
-                                            >
-                                                <div onClick={() => handleSelectOfficer(officer)}>
-                                                    {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
-                                                </div>
-                                                {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                                                {officer.username}
-                                                <Button size="xxs" className="mx-1" variant="outline-no-transparent">Acknowledge</Button>
-                                                <Button
-                                                    onClick={() => {
-                                                        setAssignedOfficers(prev => prev.filter(o => o.unitId !== officer.unitId));
-                                                        if (showOfficersData && showOfficersData.unitId === officer.unitId) {
-                                                            setShowOFFicersData(null)
-                                                        }
-                                                    }}
-                                                    className="ml-2"
-                                                    title="Remove"
-                                                    variant="outline-no-transparent"
-                                                    size="xxs"
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                                 {showOfficersData && <CommandInformation className="my-2" />}
                             </div>
+
+                            {/* Form Content */}
                             <div className="px-4">
-                                {editFormData ? (
-                                    <>
-                                        {((selectedCaseTypeForm && (caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType.caseType)?.priority))) && (
-                                            <div className="flex items-end justify-end">
-                                                <span className={`mr-2 text-gray-900 dark:text-gray-400 `}>Priority</span>
-                                                <div
-                                                    className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
-                                                        caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType.caseType)?.priority ?? -1
-                                                    )} rounded-lg`}
-                                                ></div>
-                                            </div>
-                                        )}
-
-                                        <div className="xsm:grid grid-cols-2">
-                                            <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Work Order Number : {requireElements}</h3>
-                                                <Input
-                                                    required={true}
-                                                    type="text"
-                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                    onChange={(e) => handleWorkOrderNumber(e)}
-                                                    value={caseState?.workOrderNummber || ""}
-                                                    placeholder="Work Order Number"
-                                                    disabled={true}
-                                                ></Input>
-                                            </div>
-                                            <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Work Order Reference : </h3>
-                                                <Input
-                                                    required={true}
-                                                    type="text"
-                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                    onChange={(e) => handleWorkOrderRef(e)}
-                                                    value={caseState?.workOrderRef || ""}
-                                                    placeholder="Work Order Reference"
-                                                ></Input>
-                                            </div>
-
-
-
-                                            <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Create Date : </h3>
-                                                <Input
-                                                    required={true}
-                                                    type="datetime-local"
-                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                    onChange={(e) => handleWorkOrderDate(e)}
-                                                    disabled={true}
-                                                    value={caseState?.workOrderDate || handleWorkOrderDateChangeDefault(TodayDate())}
-                                                    placeholder="Word Order"
-                                                ></Input>
-                                            </div>
-                                            <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">Contract Method : {requireElements}</h3>
-                                                <SearchableSelect
-                                                    options={contractMethodMock.map(m => m.name)}
-                                                    className="sm:my-3"
-                                                    value={caseState?.customerData?.contractMethod?.name ?? ""}
-                                                    onChange={(selectedName) => {
-                                                        const selectedMethod = contractMethodMock.find(
-                                                            (method) => method.name === selectedName
-                                                        );
-                                                        if (selectedMethod) {
-                                                            handleContactMethodChange(selectedMethod);
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-
-
-                                            <div className="px-3">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">IoT Device : </h3>
-                                                <Input
-                                                    required={true}
-                                                    type="text"
-                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                    onChange={(e) => handleIotDevice(e)}
-                                                    value={caseState?.iotDevice || ""}
-                                                    placeholder="Iot Device Name"
-                                                ></Input>
-                                            </div>
-                                            <div className="px-3 ">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mb-3">IoT Alert Date : </h3>
-                                                <Input
-                                                    required={true}
-                                                    type="datetime-local"
-                                                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                    onChange={(e) => handleIotDeviceDate(e)}
-                                                    disabled={true}
-                                                    value={caseState?.iotDate || handleIotDateChangeDefault(TodayDate())}
-                                                    placeholder="Word Order"
-                                                ></Input>
-                                            </div>
-                                        </div>
-                                        <CaseTypeFormSection
-                                            caseType={caseType.caseType}
-                                            handleCaseTypeChange={handleCaseTypeChange}
-                                            handleGetTypeFormData={handleGetTypeFormData}
-                                            hadleIsFillGetType={handleIsFillGetType}
-                                            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
-                                            editFormData={editFormData}
-                                            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
-                                        />
-                                        <div className="pr-7">
-                                            <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Case Details: {requireElements}</h3>
-                                            <textarea
-                                                onChange={(e) => handleDetailChange(e.target.value)}
-                                                value={caseState?.description || ""}
-                                                placeholder="Enter Case Details"
-                                                className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
-                                                required={true}
-                                            ></textarea>
-                                        </div>
-                                        <div className="sm:grid grid-cols-2">
-                                            <div >
-                                                <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3 ">Service Center : </h3>
-                                                <SearchableSelect
-                                                    options={areaList.map(item => mergeArea(item))}
-                                                    value={caseState?.area ? mergeArea(caseState.area) : ""}
-                                                    onChange={handleSetArea}
-                                                    placeholder={"Select a Service Center"}
-                                                    className="2xsm:m-3"
-                                                />
-                                            </div>
-                                            <CustomerInput
-                                                listCustomerData={listCustomerData}
-                                                handleCustomerDataChange={handleCustomerDataChange}
-                                                customerData={caseState?.customerData || {} as Custommer}
-                                            />
-                                            <div className="pr-6 col-span-2">
-                                                <h3 className=" text-gray-900 dark:text-gray-400 mx-3 ">Location Information : </h3>
-                                                <textarea
-                                                    onChange={(e) => handleLocationChange(e.target.value)}
-                                                    value={caseState?.location || ""}
-                                                    placeholder="Enter Location"
-                                                    className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
-                                                ></textarea>
-                                            </div>
-                                            <div className="px-3">
-                                                <div className="flex mb-3">
-
-                                                    <h3 className=" text-gray-900 dark:text-gray-400 mr-2">Request Schedule date : </h3> <input
-                                                        type="checkbox"
-                                                        className="mx-3"
-                                                        checked={caseState?.requireSchedule || false}
-                                                        onChange={() => {
-                                                            setCaseState(prevState => ({
-                                                                ...prevState,
-                                                                requireSchedule: !prevState?.requireSchedule
-                                                            } as CaseDetails));
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="flex">
-
-                                                    <Input
-                                                        required={true}
-                                                        type="datetime-local"
-                                                        disabled={!caseState?.requireSchedule}
-                                                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                                                        onChange={(e) => handleScheduleDate(e)}
-                                                        value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
-                                                        min={new Date().toISOString().slice(0, 16)}
-                                                    ></Input>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* File Upload Section - Only show DND for new cases (no caseData) */}
-                                        {!caseData && (
-                                            <div className="px-3 my-6">
-                                                <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-3">
-                                                    Attach Files:
-                                                </h3>
-                                                <DragDropFileUpload
-                                                    files={caseState?.attachFile || []}
-                                                    onFilesChange={handleFilesChange}
-                                                    accept="image/*,.pdf,.doc,.docx,.txt"
-                                                    maxSize={10}
-                                                    className="mb-4"
-                                                    disabled={false}
-                                                />
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-end mt-20 mb-3 mr-3">
-                                            {caseData ? <Button variant="success" onClick={handlePreviewShow}>
-                                                Save Changes
-                                            </Button> :
-                                                <div className="flex justify-end">
-                                                    <div className="mx-3"><Button onClick={handleSaveDrafts} className="justify-end">Save As Draft</Button></div>
-                                                    <Button variant="success" onClick={handlePreviewShow}>
-                                                        Submit
-                                                    </Button>
-                                                </div>}
-                                        </div>
-                                    </>
+                                {(editFormData || isCreate) && caseState ? (
+                                    <CaseFormFields
+                                        caseState={caseState}
+                                        caseData={caseData}
+                                        setCaseState={setCaseState}
+                                        caseType={caseType}
+                                        selectedCaseTypeForm={selectedCaseTypeForm}
+                                        caseTypeSupTypeData={caseTypeSupTypeData}
+                                        areaList={areaList}
+                                        listCustomerData={listCustomerData}
+                                        isCreate={isCreate}
+                                        editFormData={editFormData}
+                                        handleWorkOrderNumber={handleWorkOrderNumber}
+                                        handleWorkOrderDate={handleWorkOrderDate}
+                                        handleContactMethodChange={handleContactMethodChange}
+                                        handleIotDevice={handleIotDevice}
+                                        handleIotDeviceDate={handleIotDeviceDate}
+                                        handleCaseTypeChange={handleCaseTypeChange}
+                                        handleGetTypeFormData={handleGetTypeFormData}
+                                        handleIsFillGetType={handleIsFillGetType}
+                                        handleDetailChange={handleDetailChange}
+                                        handleSetArea={handleSetArea}
+                                        handleCustomerDataChange={handleCustomerDataChange}
+                                        handleLocationChange={handleLocationChange}
+                                        handleScheduleDate={handleScheduleDate}
+                                        handleWorkOrderDateChangeDefault={handleWorkOrderDateChangeDefault}
+                                        handleIotDateChangeDefault={handleIotDateChangeDefault}
+                                        handleScheduleDateChangeDefault={handleScheduleDateChangeDefault}
+                                        handleFilesChange={handleFilesChange}
+                                        handlePreviewShow={handlePreviewShow}
+                                        handleSaveDrafts={handleSaveDrafts}
+                                    />
                                 ) : (
                                     <FormFieldValueDisplay caseData={caseState} />
                                 )}
                             </div>
                         </div>
                     </div>
+
 
                     <div className={`
                         fixed top-0 right-0 h-full w-[90%] max-w-md z-40
@@ -1146,24 +1352,36 @@ export default function CaseDetailView({ onBack, caseData }: { onBack?: () => vo
                 </div>
             </div>
 
+            {/* Overlay for mobile */}
             {isCustomerPanelOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 z-30 md:hidden"
                     onClick={() => setIsCustomerPanelOpen(false)}
-                ></div>
+                />
             )}
 
-            <Modal isOpen={showPreviewData} onClose={() => setShowPreviewData(false)} className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar">
+            {/* Modals */}
+            <Modal
+                isOpen={showPreviewData}
+                onClose={() => setShowPreviewData(false)}
+                className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar"
+            >
                 <PreviewDataBeforeSubmit
                     caseData={caseState}
                     submitButton={caseData ? handleSaveChanges : handleCreateCase}
                 />
             </Modal>
 
+            <CreateSubCaseModel
+                caseData={caseData}
+                open={showCreateSupCase}
+                onOpenChange={setShowCreateSupCase}
+            />
+
             <AssignOfficerModal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
-                officers={unit?.data || ([] as Unit[])}
+                officers={unit?.data || []}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
             />

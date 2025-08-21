@@ -563,7 +563,7 @@ export default function CasesView() {
   }
 
   if (selectedCase) {
-    return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} />
+    return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
   }
 
   return (
