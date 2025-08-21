@@ -78,7 +78,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 />
             </div> */}
             <div className="w-auto md:mr-2">
-                <h3 className="my-2 ">Phone Number :</h3>
+                <h3 className="my-1 ">Phone Number :</h3>
                 <Input
                     value={customerData.mobileNo ?? ""}
                     onChange={(e) => { handleCustomerDataPhoneChange(e) }}

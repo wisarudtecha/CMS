@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
     X
 } from "lucide-react"
@@ -14,6 +14,8 @@ import React from "react"
 import DateStringToDateFormat from "../date/DateToString"
 import { mergeAddress } from "@/store/api/custommerApi"
 import { CaseDetails } from "@/types/case"
+import { useGetDeviceIoTQuery } from "@/store/api/deviceIoT"
+import { Device } from "@/types/deviceIoT"
 
 
 interface CustomerPanelProps {
@@ -23,6 +25,7 @@ interface CustomerPanelProps {
 const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("Device info");
+    const [device, setDevice] = useState<Device>()
     const edittabs = [
         // { id: "customer-info", label: "Info" },
         { id: "Device info", label: "Device info" },
@@ -37,6 +40,35 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
         // { id: "FAQ", label: "FAQ" },
     ];
     const serviceHistory = CaseHistory;
+
+    const cachedDevices = localStorage.getItem("devices");
+
+    const { data: deviceResponse } = useGetDeviceIoTQuery(
+        { start: 0, length: 100 },
+        { skip: cachedDevices !== null }
+    );
+
+    useEffect(() => {
+        if (deviceResponse?.data) {
+            localStorage.setItem("devices", JSON.stringify(deviceResponse.data));
+        }
+    }, [deviceResponse?.data]);
+
+
+    const deviceList = cachedDevices ? JSON.parse(cachedDevices) as Device[] : deviceResponse?.data;
+
+    useEffect(() => {
+        const matchDevice = deviceList?.find((device) => {
+            return device.deviceId === caseItem?.iotDevice
+        })
+        if (matchDevice) {
+            setDevice(matchDevice)
+        }else{
+            setDevice(undefined)
+        }
+    }, [caseItem?.iotDevice])
+
+
     return (
         <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
             {/* Mobile-only header with a title and close button */}
@@ -168,7 +200,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
                                     <div>
                                         <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
                                         <div className="text-gray-900 dark:text-white">
-                                            {caseItem?.customerData?.address ? mergeAddress(caseItem?.customerData.address)  : "-"}
+                                            {caseItem?.customerData?.address ? mergeAddress(caseItem?.customerData.address) : "-"}
                                         </div>
                                     </div>
                                 </div>
@@ -178,49 +210,49 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
                             <div className="text-center py-4">
                                 <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
                             </div>
-                        ) 
-                        :activeTab ==="Device info"?(
-                            <>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
-                                        Device info
-                                    </span>
-                                </div>
-                                
-                                <div className="space-y-2 text-xs">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">IoT Device</div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {caseItem?.iotDevice||"-"}
+                        )
+                            : activeTab === "Device info" ? (
+                                <>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
+                                            Device info
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-2 text-xs">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">IoT Device</div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {caseItem?.iotDevice || "-"}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">Device Type</div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {device?.deviceType || "-"}
+                                                </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Device Type</div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Model</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                waterSensor
+                                                {device?.model || "-"}
                                             </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Model</div>
-                                        <div className="text-gray-900 dark:text-white">
-                                            WS-Model-X
-                                        </div>
-                                    </div>
-                                    {/* <div>
+                                        {/* <div>
                                         <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
                                         <div className="text-gray-900 dark:text-white">
                                             {customerData?.address ? mergeAddress(customerData.address)  : "-"}
                                         </div>
                                     </div> */}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-4">
+                                    <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
                                 </div>
-                            </>
-                        ): (
-                            <div className="text-center py-4">
-                                <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
-                            </div>
-                        )}
+                            )}
                     </div>
                 </ScrollArea>
             </div>

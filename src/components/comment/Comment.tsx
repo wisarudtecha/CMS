@@ -102,7 +102,7 @@ export const Comments: React.FC<CommentsProps> = ({
     return (
         <div>
             <div
-                className="bg-gray-100 dark:bg-gray-700 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-600 shadow-inner"
+                className="bg-gray-100 dark:bg-gray-800 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 shadow-inner"
                 style={{ height: '10em' }}
                 ref={commentsContainerRef}
             >
@@ -136,10 +136,10 @@ export const Comments: React.FC<CommentsProps> = ({
                 {commentsData.map((comment: CaseHistory) => (
                     <div
                         key={comment.id}
-                        className="p-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150"
+                        className="p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0  transition-colors duration-150"
                     >
                         <div className="flex items-center justify-between mb-1">
-                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                            <p className="text-sm font-semibold text-blue-500 dark:text-blue-500">
                                 {comment.username}
                             </p>
                             <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">

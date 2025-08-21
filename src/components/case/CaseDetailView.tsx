@@ -47,6 +47,7 @@ import CreateSubCaseModel from "./subCase/subCaseModel"
 
 
 
+
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
@@ -88,7 +89,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     options={caseTypeOptions}
                     value={caseType}
                     onChange={handleCaseTypeChange}
-                    placeholder={"Select a CaseType"}
+                    placeholder={"Select CaseType"}
                     className=" 2xsm:mx-3 mb-2"
                 />
             </div>
@@ -315,7 +316,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
 
             {/* Work Order Reference */}
-            {caseData?.referCaseId && (
+            {caseData?.referCaseId ? (
                 <div className="px-3">
                     <h3 className="text-gray-900 dark:text-gray-400 mb-3">Work Order Reference :</h3>
                     <Input
@@ -327,7 +328,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={true}
                     />
                 </div>
-            )}
+            ) : <div></div>}
 
             {/* Create Date */}
             <div className="px-3">
@@ -442,35 +443,36 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
 
             {/* Schedule Date */}
-            <div className="px-3">
-                <div className="flex mb-3">
-                    <h3 className="text-gray-900 dark:text-gray-400 mr-2">Request Schedule date :</h3>
-                    <input
-                        type="checkbox"
-                        className="mx-3"
-                        checked={caseState?.requireSchedule || false}
-                        onChange={() => {
-                            setCaseState(prevState => ({
-                                ...prevState,
-                                requireSchedule: !prevState?.requireSchedule
-                            } as CaseDetails));
-                        }}
+            {isCreate &&
+                <div className="px-3">
+                    <div className="flex mb-3">
+                        <h3 className="text-gray-900 dark:text-gray-400 mr-2">Request Schedule date :</h3>
+                        <input
+                            type="checkbox"
+                            className="mx-3"
+                            checked={caseState?.requireSchedule || false}
+                            onChange={() => {
+                                setCaseState(prevState => ({
+                                    ...prevState,
+                                    requireSchedule: !prevState?.requireSchedule
+                                } as CaseDetails));
+                            }}
+                        />
+                    </div>
+                    <Input
+                        required
+                        type="datetime-local"
+                        disabled={!caseState?.requireSchedule}
+                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                        onChange={handleScheduleDate}
+                        value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
+                        min={new Date().toISOString().slice(0, 16)}
                     />
-                </div>
-                <Input
-                    required
-                    type="datetime-local"
-                    disabled={!caseState?.requireSchedule}
-                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                    onChange={handleScheduleDate}
-                    value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
-                    min={new Date().toISOString().slice(0, 16)}
-                />
-            </div>
+                </div>}
         </div>
 
         {/* File Upload for new cases */}
-        {!caseData && (
+        {isCreate && (
             <div className="px-3 my-6">
                 <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-3">
                     Attach Files:
@@ -577,6 +579,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         { caseId: caseData?.caseId || "" },
         { skip: !caseData?.caseId || isCreate }
     )
+
+   
 
     const { data: comments } = useGetCaseHistoryQuery(
         { caseId: caseData?.caseId || "" },
@@ -733,7 +737,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             } as CaseDetails;
 
             setCaseState(newCaseState);
-        } 
+        }
         else if (isSubCase) {
             const newCaseState: CaseDetails = {
 

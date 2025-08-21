@@ -226,14 +226,14 @@ export default function AssignOfficerModal({
               size="sm"
               className="bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
             >
-              Recommend Unit
+              Recommend Officers
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              All Unit
+              All Officers
             </Button>
           </div>
         </div>
@@ -258,8 +258,8 @@ export default function AssignOfficerModal({
                   <div>Name</div>
                   <div>Status</div>
                   <div>Department</div>
-                  <div>Station</div>
                   <div>Command</div>
+                  <div>Station</div>
                   <div></div>
                 </div>
               </div>
@@ -317,10 +317,10 @@ export default function AssignOfficerModal({
                               {serviceCenter.find((items) => officer.deptId === items.deptId)?.deptTh || "-"}
                             </div>
                             <div className="flex items-center text-gray-600 dark:text-gray-300">
-                              {serviceCenter.find((items) => officer.stnId === items.stnId)?.stationTh || "-"}
+                              {serviceCenter.find((items) => officer.commId === items.commId)?.commandTh || "-"}
                             </div>
                             <div className="flex items-center text-gray-600 dark:text-gray-300">
-                              {serviceCenter.find((items) => officer.commId === items.commId)?.commandTh || "-"}
+                              {serviceCenter.find((items) => officer.stnId === items.stnId)?.stationTh || "-"}
                             </div>
                             <div></div>
                           </div>
