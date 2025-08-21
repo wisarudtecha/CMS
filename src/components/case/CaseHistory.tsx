@@ -58,17 +58,17 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const caseStatusesColorMap: Record<string, string> = {
-    "#000000": "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100",
-    "#F9C601": "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100",
-    "#852B99": "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100",
-    "#FF0080": "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100",
-    "#295F79": "bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100",
-    "#468847": "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100",
-    "#999999": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
-    "#FF8000": "bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100",
-    "#FF0000": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100",
-    "#B94A48": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100",
-    null: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100"
+    "#000000": "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
+    "#F9C601": "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 border border-yellow-300 dark:border-yellow-600",
+    "#852B99": "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 border border-purple-300 dark:border-purple-600",
+    "#FF0080": "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100 border border-pink-300 dark:border-pink-600",
+    "#295F79": "bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100 border border-cyan-300 dark:border-cyan-600",
+    "#468847": "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 border border-green-300 dark:border-green-600",
+    "#999999": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
+    "#FF8000": "bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100 border border-orange-300 dark:border-orange-600",
+    "#FF0000": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
+    "#B94A48": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
+    null: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
   };
 
   const generateStatusConfigs = (data: CaseStatus[]) => {
@@ -158,10 +158,24 @@ const CaseHistoryComponent: React.FC<{
     return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
   };
 
-  const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes) ? caseTypesSubTypes.map((caseTypeSubType) => ({
-    value: caseTypeSubType?.sTypeId || "",
-    label: caseTypeSubType?.subTypeTh || caseTypeSubType?.subTypeEn || ""
-  })) : [];
+  // const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes) ? caseTypesSubTypes.map((caseTypeSubType) => ({
+  //   value: caseTypeSubType?.sTypeId || "",
+  //   label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${caseTypeSubType?.subTypeTh || caseTypeSubType?.subTypeEn || "Unknown:Name"} (${caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"})`
+  // })) : [];
+
+  const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes)
+    ? caseTypesSubTypes
+        .slice() // make a shallow copy to avoid mutating the original array
+        .sort((a, b) => (a.sTypeCode || "").localeCompare(b.sTypeCode || ""))
+        .map((caseTypeSubType) => ({
+          value: caseTypeSubType?.sTypeId || "",
+          label: `${caseTypeSubType.sTypeCode || "Unknown:Code"} - ${
+            caseTypeSubType?.subTypeTh ||
+            caseTypeSubType?.subTypeEn ||
+            "Unknown:Name"
+          } (${caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"})`,
+        }))
+    : [];
 
   // ===================================================================
   // Case History Mock Data
@@ -222,7 +236,7 @@ const CaseHistoryComponent: React.FC<{
         sortable: true,
         render: (caseItem: CaseEntity) => {
           return (
-            <Badge className={`${getStatusConfig(caseItem)?.color} text-xs`}>
+            <Badge className={`${getStatusConfig(caseItem)?.color} text-sm`}>
               {getStatusConfig(caseItem)?.label}
             </Badge>
           );
@@ -233,10 +247,10 @@ const CaseHistoryComponent: React.FC<{
         label: "Priority",
         sortable: true,
         render: (caseItem: CaseEntity) => {
-          const Icon = getPriorityConfig(caseItem).icon;
+          // const Icon = getPriorityConfig(caseItem).icon;
           return (
             <div className={`flex gap-1 items-center ${getPriorityConfig(caseItem).color}`}>
-              <Icon className="w-4 h-4" />
+              {/* <Icon className="w-4 h-4" /> */}
               <span className="capitalize font-medium text-sm">{getPriorityConfig(caseItem).label}</span>
             </div>
           );
@@ -369,14 +383,18 @@ const CaseHistoryComponent: React.FC<{
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
                   <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created At:</span>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                  <span className="text-gray-600 dark:text-gray-300 text-sm mr-2">
                     {formatDate(caseItem.createdAt) || ""}
-                  </div>
+                  </span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">By:</span>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.createdBy || ""}
+                  </span>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created By:</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Detail:</span>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.createdBy || ""}
+                    {caseItem.caseDetail || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
@@ -385,37 +403,39 @@ const CaseHistoryComponent: React.FC<{
                     {caseItem.caselocAddrDecs || caseItem.caselocAddr || ""}
                   </div>
                 </div>
-                <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Detail:</span>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseDetail || ""}
-                  </div>
-                </div>
               </div>
             </div>
 
             {/* Customer / Device Information */}
-            {(caseItem.deviceId || caseItem.phoneNo) && (
+            {caseItem.deviceId && (
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                 <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                  Customer / Device Information
+                  Device Information
                 </h4>
                 <div className="grid grid-cols-1 space-y-3">
-                  {caseItem.deviceId ? (
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Device ID:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {caseItem.deviceId || ""}
-                      </div>
+                  <div className="xl:flex items-left justify-left">
+                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Device ID:</span>
+                    <div className="text-gray-600 dark:text-gray-300 text-sm">
+                      {caseItem.deviceId || ""}
                     </div>
-                  ) : caseItem.phoneNo ? (
-                    <div className="xl:flex items-left justify-left">
-                      <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Phone No.:</span>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
-                        {caseItem.phoneNo || ""}
-                      </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Customer / Device Information */}
+            {caseItem.phoneNo && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                  Customer Information
+                </h4>
+                <div className="grid grid-cols-1 space-y-3">
+                  <div className="xl:flex items-left justify-left">
+                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Phone No.:</span>
+                    <div className="text-gray-600 dark:text-gray-300 text-sm">
+                      {caseItem.phoneNo || ""}
                     </div>
-                  ) : ("")}
+                  </div>
                 </div>
               </div>
             )}
@@ -704,6 +724,22 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const advancedFilters = [
+    // {
+    //   key: "status",
+    //   label: "Status",
+    //   type: "select" as const,
+    //   options: caseStatusOptions
+    // },
+    // {
+    //   key: "priority",
+    //   label: "Priority",
+    //   type: "select" as const,
+    //   options: [
+    //     { value: "low", label: "Low" },
+    //     { value: "medium", label: "Medium" },
+    //     { value: "high", label: "High" },
+    //   ]
+    // },
     {
       key: "caseSTypeId",
       label: "Type",
@@ -780,14 +816,17 @@ const CaseHistoryComponent: React.FC<{
         return true;
       }
 
-      console.log(value);
+      // Handle sub-type values
+      if (key === "caseSTypeId" && typeof value === "string") {
+        return value.includes(caseItem.caseSTypeId);
+      }
 
-      // Handle regular values
+      // Handle status values
       if (key === "status" && typeof value === "string") {
         return value.includes(caseItem.statusId);
       }
 
-      // Handle regular values
+      // Handle priority values
       if (key === "priority" && typeof value === "string") {
         const priority = { high: [0,1,2,3], medium: [4,5,6], low: [7,8,9] };
         return priority[value as keyof typeof priority].includes(caseItem.priority);
@@ -825,10 +864,10 @@ const CaseHistoryComponent: React.FC<{
         </div>
 
         <div className="xl:flex gap-1 flex-shrink-0 mb-4">
-          <Badge className={`${getStatusConfig(caseItem)?.color} text-xs`}>
+          <Badge className={`${getStatusConfig(caseItem)?.color} text-sm`}>
             {getStatusConfig(caseItem)?.label}
           </Badge>
-          <span className={`py-1 text-xs font-medium ${getPriorityConfig(caseItem)?.color} ml-2`}>
+          <span className={`py-1 text-sm font-medium ${getPriorityConfig(caseItem)?.color} ml-2`}>
             {getPriorityConfig(caseItem)?.label}
           </span>
         </div>

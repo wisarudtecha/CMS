@@ -5,7 +5,8 @@ import type { ApiResponse } from "@/types";
 
 export class HttpClient {
   private static instance: HttpClient;
-  private abortController: AbortController | null = null;
+  // private abortController: AbortController | null = null;
+  private requestControllers = new Map<string, AbortController>();
 
   static getInstance(): HttpClient {
     if (!HttpClient.instance) {
@@ -14,15 +15,31 @@ export class HttpClient {
     return HttpClient.instance;
   }
 
-  private async makeRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async makeRequest<T>(
+    url: string,
+    options: RequestInit = {},
+    requestKey?: string // Optional key to group related requests
+  ): Promise<ApiResponse<T>> {
     const fullUrl = `${API_CONFIG.BASE_URL}${url}`;
     
     // Cancel previous request if still pending
-    if (this.abortController) {
-      this.abortController.abort();
-    }
+    // if (this.abortController) {
+    //   this.abortController.abort();
+    // }
     
-    this.abortController = new AbortController();
+    // this.abortController = new AbortController();
+
+    // Create abort controller for this request
+    const abortController = new AbortController();
+
+    // If a request key is provided, cancel previous requests with the same key
+    if (requestKey) {
+      const existingController = this.requestControllers.get(requestKey);
+      if (existingController) {
+        existingController.abort();
+      }
+      this.requestControllers.set(requestKey, abortController);
+    }
     
     const defaultHeaders = new Headers({
       "Content-Type": "application/json",
@@ -46,7 +63,8 @@ export class HttpClient {
     const config: RequestInit = {
       ...options,
       headers: defaultHeaders,
-      signal: this.abortController.signal,
+      // signal: this.abortController.signal,
+      signal: abortController.signal,
       credentials: "include", // Include cookies for CSRF
       mode: "cors" // Explicitly set CORS mode
     };
@@ -66,6 +84,11 @@ export class HttpClient {
       //   statusText: response.statusText,
       //   headers: Object.fromEntries(response.headers.entries())
       // });
+
+      // Clean up the controller from the map
+      if (requestKey) {
+        this.requestControllers.delete(requestKey);
+      }
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -102,7 +125,11 @@ export class HttpClient {
       return data;
     }
     catch (error) {
-      console.error("❌ API Error:", error);
+      // console.error("❌ API Error:", error);
+      // Clean up the controller from the map on error
+      if (requestKey) {
+        this.requestControllers.delete(requestKey);
+      }
 
       if (error instanceof DOMException && error.name === "AbortError") {
         throw new Error("Request cancelled");
@@ -171,5 +198,20 @@ export class HttpClient {
 
   async delete<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(url, { ...options, method: "DELETE" });
+  }
+
+  // Cancel specific requests by key
+  cancelRequest(requestKey: string): void {
+    const controller = this.requestControllers.get(requestKey);
+    if (controller) {
+      controller.abort();
+      this.requestControllers.delete(requestKey);
+    }
+  }
+
+  // Cancel all pending requests
+  cancelAllRequests(): void {
+    this.requestControllers.forEach(controller => controller.abort());
+    this.requestControllers.clear();
   }
 }

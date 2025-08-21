@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else {
       // console.log("❌ No valid session found during initialization");
       if (token) {
-        TokenManager.clearTokens();
+        // TokenManager.clearTokens();
       }
       return {
         user: null,
@@ -163,7 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const setupTokenRefresh = () => {
       if (refreshTimer) {
-        // console.log("🔄 Clearing existing refresh timer.", refreshTimer);
+        console.log("🔄 Clearing existing refresh timer.", refreshTimer);
         clearTimeout(refreshTimer);
       }
       
@@ -180,10 +180,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // console.log(`🔄 Token expires in: ${((expiryTime - Date.now()) / 1000 / 60).toFixed(2)} minutes`);
 
       // Refresh token 5 minutes before expiry
-      const refreshTime = expiryTime - Date.now() - (5 * 60 * 1000);
+      // const refreshTime = expiryTime - Date.now() - (5 * 60 * 1000);
 
       // Refresh token 1 minute before expiry
-      // const refreshTime = expiryTime - Date.now() - (1 * 60 * 1000);
+      const refreshTime = expiryTime - Date.now() - (1 * 60 * 1000);
       
       if (refreshTime > 0) {
         // console.log("🔄 Refreshing token in:", (refreshTime / 1000 / 60).toFixed(2), "minutes");
@@ -202,7 +202,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       if (refreshTimer) {
-        // console.log("🔄 Clearing refresh timer.", refreshTimer);
+        console.log("🔄 Clearing refresh timer.", refreshTimer);
         clearTimeout(refreshTimer);
       }
     };
@@ -276,8 +276,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("🔄 Token refresh already in progress.");
       return;
     }
-    // console.log("🔄 Refreshing token...");
 
+    if (state.isRefreshing) {
+      console.log("🔄 Token refresh already in progress.");
+      return;
+    }
+
+    console.log("🔄 Refreshing token...");
     dispatch({ type: "REFRESH_START" });
 
     try {
@@ -291,14 +296,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           refreshToken: response.refreshToken
         } 
       });
+      console.log("✅ Token refresh successful");
     }
     catch (error) {
       console.error("Token refresh failed:", error);
       dispatch({ type: "REFRESH_FAILURE" });
-      logout();
+      
+      // logout();
+      // Only logout if it's not a cancellation error
+      if (error instanceof Error && !error.message.includes("cancelled")) {
+        logout();
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.isRefreshing]);
+  }, [state.isRefreshing, logout]);
 
   const forgotPassword = async (email: string) => {
     try {

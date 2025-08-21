@@ -1725,7 +1725,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       max="720"
                     />
                   : <div
-                      className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-500 dark:text-gray-400 cursor-default line-through"
+                      className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-500 dark:text-gray-400 cursor-default"
                     >
                       {typeof selectedNode.data.config?.SLA === "string" || typeof selectedNode.data.config?.SLA === "number" ? selectedNode.data.config.SLA : ""}
                     </div>
