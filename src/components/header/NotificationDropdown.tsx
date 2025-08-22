@@ -487,10 +487,10 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-yellow-400 dark:border-yellow-300";
+              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-red-500 dark:border-red-400";
+              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
@@ -555,7 +555,7 @@ export default function NotificationDropdown() {
                       </div>
 
                       <div className="text-xs font-medium text-gray-900 dark:text-gray-100 leading-relaxed">
-                        <span className="font-semibold text-purple-600 dark:text-purple-400">{noti.sender}</span>{" "}
+                        <span className="font-semibold text-blue-800 dark:text-blue-300">{noti.sender}</span>{" "}
                         <span className="text-blue-600 dark:text-blue-400 font-semibold">ส่งถึงคุณ</span>{" "}
                         <span className="text-gray-900 dark:text-gray-100">{noti.message}</span>
                       </div>
@@ -704,10 +704,10 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-yellow-400 dark:border-yellow-300";
+              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-red-500 dark:border-red-400";
+              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
@@ -766,7 +766,7 @@ export default function NotificationDropdown() {
                             marginBottom: 0,
                           }}
                         >
-                          <span className="font-semibold text-purple-600 dark:text-purple-400">
+                          <span className="font-semibold text-blue-800 dark:text-blue-300">
                             {noti.sender}
                           </span>{" "}
                           <span className="text-blue-600 dark:text-blue-400 font-semibold">ส่งถึงคุณ</span>{" "}
