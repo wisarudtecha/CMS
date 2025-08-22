@@ -104,7 +104,7 @@ export const LoginForm: React.FC = () => {
             <div>
               <div className="mb-5 sm:mb-8 place-items-center">
                 <img className="dark:hidden" src="/images/logo/logo.png" alt="Logo" />
-                <img className="hidden dark:block" src="/images/logo/logo.png" alt="Logo" />
+                <img className="hidden dark:block" src="/images/logo/logo-dark.png" alt="Logo" />
               </div>
 
               <div className="mb-5 sm:mb-8">
