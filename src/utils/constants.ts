@@ -26,7 +26,7 @@ export const APP_CONFIG = {
     return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
-  WS_URL: import.meta.env.VITE_WS_URL || "ws://cmsapi-production-488d.up.railway.app",
+  WS_URL: import.meta.env.VITE_WS_URL || "ws://cms-api-1-production.up.railway.app",
 } as const;
 
 export const API_ENDPOINTS = {
