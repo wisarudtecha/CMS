@@ -318,6 +318,13 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     }
   }, [config.entityNamePlural, addToast]);
 
+  // Handle item click for preview
+  const handleItemClick = useCallback((item: T) => {
+    if (previewConfig) {
+      openPreview(item, sortedData);
+    }
+  }, [previewConfig, sortedData, openPreview]);
+
   // Handle item actions with special handling for delete
   const handleItemAction = useCallback((actionKey: string, item: T) => {
     console.log("handleItemAction called:", { actionKey, itemId: item.id });
@@ -332,7 +339,14 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     const action = config.actions?.find(a => a.key === actionKey);
     if (action) {
       console.log("Executing action from config:", action.key);
-      action.onClick(item);
+      // action.onClick(item);
+      
+      if (module === "case") {
+        handleItemClick(item);
+      }
+      else {
+        action.onClick(item);
+      }
     }
     else {
       console.warn("Action not found in config:", actionKey);
@@ -342,14 +356,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     if (onItemAction) {
       onItemAction(actionKey, item);
     }
-  }, [config.actions, handleDeleteItem, onItemAction]);
-
-  // Handle item click for preview
-  const handleItemClick = useCallback((item: T) => {
-    if (previewConfig) {
-      openPreview(item, sortedData);
-    }
-  }, [previewConfig, sortedData, openPreview]);
+  }, [config.actions, module, handleDeleteItem, onItemAction, handleItemClick]);
 
   const actualClickHandler = onItemClick || handleItemClick;
 

@@ -918,7 +918,7 @@ const CaseHistoryComponent: React.FC<{
   const handleAction = (actionKey: string, caseItem: CaseEntity) => {
     console.log(`Action ${actionKey} triggered for case:`, caseItem.id);
     // Add custom case-specific action handling
-    if (actionKey === "view" || actionKey === "edit") {
+    if (actionKey === "edit") {
       setCaseData(caseItem);
       setViewOpen("block");
       setCrudOpen("hidden");
@@ -998,7 +998,7 @@ const CaseHistoryComponent: React.FC<{
       </div>
 
       <div className={viewOpen}>
-        <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} isCreate={false}/>
+        <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} isCreate={false} />
       </div>
     </>
   );
