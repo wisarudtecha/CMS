@@ -1,5 +1,6 @@
 // UserInfoCard.tsx - ตัดส่วน Modal และปุ่ม Edit ออก
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
 
@@ -41,8 +42,8 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
 };
 
 // Helper function to format date
-const formatDate = (dateString: string | undefined): string => {
-  if (!dateString) return 'Not specified';
+const formatDate = (dateString: string | undefined, t: any): string => {
+  if (!dateString) return t('userform.na');
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -51,34 +52,35 @@ const formatDate = (dateString: string | undefined): string => {
       day: 'numeric'
     });
   } catch {
-    return 'Not specified';
+    return t('userform.na');
   }
 };
 
 // Helper function to format gender
-const formatGender = (gender: number | undefined): string => {
-  if (gender === undefined || gender === null) return 'Not specified';
+const formatGender = (gender: number | undefined, t: any): string => {
+  if (gender === undefined || gender === null) return t('userform.na');
   switch (gender) {
-    case 0: return 'Male';
-    case 1: return 'Female';
-    case 2: return 'Other';
-    default: return 'Not specified';
+    case 0: return t('userform.genderMale');
+    case 1: return t('userform.genderFemale');
+    case 2: return t('userform.genderOther');
+    default: return t('userform.na');
   }
 };
 
 export default function UserInfoCard() {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
+  const fetchUserData = useMemo(() => {
+    return async () => {
       try {
         const profileString = localStorage.getItem("profile");
         const token = localStorage.getItem("access_token");
 
         if (!profileString || !token) {
-          setError("ไม่พบข้อมูลผู้ใช้หรือ Token ในระบบ");
+          setError(t("userform.loadingUserData"));
           setLoading(false);
           return;
         }
@@ -87,141 +89,127 @@ export default function UserInfoCard() {
         const username = profile?.username;
 
         if (!username) {
-          setError("ไม่พบ Username ในข้อมูล Profile");
+          setError(t("userform.loadingUserData"));
           setLoading(false);
           return;
         }
 
         const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
-        
+
         if (!response.ok) {
           if (response.status === 401) {
-            setError("Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+            setError(t("errors.unauthorized"));
           } else {
-            setError("เกิดข้อผิดพลาดในการดึงข้อมูล");
+            setError(t("errors.server_error"));
           }
           setLoading(false);
           return;
         }
 
         const result = await response.json();
-        let user = null;
-        
-        if (result && typeof result === 'object') {
-          if ('data' in result && typeof result.data === 'object') {
-            user = result.data;
-          } else {
-            user = result;
-          }
-        }
-
-        if (user) {
-          setUserData(user);
-        } else {
-          setError("ไม่พบข้อมูลผู้ใช้จาก API");
-        }
+        setUserData(result.data || null);
       } catch (err) {
         console.error("Error fetching user data:", err);
-        setError("เกิดข้อผิดพลาดในการดึงข้อมูล");
+        setError(t("errors.server_error"));
       } finally {
         setLoading(false);
       }
     };
+  }, [t]);
 
+  useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   if (loading) {
-    return <div className="p-5 text-center">Loading user data...</div>;
+    return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
   }
 
-  if (error && !userData) {
+  if (error) {
     return <div className="p-5 text-center text-red-500">{error}</div>;
   }
 
   if (!userData) {
-    return <div className="p-5 text-center">No user data available.</div>;
+    return <div className="p-5 text-center">{t("userform.noUserData")}</div>;
   }
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-      <div className="flex flex-col gap-6">
-        <div>
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-            Personal Information
-          </h4>
+      <div>
+        <div className="flex flex-col gap-6">
+          <div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.firstName')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.firstName || t('userform.na')}
+                </p>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                First Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.firstName || "Not specified"}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.lastName')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.lastName || t('userform.na')}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Last Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.lastName || "Not specified"}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.email')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.email || t('userform.na')}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email address
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.email}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.mobile')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.mobileNo || t('userform.na')}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.mobileNo || "Not specified"}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.citizenId')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.citizenId || t('userform.na')}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Citizen ID
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.citizenId || "Not specified"}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.dob')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {formatDate(userData.bod, t)}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Date of Birth
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {formatDate(userData.bod)}
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.gender')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {formatGender(userData.gender, t)}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Gender
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {formatGender(userData.gender)}
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Blood Group
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.blood || "Not specified"}
-              </p>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  {t('userform.blood')}
+                </p>
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {userData.blood || t('userform.na')}
+                </p>
+              </div>
             </div>
           </div>
         </div>

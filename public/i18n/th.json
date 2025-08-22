@@ -15,7 +15,9 @@
     "loading": "กำลังโหลด...",
     "error": "เกิดข้อผิดพลาด",
     "success": "สำเร็จ",
-    "back": "ย้อนกลับ"
+    "back": "ย้อนกลับ",
+    "previous": "ก่อนหน้า",
+    "next": "ถัดไป"
   },
   "navigation": {
     "topbar": {
@@ -123,7 +125,8 @@
     "inactive": "ไม่ใช้งาน",
     "pending": "รอดำเนินการ",
     "completed": "เสร็จสมบูรณ์",
-    "failed": "ล้มเหลว"
+    "failed": "ล้มเหลว",
+    "status": "สถานะ"
   },
   "errors": {
     "not_found": "ไม่พบหน้า",
@@ -212,11 +215,18 @@
     "selectCommand": "เลือกกอง/สังกัด",
     "selectStation": "เลือกสถานี",
     "loadingUserData": "กำลังโหลดข้อมูลผู้ใช้...",
+    "noUserData": "ไม่พบข้อมูลผู้ใช้.",
     "createSuccess": "สร้างผู้ใช้สำเร็จ!",
     "updateSuccess": "อัปเดตผู้ใช้สำเร็จ!",
     "mobileFormat": "รูปแบบ: 0XX-XXX-XXXX",
     "citizenIdFormat": "รูปแบบ: X-XXXX-XXXXX-XX-X",
-    "dobHint": "ห้ามเป็นวันอนาคต สูงสุด 115 ปี"
+    "dobHint": "ห้ามเป็นวันอนาคต สูงสุด 115 ปี",
+    "empId": "รหัสพนักงาน",
+    "userType": "ประเภทผู้ใช้",
+    "userTypeRegular": "ผู้ใช้ทั่วไป",
+    "userTypeAdmin": "ผู้ดูแลระบบ",
+    "userTypeSuperAdmin": "ผู้ดูแลระบบสูงสุด",
+    "userTypeUnknown": "ไม่ทราบ"
   },
   "breadcrumb": {
     "home": "หน้าหลัก",
@@ -224,6 +234,7 @@
     "audit_log": "บันทึกการตรวจสอบ"
   },
   "audit_log": {
+    "title": "บันทึกการตรวจสอบ",
     "search_placeholder": "ค้นหา ผู้ใช้, เลขธุรกรรม, ฟังก์ชั่น, การกระทำ...",
     "search_data": "ค้นหาข้อมูล",
     "refresh_data": "รีเฟรชข้อมูล",
@@ -251,11 +262,15 @@
     "query_success": "โหลดข้อมูลการทำธุรกรรมสำเร็จ {{count}} รายการ",
     "user_transaction": "ผู้ใช้ / ธุรกรรม",
     "time": "เวลา",
-    "loading_data": "กำลังโหลดข้อมูล...",
+    "loading_data": "กำลังโหลดข้อมูลบันทึกการตรวจสอบ...",
     "error": "ข้อผิดพลาด",
-    "error_message": "กรุณาตรวจสอบ console หรือลองใหม่อีกครั้ง",
+    "error_message": "เกิดข้อผิดพลาดในการดึงข้อมูลบันทึกการตรวจสอบ.",
     "no_logs_found": "ไม่พบบันทึก",
-    "adjust_filters": "ลองปรับตัวกรองของคุณ",
+    "no_logs_description": "ไม่พบบันทึกการตรวจสอบสำหรับผู้ใช้นี้",
+    "showing_records": "แสดง {{start}}-{{end}} จาก {{total}} รายการ",
+    "transaction_id": "รหัสธุรกรรม",
+    "duration": "ระยะเวลา",
+    "invalid_username": "ชื่อผู้ใช้ไม่ถูกต้อง",
     "rows_per_page": "แถวต่อหน้า",
     "showing": "แสดง",
     "of": "จาก",

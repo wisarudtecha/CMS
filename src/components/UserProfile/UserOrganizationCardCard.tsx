@@ -1,5 +1,6 @@
 // UserOrganizationCard.tsx - ตัดส่วน Modal และปุ่ม Edit ออก
 import { useEffect, useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
 
@@ -45,17 +46,18 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
 const getCurrentLanguage = () => 'en';
 
 // Helper function to format user type
-const formatUserType = (userType: number | undefined): string => {
-  if (userType === undefined || userType === null) return 'Not specified';
+const formatUserType = (userType: number | undefined, t: any): string => {
+  if (userType === undefined || userType === null) return t('userform.na');
   switch (userType) {
-    case 0: return 'Regular User';
-    case 1: return 'Admin User';
-    case 2: return 'Super Admin';
-    default: return 'Unknown';
+    case 0: return t('userform.userTypeRegular');
+    case 1: return t('userform.userTypeAdmin');
+    case 2: return t('userform.userTypeSuperAdmin');
+    default: return t('userform.userTypeUnknown');
   }
 };
 
 export default function UserOrganizationCard() {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   
   // Dropdown data states
@@ -69,27 +71,27 @@ export default function UserOrganizationCard() {
 
   // Get display names for current values
   const getCommandName = (commId: string | undefined) => {
-    if (!commId) return 'Not specified';
+    if (!commId) return t('userform.na');
     const command = commandsData.find(c => c.commId === commId || c.id === commId);
-    return command?.name || 'Not specified';
+    return command?.name || t('userform.na');
   };
 
   const getDepartmentName = (deptId: string | undefined) => {
-    if (!deptId) return 'Not specified';
+    if (!deptId) return t('userform.na');
     const department = departmentsData.find(d => d.deptId === deptId || d.id === deptId);
-    return department?.name || 'Not specified';
+    return department?.name || t('userform.na');
   };
 
   const getStationName = (stnId: string | undefined) => {
-    if (!stnId) return 'Not specified';
+    if (!stnId) return t('userform.na');
     const station = stationsData.find(s => s.stnId === stnId || s.id === stnId);
-    return station?.name || 'Not specified';
+    return station?.name || t('userform.na');
   };
 
   const getRoleName = (roleId: string | undefined) => {
-    if (!roleId) return 'Not specified';
+    if (!roleId) return t('userform.na');
     const role = rolesData.find(r => r.id === roleId);
-    return role?.name || 'Not specified';
+    return role?.name || t('userform.na');
   };
 
   useEffect(() => {
@@ -99,7 +101,7 @@ export default function UserOrganizationCard() {
         const token = localStorage.getItem("access_token");
 
         if (!profileString || !token) {
-          setError("ไม่พบข้อมูลผู้ใช้หรือ Token ในระบบ");
+          setError(t("errors.unauthorized"));
           setLoading(false);
           return;
         }
@@ -108,7 +110,7 @@ export default function UserOrganizationCard() {
         const username = profile?.username;
 
         if (!username) {
-          setError("ไม่พบ Username ในข้อมูล Profile");
+          setError(t("errors.unauthorized"));
           setLoading(false);
           return;
         }
@@ -161,9 +163,9 @@ export default function UserOrganizationCard() {
         
         if (!userResponse.ok) {
           if (userResponse.status === 401) {
-            setError("Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+            setError(t("errors.unauthorized"));
           } else {
-            setError("เกิดข้อผิดพลาดในการดึงข้อมูล");
+            setError(t("errors.server_error"));
           }
           setLoading(false);
           return;
@@ -183,11 +185,11 @@ export default function UserOrganizationCard() {
         if (user) {
           setUserData(user);
         } else {
-          setError("ไม่พบข้อมูลผู้ใช้จาก API");
+          setError(t("userform.noUserData"));
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError("เกิดข้อผิดพลาดในการดึงข้อมูล");
+        setError(t("errors.server_error"));
       } finally {
         setLoading(false);
       }
@@ -197,7 +199,7 @@ export default function UserOrganizationCard() {
   }, []);
 
   if (loading) {
-    return <div className="p-5 text-center">Loading user data...</div>;
+    return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
   }
 
   if (error && !userData) {
@@ -205,7 +207,7 @@ export default function UserOrganizationCard() {
   }
 
   if (!userData) {
-    return <div className="p-5 text-center">No user data available.</div>;
+    return <div className="p-5 text-center">{t("userform.noUserData")}</div>;
   }
 
   return (
@@ -213,31 +215,31 @@ export default function UserOrganizationCard() {
       <div className="flex flex-col gap-6">
         <div>
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-            Organization Information
+            {t("userform.orgInfo")}
           </h4>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Employee ID
+                {t("userform.empId")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {userData.empId || "Not specified"}
+                {userData.empId || t("userform.na")}
               </p>
             </div>
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                User Type
+                {t("userform.userType")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {formatUserType(userData.userType)}
+                {formatUserType(userData.userType, t)}
               </p>
             </div>
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Command
+                {t("userform.command")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {getCommandName(userData.commId)}
@@ -246,7 +248,7 @@ export default function UserOrganizationCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Department
+                {t("userform.department")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {getDepartmentName(userData.deptId)}
@@ -255,7 +257,7 @@ export default function UserOrganizationCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Station
+                {t("userform.station")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {getStationName(userData.stnId)}
@@ -264,7 +266,7 @@ export default function UserOrganizationCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Role
+                {t("userform.role")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {getRoleName(userData.roleId)}
@@ -273,7 +275,7 @@ export default function UserOrganizationCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Status
+                {t("status.status")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -281,7 +283,7 @@ export default function UserOrganizationCard() {
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
                     : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                 }`}>
-                  {userData.active ? 'Active' : 'Inactive'}
+                  {userData.active ? t("status.active") : t("status.inactive")}
                 </span>
               </p>
             </div>

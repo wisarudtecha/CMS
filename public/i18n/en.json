@@ -14,7 +14,9 @@
     "search": "Search",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "previous": "Previous",
+    "next": "Next"
   },
   "navigation": {
     "topbar": {
@@ -122,7 +124,8 @@
     "inactive": "Inactive",
     "pending": "Pending",
     "completed": "Completed",
-    "failed": "Failed"
+    "failed": "Failed",
+    "status": "Status"
   },
   "errors": {
     "not_found": "Page not found",
@@ -200,11 +203,18 @@
     "selectCommand": "Select Command",
     "selectStation": "Select Station",
     "loadingUserData": "Loading user data...",
+    "noUserData": "No user data available.",
     "createSuccess": "User created successfully!",
     "updateSuccess": "User updated successfully!",
     "mobileFormat": "Format: 0XX-XXX-XXXX",
     "citizenIdFormat": "Format: X-XXXX-XXXXX-XX-X",
-    "dobHint": "No future dates, max 115 years old"
+    "dobHint": "No future dates, max 115 years old",
+    "empId": "Employee ID",
+    "userType": "User Type",
+    "userTypeRegular": "Regular User",
+    "userTypeAdmin": "Admin User",
+    "userTypeSuperAdmin": "Super Admin",
+    "userTypeUnknown": "Unknown"
   },
   "breadcrumb": {
     "home": "Home",
@@ -212,6 +222,7 @@
     "audit_log": "Audit Log"
   },
   "audit_log": {
+    "title": "Audit Log",
     "search_placeholder": "Search by user, transaction ID, function, action...",
     "search_data": "Search Data",
     "refresh_data": "Refresh Data",
@@ -244,6 +255,11 @@
     "error": "Error",
     "error_message": "Please check the console or try again later.",
     "no_logs_found": "No Logs Found",
+    "no_logs_description": "No audit logs found for this user",
+    "showing_records": "Showing {{start}}-{{end}} of {{total}} records",
+    "transaction_id": "Transaction ID",
+    "duration": "Duration",
+    "invalid_username": "Invalid username provided",
     "adjust_filters": "Try adjusting your filters.",
     "rows_per_page": "Rows per page",
     "showing": "Showing",
