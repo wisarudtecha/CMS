@@ -1,5 +1,5 @@
 // UserInfoCard.tsx - ตัดส่วน Modal และปุ่ม Edit ออก
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
@@ -73,53 +73,66 @@ export default function UserInfoCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserData = useMemo(() => {
-    return async () => {
-      try {
-        const profileString = localStorage.getItem("profile");
-        const token = localStorage.getItem("access_token");
+  const fetchUserData = async () => {
+    try {
+      const profileString = localStorage.getItem("profile");
+      const token = localStorage.getItem("access_token");
 
-        if (!profileString || !token) {
-          setError(t("userform.loadingUserData"));
-          setLoading(false);
-          return;
-        }
-
-        const profile = JSON.parse(profileString);
-        const username = profile?.username;
-
-        if (!username) {
-          setError(t("userform.loadingUserData"));
-          setLoading(false);
-          return;
-        }
-
-        const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError(t("errors.unauthorized"));
-          } else {
-            setError(t("errors.server_error"));
-          }
-          setLoading(false);
-          return;
-        }
-
-        const result = await response.json();
-        setUserData(result.data || null);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(t("errors.server_error"));
-      } finally {
+      if (!profileString || !token) {
+        setError(t("userform.loadingUserData"));
         setLoading(false);
+        return;
       }
-    };
-  }, [t]);
+
+      const profile = JSON.parse(profileString);
+      const username = profile?.username;
+
+      if (!username) {
+        setError(t("userform.loadingUserData"));
+        setLoading(false);
+        return;
+      }
+
+      const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError(t("errors.unauthorized"));
+        } else {
+          setError(t("errors.server_error"));
+        }
+        setLoading(false);
+        return;
+      }
+
+      // ตรวจสอบว่า response มี content หรือไม่
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        setError("Invalid response format");
+        setLoading(false);
+        return;
+      }
+
+      const text = await response.text();
+      if (!text.trim()) {
+        setError("Empty response");
+        setLoading(false);
+        return;
+      }
+
+      const result = JSON.parse(text);
+      setUserData(result.data || null);
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      setError(t("errors.server_error"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUserData();
-  }, [fetchUserData]);
+  }, []); // ลบ dependency เพื่อให้เรียกแค่ครั้งเดียว
 
   if (loading) {
     return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
@@ -135,6 +148,12 @@ export default function UserInfoCard() {
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+          {t('userform.personal')}
+        </h4>
+      </div>
+
       <div>
         <div className="flex flex-col gap-6">
           <div>
