@@ -10,7 +10,7 @@ const getApiBaseUrl = (): string => {
   // For demo purposes, use a mock API or detect environment
   const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-  return isDevelopment ? "/api/v1" : "https://cmsapi-production-488d.up.railway.app/api/v1";
+  return isDevelopment ? "/api/v1" : "https://cms-api-1-production.up.railway.app/api/v1";
   
   // if (isDevelopment) {
   //   console.log("Local development API: /api/v1");
@@ -18,8 +18,8 @@ const getApiBaseUrl = (): string => {
   // }
   
   // Production API - replace with actual API URL
-  // console.log("Production API: https://cmsapi-production-488d.up.railway.app/api/v1");
-  // return "https://cmsapi-production-488d.up.railway.app/api/v1"; // Local development API
+  // console.log("Production API: https://cms-api-1-production.up.railway.app/api/v1");
+  // return "https://cms-api-1-production.up.railway.app/api/v1"; // Local development API
 };
 
 export const API_CONFIG = {
