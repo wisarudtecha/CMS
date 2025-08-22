@@ -7,7 +7,7 @@ import {
   CheckLineIcon,
   CloseLineIcon,
   // ListIcon,
-  LockIcon,
+  // LockIcon,
   TimeIcon,
   VideoIcon
 } from "@/icons";
@@ -79,11 +79,11 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       icon: <TimeIcon className="w-4 h-4" />
     }
   ];
-  const lockConfig = {
-    locks: true,
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100",
-    icon: <LockIcon className="w-4 h-4" />
-  };
+  // const lockConfig = {
+  //   locks: true,
+  //   color: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100",
+  //   icon: <LockIcon className="w-4 h-4" />
+  // };
 
   const safeTrimToEllipsis = (str: string, maxLength: number) => {
     if (maxLength < 3) {
@@ -149,19 +149,21 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
                 {publicationConfig.find(p => p.publish === workflow.publish)?.icon || ""}
                 {workflow.publish ? "Publish" : "Draft"}
               </span>
+              {/*
               {workflow.locks && (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-1 ${lockConfig.color}`}>
                   <LockIcon className="w-3 h-4" />
                   Lock
                 </span>
               )}
+              */}
             </div>
           );
         }
       },
       {
         key: "createdAt",
-        label: "Created",
+        label: "Created At",
         sortable: true,
         render: (workflow: Workflow) => (
           <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -504,12 +506,15 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
             {publicationConfig.find(p => p.publish === workflow.publish)?.icon || ""}
             {workflow.publish ? "Publish" : "Draft"}
           </span>
+          {/*
           {workflow.locks && (
             <span className={`inline-flex mr-2 items-center px-2 py-1 rounded-full text-xs font-medium ${lockConfig.color}`}>
               <LockIcon className="w-4 h-4" />
               Lock
             </span>
           )}
+          */}
+
           {/*
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
             {statusConfig.label}
@@ -517,7 +522,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           */}
         </div>
         
-        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm lg:min-h-15 xl:min-h-0">
+        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm lg:min-h-15 xl:min-h-5 truncate">
           {safeTrimToEllipsis(workflow.desc, 50)}
         </p>
 
@@ -585,6 +590,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         config={config}
         data={data}
         displayModes={["card", "table"]}
+        displayModeDefault="table"
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
         // exportOptions={exportOptions}

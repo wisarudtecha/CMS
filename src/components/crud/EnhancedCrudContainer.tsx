@@ -254,14 +254,17 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const handleDeleteItem = useCallback(async (item: T) => {
     console.log("handleDeleteItem called for item:", item);
 
+    const newValue = (module === "case" && "caseId" in item) ? "Cancel" : "";
+    const confirmDialogType = (module === "case" && "caseId" in item) ? "status" : "delete";
     const id = (module === "workflow" && "wfId" in item) ? (item as { wfId: string }).wfId : item.id;
 
     openConfirmDialog({
-      type: "delete",
+      type: confirmDialogType,
       // entityId: item.id,
       entityId: id,
       // entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
       entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id,
+      newValue: newValue,
       onConfirm: async () => {
         // console.log("Delete confirmed for item:", item.id);
         console.log("Delete confirmed for item:", id);
@@ -395,7 +398,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         ids.forEach(id => onDelete && onDelete(id));
       },
       confirmationRequired: true,
-      confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural.toLowerCase()}? This action cannot be undone.`
+      confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural}? This action cannot be undone.`
     }
   ];
 
@@ -455,16 +458,18 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         )}
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-0">
           <div className="xl:flex items-center justify-between mb-4">
             <div>
               {/* Controls */}
               <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
                 <div className="xl:flex items-center gap-4">
                   {/* Display Modes (Card / Default:Table / Matrix / Hierarchy) */}
-                  <div className="mb-2 xl:mb-0">
-                    <DisplayModeToggle mode={displayMode} list={displayModes} onChange={setDisplayMode} />
-                  </div>
+                  {displayModes.length > 1 && (
+                    <div className="mb-2 xl:mb-0">
+                      <DisplayModeToggle mode={displayMode} list={displayModes} onChange={setDisplayMode} />
+                    </div>
+                  )}
 
                   {/* Search Bar */}
                   {enabledFeatures.search && displayMode != "matrix" && (
@@ -566,7 +571,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           // No Data
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">
-              No {config.entityNamePlural.toLowerCase()} found
+              No {config.entityNamePlural} found
             </div>
 
             <p className="text-gray-400 dark:text-gray-500 mb-4">
@@ -599,7 +604,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           </div>
         ) : displayMode === "matrix" && renderMatrix ? (
           // Matrix View
-          <>{renderMatrix()}</>
+          <div className="mb-4">{renderMatrix()}</div>
         ) 
         : displayMode === "hierarchy" && renderHierarchy ? (
           // Hierarchy View

@@ -611,7 +611,8 @@ const RoleManagementComponent: React.FC<{
         customFilterFunction={customCaseFilterFunction}
         data={role}
         // displayModes={["card", "matrix", "hierarchy"]}
-        displayModes={["card", "matrix"]}
+        // displayModes={["card", "matrix"]}
+        displayModes={["matrix"]}
         displayModeDefault="matrix"
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
@@ -634,7 +635,7 @@ const RoleManagementComponent: React.FC<{
         // searchFields={["name", "description"]}
         searchFields={["roleName"]}
         // customFilterFunction={() => true}
-        onCreate={() => navigate("/role/create")}
+        // onCreate={() => navigate("/role/create")}
         onDelete={handleDelete}
         onItemAction={handleAction}
         // onItemClick={(item) => navigate(`/role/${item.id}`)}

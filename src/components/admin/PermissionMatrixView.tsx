@@ -144,7 +144,7 @@ export const PermissionMatrixView: React.FC<{
   // );
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+    <div className="bg-white dark:bg-gray-800 border border-b-0 border-gray-200 dark:border-gray-700">
       {/*
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -398,9 +398,9 @@ export const PermissionMatrixView: React.FC<{
         </div>
       )}
 
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{""}</h3>
+      <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <div className="flex items-center justify-center">
+          {/* <h3 className="text-lg font-medium text-gray-900 dark:text-white">{""}</h3> */}
           <div className="flex items-center space-x-2">
             <Button
               variant="success"
