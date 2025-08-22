@@ -49,7 +49,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                 </div>
             </div>
             {/* <ProgressStepPreview progressSteps={progressSteps} className="border-t-1 border-b-1 p-2 dark:border-gray-500" /> */}
-            {(caseData?.attachFile && caseData) && (
+            {(caseData?.attachFileResult?.length!=0 && caseData ) && (
                 <>
                     <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                         Attach File :

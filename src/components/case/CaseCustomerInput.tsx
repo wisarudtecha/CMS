@@ -83,7 +83,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     value={customerData.mobileNo ?? ""}
                     onChange={(e) => { handleCustomerDataPhoneChange(e) }}
                     className={`${commonInputCss}`}
-                    placeholder={"Enter Customer Phone Number"}
+                    placeholder={"Phone Number"}
                 />
             </div>
             {/* <div className="w-auto md:mr-2">

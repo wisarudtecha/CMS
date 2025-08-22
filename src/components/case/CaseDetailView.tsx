@@ -302,7 +302,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             {/* Work Order Number */}
             <div className="px-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
-                    Work Order Number : {requireElements}
+                    Work Order No : {requireElements}
                 </h3>
                 <Input
                     required
@@ -362,14 +362,14 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* IoT Device */}
             <div className="px-3">
-                <h3 className="text-gray-900 dark:text-gray-400 mb-3">IoT Device :</h3>
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">IoT Device ID :</h3>
                 <Input
                     required
                     type="text"
                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                     onChange={handleIotDevice}
                     value={caseState?.iotDevice || ""}
-                    placeholder="IoT Device Name"
+                    placeholder="IoT Device ID"
                 />
             </div>
 

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog/dialog"
 import CaseDetailView from "../CaseDetailView"
 import { CaseEntity } from "@/types/case"
-import { genCaseID } from "@/components/genCaseId/genCaseId"
+import {  genWordOrderID } from "@/components/genCaseId/genCaseId"
 
 
 interface CreateSubCaseModel {
@@ -20,8 +20,8 @@ export default function SubCaseModel({
             <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 overflow-auto">
 
                 <CaseDetailView disablePageMeta={true} caseData={{
-                    caseId: caseData?.caseId.toLocaleLowerCase().replace("d", "WO"),
-                    referCaseId: genCaseID()
+                    caseId: genWordOrderID(),
+                    referCaseId: caseData?.caseId,
                 } as CaseEntity} isSubCase={true}  isCreate={true}/>
 
                 <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">

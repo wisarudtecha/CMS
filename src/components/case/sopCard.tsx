@@ -521,7 +521,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
                     {onAddSubCase &&
                         <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
-                            <span>Add SubCase</span>
+                            <span>Add WO</span>
                         </Button>}
                     <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
                         <User_Icon className="w-4 h-4" />

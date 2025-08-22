@@ -289,7 +289,7 @@ export default function CasesView() {
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
         </div>
-        <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p>
+        {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
         <p className="text-sm text-gray-400 leading-relaxed line-clamp-2">{caseItem.caselocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (
@@ -323,7 +323,7 @@ export default function CasesView() {
       const filteredCases = getCasesForColumn(selectedStatus);
       return (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
             {filteredCases.map((caseItem) => (
               <CaseCard key={caseItem.id} caseItem={caseItem} />
             ))}
@@ -332,7 +332,7 @@ export default function CasesView() {
       );
     }
 
-    return (<div className="flex flex-wrap gap-6 pb-6">
+    return (<div className="flex flex-wrap xl:grid xl:grid-cols-5 gap-3 pb-6">
       {statusColumns.map((column) => (
         (selectedStatus === null || selectedStatus === column.title) && (
           <div key={column.title} className="flex-shrink-0 w-70">
@@ -359,7 +359,7 @@ export default function CasesView() {
         <div className="col-span-2">Location</div>
         <div className="col-span-2">Status</div>
         <div className="col-span-2">Priority</div>
-        <div className="col-span-2">Assignee</div>
+        <div className="col-span-2">Create By</div>
         <div className="col-span-1">Create Date</div>
       </div>
 
