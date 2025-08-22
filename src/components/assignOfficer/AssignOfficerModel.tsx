@@ -10,7 +10,8 @@ import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { Unit } from "@/store/api/dispatch"
 import { DepartmentCommandStationData, DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
-import { caseStatus } from "../ui/status/status"
+import { unitStatus } from "../ui/status/status"
+import SkillModal from "./officerSkillModal"
 
 interface AssignOfficerModalProps {
   open: boolean
@@ -44,13 +45,13 @@ const UnifiedCheckbox = ({
   }, [indeterminate])
 
   return (
-  <div className="relative">
-  <input
-    ref={checkboxRef}
-    type="checkbox"
-    checked={checked}
-    onChange={onChange}
-    className={`w-5 h-5 appearance-none rounded-md cursor-pointer transition-all duration-200 
+    <div className="relative">
+      <input
+        ref={checkboxRef}
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className={`w-5 h-5 appearance-none rounded-md cursor-pointer transition-all duration-200 
       bg-gray-200  border-gray-300 
       focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
       checked:bg-blue-600 checked:border-blue-600
@@ -59,25 +60,25 @@ const UnifiedCheckbox = ({
       dark:checked:bg-blue-500 dark:checked:border-blue-500
       dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800
       dark:hover:border-blue-400 ${className}`}
-    {...props}
-  />
-  {checked && (
-    <svg
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none w-fit h-3/5 pb-1"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 14 14"
-      fill="none"
-    >
-      <path
-        d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-        stroke="white"
-        strokeWidth="1.94437"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        {...props}
       />
-    </svg>
-  )}
-</div>
+      {checked && (
+        <svg
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none w-fit h-3/5 pb-1"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 14 14"
+          fill="none"
+        >
+          <path
+            d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+            stroke="white"
+            strokeWidth="1.94437"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </div>
   )
 }
 
@@ -92,7 +93,8 @@ export default function AssignOfficerModal({
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
   const [sortColumn] = useState<SortableColumns>("locAlt")
   const [sortDirection] = useState<"asc" | "desc">("asc")
-
+  const [showModel, setShowModel] = useState(false)
+  const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
   // Reset selection when modal opens and set initial assigned officers
   useEffect(() => {
     if (open) {
@@ -198,15 +200,24 @@ export default function AssignOfficerModal({
     return officers.filter(officer => selectedOfficers.includes(officer.unitId))
   }, [officers, selectedOfficers])
 
+  // useEffect(() => {
+  //   if (showOfficerData) {
+  //     setShowModel(true)
+  //   }
+  //   if(showModel===false){
+  //     setShowOFFicerData(null)
+  //   }
+  // }, [showOfficerData])
+  //  const skillList = ["กล้อง", "Sensor น้ำ", "เชื่อมท่อ", "ระบบไฟฟ้า", "การซ่อมบำรุง", "เครื่องมือวัด"]
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999">
+      <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             Assign Officers to Case
           </DialogTitle>
         </DialogHeader>
-
+        <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit}/>
         {/* Search Bar and Buttons - Now responsive */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <div className="flex-grow">
@@ -240,11 +251,11 @@ export default function AssignOfficerModal({
 
         {/* Officers Table - Now with horizontal scrolling for small screens */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
-          <div className="flex-1 min-h-0 overflow-x-auto"> {/* Added overflow-x-auto here */}
+          <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar"> {/* Added overflow-x-auto here */}
             <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-6 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                <div className="grid grid-cols-7 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
                   <div className="flex items-center space-x-2 px-3">
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
@@ -260,6 +271,7 @@ export default function AssignOfficerModal({
                   <div>Department</div>
                   <div>Command</div>
                   <div>Station</div>
+                  <div>Skill</div>
                   <div></div>
                 </div>
               </div>
@@ -278,10 +290,11 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-6 gap-4 pt-3 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`grid grid-cols-7 gap-4 pt-3 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}
+                            onClick={() => setShowOFFicerData(officer)}
                           >
                             <div className="flex items-center pl-3">
                               <UnifiedCheckbox
@@ -309,7 +322,7 @@ export default function AssignOfficerModal({
                             <div className="flex items-center">
                               <Badge color="info">
                                 <span className="text-gray-600 dark:text-gray-300">
-                                  {caseStatus.find(column => column.group.includes(officer.sttId))?.title || "-"}
+                                  {unitStatus.find(column => column.group.includes(officer.sttId))?.title || "-"}
                                 </span>
                               </Badge>
                             </div>
@@ -340,7 +353,7 @@ export default function AssignOfficerModal({
             <div className="text-sm text-gray-700 dark:text-gray-300">
               Selected {selectedOfficers.length} officer{selectedOfficers.length !== 1 ? "s" : ""}:
             </div>
-            <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto">
+            <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
               {selectedOfficerObjects.map((officer) => (
                 <Badge key={officer.unitId}>
                   {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 my-1")}

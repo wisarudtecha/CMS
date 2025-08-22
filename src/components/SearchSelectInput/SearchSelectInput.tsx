@@ -1,6 +1,6 @@
 import { ChevronsUpDown } from "lucide-react";
 import Input from "../form/input/InputField";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const SearchableSelect: React.FC<{
     options: any[],
@@ -13,7 +13,9 @@ export const SearchableSelect: React.FC<{
 }> = ({ options, value, onChange, placeholder, disabled, isDynamic = false, className = "" }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const filteredOptions = useMemo(() => {
         if (!searchTerm) return options;
@@ -28,6 +30,25 @@ export const SearchableSelect: React.FC<{
         return selected ? (isDynamic ? selected.value : selected) : placeholder || "Select an option";
     }, [options, value, placeholder, isDynamic]);
 
+    // Calculate dropdown position
+    const calculatePosition = useCallback(() => {
+        if (!wrapperRef.current) return;
+
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const dropdownHeight = 300; // Approximate max height (60*4 + padding + search input)
+
+        const spaceBelow = windowHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        // If not enough space below but enough space above, position on top
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+            setDropdownPosition('top');
+        } else {
+            setDropdownPosition('bottom');
+        }
+    }, []);
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -38,11 +59,34 @@ export const SearchableSelect: React.FC<{
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
 
+    // Calculate position when dropdown opens
+    useEffect(() => {
+        if (isOpen) {
+            calculatePosition();
+            // Recalculate on scroll/resize
+            const handleScroll = () => calculatePosition();
+            const handleResize = () => calculatePosition();
+
+            window.addEventListener('scroll', handleScroll, true);
+            window.addEventListener('resize', handleResize);
+
+            return () => {
+                window.removeEventListener('scroll', handleScroll, true);
+                window.removeEventListener('resize', handleResize);
+            };
+        }
+    }, [isOpen, calculatePosition]);
+
     const handleSelect = (option: any) => {
         onChange(isDynamic ? option.value : option);
         setIsOpen(false);
         setSearchTerm("");
     };
+
+    const dropdownClasses = `
+        absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700
+        ${dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'}
+    `;
 
     return (
         <div className={className}>
@@ -57,14 +101,14 @@ export const SearchableSelect: React.FC<{
                     <ChevronsUpDown size={16} className="text-gray-400" />
                 </button>
                 {isOpen && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700">
+                    <div className={dropdownClasses} ref={dropdownRef}>
                         <div className="p-2">
                             <Input
                                 type="text"
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className={`w-full`}
+                                className="w-full"
                             />
                         </div>
                         <ul className="max-h-60 overflow-auto custom-scrollbar">
@@ -87,6 +131,7 @@ export const SearchableSelect: React.FC<{
                         </ul>
                     </div>
                 )}
-            </div></div>
+            </div>
+        </div>
     );
 };
