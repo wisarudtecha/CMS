@@ -144,6 +144,8 @@ export interface CaseSop {
   updatedBy: string;
   sop: any[];
   currentStage: CurrentStage;
+  dispatchStage: any;
+  nextStage: any;
 }
 
 export interface Unit {
@@ -187,6 +189,14 @@ interface PaginationParams {
     length?: number;
 }
 
+export interface dispatchInterface {
+    caseId:string
+    nodeId:string,
+    status:string,
+    unitId:string,
+    unitUser:string
+}
+
 export const dispantchApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
 
@@ -227,6 +237,23 @@ export const dispantchApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Dispatch"],
         }),
+
+        postDispacth: builder.query<ApiResponse<null>, dispatchInterface>({
+            query: (params) => ({
+                url: `/dispatch/event`,
+                method: "POST",
+                body: params
+            }),
+            providesTags: ["Dispatch"],
+        }),
+        
+        postDispacthMutation: builder.mutation<ApiResponse<null>, dispatchInterface>({
+            query: (params) => ({
+                url: `/dispatch/event`,
+                method: "POST",
+                body: params
+            }),
+        })
     }),
 });
 
@@ -235,6 +262,8 @@ export const {
     useGetDepartmentQuery,
     useGetStationsQuery, 
     useGetCaseSopQuery,
-    useGetUnitQuery
+    useGetUnitQuery,
+    usePostDispacthQuery,
+    usePostDispacthMutationMutation
 } = dispantchApi;
 

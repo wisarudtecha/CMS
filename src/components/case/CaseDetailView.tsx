@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
 import {
     ArrowLeft,
-    User as User_Icon,
     ChevronDown,
     ChevronUp,
 } from "lucide-react"
@@ -33,7 +32,7 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSop, Unit, useGetCaseSopQuery, useGetUnitQuery } from "@/store/api/dispatch"
+import { CaseSop, Unit, useGetCaseSopQuery, useGetUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
 import { contractMethodMock } from "./source"
 import { Area, mergeArea } from "@/store/api/area"
 // import Checkbox from "../form/input/Checkbox"
@@ -138,8 +137,8 @@ const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
                         size="sm"
                         onClick={onOpenCustomerPanel}
                     >
-                        <User_Icon className="w-4 h-4 mr-2" />
-                        View Customer
+
+                        View Details Panel
                     </Button>
                 </div>
             </div>
@@ -195,12 +194,14 @@ const AssignedOfficers = memo(({
     assignedOfficers,
     showOfficersData,
     onSelectOfficer,
-    onRemoveOfficer
+    onRemoveOfficer,
+    handleDispatch,
 }: {
     assignedOfficers: Unit[];
     showOfficersData: Unit | null;
     onSelectOfficer: (officer: Unit) => void;
     onRemoveOfficer: (officer: Unit) => void;
+    handleDispatch: (officer: Unit) => void;
 }) => {
     if (!assignedOfficers.length) return null;
 
@@ -219,7 +220,7 @@ const AssignedOfficers = memo(({
                     </div>
                     {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
                     {officer.username}
-                    <Button size="xxs" className="mx-1" variant="outline-no-transparent">
+                    <Button size="xxs" className="mx-1" variant="outline-no-transparent" onClick={() => handleDispatch(officer)}>
                         Acknowledge
                     </Button>
                     <Button
@@ -580,7 +581,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         { skip: !caseData?.caseId || isCreate }
     )
 
-   
+
 
     const { data: comments } = useGetCaseHistoryQuery(
         { caseId: caseData?.caseId || "" },
@@ -589,7 +590,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
-
+    const [postDispatch] = usePostDispacthMutationMutation();
     // Initialize customer data ONCE
     useEffect(() => {
         if (!isInitialized) {
@@ -830,7 +831,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
-        } else if ((!isValueFill.dynamicForm && caseState?.formData) || (!isValueFill.getType && selectedCaseTypeForm)) {
+        } else if (((!isValueFill.dynamicForm && caseState?.formData) || (!isValueFill.getType && selectedCaseTypeForm)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
         return errorMessage;
@@ -1223,6 +1224,38 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setToastType("success");
         setShowToast(true);
     }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
+    // console.log(sopData)
+    const handleDispatch = useCallback(async (officer: Unit) => {
+        // This object creation is correct
+        const dispatchjson = {
+            unitId: officer.unitId,
+            caseId: caseData!.caseId,
+            nodeId: sopData?.data?.dispatchStage?.nodeId,
+            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
+            unitUser: profile.username
+        };
+
+        // console.log("Dispatching with:", dispatchjson);
+
+        try {
+            // 2. Call the 'postDispatch' trigger function inside your event handler.
+            //    '.unwrap()' is a helpful utility that will automatically throw an
+            //    error if the mutation fails, making it easy to use with try/catch.
+            const payload = await postDispatch(dispatchjson).unwrap();
+
+            console.log('Dispatch successful:', payload);
+            setToastMessage("Dispatch Successfully!");
+            setToastType("success");
+            setShowToast(true);
+
+        } catch (error) {
+            console.error('Dispatch failed:', error);
+            setToastMessage("Dispatch Failed");
+            // You might want an error toast type here
+            setToastType("error");
+            setShowToast(true);
+        }
+    }, [caseData, profile.username, postDispatch]); // 3. Add dependencies to useCallback
 
     // Loading state for existing cases
     if (caseData && (isLoading || isFetching)) {
@@ -1294,6 +1327,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     showOfficersData={showOfficersData}
                                     onSelectOfficer={handleSelectOfficer}
                                     onRemoveOfficer={handleRemoveOfficer}
+                                    handleDispatch={handleDispatch}
                                 />
 
                                 {showOfficersData && <CommandInformation className="my-2" />}

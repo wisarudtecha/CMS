@@ -1,10 +1,13 @@
 import { MapPin } from "lucide-react";
 import DateStringToDateFormat from "../date/DateToString";
 import FormViewer from "../form/dynamic-form/FormViewValue";
-import { getTextPriority } from "../function/Prioriy";
+// import { getTextPriority } from "../function/Prioriy";
 import { IndividualFormField } from "../interface/FormField";
 import { mergeArea } from "@/store/api/area";
 import { CaseDetails } from "@/types/case";
+import Button from "../ui/button/Button";
+import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
+import { useState } from "react";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -51,30 +54,39 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
 };
 
 const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData }) => {
+    const [closeValue,setCloseValue]=useState<string>("")
+    const closeCaseOption=["แก้ไขเสร็จสิ้น","เปลี่ยนอุปกรณ์เสร์จสิ้น"]
 
+    const handleCloseCaseChange=(value:string)=>{
+        setCloseValue(value)
+    }
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
-                <span className=" text-md text-blue-500 dark:text-blue-400 " >Workflow Infomation</span>
+
+            {caseData?.workOrderRef && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                <span className=" text-md text-blue-500 dark:text-blue-400 " >WorkOrder Infomation</span>
                 <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Workflow Order Number : </span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.workOrderNummber||"-"}</div>
+                    <span className="text-md text-gray-500 dark:text-gray-400">WorkOrder No # {caseData?.workOrderRef || "-"} </span>
+                    {/* <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.workOrderNummber||"-"}</div> */}
                 </div>
-               
-                
-           
-            </div>
+
+
+
+            </div>}
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
+                <div>
+                    <span className="text-md text-gray-500 dark:text-gray-400">CaseID # {caseData?.workOrderNummber || "-"}</span>
+                </div>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Types : {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType||"-"}</div>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
                 </div>
                 {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.description||"-"}
+                        {caseData?.description || "-"}
 
                     </div>
                 </div>
@@ -87,24 +99,24 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                         }
                     </div>
                 </div>
-                <div>
+                {/* <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Priority</span>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.caseType?.priority ? getTextPriority(caseData.caseType.priority).level : "-"}</div>
 
-                </div>
+                </div> */}
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area)||"-"}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area) || "-"}</div>
                 </div>
             </div>
             <div >
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
-                    <div className="mb-2">
-                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Location Information</span>
+                    <div className="flex mb-2 text-blue-500 dark:text-blue-400">
+                        <MapPin /><span className=" mx-1 text-md  " >Location Information</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        <div className="flex flex-wrap gap-x-2 gap-y-1 ">
-                            <MapPin />
+                        <div className="flex  gap-x-2 gap-y-1 ">
+
                             <div>
                                 {caseData?.location ? caseData.location : "-"}
                             </div>
@@ -189,6 +201,19 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData 
                     )}
                 </div>
             </div> */}
+                
+                <div></div>
+                <div className="flex justify-end ">
+                    <SearchableSelect
+                    options={closeCaseOption}
+                    value={closeValue}
+                    onChange={handleCloseCaseChange}
+                    placeholder={"Select Close Type"}
+                    className=" 2xsm:mx-3 mb-2 items-center"
+                />
+                <Button size="sm" className="">Close Case</Button>
+                </div>
+  
         </div>
     );
 };

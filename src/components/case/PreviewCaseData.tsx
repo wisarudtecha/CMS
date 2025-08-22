@@ -33,7 +33,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Create Date: {caseData && DateStringToDateFormat(caseData?.date)}</span>
+                            <span>Create Date: {caseData && caseData?.workOrderDate && DateStringToDateFormat(caseData?.workOrderDate)}</span>
                         </div>
                     </div>
                 </div>
@@ -76,7 +76,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
             <FormFieldValueDisplay caseData={caseData} />
             {submitButton &&
                 <div className="flex justify-end ">
-                    <Button onClick={submitButton}>Submit</Button>
+                    <Button onClick={submitButton}>Confirm</Button>
                 </div>
             }
         </div>

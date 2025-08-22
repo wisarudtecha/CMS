@@ -73,7 +73,7 @@ const CustomerPanel: React.FC<CustomerPanelProps> = ({ onClose, caseItem }) => {
         <div className="overflow-y-auto w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col custom-scrollbar">
             {/* Mobile-only header with a title and close button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
-                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Customer Details</h3>
+                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Details</h3>
                 <Button variant="ghost" onClick={onClose}>
                     <X className="w-5 h-5" />
                 </Button>
