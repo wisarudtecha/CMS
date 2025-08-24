@@ -43,6 +43,7 @@ import { CaseDetails, CaseEntity } from "@/types/case"
 import { genCaseID } from "../genCaseId/genCaseId"
 import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
 import CreateSubCaseModel from "./subCase/subCaseModel"
+import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 
 
 
@@ -537,7 +538,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
         return undefined;
     });
-
+    const [showCreatedCase, setShowCreatedCase] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [showCreateSupCase, setShowCreateSupCase] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(!caseData);
@@ -1081,9 +1082,11 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             return
         }
         setEditFormData(false)
-        setToastMessage("Create Case successfully!");
-        setToastType("success");
-        setShowToast(true);
+        // setToastMessage("Create Case successfully!");
+        // setToastType("success");
+        // setShowToast(true);
+        setShowCreatedCase(true);
+        // navigate(`/case/${caseState?.workOrderNummber}`)
     }, [createCaseAction]);
 
     const handlePreviewShow = useCallback(() => {
@@ -1234,20 +1237,29 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
             unitUser: profile.username
         };
-
-        // console.log("Dispatching with:", dispatchjson);
+        console.log("Dispatching with:", dispatchjson);
 
         try {
             // 2. Call the 'postDispatch' trigger function inside your event handler.
             //    '.unwrap()' is a helpful utility that will automatically throw an
             //    error if the mutation fails, making it easy to use with try/catch.
+            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
+                throw new Error("No data found in dispatch object");
+            }
             const payload = await postDispatch(dispatchjson).unwrap();
 
             console.log('Dispatch successful:', payload);
             setToastMessage("Dispatch Successfully!");
             setToastType("success");
             setShowToast(true);
-
+            dispatchUpdateLocate(dispatchjson)
+            setCaseState(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    status: dispatchjson.status
+                };
+            });
         } catch (error) {
             console.error('Dispatch failed:', error);
             setToastMessage("Dispatch Failed");
@@ -1266,6 +1278,98 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                         <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">
                             Loading Case...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (showCreatedCase) {
+        return (
+            <CaseDetailView
+                caseData={{ caseId: caseState?.workOrderNummber } as CaseEntity}
+                onBack={() => {
+                    setShowCreatedCase(false);
+                    setCaseState(prev => {
+                        if (!prev) return prev;
+                        return {
+                            ...prev,
+                            workOrderNummber:genCaseID()                        };
+                    });
+                }}
+                isCreate={false}
+            />
+        );
+    }
+
+
+    if (sopData === undefined && isCreate === false) {
+        return (
+            <div className="flex flex-col h-screen">
+                {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
+
+                {/* Header */}
+                <CaseHeader
+                    disablePageMeta={disablePageMeta}
+                    onBack={onBack}
+                    onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+                />
+
+                {/* No Data Content */}
+                <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl">
+                    <div className="flex items-center justify-center h-full w-full">
+                        <div className="text-center px-6 py-12">
+                            {/* Icon */}
+                            <div className="mx-auto w-24 h-24 mb-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                <svg
+                                    className="w-12 h-12 text-gray-400 dark:text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                </svg>
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                No Case Data Found
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                The case you're looking for doesn't exist or couldn't be loaded.
+                                Please check the case ID or try again.
+                            </p>
+
+                            {/* Actions */}
+                            {/* <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                <button
+                                    onClick={onBack}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                >
+                                    Go Back
+                                </button>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                >
+                                    Retry
+                                </button>
+                            </div> */}
+
+                            {/* Additional Info */}
+                            {/* <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    If this issue persists, please contact support or check your network connection.
+                                </p>
+                            </div> */}
                         </div>
                     </div>
                 </div>
@@ -1368,7 +1472,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         handleSaveDrafts={handleSaveDrafts}
                                     />
                                 ) : (
-                                    <FormFieldValueDisplay caseData={caseState} />
+                                    <FormFieldValueDisplay caseData={caseState} showResult={true} />
                                 )}
                             </div>
                         </div>

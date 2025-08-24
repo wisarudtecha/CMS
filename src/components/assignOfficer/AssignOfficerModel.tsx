@@ -335,7 +335,7 @@ export default function AssignOfficerModal({
                             <div className="flex items-center text-gray-600 dark:text-gray-300">
                               {serviceCenter.find((items) => officer.stnId === items.stnId)?.stationTh || "-"}
                             </div>
-                            <div></div>
+                            <div><Badge color="primary">ซ่างไฟ</Badge></div>
                           </div>
                         )
                       })
