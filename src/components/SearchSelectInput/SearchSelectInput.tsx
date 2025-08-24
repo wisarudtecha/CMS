@@ -13,7 +13,8 @@ export const SearchableSelect: React.FC<{
 }> = ({ options, value, onChange, placeholder, disabled, isDynamic = false, className = "" }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+    // const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+    const [dropdownPosition] = useState<'bottom' | 'top'>('bottom');
     const wrapperRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -32,21 +33,20 @@ export const SearchableSelect: React.FC<{
 
     // Calculate dropdown position
     const calculatePosition = useCallback(() => {
-        if (!wrapperRef.current) return;
+        // if (!wrapperRef.current) return;
 
-        const rect = wrapperRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const dropdownHeight = 300; // Approximate max height (60*4 + padding + search input)
+        // const rect = wrapperRef.current.getBoundingClientRect();
+        // const windowHeight = window.innerHeight;
+        // const dropdownHeight = 300; // Approximate max height (60*4 + padding + search input)
 
-        const spaceBelow = windowHeight - rect.bottom;
-        const spaceAbove = rect.top;
+        // const spaceBelow = windowHeight - rect.bottom;
+        // const spaceAbove = rect.top;
 
-        // If not enough space below but enough space above, position on top
-        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-            setDropdownPosition('top');
-        } else {
-            setDropdownPosition('bottom');
-        }
+        // if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+        //     setDropdownPosition('top');
+        // } else {
+        //     setDropdownPosition('bottom');
+        // }
     }, []);
 
     useEffect(() => {
