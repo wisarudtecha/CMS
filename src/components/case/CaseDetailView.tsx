@@ -619,6 +619,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     });
 
     useEffect(() => {
+        console.log(apiFormData)
         if (apiFormData?.data && triggerFetch) {
             localStorage.setItem(
                 "subTypeForm-" + triggerFetch,
@@ -626,7 +627,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             );
             setTriggerFetch(null);
         }
-    }, [apiFormData, triggerFetch]);
+    }, [apiFormData]);
 
     // Initialize sopLocal from API data ONLY when sopData changes
     useEffect(() => {
