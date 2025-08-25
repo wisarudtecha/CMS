@@ -155,9 +155,11 @@ export const PreviewDialog = <T extends { id: string }>({
               </div>
             )}
             <div className="min-w-0 xl:max-w-full flex-1">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white xl:truncate">
-                {config.title(item)}
-              </h2>
+              {config.title && (
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white xl:truncate">
+                  {config.title(item)}
+                </h2>
+              )}
               {config.subtitle && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {config.subtitle(item)}

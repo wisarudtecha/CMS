@@ -85,7 +85,7 @@ import AuditLog from "./pages/Admin/AuditLog";
 // Custom Theme Imports
 import ThemeDebugger from "@/components/debug/ThemeDebugger";
 import CaseDetailView from "./components/case/CaseDetailView";
-import { CaseEntity } from "./types/case";
+// import { CaseEntity } from "./types/case";
 
 export default function App() {
   return (
