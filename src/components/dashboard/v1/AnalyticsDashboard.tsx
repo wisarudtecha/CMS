@@ -1,6 +1,6 @@
 // src/components/AnalyticsDashboard.tsx
 import React, { useState } from 'react';
-import { Clock, Phone, PhoneOff, RotateCcw, Settings, Users } from 'lucide-react';
+import { Settings, RotateCcw, Phone, Clock, Users, PhoneOff } from 'lucide-react';
 
 interface QueuePerformance {
   name: string;
@@ -43,13 +43,7 @@ const AnalyticsDashboard: React.FC = () => {
     { name: 'KBANK เครื่องดื่ม', waiting: '00:00:00', total: 17, inQueue: 1, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
     { name: 'TTB สายนาน', waiting: '00:00:00', total: 21, inQueue: 2, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
     { name: 'SCB เครื่องดื่ม', waiting: '00:00:00', total: 12, inQueue: 1, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
-    { name: 'GSB เครื่องดื่ม', waiting: '00:00:00', total: 17, inQueue: 0, pending: 0, complete: 3, cancel: 0, inSLA: 0, overSLA: 1, noSLA: 0 },
-    { name: 'TTB เครื่องดื่ม', waiting: '00:00:00', total: 14, inQueue: 0, pending: 0, complete: 0, cancel: 1, inSLA: 0, overSLA: 1, noSLA: 0 },
-    { name: 'SCB สายนาน', waiting: '00:00:00', total: 17, inQueue: 1, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
-    { name: 'GSB สายนาน', waiting: '00:00:00', total: 18, inQueue: 2, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
-    { name: 'KBANK เครื่องดื่ม', waiting: '00:00:00', total: 17, inQueue: 1, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
-    { name: 'TTB สายนาน', waiting: '00:00:00', total: 21, inQueue: 2, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 },
-    { name: 'SCB เครื่องดื่ม', waiting: '00:00:00', total: 12, inQueue: 1, pending: 0, complete: 0, cancel: 0, inSLA: 0, overSLA: 0, noSLA: 0 }
+    { name: 'GSB เครื่องดื่ม', waiting: '00:00:00', total: 17, inQueue: 0, pending: 0, complete: 3, cancel: 0, inSLA: 0, overSLA: 1, noSLA: 0 }
   ]);
 
   const [agentPerformance] = useState<AgentPerformance[]>([
@@ -111,7 +105,7 @@ const AnalyticsDashboard: React.FC = () => {
 
   const AreaChart = () => {
     const maxValue = Math.max(...monthlyData.map(d => d.calls));
-    const height = 200;
+    const height = 150;
     const width = 400;
     
     const points = monthlyData.map((item, index) => {
@@ -123,13 +117,7 @@ const AnalyticsDashboard: React.FC = () => {
     return (
       <div className="dark:bg-gray-700 rounded-lg p-4">
         <h3 className="text-sm font-medium mb-2 dark:text-gray-200">Recent Movement</h3>
-        <svg
-          // width={width}
-          // height={height}
-          className="w-full"
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-        >
+        <svg width={width} height={height} className="w-full">
           <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3"/>
@@ -158,18 +146,18 @@ const AnalyticsDashboard: React.FC = () => {
     
     return (
       <div className="dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-4 text-gray-700 dark:text-gray-200">Monthly Calls</h3>
-        <div className="flex items-end justify-between h-52 gap-1">
+        <h3 className="text-sm font-medium mb-4 dark:text-gray-200">Monthly Calls</h3>
+        <div className="flex items-end justify-between h-32 gap-1">
           {monthlyData.map((item, index) => (
             <div key={index} className="flex flex-col items-center">
               <div 
-                className="bg-blue-500 rounded-t w-6 transition-all duration-300 hover:bg-blue-700"
+                className="dark:bg-blue-500 rounded-t w-6 transition-all duration-300 dark:hover:bg-blue-400"
                 style={{ 
-                  height: `${(item.calls / maxValue) * 100}px`,
+                  height: `${(item.calls / maxValue) * 100}%`,
                   minHeight: '4px'
                 }}
               ></div>
-              <span className="text-xs mt-1 text-gray-500 dark:text-gray-400">{item.month}</span>
+              <span className="text-xs mt-1 dark:text-gray-400">{item.month}</span>
             </div>
           ))}
         </div>
@@ -181,10 +169,9 @@ const AnalyticsDashboard: React.FC = () => {
     const total = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
     const availablePercentage = (statusCounts.Available / total) * 100;
     const onCallPercentage = (statusCounts.OnCall / total) * 100;
-    const breakPercentage = (statusCounts.Break / total) * 100;
-
+    
     return (
-      <div className="relative w-32 h-32">
+      <div className="relative w-24 h-24">
         <svg viewBox="0 0 42 42" className="w-full h-full transform -rotate-90">
           <circle
             cx="21"
@@ -192,7 +179,7 @@ const AnalyticsDashboard: React.FC = () => {
             r="15.915"
             fill="transparent"
             stroke="#10b981"
-            strokeWidth="6"
+            strokeWidth="3"
             strokeDasharray={`${availablePercentage} ${100 - availablePercentage}`}
             strokeDashoffset="0"
           />
@@ -201,20 +188,10 @@ const AnalyticsDashboard: React.FC = () => {
             cy="21"
             r="15.915"
             fill="transparent"
-            stroke="#ef4444"
-            strokeWidth="6"
+            stroke="#eab308"
+            strokeWidth="3"
             strokeDasharray={`${onCallPercentage} ${100 - onCallPercentage}`}
             strokeDashoffset={`-${availablePercentage}`}
-          />
-          <circle
-            cx="21"
-            cy="21"
-            r="15.915"
-            fill="transparent"
-            stroke="#eab308"
-            strokeWidth="6"
-            strokeDasharray={`${breakPercentage} ${100 - breakPercentage}`}
-            strokeDashoffset={`-${availablePercentage + onCallPercentage}`}
           />
         </svg>
       </div>
@@ -222,54 +199,57 @@ const AnalyticsDashboard: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 cursor-default">
+    <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold dark:text-white">Analytics Dashboard</h1>
         <div className="flex gap-2">
-          <button className="p-2 text-gray-600 dark:text-gray-300 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 rounded border border-gray-400 dark:border-gray-500">
+          <button className="p-2 dark:text-gray-300 dark:hover:bg-gray-700 rounded border dark:border-gray-600">
             <Settings size={20} />
           </button>
-          <button className="p-2 text-gray-600 dark:text-gray-300 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 rounded border border-gray-400 dark:border-gray-500">
+          <button className="p-2 dark:text-gray-300 dark:hover:bg-gray-700 rounded border dark:border-gray-600">
             <RotateCcw size={20} />
           </button>
         </div>
       </div>
 
       {/* Top Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center justify-center gap-4">
-          <Phone className="text-green-500 dark:text-green-400" size={24} />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center gap-4">
+          <Phone className="dark:text-blue-400" size={24} />
           <div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Total Incoming Call</div>
-            <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">750</div>
+            <div className="text-sm dark:text-gray-400">Total Incoming Call</div>
+            <div className="text-3xl font-bold dark:text-gray-300">750</div>
           </div>
         </div>
-        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center justify-center gap-4">
-          <Clock className="text-yellow-500 dark:text-yellow-400" size={24} />
+
+        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center gap-4">
+          <Clock className="dark:text-yellow-400" size={24} />
           <div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Total Queue Waiting</div>
-            <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">7</div>
+            <div className="text-sm dark:text-gray-400">Total Queue Waiting</div>
+            <div className="text-3xl font-bold dark:text-gray-300">7</div>
           </div>
         </div>
-        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center justify-center gap-4">
-          <PhoneOff className="text-red-500 dark:text-red-400" size={24} />
+
+        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center gap-4">
+          <Users className="dark:text-green-400" size={24} />
           <div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Total Agent Login</div>
-            <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">9</div>
+            <div className="text-sm text-gray-400">Total Agent Login</div>
+            <div className="text-3xl font-bold dark:text-gray-300">9</div>
           </div>
         </div>
-        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center justify-center gap-4">
-          <Users className="text-purple-500 dark:text-purple-400" size={24} />
+
+        <div className="dark:bg-gray-700 rounded-lg p-6 flex items-center gap-4">
+          <PhoneOff className="dark:text-red-400" size={24} />
           <div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Total Missed Call</div>
-            <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">9</div>
+            <div className="text-sm dark:text-gray-400">Total Missed Call</div>
+            <div className="text-3xl font-bold dark:text-gray-300">9</div>
           </div>
         </div>
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <AreaChart />
         
         <div className="dark:bg-gray-700 rounded-lg p-4">
@@ -308,7 +288,7 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Tables Section */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Queue Monitor */}
-        <div className="dark:bg-gray-700 rounded-lg">
+        <div className="dark:bg-gray-700 rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4 dark:text-gray-200">Queue Monitor</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -349,7 +329,7 @@ const AnalyticsDashboard: React.FC = () => {
         {/* Agent Performance & Monitor */}
         <div className="space-y-6">
           {/* Agent Performance */}
-          <div className="dark:bg-gray-700 rounded-lg">
+          <div className="dark:bg-gray-700 rounded-lg p-6">
             <h2 className="text-lg font-medium mb-4 dark:text-gray-200">Agent Performance</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -384,7 +364,7 @@ const AnalyticsDashboard: React.FC = () => {
           </div>
 
           {/* Agent Monitor */}
-          <div className="dark:bg-gray-700 rounded-lg">
+          <div className="dark:bg-gray-700 rounded-lg p-6">
             <h2 className="text-lg font-medium mb-4 dark:text-gray-200">Agent Monitor</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
