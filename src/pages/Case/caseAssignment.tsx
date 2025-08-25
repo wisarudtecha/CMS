@@ -335,7 +335,7 @@ export default function CasesView() {
     return (<div className="flex flex-wrap  gap-3 pb-6">
       {statusColumns.map((column) => (
         (selectedStatus === null || selectedStatus === column.title) && (
-          <div key={column.title} className="flex-shrink-0 w-70">
+          <div key={column.title} className="flex-shrink-0 w-80">
             {!selectedStatus && <div className="flex items-center mb-4 px-2">
               <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
               <Badge color="primary" className="mx-2">{getCasesForColumn(column.title).length}</Badge>
