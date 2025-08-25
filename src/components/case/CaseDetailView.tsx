@@ -44,6 +44,7 @@ import { genCaseID } from "../genCaseId/genCaseId"
 import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
+import { useParams } from "react-router"
 
 
 
@@ -62,6 +63,7 @@ interface CaseTypeFormSectionProps {
     selectedCaseTypeForm: FormField | undefined;
     editFormData: boolean;
     caseTypeSupTypeData: CaseTypeSubType[];
+    disableCaseTypeSelect:boolean;
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -70,7 +72,8 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     handleGetTypeFormData,
     hadleIsFillGetType,
     selectedCaseTypeForm,
-    caseTypeSupTypeData
+    caseTypeSupTypeData,
+    disableCaseTypeSelect,
 }) => {
     const caseTypeOptions = useMemo(() => {
         if (!caseTypeSupTypeData?.length) return [];
@@ -91,6 +94,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     onChange={handleCaseTypeChange}
                     placeholder={"Select CaseType"}
                     className=" 2xsm:mx-3 mb-2"
+                    disabled={disableCaseTypeSelect}
                 />
             </div>
             {selectedCaseTypeForm?.formFieldJson && (
@@ -283,7 +287,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
     handleWorkOrderDate, handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
-    handleWorkOrderDateChangeDefault, handleIotDateChangeDefault, handleScheduleDateChangeDefault,
+    handleIotDateChangeDefault, handleScheduleDateChangeDefault,
     handleFilesChange, handlePreviewShow, handleSaveDrafts
 }) => (
     <>
@@ -341,7 +345,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                     onChange={handleWorkOrderDate}
                     disabled
-                    value={caseState?.workOrderDate || handleWorkOrderDateChangeDefault(TodayDate())}
+                    value={caseState?.workOrderDate || TodayDate()}
                     placeholder="Work Order"
                 />
             </div>
@@ -399,6 +403,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             selectedCaseTypeForm={selectedCaseTypeForm?.formField}
             editFormData={editFormData}
             caseTypeSupTypeData={caseTypeSupTypeData ?? []}
+            disableCaseTypeSelect={!isCreate}
         />
 
         {/* Case Details */}
@@ -518,9 +523,11 @@ CaseFormFields.displayName = 'CaseFormFields';
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
 
+    const { caseId: paramCaseId } = useParams<{ caseId: string }>();    
+    const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
-        if (!caseData) {
+        if (!initialCaseData) {
             return {
                 location: "",
                 date: "",
@@ -541,7 +548,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [showCreatedCase, setShowCreatedCase] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [showCreateSupCase, setShowCreateSupCase] = useState(false);
-    const [editFormData, setEditFormData] = useState<boolean>(!caseData);
+    const [editFormData, setEditFormData] = useState<boolean>(!initialCaseData);
     const [assignedOfficers, setAssignedOfficers] = useState<Unit[]>([]);
     const [showOfficersData, setShowOFFicersData] = useState<Unit | null>(null);
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
@@ -568,25 +575,25 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         JSON.parse(localStorage.getItem("profile") ?? "{}"), []
     );
 
-    // Only make API calls if caseData exists
+    // Only make API calls if initialCaseData exists
     const { data: sopData, isFetching, isLoading } = useGetCaseSopQuery(
-        { caseId: caseData?.caseId || "" },
+        { caseId: initialCaseData?.caseId || "" },
         {
             refetchOnMountOrArgChange: true,
-            skip: !caseData?.caseId || isCreate
+            skip: !initialCaseData?.caseId || isCreate
         }
     );
 
     const { data: unit } = useGetUnitQuery(
-        { caseId: caseData?.caseId || "" },
-        { skip: !caseData?.caseId || isCreate }
+        { caseId: initialCaseData?.caseId || "" },
+        { skip: !initialCaseData?.caseId || isCreate }
     )
 
 
 
     const { data: comments } = useGetCaseHistoryQuery(
-        { caseId: caseData?.caseId || "" },
-        { skip: !caseData?.caseId || isCreate }
+        { caseId: initialCaseData?.caseId || "" },
+        { skip: !initialCaseData?.caseId || isCreate }
     )
 
     const [createCase] = usePostCreateCaseMutation();
@@ -623,23 +630,23 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     // Initialize sopLocal from API data ONLY when sopData changes
     useEffect(() => {
-        if (sopData?.data && caseData) {
+        if (sopData?.data && initialCaseData) {
             setSopLocal(sopData.data);
         }
-    }, [sopData?.data, caseData?.caseId]);
+    }, [sopData?.data, initialCaseData?.caseId]);
 
     // Initialize case type from caseData ONLY ONCE
     useEffect(() => {
-        if (caseData && caseType.caseType === "" && caseTypeSupTypeData.length > 0 && !sopLocal) {
+        if (initialCaseData && caseType.caseType === "" && caseTypeSupTypeData.length > 0 && !sopLocal) {
             const newCaseType = {
                 caseType: mergeCaseTypeAndSubType(
                     findCaseTypeSubTypeByTypeIdSubTypeId(
                         caseTypeSupTypeData,
-                        caseData?.caseTypeId || "",
-                        caseData?.caseSTypeId || ""
+                        initialCaseData?.caseTypeId || "",
+                        initialCaseData?.caseSTypeId || ""
                     ) ?? ({} as CaseTypeSubType)
                 ) || "",
-                priority: caseData.priority || 0
+                priority: initialCaseData.priority || 0
             };
 
             setCaseType(newCaseType);
@@ -714,7 +721,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     // Initialize case state from sopLocal data ONLY when all required data is available
     useEffect(() => {
-        if (caseData && sopLocal && areaList.length > 0 && !caseState) {
+        if (initialCaseData && sopLocal && areaList.length > 0 && !caseState) {
             const utcTimestamp: string | undefined = sopLocal?.createdAt;
             const area = areaList.find((items) =>
                 sopLocal.provId === items.provId &&
@@ -743,14 +750,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         else if (isSubCase) {
             const newCaseState: CaseDetails = {
 
-                workOrderNummber: caseData?.caseId || "",
-                workOrderRef: caseData?.referCaseId || "",
+                workOrderNummber: initialCaseData?.caseId || "",
+                workOrderRef: initialCaseData?.referCaseId || "",
             } as CaseDetails;
 
             setCaseState(newCaseState);
         }
 
-    }, [sopLocal, caseData, areaList.length]);
+    }, [sopLocal, initialCaseData, areaList.length]);
 
 
     useEffect(() => {
@@ -764,7 +771,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     // Update customer data ONLY when necessary data is available
     useEffect(() => {
         if (listCustomerData.length > 0) {
-            const result = listCustomerData.find(items => items.mobileNo === caseData?.phoneNo)
+            const result = listCustomerData.find(items => items.mobileNo === initialCaseData?.phoneNo)
             const customerData = result ? {
                 ...result,
                 name: `${result.firstName} ${result.lastName}`,
@@ -785,7 +792,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 status: prev.status || "",
             } as CaseDetails : prev);
         }
-    }, [listCustomerData.length, sopLocal, caseData?.phoneNo]);
+    }, [listCustomerData.length, sopLocal, initialCaseData?.phoneNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
     const handleFilesChange = useCallback((newFiles: File[]) => {
@@ -1154,9 +1161,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [updateCaseState]);
 
     const handleWorkOrderDateChangeDefault = useCallback((date: string) => {
-        updateCaseState({ workOrderDate: date });
-        return date
-    }, [updateCaseState]);
+        return date;
+    }, []);
 
     const handleIotDateChangeDefault = useCallback((date: string) => {
         updateCaseState({ iotDate: date });
@@ -1232,7 +1238,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // This object creation is correct
         const dispatchjson = {
             unitId: officer.unitId,
-            caseId: caseData!.caseId,
+            caseId: initialCaseData!.caseId,
             nodeId: sopData?.data?.dispatchStage?.nodeId,
             status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
             unitUser: profile.username
@@ -1267,10 +1273,18 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setToastType("error");
             setShowToast(true);
         }
-    }, [caseData, profile.username, postDispatch]); // 3. Add dependencies to useCallback
+    }, [initialCaseData, profile.username, postDispatch]); // 3. Add dependencies to useCallback
+
+    useEffect(() => {
+        if (!caseState?.workOrderDate && !initialCaseData) {
+            updateCaseState({ workOrderDate: TodayDate() });
+        }
+    }, [caseState?.workOrderDate, initialCaseData, updateCaseState]);
+    
+
 
     // Loading state for existing cases
-    if (caseData && (isLoading || isFetching)) {
+    if (initialCaseData && (isLoading || isFetching)) {
         return (
             <div className="relative flex-1 min-h-screen ">
                 <div className="absolute inset-0 flex items-center justify-center  dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50 rounded-2xl">
@@ -1295,7 +1309,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                         if (!prev) return prev;
                         return {
                             ...prev,
-                            workOrderNummber:genCaseID()                        };
+                            workOrderNummber: genCaseID()
+                        };
                     });
                 }}
                 isCreate={false}
@@ -1409,7 +1424,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             <div className="px-4 pt-6">
 
                                 {/* Case Card */}
-                                {(caseData && sopLocal) && (
+                                {(initialCaseData && sopLocal) && (
                                     <CaseCard
                                         onAddSubCase={() => setShowCreateSupCase(true)}
                                         onAssignClick={() => setShowAssignModal(true)}
@@ -1442,7 +1457,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                 {(editFormData || isCreate) && caseState ? (
                                     <CaseFormFields
                                         caseState={caseState}
-                                        caseData={caseData}
+                                        caseData={initialCaseData}
                                         setCaseState={setCaseState}
                                         caseType={caseType}
                                         selectedCaseTypeForm={selectedCaseTypeForm}
@@ -1510,12 +1525,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             >
                 <PreviewDataBeforeSubmit
                     caseData={caseState}
-                    submitButton={caseData ? handleSaveChanges : handleCreateCase}
+                    submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
                 />
             </Modal>
 
             <CreateSubCaseModel
-                caseData={caseData}
+                caseData={initialCaseData}
                 open={showCreateSupCase}
                 onOpenChange={setShowCreateSupCase}
             />

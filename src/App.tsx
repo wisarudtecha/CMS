@@ -84,6 +84,8 @@ import AuditLog from "./pages/Admin/AuditLog";
 
 // Custom Theme Imports
 import ThemeDebugger from "@/components/debug/ThemeDebugger";
+import CaseDetailView from "./components/case/CaseDetailView";
+import { CaseEntity } from "./types/case";
 
 export default function App() {
   return (
@@ -106,6 +108,7 @@ export default function App() {
             {/* Case Management (Archived) */}
             <Route path="/case-assignment" element={<CasesAssignment />} />
             <Route path="/case-creation" element={<CaseCreation/>} />
+            <Route path="/case/:caseId" element={<CaseDetailView isCreate={false} />} />
             <Route path="/kanban" element={<Kanban />} />
             {/* Case Management (No Longer Used) */}
             {/* <Route path="/case-view" element={<CasesView />} /> */}

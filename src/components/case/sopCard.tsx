@@ -472,7 +472,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                     </div>
                 </div>
                 <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
-                    <Badge variant="outline" color={`${getTextPriority(caseData.priority).color}` }>
+                    <Badge variant="outline" color={`${getTextPriority(caseData.priority).color}`}>
                         {getTextPriority(caseData.priority).level} Priority
                     </Badge>
                     <Badge variant="outline">
@@ -496,27 +496,27 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>
 
-                    {editFormData && (
-                        <div>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
-                                onClick={handleButtonClick}
-                            >
-                                <Paperclip className="w-4 h-4 mr-2" />
-                                Attach File
-                            </Button>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                multiple
-                                onChange={handleFileChange}
-                                style={{ display: "none" }}
-                            />
-                        </div>
-                    )}
+
+                    <div>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                            onClick={handleButtonClick}
+                        >
+                            <Paperclip className="w-4 h-4 mr-2" />
+                            Attach File
+                        </Button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            multiple
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                        />
+                    </div>
+
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
                     {onAddSubCase &&
