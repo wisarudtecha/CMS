@@ -125,9 +125,12 @@ const RoleManagementComponent: React.FC<{
   }, [data]);
 
   useEffect(() => {
-    const mostUsedRole = (arr: { roleName: string }[]) => Object.entries(
-      arr.reduce((acc, { roleName }) => ((acc[roleName] = (acc[roleName] || 0) + 1), acc), {} as Record<string, number>)
-    ).reduce((a, b) => (b[1] > a[1] ? b : a), ["", 0])[0];
+    // const mostUsedRole = (arr: { roleName: string }[]) => Object.entries(
+    //   arr.reduce((acc, { roleName }) => ((acc[roleName] = (acc[roleName] || 0) + 1), acc), {} as Record<string, number>)
+    // ).reduce((a, b) => (b[1] > a[1] ? b : a), ["", 0])[0];
+
+    const maxPermissions = Math.max(...role.map(r => r.permissions?.length || 0));
+    const roleWithMax = role.find(r => r.permissions?.length === maxPermissions);
 
     setRoleAnalytics({
       totalRoles: role.length,
@@ -135,7 +138,8 @@ const RoleManagementComponent: React.FC<{
       systemRoles: role.filter(r => r.id === SYSTEM_ROLE).length,
       customRoles: role.filter(r => r.id !== SYSTEM_ROLE).length,
       averagePermissions: Math.round(role.reduce(sum => sum + perms.length, 0) / role.length),
-      mostUsedRole: mostUsedRole(role).replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
+      // mostUsedRole: mostUsedRole(role).replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
+      mostUsedRole: roleWithMax?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || "0",
       recentChanges: 0
     });
   }, [perms.length, role]);
@@ -158,32 +162,32 @@ const RoleManagementComponent: React.FC<{
     },
     columns: [],
     actions: [
-      {
-        key: "view",
-        label: "View",
-        variant: "primary" as const,
-        // icon: EyeIcon,
-        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`),
-        condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
-      },
-      {
-        key: "update",
-        label: "Edit",
-        variant: "warning" as const,
-        // icon: PencilIcon,
-        onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
-        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
-      },
-      {
-        key: "delete",
-        label: "Delete",
-        variant: "outline" as const,
-        // icon: TrashBinIcon,
-        onClick: (roleItem: Role) => {
-          console.log("Delete role:", roleItem.id);
-        },
-        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
-      }
+      // {
+      //   key: "view",
+      //   label: "View",
+      //   variant: "primary" as const,
+      //   // icon: EyeIcon,
+      //   onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`),
+      //   condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
+      // },
+      // {
+      //   key: "update",
+      //   label: "Edit",
+      //   variant: "warning" as const,
+      //   // icon: PencilIcon,
+      //   onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
+      //   condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
+      // },
+      // {
+      //   key: "delete",
+      //   label: "Delete",
+      //   variant: "outline" as const,
+      //   // icon: TrashBinIcon,
+      //   onClick: (roleItem: Role) => {
+      //     console.log("Delete role:", roleItem.id);
+      //   },
+      //   condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
+      // }
     ]
   };
 
@@ -192,7 +196,21 @@ const RoleManagementComponent: React.FC<{
   // ===================================================================
 
   const previewConfig: PreviewConfig<Role> = {
-    title: () => "Role Information",
+    // title: () => "Role Information",
+    title: (roleItem: Role) => {
+      return (
+        <div className="flex items-center gap-3">
+          <div className={`w-3 h-3 rounded-full ${roleItem.active
+            ? "bg-green-500 dark:bg-green-400"
+            : "bg-red-500 dark:bg-red-400"
+          }`}></div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">{roleItem.roleName}</h2>
+            {/* <p className="text-sm text-gray-500 dark:text-gray-400">Level {role.level} • {role.userCount} users</p> */}
+          </div>
+        </div>
+      );
+    },
     size: "xl",
     enableNavigation: true,
     tabs: [
@@ -205,11 +223,7 @@ const RoleManagementComponent: React.FC<{
           // userItem: UserProfile
         ) => {
           return (
-            <>
-              {/* <UserMetaCard meta={userItem?.meta as UserMeta} /> */}
-              {/* <UserInfoCard info={userItem as UserProfile} editable={false} /> */}
-              {/* <UserAddressCard address={userItem?.address as UserAddress} editable={false} /> */}
-            </>
+            <></>
           )
         }
       }
@@ -255,25 +269,15 @@ const RoleManagementComponent: React.FC<{
   // Advanced Filters
   // ===================================================================
 
-  const advancedFilters = [
-    {
-      key: "id",
-      label: "Role",
-      type: "select" as const,
-      options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
-      placeholder: "Select role"
-    },
-    // {
-    //   key: "permissions",
-    //   label: "Permissions",
-    //   type: "customizable-select" as const,
-    //   options: perms.map(p => ({ value: p.id, label: `${p.groupName} - ${p.permName}` })),
-    //   multiple: true,
-    //   placeholder: "Select permissions",
-    //   searchable: true,
-    //   clearable: true
-    // }
-  ];
+  // const advancedFilters = [
+  //   {
+  //     key: "id",
+  //     label: "Role",
+  //     type: "select" as const,
+  //     options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
+  //     placeholder: "Select role"
+  //   }
+  // ];
 
   // ===================================================================
   // Bulk Actions
@@ -593,7 +597,7 @@ const RoleManagementComponent: React.FC<{
       <MetricsView metrics={roleAnalytics} attrMetrics={attrMetrics} />
 
       <EnhancedCrudContainer
-        advancedFilters={advancedFilters}
+        // advancedFilters={advancedFilters}
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
@@ -611,8 +615,8 @@ const RoleManagementComponent: React.FC<{
         customFilterFunction={customCaseFilterFunction}
         data={role}
         // displayModes={["card", "matrix", "hierarchy"]}
-        // displayModes={["card", "matrix"]}
-        displayModes={["matrix"]}
+        displayModes={["card", "matrix"]}
+        // displayModes={["matrix"]}
         displayModeDefault="matrix"
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}
@@ -624,7 +628,7 @@ const RoleManagementComponent: React.FC<{
           keyboardShortcuts: true,
           pagination: true,
           realTimeUpdates: false, // Disabled for demo
-          search: true,
+          search: false,
           sorting: true,
         }}
         // keyboardShortcuts={[]}

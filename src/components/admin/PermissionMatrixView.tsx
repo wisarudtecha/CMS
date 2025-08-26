@@ -175,12 +175,12 @@ export const PermissionMatrixView: React.FC<{
       <div className="overflow-x-auto overflow-y-auto" ref={containerRef} style={{maxHeight}}>
         <table className="min-w-full border-collapse">
           <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 cursor-default">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700">
+            <tr className="bg-gray-100 dark:bg-gray-800">
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider sticky left-0">
                 Permission
               </th>
               {roles.map(role => (
-                <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider min-w-24">
+                <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider min-w-24">
                   <div className="flex flex-col items-center">
                     <span className="tracking-wider max-w-20 capitalize">{role.roleName.replace(/_/g, " ")}</span>
                   </div>
@@ -225,7 +225,7 @@ export const PermissionMatrixView: React.FC<{
                     <td className="px-6 py-4 sticky left-0 cursor-default">
                       <div>
                         <div className="flex items-center">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize indent-6">
                             {permission.permName}
                           </span>
                         </div>

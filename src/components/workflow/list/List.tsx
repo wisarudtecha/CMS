@@ -6,8 +6,10 @@ import {
   // BoltIcon,
   CheckLineIcon,
   CloseLineIcon,
+  GroupIcon, 
   // ListIcon,
-  // LockIcon,
+  LockIcon,
+  // PencilIcon,
   TimeIcon,
   VideoIcon
 } from "@/icons";
@@ -21,8 +23,10 @@ import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
   Workflow,
+  WorkflowAnalytics,
   // WorkflowData
 } from "@/types/workflow";
+import MetricsView from "@/components/admin/MetricsView";
 // import Badge from "@/components/ui/badge/Badge";
 // import workflowList from "@/mocks/workflowList.json";
 
@@ -33,6 +37,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   const navigate = useNavigate();
   const permissions = usePermissions();
   const [data, setData] = useState<(Workflow & { id: string })[]>([]);
+  const [workflowAnalytics, setWorkflowAnalytics] = useState<WorkflowAnalytics>();
 
   // ===================================================================
   // Mock Data
@@ -54,6 +59,16 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     setData(tmp);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workflows]);
+
+  useEffect(() => {
+    setWorkflowAnalytics({
+      totalWorkflows: data.length,
+      activeWorkflows: data.filter(r => r.active).length,
+      publishedWorkflows: data.filter(r => r.publish).length,
+      draftWorkflows: data.filter(r => r.versions).length,
+      lockedWorkflows: data.filter(r => r.locks).length
+    });
+  }, [data]);
 
   const statusConfig = [
     {
@@ -79,11 +94,11 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       icon: <TimeIcon className="w-4 h-4" />
     }
   ];
-  // const lockConfig = {
-  //   locks: true,
-  //   color: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100",
-  //   icon: <LockIcon className="w-4 h-4" />
-  // };
+  const lockConfig = {
+    locks: true,
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100",
+    icon: <LockIcon className="w-4 h-4" />
+  };
 
   const safeTrimToEllipsis = (str: string, maxLength: number) => {
     if (maxLength < 3) {
@@ -149,14 +164,12 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
                 {publicationConfig.find(p => p.publish === workflow.publish)?.icon || ""}
                 {workflow.publish ? "Publish" : "Draft"}
               </span>
-              {/*
               {workflow.locks && (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-1 ${lockConfig.color}`}>
                   <LockIcon className="w-3 h-4" />
                   Lock
                 </span>
               )}
-              */}
             </div>
           );
         }
@@ -506,14 +519,12 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
             {publicationConfig.find(p => p.publish === workflow.publish)?.icon || ""}
             {workflow.publish ? "Publish" : "Draft"}
           </span>
-          {/*
           {workflow.locks && (
             <span className={`inline-flex mr-2 items-center px-2 py-1 rounded-full text-xs font-medium ${lockConfig.color}`}>
               <LockIcon className="w-4 h-4" />
               Lock
             </span>
           )}
-          */}
 
           {/*
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
@@ -570,8 +581,18 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   // Render Component
   // ===================================================================
 
+  const attrMetrics = [
+    { key: "totalWorkflows", title: "Total", icon: GroupIcon, color: "blue", className: "text-blue-600" },
+    { key: "activeWorkflows", title: "Active", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "publishedWorkflows", title: "Published", icon: VideoIcon, color: "green", className: "text-green-600" },
+    // { key: "draftWorkflows", title: "Draft", icon: PencilIcon, color: "yellow", className: "text-yellow-600" },
+    { key: "lockedWorkflows", title: "Locked", icon: LockIcon, color: "red", className: "text-red-600" },
+  ];
+
   return (
     <>
+      <MetricsView metrics={workflowAnalytics} attrMetrics={attrMetrics} />
+
       <EnhancedCrudContainer
         // advancedFilters={advancedFilters}
         apiConfig={{

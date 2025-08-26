@@ -1,18 +1,10 @@
 // /src/components/crud/EnhancedCrudContainer.tsx
 import React, { useState, useCallback, useMemo } from "react";
-import {
-  // ChevronDownIcon,
-  // ChevronUpIcon,
-  InfoIcon
-} from "@/icons";
-// import { RoleHierarchyView } from "@/components/admin/HierarchyView";
-// import { PermissionMatrixView } from "@/components/admin/PermissionMatrixView";
-import { TableView } from "@/components/crud/TableView";
+import { InfoIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
 import { BulkActionBar } from "@/components/crud/BulkActionBar";
 import { ClickableCard } from "@/components/crud/ClickableCard";
-// import { ClickableTableRow } from "@/components/crud/ClickableTableRow";
 import { ConfirmModal } from "@/components/crud/ConfirmModal";
 import { DisplayModeToggle } from "@/components/crud/DisplayModeToggle";
 import { ExportMenu } from "@/components/crud/ExportMenu";
@@ -21,8 +13,8 @@ import { KeyboardShortcuts } from "@/components/crud/KeyboardShortcuts";
 import { Pagination } from "@/components/crud/Pagination";
 import { PreviewDialog } from "@/components/crud/PreviewDialog";
 import { SearchBar } from "@/components/crud/SearchBar";
+import { TableView } from "@/components/crud/TableView";
 import { ToastContainer } from "@/components/crud/ToastContainer";
-// import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useApi } from "@/hooks/useApi";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -34,24 +26,16 @@ import { useSort } from "@/hooks/useSort";
 import { useToast } from "@/hooks/useToast";
 import { apiService } from "@/services/api";
 import { SYSTEM_ROLE } from "@/utils/constants";
+// import { exportToCSV, exportToJSON } from "@/utils/export";
 import type { CrudConfig } from "@/types/crud";
 import type { AdvancedFilter, ApiConfig, BulkAction, CrudFeatures, ExportOption, KeyboardShortcut, PreviewConfig } from "@/types/enhanced-crud";
-// import type { Permission, Role } from "@/types/role";
-// import Checkbox from "@/components/form/input/Checkbox";
 import Button from "@/components/ui/button/Button";
-// import allPermissions from "@/mocks/allPermissions.json";
-// import roles from "@/mocks/roles.json";
-import {
-  // exportToCSV,
-  exportToJSON
-} from "@/utils/export";
 
 interface EnhancedCrudContainerProps<T> {
   advancedFilters?: AdvancedFilter[];
   apiConfig?: ApiConfig;
   bulkActions?: BulkAction<T>[];
   config: CrudConfig<T>;
-  // config: CrudConfig<{ id: string; }>;
   data: T[];
   displayModes?: ("card" | "table" | "matrix" | "hierarchy")[];
   displayModeDefault?: "card" | "table" | "matrix" | "hierarchy";
@@ -64,12 +48,9 @@ interface EnhancedCrudContainerProps<T> {
   module?: string;
   previewConfig?: PreviewConfig<T>;
   searchFields?: (keyof T)[];
-  // searchFields?: unknown;
-  // customFilterFunction?: (item: T, filters: unknown) => boolean;
   customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
   onCreate?: () => void;
   onDelete?: (id: string) => void;
-  // onItemAction?: (action: string, item: T) => void;
   onItemAction?: (action: string, item: T) => void;
   onItemClick?: (item: T) => void;
   onRefresh?: () => void;
@@ -95,9 +76,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   loading = false,
   module,
   previewConfig,
-  // searchFields,
   searchFields = [],
-  // searchFields = ["name", "description", "title"] as (keyof T)[],
   customFilterFunction,
   onCreate,
   onDelete,
@@ -123,7 +102,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     filtering: true,
     keyboardShortcuts: true,
     pagination: true,
-    // preview: true,
     realTimeUpdates: false,
     search: true,
     sorting: true,
@@ -135,34 +113,17 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // ===================================================================
 
   const { confirmDialog, closeConfirmDialog, handleConfirm, openConfirmDialog } = useConfirmDialog();
-  // const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
-  // const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields as unknown as (keyof T)[]);
-  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(
-    data, 
-    customFilterFunction, 
-    searchFields
-  );
+  const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
   const { sortConfig, sortedData, handleSort } = useSort(filteredData);
+  const { isAllSelected, selectedItems, deselectAll, getSelectedCount, selectItem, selectAll, toggleSelectAll } = useBulkSelection(sortedData);
   const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(sortedData.length);
   const { toasts, addToast, removeToast } = useToast();
-  const {
-    isAllSelected,
-    // isPartialSelected,
-    selectedItems,
-    deselectAll,
-    getSelectedCount,
-    // isSelected,
-    selectItem,
-    selectAll,
-    toggleSelectAll
-  } = useBulkSelection(sortedData);
 
   // Preview functionality
   const { canGoNext, canGoPrev, previewState, closePreview, nextItem, openPreview, prevItem } = usePreview<T>();
 
   // API functionality
   const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
-  // const deleteApi = useApi(apiService.delete as (...args: unknown[]) => Promise<unknown>);
   const deleteApi = useApi(((endpoint: string) => apiService.delete(endpoint)) as (...args: unknown[]) => Promise<unknown>);
 
   // ===================================================================
@@ -260,23 +221,16 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
     openConfirmDialog({
       type: confirmDialogType,
-      // entityId: item.id,
       entityId: id,
-      // entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || item.id,
       entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id,
       newValue: newValue,
       onConfirm: async () => {
-        // console.log("Delete confirmed for item:", item.id);
         console.log("Delete confirmed for item:", id);
         try {
-          // if (apiConfig) {
-          //   await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", item.id)}`);
-          // }
           if (apiConfig?.endpoints?.delete) {
             await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);
           }
           if (onDelete) {
-            // onDelete(item.id);
             onDelete(id);
           }
           addToast("success", `${config.entityName} deleted successfully`);
@@ -290,16 +244,19 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   }, [apiConfig, config, deleteApi, module, addToast, onDelete, openConfirmDialog]);
 
   // Handle export
-  const handleExport = useCallback(async (option: ExportOption, exportData: T[]) => {
+  const handleExport = useCallback(async (
+    option: ExportOption,
+    // exportData: T[]
+  ) => {
     try {
-      const filename = `${config.entityNamePlural.toLowerCase()}_${new Date().toISOString().split("T")[0]}`;
+      // const filename = `${config.entityNamePlural.toLowerCase()}_${new Date().toISOString().split("T")[0]}`;
       
       switch (option.format) {
         case "csv":
           // exportToCSV(exportData, filename, option.columns);
           break;
         case "json":
-          exportToJSON(exportData, filename);
+          // exportToJSON(exportData, filename);
           break;
         case "excel":
           // Would implement Excel export
@@ -319,7 +276,10 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       addToast("error", `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       throw error;
     }
-  }, [config.entityNamePlural, addToast]);
+  }, [
+    // config.entityNamePlural,
+    addToast
+  ]);
 
   // Handle item click for preview
   const handleItemClick = useCallback((item: T) => {
@@ -342,7 +302,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     const action = config.actions?.find(a => a.key === actionKey);
     if (action) {
       console.log("Executing action from config:", action.key);
-      // action.onClick(item);
       
       if (module === "case") {
         handleItemClick(item);
@@ -464,7 +423,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               {/* Controls */}
               <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
                 <div className="xl:flex items-center gap-4">
-                  {/* Display Modes (Card / Default:Table / Matrix / Hierarchy) */}
+                  {/* Display Modes (Card / Table / Matrix / Hierarchy) */}
                   {displayModes.length > 1 && (
                     <div className="mb-2 xl:mb-0">
                       <DisplayModeToggle mode={displayMode} list={displayModes} onChange={setDisplayMode} />
@@ -527,7 +486,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             </div>
 
             {/* Create Button */}
-            {onCreate && (
+            {onCreate && displayMode != "matrix" && (
               <PermissionGate module="workflow" action="create">
                 <Button onClick={onCreate} variant="primary" className="h-11">
                   Create {config.entityName}
@@ -536,20 +495,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             )}
           </div>
         </div>
-
-        {/* Results Info */}
-        {/*
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            Showing {startEntry}-{endEntry} of {sortedData.length} {config.entityNamePlural.toLowerCase()}
-            {getSelectedCount() > 0 && (
-              <span className="ml-2 text-blue-600 dark:text-blue-400">
-                ({getSelectedCount()} selected)
-              </span>
-            )}
-          </div>
-        </div>
-        */}
 
         {/* Content */}
         {loading ? (
@@ -605,8 +550,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         ) : displayMode === "matrix" && renderMatrix ? (
           // Matrix View
           <div className="mb-4">{renderMatrix()}</div>
-        ) 
-        : displayMode === "hierarchy" && renderHierarchy ? (
+        ) : displayMode === "hierarchy" && renderHierarchy ? (
           // Hierarchy View
           <></>
         ) : (
@@ -726,7 +670,6 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             <div>Display Mode: {displayMode}</div>
             <div>Actions Count: {enhancedActions?.length || 0}</div>
             
-            {/* <div>Debug Modal: {debugModalOpen ? "OPEN" : "CLOSED"}</div> */}
             <div className="mt-2 pt-2 border-t border-gray-300 dark:border-gray-600">
               <div className="font-bold">Confirm Dialog</div>
               <div>Is Open: {confirmDialog.isOpen ? "YES" : "NO"}</div>

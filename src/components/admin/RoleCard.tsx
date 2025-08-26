@@ -74,7 +74,7 @@ export const RoleCard: React.FC<{
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white capitalize">
               {role.roleName.replace(/_/g, " ")}
-              <span className={`xl:ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${role.active
+              <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${role.active
                   ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                   : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                 }`}>
@@ -181,20 +181,22 @@ export const RoleCard: React.FC<{
 
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2 min-h-6">
-          {permissionByRole.slice(0, 3).map((item, key) => {
-            return (
-              <div
-                key={item[key].permId}
-                className="flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
-                // title={item[key].groupName}
-              >
-                <span className="text-gray-700 dark:text-gray-300">{item[key].groupName}</span>
-              </div>
-            );
+          {permissionByRole.slice(0, 2).map((item, key) => {
+            if (item[key]) {
+              return (
+                <div
+                  key={`${item[key]?.permId}-${key}`}
+                  className="flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
+                  // title={item[key].groupName}
+                >
+                  <span className="text-gray-700 dark:text-gray-300">{item[key]?.groupName}</span>
+                </div>
+              );
+            }
           })}
-          {permissionByRole.length > 3 && (
+          {permissionByRole.length > 2 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              +{permissionByRole.length - 3} more
+              +{permissionByRole.length - 2} more
             </span>
           )}
         </div>

@@ -34,10 +34,10 @@ const RoleManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 1000 });
+  const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 100 });
   const permissions = permissionsData?.data as unknown as Permission[] || [];
 
-  const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 100 });
+  const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 1000 });
   const rolesPermissions = rolesPermissionsData?.data as unknown as RolePermission[] || [];
 
   const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });

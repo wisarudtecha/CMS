@@ -2,10 +2,11 @@
 import { JSX } from "react";
 import type { RoleAnalytics, RoleMetrics } from "@/types/role";
 import type { UserMetrics } from "@/types/user";
+import type { WorkflowAnalytics } from "@/types/workflow";
 import MetricsCard from "@/components/admin/MetricsCard";
 
 const MetricsView: React.FC<{ 
-  metrics: UserMetrics | RoleMetrics | RoleAnalytics | undefined;
+  metrics: RoleAnalytics | RoleMetrics | UserMetrics | WorkflowAnalytics | undefined;
   attrMetrics: {
     key: string;
     title: string;

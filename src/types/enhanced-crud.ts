@@ -106,7 +106,8 @@ export interface PreviewTab<T = string> {
 }
 
 export interface PreviewConfig<T> {
-  title: (item: T) => string;
+  // title: (item: T) => string;
+  title?: (item: T) => React.ReactNode | string;
   // subtitle?: (item: T) => string;
   subtitle?: (item: T) => React.ReactNode | string;
   avatar?: (item: T) => React.ReactNode;

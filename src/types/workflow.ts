@@ -15,6 +15,14 @@ export interface Workflow extends BaseEntity {
   versions: string;
 }
 
+export interface WorkflowAnalytics {
+  totalWorkflows: number;
+  activeWorkflows: number;
+  publishedWorkflows: number;
+  draftWorkflows: number;
+  lockedWorkflows: number;
+}
+
 export interface Position {
   x: number;
   y: number;
