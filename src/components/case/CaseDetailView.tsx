@@ -25,7 +25,6 @@ import { CaseTypeSubType } from "../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
 import CustomerInput from "./CaseCustomerInput"
-import CustomerPanel from "./CaseCustomerPanel"
 import FormFieldValueDisplay from "./CaseDisplay"
 import PreviewDataBeforeSubmit from "./PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
@@ -45,6 +44,7 @@ import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useParams } from "react-router"
+import Panel from "./CasePanel"
 
 
 
@@ -1500,9 +1500,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                         md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
                         ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
                     `}>
-                        <CustomerPanel
+                        <Panel
                             onClose={() => setIsCustomerPanelOpen(false)}
                             caseItem={caseState || {} as CaseDetails}
+                            referCaseList={sopLocal?.referCaseLists}
                         />
                     </div>
                 </div>

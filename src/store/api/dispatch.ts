@@ -146,6 +146,7 @@ export interface CaseSop {
   currentStage: CurrentStage;
   dispatchStage: any;
   nextStage: any;
+  referCaseLists:string[];
 }
 
 export interface Unit {
