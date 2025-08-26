@@ -17,6 +17,7 @@ import { CaseDetails, CaseEntity } from "@/types/case"
 import { useGetDeviceIoTQuery } from "@/store/api/deviceIoT"
 import { Device } from "@/types/deviceIoT"
 import { statusIdToStatusTitle } from "../ui/status/status"
+import { useNavigate } from "react-router"
 
 
 
@@ -33,14 +34,17 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const tabs = [
         { id: "Device info", label: "Device info" }
     ];
+
+    const navigate=useNavigate()
+
     if (referCaseList) {
         tabs.push({ id: "Subcase", label: "Subcase" });
 
 
     }
+
     useEffect(() => {
         if (referCaseList) {
-            tabs.push({ id: "Subcase", label: "Subcase" });
 
             try {
                 const caseList = localStorage.getItem("caseList");
@@ -53,7 +57,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                 console.log(error);
             }
         }
-    }, [])
+    }, [referCaseList])
 
 
     // const addTab = [
@@ -236,6 +240,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                     referCase.map((SupCase) => (
                                         <div
                                             key={SupCase.caseId}
+                                            onClick={()=> navigate(`/case/${SupCase.caseId}`)}
                                             className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(SupCase.priority)} group`}
                                         >
                                             <div className="flex items-start justify-between">

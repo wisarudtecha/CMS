@@ -576,7 +576,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     );
 
     // Only make API calls if initialCaseData exists
-    const { data: sopData, isFetching, isLoading } = useGetCaseSopQuery(
+    const { data: sopData, isFetching, isError,isLoading } = useGetCaseSopQuery(
         { caseId: initialCaseData?.caseId || "" },
         {
             refetchOnMountOrArgChange: true,
@@ -1318,7 +1318,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }
 
 
-    if (sopData === undefined && isCreate === false) {
+    if ((sopData === undefined || isError)&& isCreate === false) {
         return (
             <div className="flex flex-col h-screen">
                 {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}

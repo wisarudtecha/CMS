@@ -23,6 +23,7 @@ import { useFetchCase } from "@/components/case/CaseApiManager"
 import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
 import { caseStatus, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
+import { useNavigate } from "react-router"
 
 const statusColumns = caseStatus
 
@@ -46,7 +47,7 @@ export default function CasesView() {
   const [sortOrder] = useState<"asc" | "desc">("asc")
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
   const allowedStatusIds = statusColumns.flatMap(col => col.group);
-
+  const navigate=useNavigate()
   const [caseData, setCaseData] = useState<CaseEntity[]>(() => {
     const savedCases = localStorage.getItem("caseList");
     return savedCases
@@ -563,7 +564,8 @@ export default function CasesView() {
   }
 
   if (selectedCase) {
-    return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
+    navigate(`/case/${selectedCase.caseId}`)
+    // return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
   }
 
   return (
