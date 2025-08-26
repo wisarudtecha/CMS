@@ -619,7 +619,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     });
 
     useEffect(() => {
-        console.log(apiFormData)
         if (apiFormData?.data && triggerFetch) {
             localStorage.setItem(
                 "subTypeForm-" + triggerFetch,
@@ -1245,7 +1244,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             unitUser: profile.username
         };
         console.log("Dispatching with:", dispatchjson);
-
         try {
             // 2. Call the 'postDispatch' trigger function inside your event handler.
             //    '.unwrap()' is a helpful utility that will automatically throw an
@@ -1274,7 +1272,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setToastType("error");
             setShowToast(true);
         }
-    }, [initialCaseData, profile.username, postDispatch]); // 3. Add dependencies to useCallback
+    }, [initialCaseData, profile.username, postDispatch,sopData]); // 3. Add dependencies to useCallback
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1522,7 +1520,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             <Modal
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
-                className="max-w-2xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar"
+                className="max-w-6xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar"
+                closeButtonClassName="!bg-gray-200/80 dark:!bg-gray-800/80"
             >
                 <PreviewDataBeforeSubmit
                     caseData={caseState}

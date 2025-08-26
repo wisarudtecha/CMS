@@ -10,12 +10,12 @@ interface CreateSubCaseModel {
 }
 
 export default function SkillModal({
-    officer,
+    // officer,
     open,
     onOpenChange,
 }: CreateSubCaseModel) {
     const skillList = ["กล้อง", "Sensor น้ำ", "เชื่อมท่อ", "ระบบไฟฟ้า", "การซ่อมบำรุง", "เครื่องมือวัด"]
-    console.log(officer)
+    
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-99999 rounded-lg shadow-2xl">

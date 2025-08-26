@@ -1,13 +1,16 @@
 import {
     Clock,
+    User,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import DateStringToDateFormat from "../date/DateToString"
-import React from "react"
-import { getTextPriority } from "../function/Prioriy"
+import React, { useMemo } from "react"
+import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy"
 import FormFieldValueDisplay from "./CaseDisplay"
 import { CaseDetails } from "@/types/case"
+import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
+import { statusIdToStatusTitle } from "../ui/status/status"
 interface PreviewDataBeforeSubmitProps {
     caseData?: CaseDetails;
     submitButton?: () => void;
@@ -25,9 +28,12 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
     //     { id: 5, title: "On Site", completed: false },
     //     { id: 6, title: "Completed", completed: false }
     // ];
+    const profile = useMemo(() =>
+            JSON.parse(localStorage.getItem("profile") ?? "{}"), []
+        );
     return (
         <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+            {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
                 <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{caseData?.title}</h2>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
@@ -47,9 +53,41 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                             {caseData?.status}
                         </Badge>}
                 </div>
+            </div> */}
+            <div className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(caseData?.caseType?.priority || 0)}`}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+                    <div>
+                        {caseData?.caseType && (
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                {mergeCaseTypeAndSubType(caseData.caseType)}
+                            </h2>
+                        )}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                            {caseData?.workOrderDate && <div className="flex items-center space-x-1">
+                                <Clock className="w-4 h-4" />
+                                <span>Create Date: {DateStringToDateFormat(caseData?.workOrderDate)}</span>
+                            </div>}
+                            <div className="flex items-center space-x-1">
+                                <User className="w-4 h-4" />
+                                <span>Created: {profile.username}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
+                        {caseData?.caseType?.priority && <Badge variant="outline" color={`${getTextPriority(caseData.caseType?.priority).color}`}>
+                            {getTextPriority(caseData?.priority).level} Priority
+                        </Badge>}
+                        {caseData?.status && <Badge variant="outline">
+                            {statusIdToStatusTitle(caseData?.status)}
+                        </Badge>}
+                    </div>
+                </div>
+
+
+
             </div>
             {/* <ProgressStepPreview progressSteps={progressSteps} className="border-t-1 border-b-1 p-2 dark:border-gray-500" /> */}
-            {(caseData?.attachFileResult?.length!=0 && caseData ) && (
+            {(caseData?.attachFileResult?.length != 0 && caseData) && (
                 <>
                     <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                         Attach File :

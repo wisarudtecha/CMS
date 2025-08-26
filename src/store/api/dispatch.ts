@@ -253,6 +253,22 @@ export const dispantchApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: params
             }),
+        }),
+
+        getSopUnitMutation: builder.mutation<ApiResponse<null>, {caseId:string,unitId:string}>({
+            query: (params) => ({
+                url: `/dispatch/${params.caseId}/SOP/unit/${params.unitId}`,
+                method: "POST",
+                body: params
+            }),
+        }),
+
+        getSopUnitQuery: builder.query<ApiResponse<null>, {caseId:string,unitId:string}>({
+            query: (params) => ({
+                url: `/dispatch/${params.caseId}/SOP/unit/${params.unitId}`,
+                method: "POST",
+                body: params
+            }),
         })
     }),
 });
@@ -264,6 +280,8 @@ export const {
     useGetCaseSopQuery,
     useGetUnitQuery,
     usePostDispacthQuery,
-    usePostDispacthMutationMutation
+    usePostDispacthMutationMutation,
+    useGetSopUnitMutationMutation,
+    useGetSopUnitQueryQuery
 } = dispantchApi;
 

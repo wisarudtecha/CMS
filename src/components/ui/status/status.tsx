@@ -17,6 +17,8 @@ export const caseStatus = [
   // { title: "Cancel", group: ["S014"] },
 ]
 
+export const closeStatus =["S007", "S016", "S017", "S018"]
+
 export const unitStatus = [
   { title: "ไม่พร้อมปฏิบัติการ", group: ["000"] },
   { title: "พร้อมปฏิบัติการ", group: ["001"] },

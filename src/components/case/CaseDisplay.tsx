@@ -8,6 +8,7 @@ import { CaseDetails } from "@/types/case";
 import Button from "../ui/button/Button";
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { useState } from "react";
+import { closeStatus } from "../ui/status/status";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -57,7 +58,7 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
 const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,showResult=false }) => {
     const [closeValue, setCloseValue] = useState<string>("")
     const closeCaseOption = ["แก้ไขเสร็จสิ้น", "เปลี่ยนอุปกรณ์เสร์จสิ้น"]
-
+    const isCloseStage = closeStatus.find(status => status === caseData?.status);
     const handleCloseCaseChange = (value: string) => {
         setCloseValue(value)
     }
@@ -175,7 +176,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
                     </div>
                 </div>
-                {showResult&&<div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+                {showResult && isCloseStage &&<div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
                     <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
                     <div className="">
                         <SearchableSelect
