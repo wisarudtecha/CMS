@@ -1620,7 +1620,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 countryTh: "ประเทศไทย",
                 countryActive: true
             },
-            workOrderNummber: "D2508271640140615800",
+            workOrderNummber: genCaseID(),
             status: "",
             scheduleDate: "2025-08-27T16:40",
             attachFile: [],
