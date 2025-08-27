@@ -62,6 +62,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
     const handleCloseCaseChange = (value: string) => {
         setCloseValue(value)
     }
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
 
@@ -75,10 +76,10 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
 
             </div>}
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+            <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef?"":"col-span-2 sm:col-span-1"}`}>
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
                 <div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">Work Order No # {caseData?.workOrderNummber || "-"}</span>
+                    <span className="text-md text-gray-500 dark:text-gray-400">Case No # {caseData?.workOrderNummber || "-"}</span>
                 </div>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Case Types : {requireElements}</span>
@@ -86,15 +87,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div>
                 {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
 
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.date != "" && caseData?.date != null ?
-                            DateStringToDateFormat(caseData.date) :
-                            "-"
-                        }
-                    </div>
-                </div>
+
                 {/* <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Priority</span>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.caseType?.priority ? getTextPriority(caseData.caseType.priority).level : "-"}</div>
@@ -105,10 +98,10 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area) || "-"}</div>
                 </div>
             </div>
-            <div >
+            <div className="col-span-2 sm:col-span-1">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
                     <div className="flex mb-2 text-blue-500 dark:text-blue-400">
-                        <MapPin /><span className=" mx-1 text-md  " >Location Information</span>
+                        <MapPin /><span className=" mx-1 text-md  " >Area Information</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex  gap-x-2 gap-y-1 ">
@@ -166,11 +159,26 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                     {caseData.customerData?.email || "-"}
                                 </div>
                             </> : null} */}
-
-
                     </div>
+                    <div className="mb-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">IoT Device</span>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.iotDevice || "-"}
+                        </div>
+                    </div>
+                    {
+                    caseData?.requireSchedule && <div className="mb-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">Request Schedule Date {requireElements}</span>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
+                                DateStringToDateFormat(caseData.scheduleDate) :
+                                "-"
+                            }
+                        </div>
+                    </div>
+                }
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+                {showResult && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
                     <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
                     <div className="">
                         <SearchableSelect
@@ -192,14 +200,15 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                     <div className="justify-end items-end flex">
-                            <Button size="sm" className="">Cancel</Button>
-                        </div>
-                    {showResult && isCloseStage &&
+                        <Button size="sm" className="">Cancel</Button>
+                    </div>
+                    {isCloseStage &&
                         <div className="justify-end items-end flex">
                             <Button size="sm" className="">Close Case</Button>
                         </div>
                     }
                 </div>
+                }
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">

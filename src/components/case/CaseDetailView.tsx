@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
 import {
     ArrowLeft,
+    FileText,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 
@@ -17,7 +18,7 @@ import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
-import { Modal } from "../ui/modal"
+
 import { CaseTypeSubType } from "../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -272,7 +273,7 @@ const AssignedOfficers = memo(({
                         </span>
                     </div>
                         <div className="flex items-end justify-end">
-                            
+
 
                             <Button onClick={() => handleDispatch(officer)} size="xxs" className="mx-1" variant="outline-no-transparent" > {officer?.Sop?.nextStage?.data?.data?.label ? officer?.Sop?.nextStage?.data?.data?.label : "-"}
                             </Button>
@@ -319,18 +320,19 @@ interface CaseFormFieldsProps {
     handleFilesChange: (newFiles: File[]) => void;
     handlePreviewShow: () => void;
     handleSaveDrafts: () => Promise<void>;
+    handleExampleData: () => void;
 }
 
 
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, setCaseState, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate, editFormData, handleWorkOrderNumber,
-    handleWorkOrderDate, handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
+    areaList, listCustomerData, isCreate, editFormData,
+    handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
-    handleIotDateChangeDefault, handleScheduleDateChangeDefault,
-    handleFilesChange, handlePreviewShow, handleSaveDrafts
+    handleIotDateChangeDefault,
+    handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData
 }) => (
     <>
         {/* Priority Section */}
@@ -345,9 +347,21 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
         )}
         {/* Form Grid */}
+        {/* Case Type Form Section */}
+        <CaseTypeFormSection
+            caseType={caseType.caseType}
+            handleCaseTypeChange={handleCaseTypeChange}
+            handleGetTypeFormData={handleGetTypeFormData}
+            hadleIsFillGetType={handleIsFillGetType}
+            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
+            editFormData={editFormData}
+            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
+            disableCaseTypeSelect={!isCreate}
+        />
         <div className="xsm:grid grid-cols-2">
+
             {/* Work Order Number */}
-            <div className="px-3">
+            {/* <div className="px-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
                     Work Order No : {requireElements}
                 </h3>
@@ -360,7 +374,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     placeholder="Work Order Number"
                     disabled
                 />
-            </div>
+            </div> */}
 
             {/* Work Order Reference */}
             {caseData?.referCaseId ? (
@@ -375,10 +389,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={true}
                     />
                 </div>
-            ) : <div></div>}
+            ) : null}
 
             {/* Create Date */}
-            <div className="px-3">
+            {/* <div className="px-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">Create Date :</h3>
                 <Input
                     required
@@ -389,10 +403,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     value={caseState?.workOrderDate || TodayDate()}
                     placeholder="Work Order"
                 />
-            </div>
+            </div> */}
 
             {/* Contract Method */}
-            <div className="px-3">
+            <div className="px-3 col-span-2">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
                     Contract Method : {requireElements}
                 </h3>
@@ -435,17 +449,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
         </div>
 
-        {/* Case Type Form Section */}
-        <CaseTypeFormSection
-            caseType={caseType.caseType}
-            handleCaseTypeChange={handleCaseTypeChange}
-            handleGetTypeFormData={handleGetTypeFormData}
-            hadleIsFillGetType={handleIsFillGetType}
-            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
-            editFormData={editFormData}
-            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
-            disableCaseTypeSelect={!isCreate}
-        />
+
 
         {/* Case Details */}
         <div className="pr-7">
@@ -481,7 +485,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* Location Information */}
             <div className="pr-6 col-span-2">
-                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Location Information :</h3>
+                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Area Information :</h3>
                 <textarea
                     onChange={(e) => handleLocationChange(e.target.value)}
                     value={caseState?.location || ""}
@@ -513,7 +517,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={!caseState?.requireSchedule}
                         className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                         onChange={handleScheduleDate}
-                        value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
+                        value={caseState?.scheduleDate || ""}
                         min={new Date().toISOString().slice(0, 16)}
                     />
                 </div>}
@@ -535,24 +539,33 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end mt-20 mb-3 mr-3">
-            {!isCreate ? (
-                <Button variant="success" onClick={handlePreviewShow}>
-                    Save Changes
+        <div className="flex justify-between items-center">
+            {/* Left side: Example button */}
+            <div>
+                <Button onClick={handleExampleData} size="sm">
+                    <FileText className=" h-4 w-4" />
                 </Button>
-            ) : (
-                <div className="flex justify-end">
-                    <Button onClick={handleSaveDrafts} className="mx-3">
-                        Save As Draft
-                    </Button>
+            </div>
+
+            {/* Right side: Action Buttons */}
+            <div className="flex justify-end mb-3 mr-3">
+                {!isCreate ? (
                     <Button variant="success" onClick={handlePreviewShow}>
-                        Submit
+                        Save Changes
                     </Button>
-                </div>
-            )}
+                ) : (
+                    <div className="flex">
+                        <Button onClick={handleSaveDrafts} className="mx-3">
+                            Save As Draft
+                        </Button>
+                        <Button variant="success" onClick={handlePreviewShow}>
+                            Submit
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
+
     </>
 ));
 CaseFormFields.displayName = 'CaseFormFields';
@@ -974,21 +987,22 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             nodeId: caseState?.caseType?.formField?.nextNodeId || "",
             wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField?.versions || "",
-            caseId: caseState?.workOrderNummber || "",
-            createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
             scheduleFlag: caseState.requireSchedule,
-            scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
+            scheduleDate: caseState?.scheduleDate
+                ? new Date(caseState.scheduleDate).toISOString()
+                : undefined,
+
         } as CreateCase;
 
         try {
-            await createCase(createJson).unwrap();
+            const data = await createCase(createJson).unwrap();
+            navigate(`/case/${data?.caseId}`)
         } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to create case`);
             setShowToast(true);
             return false;
         }
-
         const caseListData = localStorage.getItem("caseList") || "[]";
         if (caseListData) {
             const caseList = JSON.parse(caseListData) as CaseEntity[];
@@ -1129,7 +1143,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             resDetail: "",
             deviceId: caseState?.iotDevice || "",
             source: caseState?.customerData?.contractMethod?.id || "",
-            startedDate: new Date(caseState?.iotDate ?? TodayDate()).toISOString(),
             statusId: sopLocal?.statusId,
             userarrive: "",
             userclose: "",
@@ -1142,10 +1155,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             deptId: caseState?.serviceCenter?.deptId || undefined,
             commId: caseState?.serviceCenter?.commId || undefined,
             stnId: caseState?.serviceCenter?.stnId || undefined,
-            caseId: caseState?.workOrderNummber || "",
-            createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
             scheduleFlag: caseState.requireSchedule,
-            scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
         } as CreateCase;
 
         try {
@@ -1172,7 +1182,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile]);
 
     const handleCreateCase = useCallback(async () => {
-        setShowPreviewData(false)
+
         const isNotError = await createCaseAction("submit");
         if (isNotError === false) {
             return
@@ -1182,7 +1192,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // setToastType("success");
         // setShowToast(true);
         setShowCreatedCase(true);
-        navigate(`/case/${caseState?.workOrderNummber}`)
+        // navigate(`/case/${caseState?.workOrderNummber}`)
     }, [createCaseAction]);
 
     const handlePreviewShow = useCallback(() => {
@@ -1526,9 +1536,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }
 
     const handleExampleData = () => {
-        const exampleCaseState : Partial<CaseDetails>= {
-            location: "133 Sukhumvit 49, Khlong Tan Nuea, Watthana, Bangkok 10110",
+        const exampleCaseState: Partial<CaseDetails> = {
+            location: "เลขที่ 78 ซอยสามเสน 3 (วัดสามพระยา) ถนนสามเสน แขวงวัดสามพระยา เขตพระนคร กรุงเทพมหานคร 10200",
             date: "",
+            iotDevice: "CAM-001-XYZ123",
+            customerData: {
+                contractMethod: { name: "IOT-Alert", id: "05" },
+                mobileNo: "0991396777",
+                name: "",
+            } as Custommer,
             caseType: {
                 typeId: "fe4215f5-7127-4f6b-bd7a-d6ed8ccaa29d",
                 orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
@@ -1595,9 +1611,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 },
 
 
+
             },
             priority: 0,
-            description: "ท่อประประแตก",
+            description: "เซ็นเซอร์น้ำขัดข้อง",
             area: {
                 id: "62",
                 orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
@@ -1614,7 +1631,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 countryTh: "ประเทศไทย",
                 countryActive: true
             },
-            workOrderNummber: "D2508271640140615800",
+            workOrderNummber: genCaseID(),
             status: "",
             scheduleDate: "2025-08-27T16:40",
             attachFile: [],
@@ -1623,6 +1640,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             workOrderDate: "2025-08-27T16:40"
         };
         setCaseState(exampleCaseState as CaseDetails)
+        setCaseType({ caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ", priority: 0 })
     }
     // Main component
     return (
@@ -1682,10 +1700,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
-                            {!initialCaseData &&
-                                <div className="flex justify-end m-3">
-                                    <Button onClick={handleExampleData}>Example Data</Button>
-                                </div>}
+
                             {/* Form Content */}
                             <div className="px-4">
                                 {(editFormData || isCreate) && caseState ? (
@@ -1719,6 +1734,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         handleFilesChange={handleFilesChange}
                                         handlePreviewShow={handlePreviewShow}
                                         handleSaveDrafts={handleSaveDrafts}
+                                        handleExampleData={handleExampleData}
                                     />
                                 ) : (
                                     <FormFieldValueDisplay caseData={caseState} showResult={true} />
@@ -1753,17 +1769,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             )}
 
             {/* Modals */}
-            <Modal
+            <PreviewDataBeforeSubmit
+                caseData={caseState}
+                submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
-                className="max-w-6xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar"
-                closeButtonClassName="!bg-gray-200/80 dark:!bg-gray-800/80"
-            >
-                <PreviewDataBeforeSubmit
-                    caseData={caseState}
-                    submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
-                />
-            </Modal>
+            />
+
 
             <CreateSubCaseModel
                 caseData={initialCaseData}
