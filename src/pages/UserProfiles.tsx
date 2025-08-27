@@ -1,17 +1,22 @@
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import UserMetaCard from "@/components/UserProfile/UserMetaCard";
-import UserInfoCard from "@/components/UserProfile/UserInfoCard";
-import UserOrganizationCard from "@/components/UserProfile/UserOrganizationCardCard";
-import UserAuditLog from "@/components/UserProfile/UserAuditLog";
-import PageMeta from "@/components/common/PageMeta";
-import Switch from "@/components/form/switch/Switch";
+import PageBreadcrumb from "../components/common/PageBreadCrumb";
+import UserMetaCard from "../components/UserProfile/UserMetaCard";
+import UserInfoCard from "../components/UserProfile/UserInfoCard";
+import UserOrganizationCard from "../components/UserProfile/UserOrganizationCardCard";
+import UserAuditLog from "../components/UserProfile/UserAuditLog";
+import PageMeta from "../components/common/PageMeta";
 import { useState, useEffect } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "../hooks/useTranslation";
+import { UserProfileProvider } from "../context/UserProfileContext";
 
 export default function UserProfiles() {
   const { t } = useTranslation();
-  const [showAuditLog, setShowAuditLog] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
   const [currentUsername, setCurrentUsername] = useState<string>("");
+
+  // Debug translation
+  useEffect(() => {
+    console.log('Translation test:', t('navigation.home'));
+  }, [t]);
 
   // Get current user's username from localStorage
   useEffect(() => {
@@ -26,52 +31,82 @@ export default function UserProfiles() {
     }
   }, []);
 
-  const handleAuditLogToggle = (checked: boolean) => {
-    setShowAuditLog(checked);
-  };
+  const tabs = [
+    { key: "profile", label: t('userform.profile') || 'Profile' },
+    { key: "activity", label: t('userform.activity') || 'Activity' },
+    { key: "auditLog", label: t('userform.auditLog') || 'Audit Log' }
+  ];
 
-  return (
-    <>
-      <PageMeta
-        title="React.js Profile Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Profile Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
-      />
-      <PageBreadcrumb pageTitle="Profile" />
-      
-      <div className="space-y-6">
-        {/* Audit Log Toggle Section - ย้ายขึ้นมาบนสุด */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-          <div className="flex items-center justify-between mb-6">
-          
-            <Switch
-              label={t('userform.auditLogToggle') || 'แสดง Audit Log'}
-            
-              onChange={handleAuditLogToggle}
-              color="blue"
-            />
-          </div>
-
-          {/* Audit Log Content */}
-          {showAuditLog && currentUsername && (
-            <UserAuditLog username={currentUsername} />
-          )}
-          
-          {showAuditLog && !currentUsername && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              {t('userform.cannotLoadUserData') || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'}
-            </div>
-          )}
-        </div>
-
-        {/* Profile Information Section - แสดงเสมอ */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "profile":
+        return (
           <div className="space-y-6">
             <UserMetaCard />
             <UserInfoCard />
             <UserOrganizationCard />
           </div>
+        );
+      case "activity":
+        return (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            {'Activity data Here'}
+          </div>
+        );
+      case "auditLog":
+        return currentUsername ? (
+          <UserAuditLog username={currentUsername} />
+        ) : (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            {t('userform.cannotLoadUserData') || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <UserProfileProvider>
+      <PageMeta
+        title="React.js Profile Dashboard | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Profile Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+      />
+      <PageBreadcrumb 
+        items={[
+          { label: t('navigation.home') || 'หน้าหลัก', href: '/' },
+          { label: t('navigation.sidebar.menu.user_profile') || 'โปรไฟล์ผู้ใช้' }
+        ]} 
+      />
+      
+      <div className="space-y-6">
+        {/* Tab Navigation and Content */}
+        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+          {/* Tab Headers */}
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex space-x-8 px-6" aria-label="Tabs">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.key
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-6">
+            {renderTabContent()}
+          </div>
         </div>
       </div>
-    </>
+    </UserProfileProvider>
   );
 }
