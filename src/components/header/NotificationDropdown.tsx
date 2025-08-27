@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -23,7 +24,8 @@ interface Notification {
   sender: string;
   message: string;
   eventType: string;
-  redirectURL: string;
+  redirectURL?: string; // เดิม
+  redirectUrl?: string; // เพิ่มรองรับแบบตัวเล็ก
   createdAt: string;
   read: boolean;
   data: Data[];
@@ -49,6 +51,7 @@ const POPUP_GROUP_AUTO_CLOSE_MS = 8000; // ปิดทั้งชุดใน 
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(false);
@@ -379,7 +382,7 @@ export default function NotificationDropdown() {
             setFilterType((current) => current);
           }
         } else {
-          console.log("System message (ignored):", data);
+          // System message (ignored)
         }
       } catch (err) {
         console.error("Parse WebSocket message error:", event.data, err);
@@ -532,7 +535,15 @@ export default function NotificationDropdown() {
                 <div
                   className="cursor-pointer p-3"
                   onClick={() => {
-                    if (noti.redirectURL) window.location.href = noti.redirectURL;
+                    // ลองหาใน data array ด้วย เผื่อ redirectURL อยู่ใน data
+                    const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
+                    
+                    // รองรับทั้ง redirectURL และ redirectUrl
+                    const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
+                    
+                    if (finalRedirectURL && finalRedirectURL.trim() !== "") {
+                      navigate(finalRedirectURL);
+                    }
                     closePopup(item.id);
                   }}
                 >
@@ -723,7 +734,16 @@ export default function NotificationDropdown() {
                 onClick={(e) => {
                   e.preventDefault();
                   if (!noti.read) handleMarkAsRead(noti.id);
-                  if (noti.redirectURL) setTimeout(() => (window.location.href = noti.redirectURL), 100);
+                  
+                  // ลองหาใน data array ด้วย เผื่อ redirectURL อยู่ใน data
+                  const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
+                  
+                  // รองรับทั้ง redirectURL และ redirectUrl
+                  const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
+                  
+                  if (finalRedirectURL && finalRedirectURL.trim() !== "") {
+                    navigate(finalRedirectURL);
+                  }
                 }}
               >
                 <DropdownItem
