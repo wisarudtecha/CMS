@@ -191,9 +191,9 @@ export default function AssignOfficerModal({
   }
 
   // Handle cancel
-  const handleCancel = () => {
-    onOpenChange(false)
-  }
+  // const handleCancel = () => {
+  //   onOpenChange(false)
+  // }
 
   // Get selected officer objects for display
   const selectedOfficerObjects = useMemo(() => {
@@ -211,7 +211,7 @@ export default function AssignOfficerModal({
   //  const skillList = ["กล้อง", "Sensor น้ำ", "เชื่อมท่อ", "ระบบไฟฟ้า", "การซ่อมบำรุง", "เครื่องมือวัด"]
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+      <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             Assign Officers to Case
@@ -374,13 +374,13 @@ export default function AssignOfficerModal({
         )}
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-          <Button
+          {/* <Button
             variant="outline"
             onClick={handleCancel}
             className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 w-full sm:w-auto"
           >
             Cancel
-          </Button>
+          </Button> */}
           <Button
             onClick={handleAssignOfficers}
             disabled={selectedOfficers.length === 0}

@@ -9,12 +9,12 @@ export const statusConfig = {
 };
 
 export const caseStatus = [
-  { title: "New", group: ["S001", "S008"] },
-  { title: "Assigned", group: ["S002", "S009"] },
-  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] },
-  // { title: "On-Hold", group: ["S017", "S018"] },
-  { title: "Done", group: ["S007", "S016"] },
-  // { title: "Cancel", group: ["S014"] },
+  { title: "New", group: ["S001", "S008"] ,show:true},
+  { title: "Assigned", group: ["S002", "S009"] ,show:true},
+  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
+  { title: "On-Hold", group: ["S017", "S018"] ,show:false},
+  { title: "Done", group: ["S007", "S016"] ,show:true},
+  { title: "Cancel", group: ["S014"] ,show:false},
 ]
 
 export const closeStatus =["S007", "S016", "S017", "S018"]

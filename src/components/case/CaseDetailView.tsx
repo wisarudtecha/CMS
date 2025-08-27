@@ -351,7 +351,6 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-
         {/* Form Grid */}
         <div className="xsm:grid grid-cols-2">
             {/* Work Order Number */}
@@ -574,7 +573,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const navigate = useNavigate()
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
-    const [refreshStageUnit, setRefreshStageUnit] = useState<boolean>(false)
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!initialCaseData) {
@@ -721,7 +719,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
 
         fetchData();
-    }, [dispatchUnit, refreshStageUnit]);
+    }, [dispatchUnit, sopData]);
 
     // Initialize case type from caseData ONLY ONCE
     useEffect(() => {
@@ -1109,7 +1107,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             // setAssignedOfficers(selected);
         }
         setShowAssignModal(false);
-    }, [unit?.data]);
+    }, [unit?.data, sopData]);
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1339,51 +1337,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseId: initialCaseData!.caseId,
             nodeId: officer.Sop?.nextStage?.nodeId,
             status: officer.Sop?.nextStage?.data?.data?.config?.action,
-            unitUser: profile.username
-        };
-        console.log("Dispatching with:", dispatchjson);
-        try {
-            // 2. Call the 'postDispatch' trigger function inside your event handler.
-            //    '.unwrap()' is a helpful utility that will automatically throw an
-            //    error if the mutation fails, making it easy to use with try/catch.
-            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
-                throw new Error("No data found in dispatch object");
-            }
-            const payload = await postDispatch(dispatchjson).unwrap();
-
-            console.log('Dispatch successful:', payload);
-            setToastMessage("Dispatch Successfully!");
-            setToastType("success");
-            setShowToast(true);
-            dispatchUpdateLocate(dispatchjson)
-            setCaseState(prev => {
-                if (!prev) return prev;
-                return {
-                    ...prev,
-                    status: dispatchjson.status
-                };
-            });
-
-            setRefreshStageUnit(!refreshStageUnit)
-            return true
-        } catch (error) {
-            console.error('Dispatch failed:', error);
-            setToastMessage("Dispatch Failed");
-            // You might want an error toast type here
-            setToastType("error");
-            setShowToast(true);
-            return false
-        }
-    }, [initialCaseData, profile.username, postDispatch]);
-    // console.log(unitWorkOrder)
-    const handleDispatch = useCallback(async (officer: Unit) => {
-        // This object creation is correct
-        const dispatchjson = {
-            unitId: officer.unitId,
-            caseId: initialCaseData!.caseId,
-            nodeId: sopData?.data?.dispatchStage?.nodeId,
-            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
-            unitUser: profile.username
+            unitUser: officer.unit?.username
         };
         console.log("Dispatching with:", dispatchjson);
         try {
@@ -1418,7 +1372,48 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, profile.username, postDispatch, sopData]); // 3. Add dependencies to useCallback
+    }, [initialCaseData, postDispatch, sopData]);
+
+    const handleDispatch = useCallback(async (officer: Unit) => {
+        const dispatchjson = {
+            unitId: officer.unitId,
+            caseId: initialCaseData!.caseId,
+            nodeId: sopData?.data?.dispatchStage?.nodeId,
+            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
+            unitUser: officer.username
+        };
+        console.log("Dispatching with:", dispatchjson);
+        try {
+
+            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
+                throw new Error("No data found in dispatch object");
+            }
+            const payload = await postDispatch(dispatchjson).unwrap();
+
+            console.log('Dispatch successful:', payload);
+            setToastMessage("Dispatch Successfully!");
+            setToastType("success");
+            setShowToast(true);
+            dispatchUpdateLocate(dispatchjson)
+            setCaseState(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    status: dispatchjson.status
+                };
+            });
+
+            refetch()
+            return true
+        } catch (error) {
+            console.error('Dispatch failed:', error);
+            setToastMessage("Dispatch Failed");
+            // You might want an error toast type here
+            setToastType("error");
+            setShowToast(true);
+            return false
+        }
+    }, [initialCaseData, postDispatch, sopData]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1537,6 +1532,111 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         );
     }
 
+
+    const handleExampleData = useCallback(() => {
+        const exampleCaseState: Partial<CaseDetails> = {
+            location: "133 Sukhumvit 49, Khlong Tan Nuea, Watthana, Bangkok 10110",
+            date: "",
+            caseType: {
+                typeId: "fe4215f5-7127-4f6b-bd7a-d6ed8ccaa29d",
+                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+                en: "IOT Water Sensor",
+                th: "เซ็นเซอร์น้ำอัจฉริยะ",
+                active: true,
+                sTypeId: "b2c3d4e5-f6a7-8901-bc23-45678901def0",
+                sTypeCode: "200",
+                subTypeEn: "Water Sensor Malfunction",
+                subTypeTh: "เซ็นเซอร์น้ำทำงานผิดปกติ",
+                wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
+                caseSla: "45",
+                priority: 5,
+                userSkillList: [
+                    "fe6c8262-04a1-4f5c-8b48-c124cf0152b1"
+                ],
+                unitPropLists: [
+                    "4a56e3c2-1188-40ef-bf0a-4ec07f6a5933"
+                ],
+                subTypeActive: true,
+                caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ",
+                formField: {
+                    nextNodeId: "node-1755508933488",
+                    versions: "draft",
+                    wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
+                    formId: "da7f4b82-dd1f-4743-bea3-eee5d415fccc",
+                    formName: "เซ็นเซอร์น้ำอัจฉริยะ",
+                    formColSpan: 2,
+                    formFieldJson: [
+                        {
+                            colSpan: 1,
+                            id: "18a00f16-6f0d-436e-9a1e-fec5c12513ab",
+                            isChild: false,
+                            label: "เลขเซ็นเซอร์น้ำ",
+                            placeholder: "เลขเซ็นเซอร์น้ำ",
+                            required: false,
+                            showLabel: true,
+                            type: "textInput",
+                            value: ""
+                        },
+                        {
+                            colSpan: 1,
+                            id: "48f15f2d-a3d6-4955-ab52-8138c780094e",
+                            isChild: false,
+                            label: "ระดับน้ำ",
+                            placeholder: "ระดับน้ำ",
+                            required: false,
+                            showLabel: true,
+                            type: "textInput",
+                            value: ""
+                        },
+                        {
+                            colSpan: 2,
+                            id: "35c9cfe7-2779-414a-a1e4-b6954b384981",
+                            isChild: false,
+                            label: "ข้อมูลจากเซ็นเซอร์",
+                            placeholder: "ข้อมูลจากเซ็นเซอร์",
+                            required: false,
+                            showLabel: true,
+                            type: "textAreaInput",
+                            value: ""
+                        }
+                    ]
+                },
+            },
+            priority: 0,
+            description: "ท่อประประแตก",
+            area: {
+                id: "62",
+                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+                countryId: "TH",
+                provId: "10",
+                districtEn: "Phra Nakhon",
+                districtTh: "พระนคร",
+                districtActive: true,
+                distId: "101",
+                provinceEn: "Bangkok",
+                provinceTh: "กรุงเทพมหานคร",
+                provinceActive: true,
+                countryEn: "Thailand",
+                countryTh: "ประเทศไทย",
+                countryActive: true
+            },
+            workOrderNummber: "D2508271640140615800",
+            status: "",
+            scheduleDate: "2025-08-27T16:40",
+            attachFile: [],
+            attachFileResult: [],
+            iotDate: "2025-08-27T16:40",
+            workOrderDate: "2025-08-27T16:40",
+
+            // --- Add likely required fields below ---
+            createBy: "user1",
+            title: "ตัวอย่างแจ้งน้ำรั่ว (Example Water Leak Case)",
+            // Add more if your CaseDetails type needs them...
+            // For example, you might need: updatedAt, createdAt, resolved, etc.
+            // Set them as blank/placeholder if needed.
+        };
+        setCaseState(exampleCaseState as CaseDetails);
+    }, [setCaseState]);
     // Main component
     return (
         <div className="flex flex-col h-screen">
@@ -1595,7 +1695,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
-
+                            {!initialCaseData &&
+                                <div className="flex justify-end m-3">
+                                    <Button onClick={handleExampleData}>Example Data</Button>
+                                </div>}
                             {/* Form Content */}
                             <div className="px-4">
                                 {(editFormData || isCreate) && caseState ? (
