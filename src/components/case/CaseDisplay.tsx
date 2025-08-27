@@ -170,7 +170,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
                     </div>
                 </div>
-                {showResult && isCloseStage && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
                     <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
                     <div className="">
                         <SearchableSelect
@@ -192,9 +192,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                     <div className="justify-end items-end flex">
-                        <Button size="sm" className="">Close Case</Button>
-                    </div>
-                </div>}
+                            <Button size="sm" className="">Cancel</Button>
+                        </div>
+                    {showResult && isCloseStage &&
+                        <div className="justify-end items-end flex">
+                            <Button size="sm" className="">Close Case</Button>
+                        </div>
+                    }
+                </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
@@ -234,7 +239,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             </div>
 
 
-        </div>
+        </div >
     );
 };
 export default FormFieldValueDisplay

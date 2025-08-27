@@ -1532,9 +1532,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         );
     }
 
-
-    const handleExampleData = useCallback(() => {
-        const exampleCaseState: Partial<CaseDetails> = {
+    const handleExampleData = () => {
+        const exampleCaseState : Partial<CaseDetails>= {
             location: "133 Sukhumvit 49, Khlong Tan Nuea, Watthana, Bangkok 10110",
             date: "",
             caseType: {
@@ -1601,6 +1600,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                         }
                     ]
                 },
+
+
             },
             priority: 0,
             description: "ท่อประประแตก",
@@ -1620,23 +1621,16 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 countryTh: "ประเทศไทย",
                 countryActive: true
             },
-            workOrderNummber: genCaseID(),
+            workOrderNummber: "D2508271640140615800",
             status: "",
             scheduleDate: "2025-08-27T16:40",
             attachFile: [],
             attachFileResult: [],
             iotDate: "2025-08-27T16:40",
-            workOrderDate: "2025-08-27T16:40",
-
-            // --- Add likely required fields below ---
-            createBy: "user1",
-            title: "ตัวอย่างแจ้งน้ำรั่ว (Example Water Leak Case)",
-            // Add more if your CaseDetails type needs them...
-            // For example, you might need: updatedAt, createdAt, resolved, etc.
-            // Set them as blank/placeholder if needed.
+            workOrderDate: "2025-08-27T16:40"
         };
-        setCaseState(exampleCaseState as CaseDetails);
-    }, [setCaseState]);
+        setCaseState(exampleCaseState as CaseDetails)
+    }
     // Main component
     return (
         <div className="flex flex-col h-screen">
