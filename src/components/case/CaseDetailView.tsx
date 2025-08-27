@@ -268,18 +268,11 @@ const AssignedOfficers = memo(({
                 >
                     <div className="flex items-center justify-between"> <div className="flex items-center">
                         {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                        <span className="ml-2">{officer.unit.username}
+                        <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>{officer.unit.username}
                         </span>
                     </div>
                         <div className="flex items-end justify-end">
-                            <Button
-                                size="xxs"
-                                className="mx-1"
-                                variant="primary"
-                                onClick={() => onSelectOfficer(officer)} // pass the officer.unit (type Unit)
-                            >
-                                Officer WO
-                            </Button>
+                            
 
                             <Button onClick={() => handleDispatch(officer)} size="xxs" className="mx-1" variant="outline-no-transparent" > {officer?.Sop?.nextStage?.data?.data?.label ? officer?.Sop?.nextStage?.data?.data?.label : "-"}
                             </Button>
