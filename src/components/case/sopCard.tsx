@@ -388,15 +388,17 @@ const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections:
 
 interface CaseCardProps {
     onAddSubCase?: () => void;
-    onAssignClick: () => void;
-    onEditClick: () => void;
+    onAssignClick?: () => void;
+    onEditClick?: () => void;
     setCaseData?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
     caseData: CaseSop;
     editFormData: boolean;
     comment?: CaseHistory[];
+    showCommentButton?:boolean;
+    showAttachButton?:boolean;
 }
 
-export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick, onEditClick, caseData, editFormData, setCaseData, comment }) => {
+export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick, onEditClick, caseData, editFormData, setCaseData, comment ,showCommentButton=true,showAttachButton=true}) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
@@ -485,19 +487,19 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                 <div className="flex flex-wrap gap-2">
-                    <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                    {showCommentButton&&<Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Comment
-                    </Button>
+                    </Button>}
                     {/* Show Attach File button only in edit mode for existing cases */}
 
-                    <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                    {onEditClick&&<Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
-                    </Button>
+                    </Button>}
 
 
-                    <div>
+                    {showAttachButton&&<div>
                         <Button
                             size="sm"
                             variant="outline"
@@ -515,7 +517,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                             onChange={handleFileChange}
                             style={{ display: "none" }}
                         />
-                    </div>
+                    </div>}
 
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
@@ -523,10 +525,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                         <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
                             <span>Add WO</span>
                         </Button>}
-                    <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
+                    {onAssignClick&&<Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
                         <User_Icon className="w-4 h-4" />
                         <span>Assign Officer</span>
-                    </Button>
+                    </Button>}
                 </div>
             </div>
             {showComment && <Comments caseId={caseData.caseId} comment={comment} />}

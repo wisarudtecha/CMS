@@ -551,13 +551,13 @@ export default function CasesView() {
       : [])
   }
 
-  const onBackSelectedCase = () => {
-    setSelectedCase(null)
-    const savedCases = localStorage.getItem("caseList");
-    setCaseData(savedCases
-      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
-      : [])
-  }
+  // const onBackSelectedCase = () => {
+  //   setSelectedCase(null)
+  //   const savedCases = localStorage.getItem("caseList");
+  //   setCaseData(savedCases
+  //     ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
+  //     : [])
+  // }
 
   if (showDynamicForm) {
     return <CaseDetailView onBack={onBackDynamic} />

@@ -290,7 +290,7 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-7 gap-4 pt-3 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`grid grid-cols-7 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}

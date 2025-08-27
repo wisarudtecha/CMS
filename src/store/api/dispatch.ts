@@ -147,10 +147,12 @@ export interface CaseSop {
     dispatchStage: any;
     nextStage: any;
     referCaseLists: string[];
-    unitLists: {
+    unitLists: CaseSopUnit[]
+}
+
+export interface CaseSopUnit{
         unitId: string,
         username: string
-    }[]
 }
 
 export interface Unit {
@@ -201,7 +203,7 @@ export interface Unit {
 }
 
 export interface UnitWithSop {
-    unit: Unit
+    unit: CaseSopUnit
     Sop: CaseSop
 }
 
@@ -279,18 +281,18 @@ export const dispantchApi = baseApi.injectEndpoints({
         getSopUnitMutation: builder.mutation<ApiResponse<null>, { caseId: string, unitId: string }>({
             query: (params) => ({
                 url: `/dispatch/${params.caseId}/SOP/unit/${params.unitId}`,
-                method: "POST",
+                method: "GET",
                 body: params
             }),
         }),
 
-        getSopUnitQuery: builder.query<ApiResponse<null>, { caseId: string, unitId: string }>({
+        getSopUnit: builder.query<ApiResponse<CaseSop>, { caseId: string, unitId: string }>({
             query: (params) => ({
                 url: `/dispatch/${params.caseId}/SOP/unit/${params.unitId}`,
-                method: "POST",
-                body: params
+                method: "GET",
             }),
         })
+        
     }),
 });
 
@@ -303,6 +305,7 @@ export const {
     usePostDispacthQuery,
     usePostDispacthMutationMutation,
     useGetSopUnitMutationMutation,
-    useGetSopUnitQueryQuery
+    useGetSopUnitQuery,
+    useLazyGetSopUnitQuery,
 } = dispantchApi;
 

@@ -3,8 +3,6 @@
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
 import {
     ArrowLeft,
-    ChevronDown,
-    ChevronUp,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 
@@ -15,7 +13,6 @@ import { formType, FormField } from "@/components/interface/FormField"
 import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
 import { getPriorityColorClass } from "../function/Prioriy"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { CommandInformation } from "../assignOfficer/CommandInformation"
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
@@ -31,7 +28,7 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSop, Unit, useGetCaseSopQuery, useGetUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
+import { CaseSop, CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useGetUnitQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
 import { contractMethodMock } from "./source"
 import { Area, mergeArea } from "@/store/api/area"
 // import Checkbox from "../form/input/Checkbox"
@@ -43,8 +40,9 @@ import { genCaseID } from "../genCaseId/genCaseId"
 import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
-import { useParams } from "react-router"
+import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
+import OfficerDataModal from "./OfficerDataModal"
 
 
 
@@ -245,45 +243,47 @@ AttachedFiles.displayName = 'AttachedFiles';
 // AssignedOfficers.displayName = 'AssignedOfficers';
 
 const AssignedOfficers = memo(({
-    assignedOfficers,
-    showOfficersData,
+    SopUnit,
     onSelectOfficer,
-    onRemoveOfficer,
+    // onRemoveOfficer,
     handleDispatch,
 }: {
-    assignedOfficers: Unit[];
-    showOfficersData: Unit | null;
-    onSelectOfficer: (officer: Unit) => void;
-    onRemoveOfficer: (officer: Unit) => void;
-    handleDispatch: (officer: Unit) => void;
+    SopUnit: UnitWithSop[] | null;
+    onSelectOfficer: (officer: UnitWithSop) => void;
+    onRemoveOfficer: (officer: UnitWithSop) => void;
+    handleDispatch: (officer: UnitWithSop) => void;
 }) => {
-    if (!assignedOfficers.length) return null;
-
+    if (!SopUnit?.length) return null;
     return (
-        <div className="mb-4 gap-2 items-center">
+        <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
                 <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                    Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+                    Assigned Officer{SopUnit.length > 1 ? "s" : ""}:
                 </span>
             </div>
-            {assignedOfficers.map(officer => (
+            {SopUnit && SopUnit.map(officer => (
                 <div
-                    key={officer.unitId}
-                    className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-full"
+                    key={officer.unit.unitId}
+                    className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
                 >
                     <div className="flex items-center justify-between"> <div className="flex items-center">
-                        <div onClick={() => onSelectOfficer(officer)} className="cursor-pointer mr-2">
-                            {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
-                        </div>
-                        {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                        <span className="ml-2">{officer.username}
+                        {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                        <span className="ml-2">{officer.unit.username}
                         </span>
                     </div>
-
                         <div className="flex items-end justify-end">
-                            <Button size="xxs" className="mx-1" variant="outline-no-transparent" onClick={() => handleDispatch(officer)}> Acknowledge
+                            <Button
+                                size="xxs"
+                                className="mx-1"
+                                variant="primary"
+                                onClick={() => onSelectOfficer(officer)} // pass the officer.unit (type Unit)
+                            >
+                                Officer WO
                             </Button>
-                            <Button onClick={() => onRemoveOfficer(officer)} className="ml-2" title="Remove" variant="outline-no-transparent" size="xxs" > Cancel
+
+                            <Button onClick={() => handleDispatch(officer)} size="xxs" className="mx-1" variant="outline-no-transparent" > {officer?.Sop?.nextStage?.data?.data?.label ? officer?.Sop?.nextStage?.data?.data?.label : "-"}
+                            </Button>
+                            <Button className="ml-2" title="Remove" variant="outline-no-transparent" size="xxs" > Cancel
                             </Button>
                         </div>
                     </div>
@@ -571,9 +571,10 @@ CaseFormFields.displayName = 'CaseFormFields';
 
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
-
+    const navigate = useNavigate()
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
+    const [refreshStageUnit, setRefreshStageUnit] = useState<boolean>(false)
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!initialCaseData) {
@@ -599,7 +600,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [showCreateSupCase, setShowCreateSupCase] = useState(false);
     const [editFormData, setEditFormData] = useState<boolean>(!initialCaseData);
     const [assignedOfficers, setAssignedOfficers] = useState<Unit[]>([]);
-    const [showOfficersData, setShowOFFicersData] = useState<Unit | null>(null);
+    const [showOfficersData, setShowOFFicersData] = useState<UnitWithSop | null>(null);
+    const [dispatchUnit, setDispatchUnit] = useState<CaseSopUnit[] | null>(null);
+    const [unitWorkOrder, setUnitWorkOrder] = useState<UnitWithSop[]>([]);
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
     const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showToast, setShowToast] = useState(false);
@@ -633,7 +636,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     );
 
-    const { data: unit } = useGetUnitQuery(
+    const { data: unit, refetch: unitRefect } = useGetUnitQuery(
         { caseId: initialCaseData?.caseId || "" },
         { skip: !initialCaseData?.caseId || isCreate }
     )
@@ -648,6 +651,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const [postDispatch] = usePostDispacthMutationMutation();
+    const [getSopUnit] = useLazyGetSopUnitQuery();
     // Initialize customer data ONCE
     useEffect(() => {
         if (!isInitialized) {
@@ -681,12 +685,47 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     useEffect(() => {
         if (sopData?.data && initialCaseData) {
             setSopLocal(sopData.data);
+            if (sopData.data.unitLists) {
+                setDispatchUnit(sopData.data.unitLists)
+            }
         }
     }, [sopData?.data, initialCaseData?.caseId]);
 
+
+    useEffect(() => {
+        if (!dispatchUnit || dispatchUnit.length === 0) {
+            setUnitWorkOrder([]);
+            return;
+        }
+
+        const fetchData = async () => {
+            const results = await Promise.all(
+                dispatchUnit.map(async (item) => {
+                    try {
+                        const data = await getSopUnit({
+                            caseId: initialCaseData?.caseId || "",
+                            unitId: item.unitId,
+                        }).unwrap();
+
+                        if (data?.data) {
+                            return { unit: item, Sop: data.data };
+                        }
+                    } catch (err) {
+                        console.error("Error fetching SOP unit:", err);
+                    }
+                    return null;
+                })
+            );
+
+            setUnitWorkOrder(results.filter((r): r is UnitWithSop => r !== null));
+        };
+
+        fetchData();
+    }, [dispatchUnit, refreshStageUnit]);
+
     // Initialize case type from caseData ONLY ONCE
     useEffect(() => {
-        if (initialCaseData  && caseTypeSupTypeData.length > 0 && !sopLocal) {
+        if (initialCaseData && caseTypeSupTypeData.length > 0 && !sopLocal) {
             const newCaseType = {
                 caseType: mergeCaseTypeAndSubType(
                     findCaseTypeSubTypeByTypeIdSubTypeId(
@@ -697,7 +736,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 ) || "",
                 priority: initialCaseData.priority || 0
             };
-            setCaseType(newCaseType);
+            setCaseType(prev => {
+                if (JSON.stringify(prev) !== JSON.stringify(newCaseType)) {
+                    return newCaseType;
+                }
+                return prev;
+            });
         }
     }, [initialCaseData]);
 
@@ -866,16 +910,16 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, []);
 
     // Handlers
-    const handleSelectOfficer = useCallback((selectedOfficer: Unit) => {
-        setShowOFFicersData(prev => (prev?.unitId === selectedOfficer.unitId ? null : selectedOfficer));
+    const handleSelectOfficer = useCallback((selectedOfficer: UnitWithSop) => {
+        setShowOFFicersData(prev => (prev?.unit.unitId === selectedOfficer.unit.unitId ? null : selectedOfficer));
     }, []);
 
-    const handleRemoveOfficer = useCallback((officerToRemove: Unit) => {
-        setAssignedOfficers(prev => prev.filter(o => o.unitId !== officerToRemove.unitId));
-        if (showOfficersData?.unitId === officerToRemove.unitId) {
+    const handleRemoveOfficer = useCallback((officerToRemove: UnitWithSop) => {
+        setAssignedOfficers(prev => prev.filter(o => o.unitId !== officerToRemove.unit.unitId));
+        if (showOfficersData?.unit.unitId === officerToRemove.unit.unitId) {
             setShowOFFicersData(null);
         }
-    }, [showOfficersData?.unitId]);
+    }, [showOfficersData?.unit.unitId]);
 
     const handleCheckRequiredFields = useCallback(() => {
         let errorMessage = "";
@@ -1058,7 +1102,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     const handleAssignOfficers = useCallback((selectedOfficerIds: string[]) => {
         const selected = unit?.data?.filter(o => selectedOfficerIds.includes(o.unitId));
-        selected && setAssignedOfficers(selected);
+        if (selected) {
+            selected.forEach(async (item) => {
+                await handleDispatch(item)
+            })
+            // setAssignedOfficers(selected);
+        }
         setShowAssignModal(false);
     }, [unit?.data]);
 
@@ -1119,9 +1168,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 setShowToast(true);
             } else {
                 setToastMessage("Changes saved to server, but localStorage update failed");
-                setToastType("info");
+                setToastType("success");
                 setShowToast(true);
             }
+            unitRefect()
         } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to Update Case`);
@@ -1141,7 +1191,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // setToastType("success");
         // setShowToast(true);
         setShowCreatedCase(true);
-        // navigate(`/case/${caseState?.workOrderNummber}`)
+        navigate(`/case/${caseState?.workOrderNummber}`)
     }, [createCaseAction]);
 
     const handlePreviewShow = useCallback(() => {
@@ -1281,7 +1331,51 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setToastType("success");
         setShowToast(true);
     }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
-    // console.log(sopData)
+
+    const handleUnitSopDispatch = useCallback(async (officer: UnitWithSop) => {
+        // This object creation is correct
+        const dispatchjson = {
+            unitId: officer.unit.unitId,
+            caseId: initialCaseData!.caseId,
+            nodeId: officer.Sop?.nextStage?.nodeId,
+            status: officer.Sop?.nextStage?.data?.data?.config?.action,
+            unitUser: profile.username
+        };
+        console.log("Dispatching with:", dispatchjson);
+        try {
+            // 2. Call the 'postDispatch' trigger function inside your event handler.
+            //    '.unwrap()' is a helpful utility that will automatically throw an
+            //    error if the mutation fails, making it easy to use with try/catch.
+            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
+                throw new Error("No data found in dispatch object");
+            }
+            const payload = await postDispatch(dispatchjson).unwrap();
+
+            console.log('Dispatch successful:', payload);
+            setToastMessage("Dispatch Successfully!");
+            setToastType("success");
+            setShowToast(true);
+            dispatchUpdateLocate(dispatchjson)
+            setCaseState(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    status: dispatchjson.status
+                };
+            });
+
+            setRefreshStageUnit(!refreshStageUnit)
+            return true
+        } catch (error) {
+            console.error('Dispatch failed:', error);
+            setToastMessage("Dispatch Failed");
+            // You might want an error toast type here
+            setToastType("error");
+            setShowToast(true);
+            return false
+        }
+    }, [initialCaseData, profile.username, postDispatch]);
+    // console.log(unitWorkOrder)
     const handleDispatch = useCallback(async (officer: Unit) => {
         // This object creation is correct
         const dispatchjson = {
@@ -1315,12 +1409,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             });
 
             refetch()
+            return true
         } catch (error) {
             console.error('Dispatch failed:', error);
             setToastMessage("Dispatch Failed");
             // You might want an error toast type here
             setToastType("error");
             setShowToast(true);
+            return false
         }
     }, [initialCaseData, profile.username, postDispatch, sopData]); // 3. Add dependencies to useCallback
 
@@ -1491,14 +1587,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     onRemove={handleRemoveFileResult}
                                 />
                                 <AssignedOfficers
-                                    assignedOfficers={assignedOfficers}
-                                    showOfficersData={showOfficersData}
+                                    SopUnit={unitWorkOrder}
                                     onSelectOfficer={handleSelectOfficer}
                                     onRemoveOfficer={handleRemoveOfficer}
-                                    handleDispatch={handleDispatch}
+                                    handleDispatch={handleUnitSopDispatch}
                                 />
 
-                                {showOfficersData && <CommandInformation className="my-2" />}
+                                {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
 
                             {/* Form Content */}
