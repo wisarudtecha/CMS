@@ -12,7 +12,7 @@ import { closeStatus } from "../ui/status/status";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
-    showResult?:boolean
+    showResult?: boolean
 }
 
 const renderField = (field: IndividualFormField): Record<string, any> => {
@@ -55,7 +55,7 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
     return { [field.label]: value };
 };
 
-const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,showResult=false }) => {
+const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData, showResult = false }) => {
     const [closeValue, setCloseValue] = useState<string>("")
     const closeCaseOption = ["แก้ไขเสร็จสิ้น", "เปลี่ยนอุปกรณ์เสร์จสิ้น"]
     const isCloseStage = closeStatus.find(status => status === caseData?.status);
@@ -85,13 +85,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
                 </div>
                 {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.description || "-"}
 
-                    </div>
-                </div>
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Request Service Date {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
@@ -176,7 +170,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
                     </div>
                 </div>
-                {showResult && isCloseStage &&<div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+                {showResult && isCloseStage && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
                     <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
                     <div className="">
                         <SearchableSelect
@@ -202,7 +196,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 </div>}
             </div>
-
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                <div className="mb-2">
+                    <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">
+                        {caseData?.description || "-"}
+                    </div>
+                </div>
+            </div>
             {/* <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <div className="mb-2">
                     <span className="text-md text-blue-500 dark:text-blue-400">Attachments</span>

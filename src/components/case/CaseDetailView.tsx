@@ -63,7 +63,7 @@ interface CaseTypeFormSectionProps {
     selectedCaseTypeForm: FormField | undefined;
     editFormData: boolean;
     caseTypeSupTypeData: CaseTypeSubType[];
-    disableCaseTypeSelect:boolean;
+    disableCaseTypeSelect: boolean;
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -195,6 +195,55 @@ AttachedFiles.displayName = 'AttachedFiles';
 
 
 // Memoized Assigned Officers Component
+// const AssignedOfficers = memo(({
+//     assignedOfficers,
+//     showOfficersData,
+//     onSelectOfficer,
+//     onRemoveOfficer,
+//     handleDispatch,
+// }: {
+//     assignedOfficers: Unit[];
+//     showOfficersData: Unit | null;
+//     onSelectOfficer: (officer: Unit) => void;
+//     onRemoveOfficer: (officer: Unit) => void;
+//     handleDispatch: (officer: Unit) => void;
+// }) => {
+//     if (!assignedOfficers.length) return null;
+
+//     return (
+//         <div className="mb-4 flex flex-wrap gap-2 items-center">
+//             <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+//                 Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+//             </span>
+//             {assignedOfficers.map(officer => (
+//                 <div
+//                     key={officer.unitId}
+//                     className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
+//                 >
+//                     <div onClick={() => onSelectOfficer(officer)} className="cursor-pointer">
+//                         {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
+//                     </div>
+//                     {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+//                     {officer.username}
+//                     <Button size="xxs" className="mx-1" variant="outline-no-transparent" onClick={() => handleDispatch(officer)}>
+//                         Acknowledge
+//                     </Button>
+//                     <Button
+//                         onClick={() => onRemoveOfficer(officer)}
+//                         className="ml-2"
+//                         title="Remove"
+//                         variant="outline-no-transparent"
+//                         size="xxs"
+//                     >
+//                         Cancel
+//                     </Button>
+//                 </div>
+//             ))}
+//         </div>
+//     );
+// });
+// AssignedOfficers.displayName = 'AssignedOfficers';
+
 const AssignedOfficers = memo(({
     assignedOfficers,
     showOfficersData,
@@ -211,39 +260,39 @@ const AssignedOfficers = memo(({
     if (!assignedOfficers.length) return null;
 
     return (
-        <div className="mb-4 flex flex-wrap gap-2 items-center">
-            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
-            </span>
+        <div className="mb-4 gap-2 items-center">
+            <div className="mb-2">
+                <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+                    Assigned Officer{assignedOfficers.length > 1 ? "s" : ""}:
+                </span>
+            </div>
             {assignedOfficers.map(officer => (
                 <div
                     key={officer.unitId}
-                    className="flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-fit"
+                    className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium w-full"
                 >
-                    <div onClick={() => onSelectOfficer(officer)} className="cursor-pointer">
-                        {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
+                    <div className="flex items-center justify-between"> <div className="flex items-center">
+                        <div onClick={() => onSelectOfficer(officer)} className="cursor-pointer mr-2">
+                            {showOfficersData?.unitId === officer.unitId ? <ChevronUp /> : <ChevronDown />}
+                        </div>
+                        {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                        <span className="ml-2">{officer.username}
+                        </span>
                     </div>
-                    {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                    {officer.username}
-                    <Button size="xxs" className="mx-1" variant="outline-no-transparent" onClick={() => handleDispatch(officer)}>
-                        Acknowledge
-                    </Button>
-                    <Button
-                        onClick={() => onRemoveOfficer(officer)}
-                        className="ml-2"
-                        title="Remove"
-                        variant="outline-no-transparent"
-                        size="xxs"
-                    >
-                        Cancel
-                    </Button>
+
+                        <div className="flex items-end justify-end">
+                            <Button size="xxs" className="mx-1" variant="outline-no-transparent" onClick={() => handleDispatch(officer)}> Acknowledge
+                            </Button>
+                            <Button onClick={() => onRemoveOfficer(officer)} className="ml-2" title="Remove" variant="outline-no-transparent" size="xxs" > Cancel
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             ))}
         </div>
     );
 });
 AssignedOfficers.displayName = 'AssignedOfficers';
-
 
 // Props interface for the form fields component
 interface CaseFormFieldsProps {
@@ -523,7 +572,7 @@ CaseFormFields.displayName = 'CaseFormFields';
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
 
-    const { caseId: paramCaseId } = useParams<{ caseId: string }>();    
+    const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
@@ -576,7 +625,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     );
 
     // Only make API calls if initialCaseData exists
-    const { data: sopData, isFetching, isError,isLoading } = useGetCaseSopQuery(
+    const { data: sopData, isFetching, isError, isLoading, refetch } = useGetCaseSopQuery(
         { caseId: initialCaseData?.caseId || "" },
         {
             refetchOnMountOrArgChange: true,
@@ -637,21 +686,20 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     // Initialize case type from caseData ONLY ONCE
     useEffect(() => {
-        if (initialCaseData && caseType.caseType === "" && caseTypeSupTypeData.length > 0 && !sopLocal) {
+        if (initialCaseData  && caseTypeSupTypeData.length > 0 && !sopLocal) {
             const newCaseType = {
                 caseType: mergeCaseTypeAndSubType(
                     findCaseTypeSubTypeByTypeIdSubTypeId(
                         caseTypeSupTypeData,
-                        initialCaseData?.caseTypeId || "",
-                        initialCaseData?.caseSTypeId || ""
+                        sopData?.data?.caseTypeId || "",
+                        sopData?.data?.caseSTypeId || ""
                     ) ?? ({} as CaseTypeSubType)
                 ) || "",
                 priority: initialCaseData.priority || 0
             };
-
             setCaseType(newCaseType);
         }
-    }, []);
+    }, [initialCaseData]);
 
     useEffect(() => {
 
@@ -1265,6 +1313,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     status: dispatchjson.status
                 };
             });
+
+            refetch()
         } catch (error) {
             console.error('Dispatch failed:', error);
             setToastMessage("Dispatch Failed");
@@ -1272,14 +1322,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setToastType("error");
             setShowToast(true);
         }
-    }, [initialCaseData, profile.username, postDispatch,sopData]); // 3. Add dependencies to useCallback
+    }, [initialCaseData, profile.username, postDispatch, sopData]); // 3. Add dependencies to useCallback
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
             updateCaseState({ workOrderDate: TodayDate() });
         }
     }, [caseState?.workOrderDate, initialCaseData, updateCaseState]);
-    
+
 
 
     // Loading state for existing cases
@@ -1318,7 +1368,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }
 
 
-    if ((sopData === undefined || isError)&& isCreate === false) {
+    if ((sopData === undefined || isError) && isCreate === false) {
         return (
             <div className="flex flex-col h-screen">
                 {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}

@@ -1,3 +1,4 @@
+
 interface ProgressSteps {
     id: string,
     title:string,
@@ -19,6 +20,7 @@ const ProgressStepPreview: React.FC<ProgressStepPrevieProps> = ({
 
     const currentStepIndex = progressSteps.findIndex(step => step.current);
     const progressWidth = currentStepIndex !== -1 ? ((currentStepIndex) / (progressSteps.length - 1)) * 100 : 0;
+    // console.log(progressSteps);
     return (
                 <div className={` mb-4 `}>
                 <div className="relative pt-4">

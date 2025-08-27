@@ -37,7 +37,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
     const navigate=useNavigate()
 
-    if (referCaseList) {
+    if (referCaseList && referCaseList.length !=0) {
         tabs.push({ id: "Subcase", label: "Subcase" });
 
 
