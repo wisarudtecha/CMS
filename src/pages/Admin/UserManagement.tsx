@@ -18,20 +18,43 @@
  * - Intended as a starting point or scaffolding.
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
 import type { Department, Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import UserManagementComponent from "@/components/admin/UserManagement";
+import Toast from "../../components/toast/Toast";
 
 const UserManagementPage: React.FC = () => {
+  const location = useLocation();
+  
+  // Toast state
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
+  // Check for toast message from navigation state
+  useEffect(() => {
+    if (location.state?.toast) {
+      setToast({
+        message: location.state.toast.message,
+        type: location.state.toast.type
+      });
+      
+      // Clear the navigation state to prevent toast from showing again on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [location.state]);
+
   // ===================================================================
   // API Data
   // ===================================================================
 
-  const { data: usersData } = useGetUsersQuery({ start: 0, length: 100 });
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 10 });
   const users: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
 
   const { data: departmentsData } = useGetDepartmentsQuery();
@@ -52,6 +75,16 @@ const UserManagementPage: React.FC = () => {
 
         <UserManagementComponent usr={users} dept={departments} role={roles} />
       </ProtectedRoute>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={3000}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   ) : (
     <div>Loading...</div>

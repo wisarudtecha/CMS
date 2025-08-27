@@ -534,7 +534,16 @@ const UserForm: React.FC = () => {
     if (payload.gender === null || payload.gender === "") payload.gender = null;
     if (typeof payload.userType === "string" && payload.userType !== "") payload.userType = Number(payload.userType);
 
-    if (isEdit && (!payload.password || payload.password === "")) delete payload.password;
+    // ในโหมด Edit ถ้าไม่ได้กรอก password ใหม่ ให้ลบ password field ออกจาก payload
+    if (isEdit) {
+      if (!payload.password || 
+          payload.password === "" || 
+          payload.password.trim() === "" ||
+          payload.password === undefined ||
+          payload.password === null) {
+        delete payload.password;
+      }
+    }
     delete payload.confirmPassword;
 
     if (payload.photo instanceof File) {

@@ -1,122 +1,65 @@
 // UserMetaCard.tsx - เก็บเฉพาะปุ่ม Edit ที่นำไปหน้า edit
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useToast } from "../../hooks/useToast";
+import { useUserProfile } from "@/context/UserProfileContext";
+import ResetPasswordModal from "./ResetPasswordModal";
+import ChangePasswordModal from "./ChangePasswordModal";
+import Toast from "../toast/Toast";
+import type { UserProfile } from "@/types/user";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
-
-interface UserProfile {
-  id: string;
-  displayName: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  mobileNo: string;
-  photo: string;
-  address: string | null;
-  facebook?: string;
-  twitter?: string;
-  linkedin?: string;
-  instagram?: string;
+interface UserMetaCardProps {
+  userData?: UserProfile | null;
+  loading?: boolean;
+  error?: string | null;
 }
 
-// Helper function for API calls with authentication
-const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const token = localStorage.getItem('access_token');
-  const headers = new Headers(options.headers);
-
-  if (token) {
-    headers.append('Authorization', `Bearer ${token}`);
-  }
-
-  if (!(options.body instanceof FormData)) {
-    if (!headers.has('Content-Type')) {
-      headers.append('Content-Type', 'application/json');
-    }
-  }
-
-  const newOptions: RequestInit = { ...options, headers };
-  return fetch(url, newOptions);
-};
-
-export default function UserMetaCard() {
+export default function UserMetaCard({ userData: propUserData, loading: propLoading, error: propError }: UserMetaCardProps = {}) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const { toasts, addToast, removeToast } = useToast();
+  
+  // Try to use context first, fallback to props
+  let contextData;
+  try {
+    contextData = useUserProfile();
+  } catch {
+    // Context not available, use props or defaults
+    contextData = {
+      userData: propUserData || null,
+      loading: propLoading || false,
+      error: propError || null
+    };
+  }
+  
+  const { userData, loading, error } = contextData;
   const [socialLinks, setSocialLinks] = useState({
     facebook: "",
     twitter: "",
     linkedin: "",
     instagram: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const profileString = localStorage.getItem("profile");
-        const token = localStorage.getItem("access_token");
+  const handlePasswordResetSuccess = () => {
+    addToast("success", t('userform.passwordResetSuccessToast') || 'รีเซ็ตรหัสผ่านสำเร็จ');
+  };
 
-        if (!profileString || !token) {
-          setError(t("errors.unauthorized"));
-          setLoading(false);
-          return;
-        }
+  const handlePasswordChangeSuccess = () => {
+    addToast("success", t('userform.passwordChangeSuccessToast') || 'เปลี่ยนรหัสผ่านสำเร็จ');
+  };
 
-        const profile = JSON.parse(profileString);
-        const username = profile?.username;
-
-        if (!username) {
-          setError(t("errors.unauthorized"));
-          setLoading(false);
-          return;
-        }
-
-        const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError(t("errors.unauthorized"));
-          } else {
-            setError(t("errors.server_error"));
-          }
-          setLoading(false);
-          return;
-        }
-
-        const result = await response.json();
-        let user = null;
-        
-        if (result && typeof result === 'object') {
-          if ('data' in result && typeof result.data === 'object') {
-            user = result.data;
-          } else {
-            user = result;
-          }
-        }
-
-        if (user) {
-          setUserData(user);
-          setSocialLinks({
-            facebook: user.facebook || "https://www.facebook.com/(example)Del'pattaradanai",
-            twitter: user.twitter || "https://x.com/(example)Del'pattaradanai",
-            linkedin: user.linkedin || "https://www.linkedin.com/company/(example)Del'pattaradanai",
-            instagram: user.instagram || "https://instagram.com/(example)Del'pattaradanai"
-          });
-        } else {
-          setError(t("userform.noUserData"));
-        }
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(t("errors.server_error"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  // Set social links when userData changes
+  if (userData && socialLinks.facebook === "") {
+    setSocialLinks({
+      facebook: (userData as any).facebook || "https://www.facebook.com/(example)Del'pattaradanai",
+      twitter: (userData as any).twitter || "https://x.com/(example)Del'pattaradanai",
+      linkedin: (userData as any).linkedin || "https://www.linkedin.com/company/(example)Del'pattaradanai",
+      instagram: (userData as any).instagram || "https://instagram.com/(example)Del'pattaradanai"
+    });
+  }
 
   const handleEdit = () => {
     if (userData?.id) {
@@ -225,6 +168,55 @@ export default function UserMetaCard() {
           {t("common.edit")}
         </button>
       </div>
+      
+      {/* Password Management Buttons */}
+      <div className="flex flex-col gap-2 mt-4 lg:flex-row lg:gap-3">
+        <button
+          onClick={() => setShowChangePasswordModal(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 lg:w-auto"
+        >
+          <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 1C6.8925 1 6 1.8925 6 3V5H3C2.4475 5 2 5.4475 2 6V13C2 13.5525 2.4475 14 3 14H13C13.5525 14 14 13.5525 14 13V6C14 5.4475 13.5525 5 13 5H10V3C10 1.8925 9.1075 1 8 1ZM8 2C8.5525 2 9 2.4475 9 3V5H7V3C7 2.4475 7.4475 2 8 2ZM8 8.5C8.8284 8.5 9.5 9.1716 9.5 10C9.5 10.8284 8.8284 11.5 8 11.5C7.1716 11.5 6.5 10.8284 6.5 10C6.5 9.1716 7.1716 8.5 8 8.5Z" fill="currentColor"/>
+          </svg>
+          {t("userform.changePassword") || "เปลี่ยนรหัสผ่าน"}
+        </button>
+        
+        <button
+          onClick={() => setShowResetPasswordModal(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700 hover:bg-orange-100 hover:text-orange-800 dark:border-orange-700 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30 lg:w-auto"
+        >
+          <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 1.5C5.51472 1.5 3.5 3.51472 3.5 6V7H2C1.44772 7 1 7.44772 1 8V14C1 14.5523 1.44772 15 2 15H14C14.5523 15 15 14.5523 15 14V8C15 7.44772 14.5523 7 14 7H12.5V6C12.5 3.51472 10.4853 1.5 8 1.5ZM8 2.5C9.933 2.5 11.5 4.067 11.5 6V7H4.5V6C4.5 4.067 6.067 2.5 8 2.5ZM8 9.5C8.82843 9.5 9.5 10.1716 9.5 11C9.5 11.8284 8.82843 12.5 8 12.5C7.17157 12.5 6.5 11.8284 6.5 11C6.5 10.1716 7.17157 9.5 8 9.5Z" fill="currentColor"/>
+          </svg>
+          {t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน"}
+        </button>
+      </div>
+
+      {/* Modals */}
+      <ResetPasswordModal 
+        isOpen={showResetPasswordModal}
+        onClose={() => setShowResetPasswordModal(false)}
+        userId={userData?.id?.toString()}
+        onSuccess={handlePasswordResetSuccess}
+      />
+      
+      <ChangePasswordModal 
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        userId={userData?.id?.toString()}
+        onSuccess={handlePasswordChangeSuccess}
+      />
+
+      {/* Toast Notifications */}
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type === 'warning' ? 'info' : toast.type as "success" | "error" | "info"}
+          duration={toast.duration}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   );
 }

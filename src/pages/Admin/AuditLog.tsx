@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
     Search,
     Filter,
-    Calendar,
     User,
     Activity,
     CheckCircle,
@@ -20,6 +19,25 @@ import {
     Info,
     Loader2,
     ServerCrash,
+    Settings,
+    Database,
+    Shield,
+    Bell,
+    Users,
+    FolderOpen,
+    LogIn,
+    LogOut,
+    Edit,
+    Eye,
+    Save,
+    Upload,
+    Download,
+    Mail,
+    Clock,
+    MessageSquare,
+    Layers,
+    BarChart3,
+    PieChart
 } from 'lucide-react';
 import PageBreadcrumb from '../../components/common/PageBreadCrumb';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -78,17 +96,40 @@ interface UserFromAPI {
 
 // --- Helper component for rendering data objects ---
 const DataDisplay = ({ data }: { data: any }) => {
+    const { t } = useTranslation();
+    
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-        return <p className="text-xs text-center text-gray-500 dark:text-gray-400 italic py-2">No data</p>;
+        return (
+            <div className="text-center py-6">
+                <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
+                    <Database className="w-6 h-6" />
+                    <p className="text-sm italic">{t("common.no_data") || "No data available"}</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="space-y-1.5 p-3 bg-white dark:bg-gray-800 rounded-md font-mono text-xs">
+        <div className="space-y-2 p-3 bg-white dark:bg-gray-800 rounded-md border font-mono text-xs max-h-64 overflow-y-auto">
             {Object.entries(data).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-start gap-3">
-                    <span className="font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0">{key}:</span>
-                    <span className="text-right break-all text-gray-800 dark:text-gray-200">
-                        {typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value)}
+                <div key={key} className="flex justify-between items-start gap-3 py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                    <span className="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0 min-w-0">
+                        {key}:
+                    </span>
+                    <span className="text-right break-all text-gray-800 dark:text-gray-200 min-w-0">
+                        {typeof value === 'boolean' ? (
+                            <span className={`px-1.5 py-0.5 rounded text-xs ${value ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+                                {value ? 'true' : 'false'}
+                            </span>
+                        ) : value === null ? (
+                            <span className="text-gray-400 italic">null</span>
+                        ) : typeof value === 'object' ? (
+                            <span className="text-purple-600 dark:text-purple-400">
+                                {JSON.stringify(value, null, 2)}
+                            </span>
+                        ) : (
+                            String(value)
+                        )}
                     </span>
                 </div>
             ))}
@@ -343,22 +384,119 @@ export default function AuditLog() {
     const totalPages = Math.ceil(filteredLogs.length / rowsPerPage);
 
     // --- HELPER FUNCTIONS & HANDLERS ---
+    const getFunctionIcon = (mainFunc: string, subFunc: string) => {
+        const combined = `${mainFunc}.${subFunc}`.toLowerCase();
+        
+        // System functions
+        if (mainFunc.toLowerCase().includes('system') || mainFunc.toLowerCase().includes('auth')) {
+            if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600' };
+            if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600' };
+            if (combined.includes('register')) return { icon: Users, color: 'text-blue-600' };
+            return { icon: Shield, color: 'text-purple-600' };
+        }
+        
+        // User functions
+        if (mainFunc.toLowerCase().includes('user')) {
+            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
+            if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
+            if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600' };
+            return { icon: User, color: 'text-indigo-600' };
+        }
+        
+        // Case functions
+        if (mainFunc.toLowerCase().includes('case')) {
+            if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600' };
+            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
+            if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
+            return { icon: FolderOpen, color: 'text-amber-600' };
+        }
+        
+        // Report functions
+        if (mainFunc.toLowerCase().includes('report')) {
+            if (combined.includes('export')) return { icon: Download, color: 'text-teal-600' };
+            if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
+            return { icon: PieChart, color: 'text-emerald-600' };
+        }
+        
+        // Notification functions
+        if (mainFunc.toLowerCase().includes('notification') || mainFunc.toLowerCase().includes('notify')) {
+            if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600' };
+            if (combined.includes('create')) return { icon: Bell, color: 'text-green-600' };
+            if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600' };
+            return { icon: Bell, color: 'text-yellow-600' };
+        }
+        
+        // Settings functions
+        if (mainFunc.toLowerCase().includes('settings') || mainFunc.toLowerCase().includes('config')) {
+            return { icon: Settings, color: 'text-gray-600' };
+        }
+        
+        // Database functions
+        if (mainFunc.toLowerCase().includes('database') || mainFunc.toLowerCase().includes('backup')) {
+            if (combined.includes('backup')) return { icon: Save, color: 'text-green-600' };
+            if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600' };
+            return { icon: Database, color: 'text-indigo-600' };
+        }
+        
+        // Default based on action
+        return { icon: Activity, color: 'text-gray-500' };
+    };
+
     const getStatusBadge = (status: number) => {
         switch (status) {
-            case 0: return { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30', text: 'Success' };
-            case 1: return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30', text: 'Failed' };
-            case 2: return { icon: AlertCircle, color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'Warning' };
-            default: return { icon: AlertCircle, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-700', text: 'Unknown' };
+            case 0: return { 
+                icon: CheckCircle, 
+                color: 'text-green-500', 
+                bg: 'bg-green-100 dark:bg-green-900/30', 
+                text: t("audit_log.success") || "Success" 
+            };
+            case 1: return { 
+                icon: XCircle, 
+                color: 'text-red-500', 
+                bg: 'bg-red-100 dark:bg-red-900/30', 
+                text: t("audit_log.failed") || "Failed" 
+            };
+            case 2: return { 
+                icon: AlertCircle, 
+                color: 'text-yellow-500', 
+                bg: 'bg-yellow-100 dark:bg-yellow-900/30', 
+                text: t("audit_log.warning") || "Warning" 
+            };
+            default: return { 
+                icon: AlertCircle, 
+                color: 'text-gray-500', 
+                bg: 'bg-gray-100 dark:bg-gray-700', 
+                text: t("audit_log.unknown") || "Unknown" 
+            };
         }
     };
 
     const getActionIcon = (action: string) => {
         switch (action.toLowerCase()) {
             case 'create': return { icon: Plus, color: 'text-green-500' };
-            case 'update': return { icon: RefreshCw, color: 'text-orange-500' };
-            case 'delete': return { icon: Trash2, color: 'text-red-500' };
-            case 'login': return { icon: User, color: 'text-blue-500' };
-            default: return { icon: Activity, color: 'text-blue-500' };
+            case 'update': 
+            case 'edit': return { icon: Edit, color: 'text-orange-500' };
+            case 'delete': 
+            case 'remove': return { icon: Trash2, color: 'text-red-500' };
+            case 'login': 
+            case 'signin': return { icon: LogIn, color: 'text-green-500' };
+            case 'logout': 
+            case 'signout': return { icon: LogOut, color: 'text-red-500' };
+            case 'view': 
+            case 'read': 
+            case 'get': return { icon: Eye, color: 'text-blue-500' };
+            case 'save': 
+            case 'store': return { icon: Save, color: 'text-green-500' };
+            case 'upload': return { icon: Upload, color: 'text-blue-500' };
+            case 'download': 
+            case 'export': return { icon: Download, color: 'text-purple-500' };
+            case 'send': 
+            case 'notify': return { icon: Bell, color: 'text-yellow-500' };
+            case 'assign': return { icon: Users, color: 'text-purple-500' };
+            default: return { icon: Activity, color: 'text-gray-500' };
         }
     };
 
@@ -417,6 +555,26 @@ export default function AuditLog() {
                 )}
 
                 <div className="bg-white dark:bg-gray-900/50 rounded-xl shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-800">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <Activity className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {t("audit_log.title") || "Audit Log"}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {t("audit_log.search_and_filter") || "Search and filter system audit logs"}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {filteredLogs.length} {t("audit_log.logs_found") || "logs found"}
+                        </div>
+                    </div>
+
                     <div className="flex flex-col sm:flex-row items-center gap-3">
                         <div className="flex-1 w-full relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -428,28 +586,34 @@ export default function AuditLog() {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
                             />
                         </div>
-                        <button 
-                            onClick={() => handleFetchLogs(filter.username)} 
-                            className="p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 disabled:bg-blue-400" 
-                            title={t("audit_log.search_data") || "Search Data"}
-                            disabled={loading}
-                        >
-                            <Search className="w-4 h-4" />
-                        </button>
-                        <button 
-                            onClick={() => handleFetchLogs(filter.username)} 
-                            className="p-2.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors duration-200 disabled:bg-orange-400" 
-                            title={t("audit_log.refresh_data") || "Refresh Data"}
-                            disabled={loading}
-                        >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => handleFetchLogs(filter.username)} 
+                                className="group p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed" 
+                                title={t("audit_log.search_data") || "Search Data"}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Search className="w-4 h-4" />
+                                )}
+                            </button>
+                            <button 
+                                onClick={() => handleFetchLogs(filter.username)} 
+                                className="group p-2.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-all duration-200 disabled:bg-orange-400 disabled:cursor-not-allowed" 
+                                title={t("audit_log.refresh_data") || "Refresh Data"}
+                                disabled={loading}
+                            >
+                                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} />
+                            </button>
+                        </div>
                         <button 
                             onClick={() => setShowFilters(!showFilters)} 
-                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border-2 ${
                                 showFilters 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                                    : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800'
                             }`}
                         >
                             <Filter className="w-4 h-4" />
@@ -616,19 +780,34 @@ export default function AuditLog() {
                             <thead className="bg-gray-50 dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-800">
                                 <tr>
                                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {t("audit_log.user_transaction") || "User / Transaction"}
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4" />
+                                            {t("audit_log.user_transaction") || "User / Transaction / Time"}
+                                        </div>
                                     </th>
                                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {t("audit_log.function") || "Function"}
+                                        <div className="flex items-center gap-2">
+                                            <Layers className="w-4 h-4" />
+                                            {t("audit_log.function") || "Function"}
+                                        </div>
                                     </th>
                                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {t("audit_log.action") || "Action"}
+                                        <div className="flex items-center gap-2">
+                                            <MessageSquare className="w-4 h-4" />
+                                            {t("audit_log.message") || "Message"}
+                                        </div>
                                     </th>
                                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {t("audit_log.status") || "Status"}
+                                        <div className="flex items-center gap-2">
+                                            <Zap className="w-4 h-4" />
+                                            {t("audit_log.action") || "Action"}
+                                        </div>
                                     </th>
                                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {t("audit_log.time") || "Time"}
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4" />
+                                            {t("audit_log.status") || "Status"}
+                                        </div>
                                     </th>
                                 </tr>
                             </thead>
@@ -671,35 +850,138 @@ export default function AuditLog() {
                                         const isExpanded = expandedLog === log.id;
                                         const statusInfo = getStatusBadge(log.status);
                                         const actionInfo = getActionIcon(log.action);
+                                        const functionInfo = getFunctionIcon(log.mainFunc, log.subFunc);
                                         return (
                                             <React.Fragment key={log.id}>
                                                 <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/60 cursor-pointer transition-colors" onClick={() => setExpandedLog(isExpanded ? null : log.id)}>
-                                                    <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="mt-1 flex-shrink-0">{isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</div><div><div className="flex items-center gap-2"><User className="w-3 h-3" /><span className="font-medium text-gray-900 dark:text-white">{log.username}</span></div><div className="flex items-center gap-2 mt-1"><Hash className="w-3 h-3 text-gray-400" /><span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{log.txId}</span></div></div></div></td>
-                                                    <td className="px-6 py-4"><div><div className="font-medium text-gray-900 dark:text-white capitalize">{log.mainFunc}</div><div className="text-xs text-gray-500 dark:text-gray-400">{log.subFunc}/{log.nameFunc}</div></div></td>
-                                                    <td className="px-6 py-4"><div className="flex items-center gap-2"><actionInfo.icon className={`w-4 h-4 ${actionInfo.color}`} /><span className="capitalize">{log.action}</span></div></td>
-                                                    <td className="px-6 py-4"><span className={`inline-flex items-center gap-2 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bg} ${statusInfo.color}`}><statusInfo.icon className="w-3 h-3" />{statusInfo.text}</span></td>
-                                                    <td className="px-6 py-4"><div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Calendar className="w-3 h-3" /><span>{new Date(log.createdAt).toLocaleString()}</span></div></td>
+                                                    {/* User / Transaction / Time Column */}
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="mt-1 flex-shrink-0">
+                                                                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <User className="w-3 h-3 text-blue-500" />
+                                                                    <span className="font-medium text-gray-900 dark:text-white">{log.username}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <Hash className="w-3 h-3 text-gray-400" />
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{log.txId}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Clock className="w-3 h-3 text-gray-400" />
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {new Date(log.createdAt).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    
+                                                    {/* Function Column */}
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-start gap-2">
+                                                            <functionInfo.icon className={`w-4 h-4 mt-0.5 ${functionInfo.color}`} />
+                                                            <div>
+                                                                <div className="font-medium text-gray-900 dark:text-white capitalize">
+                                                                    {log.mainFunc}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    {log.subFunc} / {log.nameFunc}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    
+                                                    {/* Message Column */}
+                                                    <td className="px-6 py-4">
+                                                        <div className="max-w-xs">
+                                                            <p className="text-sm text-gray-900 dark:text-white" title={log.message}>
+                                                                {log.message.length > 80 
+                                                                    ? `${log.message.substring(0, 80)}...` 
+                                                                    : log.message
+                                                                }
+                                                            </p>
+                                                            {log.message.length > 80 && (
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                    {t("audit_log.click_to_view_full") || "Click to view full message"}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    
+                                                    {/* Action Column */}
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <actionInfo.icon className={`w-4 h-4 ${actionInfo.color}`} />
+                                                            <span className="capitalize font-medium">{log.action}</span>
+                                                        </div>
+                                                    </td>
+                                                    
+                                                    {/* Status Column */}
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex items-center gap-2 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bg} ${statusInfo.color}`}>
+                                                            <statusInfo.icon className="w-3 h-3" />
+                                                            {statusInfo.text}
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                                 {isExpanded && (
                                                     <tr>
                                                         <td colSpan={5} className="p-0">
-                                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6">
-                                                                <div className="max-w-full ml-9 space-y-4">
-                                                                    <div className="p-4 bg-white dark:bg-gray-900/50 rounded-lg shadow-inner border border-gray-200 dark:border-gray-700/50">
-                                                                        <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2"><Info className="w-4 h-4" /> Message</h4>
-                                                                        <p className="text-sm text-gray-900 dark:text-white font-mono">{log.message}</p>
+                                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 border-t border-gray-200 dark:border-gray-700">
+                                                                <div className="max-w-full space-y-6">
+                                                                    {/* Header with additional info */}
+                                                                    <div className="flex items-center justify-between">
+                                                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                                                            <Info className="w-5 h-5 text-blue-500" />
+                                                                            {t("audit_log.log_details") || "Log Details"}
+                                                                        </h3>
+                                                                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                                            <span className="flex items-center gap-1">
+                                                                                <Hash className="w-4 h-4" />
+                                                                                {t("audit_log.duration") || "Duration"}: {log.duration}ms
+                                                                            </span>
+                                                                            <span className="flex items-center gap-1">
+                                                                                <Hash className="w-4 h-4" />
+                                                                                ID: {log.uniqueId}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                                                                    {/* Full Message */}
+                                                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                                                                        <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
+                                                                            <MessageSquare className="w-4 h-4" /> 
+                                                                            {t("audit_log.full_message") || "Message"}
+                                                                        </h4>
+                                                                        <p className="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 p-3 rounded border font-mono leading-relaxed">
+                                                                            {log.message}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {/* Data sections */}
+                                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                                         <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-900/30">
-                                                                            <h4 className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2"><FileText className="w-4 h-4" /> Old Data</h4>
+                                                                            <h4 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
+                                                                                <FileText className="w-4 h-4" /> 
+                                                                                {t("audit_log.old_data") || "Old Data"}
+                                                                            </h4>
                                                                             <DataDisplay data={log.oldData} />
                                                                         </div>
                                                                         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-900/30">
-                                                                            <h4 className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-2 flex items-center gap-2"><Plus className="w-4 h-4" /> New Data</h4>
+                                                                            <h4 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
+                                                                                <Plus className="w-4 h-4" /> 
+                                                                                {t("audit_log.new_data") || "New Data"}
+                                                                            </h4>
                                                                             <DataDisplay data={log.newData} />
                                                                         </div>
-                                                                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/30">
-                                                                            <h4 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2"><Zap className="w-4 h-4" /> Response Data</h4>
+                                                                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-900/30">
+                                                                            <h4 className="text-sm font-semibold text-purple-700 dark:text-purple-400 mb-3 flex items-center gap-2">
+                                                                                <Zap className="w-4 h-4" /> 
+                                                                                {t("audit_log.response_data") || "Response Data"}
+                                                                            </h4>
                                                                             <DataDisplay data={log.resData} />
                                                                         </div>
                                                                     </div>

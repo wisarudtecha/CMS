@@ -1,45 +1,13 @@
 // UserInfoCard.tsx - ตัดส่วน Modal และปุ่ม Edit ออก
-import { useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useUserProfile } from "../../context/UserProfileContext";
+import type { UserProfile } from "@/types/user";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
-
-interface UserProfile {
-  id: string;
-  displayName: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  mobileNo: string;
-  photo: string;
-  address: string | null;
-  title?: string;
-  middleName?: string;
-  citizenId?: string;
-  bod?: string;
-  gender?: number;
-  blood?: string;
-  bio?: string;
+interface UserInfoCardProps {
+  userData?: UserProfile | null;
+  loading?: boolean;
+  error?: string | null;
 }
-
-// Helper function for API calls with authentication
-const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const token = localStorage.getItem('access_token');
-  const headers = new Headers(options.headers);
-
-  if (token) {
-    headers.append('Authorization', `Bearer ${token}`);
-  }
-
-  if (!(options.body instanceof FormData)) {
-    if (!headers.has('Content-Type')) {
-      headers.append('Content-Type', 'application/json');
-    }
-  }
-
-  const newOptions: RequestInit = { ...options, headers };
-  return fetch(url, newOptions);
-};
 
 // Helper function to format date
 const formatDate = (dateString: string | undefined, t: any): string => {
@@ -67,72 +35,23 @@ const formatGender = (gender: number | undefined, t: any): string => {
   }
 };
 
-export default function UserInfoCard() {
+export default function UserInfoCard({ userData: propUserData, loading: propLoading, error: propError }: UserInfoCardProps = {}) {
   const { t } = useTranslation();
-  const [userData, setUserData] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUserData = async () => {
-    try {
-      const profileString = localStorage.getItem("profile");
-      const token = localStorage.getItem("access_token");
-
-      if (!profileString || !token) {
-        setError(t("userform.loadingUserData"));
-        setLoading(false);
-        return;
-      }
-
-      const profile = JSON.parse(profileString);
-      const username = profile?.username;
-
-      if (!username) {
-        setError(t("userform.loadingUserData"));
-        setLoading(false);
-        return;
-      }
-
-      const response = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          setError(t("errors.unauthorized"));
-        } else {
-          setError(t("errors.server_error"));
-        }
-        setLoading(false);
-        return;
-      }
-
-      // ตรวจสอบว่า response มี content หรือไม่
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        setError("Invalid response format");
-        setLoading(false);
-        return;
-      }
-
-      const text = await response.text();
-      if (!text.trim()) {
-        setError("Empty response");
-        setLoading(false);
-        return;
-      }
-
-      const result = JSON.parse(text);
-      setUserData(result.data || null);
-    } catch (err) {
-      console.error("Error fetching user data:", err);
-      setError(t("errors.server_error"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, []); // ลบ dependency เพื่อให้เรียกแค่ครั้งเดียว
+  
+  // Try to use context first, fallback to props
+  let contextData;
+  try {
+    contextData = useUserProfile();
+  } catch {
+    // Context not available, use props or defaults
+    contextData = {
+      userData: propUserData || null,
+      loading: propLoading || false,
+      error: propError || null
+    };
+  }
+  
+  const { userData, loading, error } = contextData;
 
   if (loading) {
     return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
@@ -217,7 +136,7 @@ export default function UserInfoCard() {
                   {t('userform.gender')}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  {formatGender(userData.gender, t)}
+                  {formatGender(typeof userData.gender === 'number' ? userData.gender : undefined, t)}
                 </p>
               </div>
 

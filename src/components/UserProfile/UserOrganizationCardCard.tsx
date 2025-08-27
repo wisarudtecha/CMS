@@ -1,19 +1,7 @@
 // UserOrganizationCard.tsx - ตัดส่วน Modal และปุ่ม Edit ออก
-import { useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
-
-interface UserProfile {
-  id: string;
-  empId?: string;
-  commId?: string;
-  deptId?: string;
-  stnId?: string;
-  roleId?: string;
-  userType?: number;
-  active?: boolean;
-}
+import { useUserProfile } from "../../context/UserProfileContext";
+import type { UserProfile } from "@/types/user";
 
 interface DropdownData {
   id: string;
@@ -21,29 +9,18 @@ interface DropdownData {
   commId?: string;
   deptId?: string;
   stnId?: string;
+  roleName?: string;
 }
 
-// Helper function for API calls with authentication
-const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const token = localStorage.getItem('access_token');
-  const headers = new Headers(options.headers);
-
-  if (token) {
-    headers.append('Authorization', `Bearer ${token}`);
-  }
-
-  if (!(options.body instanceof FormData)) {
-    if (!headers.has('Content-Type')) {
-      headers.append('Content-Type', 'application/json');
-    }
-  }
-
-  const newOptions: RequestInit = { ...options, headers };
-  return fetch(url, newOptions);
-};
-
-// Helper function to get current language
-const getCurrentLanguage = () => 'en';
+interface UserOrganizationCardProps {
+  userData?: UserProfile | null;
+  rolesData?: DropdownData[];
+  departmentsData?: DropdownData[];
+  commandsData?: DropdownData[];
+  stationsData?: DropdownData[];
+  loading?: boolean;
+  error?: string | null;
+}
 
 // Helper function to format user type
 const formatUserType = (userType: number | undefined, t: any): string => {
@@ -56,147 +33,60 @@ const formatUserType = (userType: number | undefined, t: any): string => {
   }
 };
 
-export default function UserOrganizationCard() {
+export default function UserOrganizationCard({ 
+  userData: propUserData, 
+  rolesData: propRolesData, 
+  departmentsData: propDepartmentsData, 
+  commandsData: propCommandsData, 
+  stationsData: propStationsData, 
+  loading: propLoading, 
+  error: propError 
+}: UserOrganizationCardProps = {}) {
   const { t } = useTranslation();
-  const [userData, setUserData] = useState<UserProfile | null>(null);
   
-  // Dropdown data states
-  const [rolesData, setRolesData] = useState<DropdownData[]>([]);
-  const [departmentsData, setDepartmentsData] = useState<DropdownData[]>([]);
-  const [commandsData, setCommandsData] = useState<DropdownData[]>([]);
-  const [stationsData, setStationsData] = useState<DropdownData[]>([]);
+  // Try to use context first, fallback to props
+  let contextData;
+  try {
+    contextData = useUserProfile();
+  } catch {
+    // Context not available, use props or defaults
+    contextData = {
+      userData: propUserData || null,
+      rolesData: propRolesData || [],
+      departmentsData: propDepartmentsData || [],
+      commandsData: propCommandsData || [],
+      stationsData: propStationsData || [],
+      loading: propLoading || false,
+      error: propError || null
+    };
+  }
   
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { userData, rolesData, departmentsData, commandsData, stationsData, loading, error } = contextData;
 
   // Get display names for current values
   const getCommandName = (commId: string | undefined) => {
     if (!commId) return t('userform.na');
-    const command = commandsData.find(c => c.commId === commId || c.id === commId);
+    const command = commandsData.find((c: any) => c.commId === commId || c.id === commId);
     return command?.name || t('userform.na');
   };
 
   const getDepartmentName = (deptId: string | undefined) => {
     if (!deptId) return t('userform.na');
-    const department = departmentsData.find(d => d.deptId === deptId || d.id === deptId);
+    const department = departmentsData.find((d: any) => d.deptId === deptId || d.id === deptId);
     return department?.name || t('userform.na');
   };
 
   const getStationName = (stnId: string | undefined) => {
     if (!stnId) return t('userform.na');
-    const station = stationsData.find(s => s.stnId === stnId || s.id === stnId);
+    const station = stationsData.find((s: any) => s.stnId === stnId || s.id === stnId);
     return station?.name || t('userform.na');
   };
 
   const getRoleName = (roleId: string | undefined) => {
     if (!roleId) return t('userform.na');
-    const role = rolesData.find(r => r.id === roleId);
+    const role = rolesData.find((r: any) => r.id === roleId);
     return role?.name || t('userform.na');
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const profileString = localStorage.getItem("profile");
-        const token = localStorage.getItem("access_token");
-
-        if (!profileString || !token) {
-          setError(t("errors.unauthorized"));
-          setLoading(false);
-          return;
-        }
-
-        const profile = JSON.parse(profileString);
-        const username = profile?.username;
-
-        if (!username) {
-          setError(t("errors.unauthorized"));
-          setLoading(false);
-          return;
-        }
-
-        // Fetch dropdown data first
-        const endpoints = [
-          '/role?start=0&length=100',
-          '/departments?start=0&length=100',
-          '/commands?start=0&length=100',
-          '/stations?start=0&length=100'
-        ];
-
-        const responses = await Promise.all(
-          endpoints.map(ep => apiFetch(API_BASE_URL + ep).catch(() => ({ ok: false })))
-        );
-        
-        const results = await Promise.all(
-          responses.map(res => {
-            if (res instanceof Response) {
-              return res.ok ? res.json().catch(() => ({ data: [] })) : Promise.resolve({ data: [] });
-            } else {
-              return Promise.resolve({ data: [] });
-            }
-          })
-        );
-        
-        const lang = getCurrentLanguage();
-        setRolesData((results[0].data || []).map((r: any) => ({ 
-          id: r.id, 
-          name: r[lang] ?? r.roleName 
-        })));
-        setDepartmentsData((results[1].data || []).map((d: any) => ({ 
-          id: d.id, 
-          name: d[lang] ?? d.name, 
-          deptId: d.deptId 
-        })));
-        setCommandsData((results[2].data || []).map((c: any) => ({ 
-          id: c.id, 
-          name: c[lang] ?? c.name, 
-          commId: c.commId 
-        })));
-        setStationsData((results[3].data || []).map((s: any) => ({ 
-          id: s.id, 
-          name: s[lang] ?? s.name, 
-          stnId: s.stnId 
-        })));
-
-        // Fetch user data
-        const userResponse = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
-        
-        if (!userResponse.ok) {
-          if (userResponse.status === 401) {
-            setError(t("errors.unauthorized"));
-          } else {
-            setError(t("errors.server_error"));
-          }
-          setLoading(false);
-          return;
-        }
-
-        const result = await userResponse.json();
-        let user = null;
-        
-        if (result && typeof result === 'object') {
-          if ('data' in result && typeof result.data === 'object') {
-            user = result.data;
-          } else {
-            user = result;
-          }
-        }
-
-        if (user) {
-          setUserData(user);
-        } else {
-          setError(t("userform.noUserData"));
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(t("errors.server_error"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   if (loading) {
     return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
@@ -233,7 +123,7 @@ export default function UserOrganizationCard() {
                 {t("userform.userType")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {formatUserType(userData.userType, t)}
+                {formatUserType(typeof userData.userType === 'number' ? userData.userType : undefined, t)}
               </p>
             </div>
 
