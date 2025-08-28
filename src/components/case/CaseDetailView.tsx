@@ -115,13 +115,14 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 // ## START: Refactored Components ##
 
 // Memoized Header Component
-const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
+const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, isCreate }: {
     disablePageMeta?: boolean;
     onBack?: () => void;
     onOpenCustomerPanel: () => void;
+    isCreate: boolean;
 }) => (
     <div className="flex-shrink-0">
-        {!disablePageMeta && <PageBreadcrumb pageTitle="Case" />}
+        {!disablePageMeta && <PageBreadcrumb pageTitle={isCreate ? "Create Case" : "Case"} />}
         <div className="px-4 sm:px-6">
             <div className="flex items-center justify-between">
                 {!disablePageMeta && (
@@ -255,6 +256,7 @@ const AssignedOfficers = memo(({
     handleDispatch: (officer: UnitWithSop) => void;
 }) => {
     if (!SopUnit?.length) return null;
+
     return (
         <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
@@ -262,27 +264,43 @@ const AssignedOfficers = memo(({
                     Assigned Officer{SopUnit.length > 1 ? "s" : ""}:
                 </span>
             </div>
-            {SopUnit && SopUnit.map(officer => (
-                <div
-                    key={officer.unit.unitId}
-                    className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
-                >
-                    <div className="flex items-center justify-between"> <div className="flex items-center">
-                        {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                        <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>{officer.unit.username}
-                        </span>
-                    </div>
-                        <div className="flex items-end justify-end">
+            {SopUnit && SopUnit.map(officer => {
+                const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
 
-
-                            <Button onClick={() => handleDispatch(officer)} size="xxs" className="mx-1" variant="outline-no-transparent" > {officer?.Sop?.nextStage?.data?.data?.label ? officer?.Sop?.nextStage?.data?.data?.label : "-"}
-                            </Button>
-                            <Button className="ml-2" title="Remove" variant="outline-no-transparent" size="xxs" > Cancel
-                            </Button>
+                return (
+                    <div
+                        key={officer.unit.unitId}
+                        className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                                <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>
+                                    {officer.unit.username}
+                                </span>
+                            </div>
+                            <div className="flex items-end justify-end">
+                                <Button
+                                    onClick={() => { hasAction && handleDispatch(officer) }}
+                                    size="xxs"
+                                    className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
+                                    variant="outline-no-transparent"
+                                >
+                                    {officer?.Sop?.nextStage?.data?.data?.label || "-"}
+                                </Button>
+                                <Button
+                                    className="ml-2"
+                                    title="Remove"
+                                    variant="outline-no-transparent"
+                                    size="xxs"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 });
@@ -996,10 +1014,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         try {
             const data = await createCase(createJson).unwrap();
-            navigate(`/case/${data?.caseId}`)
+            if (statusId === "S001") {
+                navigate(`/case/${data?.caseId}`)
+            }
         } catch (error: any) {
             setToastType("error");
-            setToastMessage(`Failed to create case`);
+            setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
             setShowToast(true);
             return false;
         }
@@ -1328,7 +1348,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
         localStorage.setItem("Create Case", JSON.stringify(caseState));
         setEditFormData(false)
-        setToastMessage("Create Case successfully!");
+        setToastMessage("Save As Draft successfully!");
         setToastType("success");
         setShowToast(true);
     }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
@@ -1472,6 +1492,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     disablePageMeta={disablePageMeta}
                     onBack={onBack}
                     onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+                    isCreate={isCreate}
                 />
 
                 {/* No Data Content */}
@@ -1662,6 +1683,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 disablePageMeta={disablePageMeta}
                 onBack={onBack}
                 onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+                isCreate={isCreate}
             />
 
             {/* Main Content */}
@@ -1789,6 +1811,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 officers={unit?.data || []}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
+                canDispatch={sopData?.data?.dispatchStage.data ? true : false}
             />
         </div>
     );

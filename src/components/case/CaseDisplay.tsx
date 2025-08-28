@@ -178,7 +178,16 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 }
                 </div>
-                {showResult && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1">
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                <div className="mb-2">
+                    <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
+                    <div className="text-md font-medium text-gray-900 dark:text-white">
+                        {caseData?.description || "-"}
+                    </div>
+                </div>
+            </div>
+            {showResult && <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                     <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
                     <div className="">
                         <SearchableSelect
@@ -199,25 +208,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             />
                         </div>
                     </div>
+                    <div className="flex justify-end items-end">
                     <div className="justify-end items-end flex">
                         <Button size="sm" className="">Cancel</Button>
                     </div>
                     {isCloseStage &&
-                        <div className="justify-end items-end flex">
+                        <div className="ml-2">
                             <Button size="sm" className="">Close Case</Button>
                         </div>
                     }
-                </div>
-                }
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.description || "-"}
                     </div>
                 </div>
-            </div>
+                } 
             {/* <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <div className="mb-2">
                     <span className="text-md text-blue-500 dark:text-blue-400">Attachments</span>
