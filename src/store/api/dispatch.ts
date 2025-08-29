@@ -1,5 +1,6 @@
 import { ApiResponse } from "@/types";
 import { baseApi } from "./baseApi";
+import { FormFieldWithNode } from "@/components/interface/FormField";
 export interface Commands {
     id: string;
     deptId: string;
@@ -148,11 +149,12 @@ export interface CaseSop {
     nextStage: any;
     referCaseLists: string[];
     unitLists: CaseSopUnit[]
+    formAnswer: FormFieldWithNode
 }
 
-export interface CaseSopUnit{
-        unitId: string,
-        username: string
+export interface CaseSopUnit {
+    unitId: string,
+    username: string
 }
 
 export interface Unit {
@@ -292,7 +294,7 @@ export const dispantchApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
         })
-        
+
     }),
 });
 

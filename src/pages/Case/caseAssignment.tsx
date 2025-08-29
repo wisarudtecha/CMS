@@ -25,7 +25,9 @@ import { caseStatus, statusIdToStatusTitle } from "@/components/ui/status/status
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
 
-const statusColumns = caseStatus
+const statusColumns = caseStatus.filter((item) => {
+  return item.show === true;
+});
 
 function createAvatarFromString(name: string): string {
   const words = name.trim().split(' ');
@@ -47,7 +49,7 @@ export default function CasesView() {
   const [sortOrder] = useState<"asc" | "desc">("asc")
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
   const allowedStatusIds = statusColumns.flatMap(col => col.group);
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const [caseData, setCaseData] = useState<CaseEntity[]>(() => {
     const savedCases = localStorage.getItem("caseList");
     return savedCases
@@ -114,7 +116,7 @@ export default function CasesView() {
         DateStringToDateFormat(c.createdAt as string).toLowerCase().includes(generalSearchTerm)
       );
     });
-    
+
     return filtered.sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
@@ -569,120 +571,116 @@ export default function CasesView() {
   }
 
   return (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
-    <PageBreadcrumb pageTitle="Cases" />
-    <div className="relative px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-y-4 mb-6">
-        {/* Top Section - Mobile Responsive */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Left Side - View Mode & Search */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-            {/* View Mode Buttons */}
-            <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode("kanban")}
-                className={`flex-1 sm:flex-none ${
-                  viewMode === "kanban"
-                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Kanban
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className={`flex-1 sm:flex-none ${
-                  viewMode === "list"
-                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <List className="w-4 h-4 mr-2" />
-                List
-              </Button>
-            </div>
-
-            {/* Search & Filter */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <input
-                type="text"
-                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
-                placeholder="Search cases..."
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-              <Button 
-                variant="outline" 
-                onClick={() => { setShowAdvanceFilter(true) }}
-                className="w-full sm:w-auto whitespace-nowrap"
-                size="sm"
-              >
-                <Filter className="w-4 h-4 mr-2 sm:mr-1" />
-                <span className="sm:hidden">Advanced Filters</span>
-                <span className="hidden sm:inline">Advance Filtering</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Add New Case Button */}
-          <Button
-            className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-            onClick={() => setShowDynamicForm(true)}
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Case
-          </Button>
-        </div>
-
-        {/* Status Filter Tabs - Mobile Responsive */}
-        <div className="w-full overflow-x-auto custom-scrollbar">
-          <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
-            <div
-              className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${
-                selectedStatus === null 
-                  ? 'font-semibold text-blue-600 dark:text-blue-400' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-              onClick={() => setSelectedStatus(null)}
-            >
-              <span className="text-sm">All Cases</span>
-              <Badge color="primary">
-                {getFilteredCases().length}
-              </Badge>
-            </div>
-            {statusColumns.map((col) => (
-              <div
-                key={col.title}
-                className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${
-                  selectedStatus === col.title 
-                    ? 'font-semibold text-blue-600 dark:text-blue-400' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                onClick={() => setSelectedStatus(col.title)}
-              >
-                <span className="text-sm">{col.title}</span>
-                <Badge color="primary">{getCasesForColumn(col.title).length}</Badge>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
+      <PageBreadcrumb pageTitle="Cases" />
+      <div className="relative px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-y-4 mb-6">
+          {/* Top Section - Mobile Responsive */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Left Side - View Mode & Search */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+              {/* View Mode Buttons */}
+              <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("kanban")}
+                  className={`flex-1 sm:flex-none ${viewMode === "kanban"
+                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    }`}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-2" />
+                  Kanban
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className={`flex-1 sm:flex-none ${viewMode === "list"
+                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    }`}
+                >
+                  <List className="w-4 h-4 mr-2" />
+                  List
+                </Button>
               </div>
-            ))}
+
+              {/* Search & Filter */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
+                  placeholder="Search cases..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => { setShowAdvanceFilter(true) }}
+                  className="w-full sm:w-auto whitespace-nowrap"
+                  size="sm"
+                >
+                  <Filter className="w-4 h-4 mr-2 sm:mr-1" />
+                  <span className="sm:hidden">Advanced Filters</span>
+                  <span className="hidden sm:inline">Advance Filtering</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Add New Case Button */}
+            <Button
+              className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+              onClick={() => setShowDynamicForm(true)}
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Case
+            </Button>
           </div>
+
+          {/* Status Filter Tabs - Mobile Responsive */}
+          <div className="w-full overflow-x-auto custom-scrollbar">
+            <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
+              <div
+                className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === null
+                    ? 'font-semibold text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                onClick={() => setSelectedStatus(null)}
+              >
+                <span className="text-sm">All Cases</span>
+                <Badge color="primary">
+                  {getFilteredCases().length}
+                </Badge>
+              </div>
+              {statusColumns.map((col) => (
+                <div
+                  key={col.title}
+                  className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === col.title
+                      ? 'font-semibold text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  onClick={() => setSelectedStatus(col.title)}
+                >
+                  <span className="text-sm">{col.title}</span>
+                  <Badge color="primary">{getCasesForColumn(col.title).length}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="relative w-full h-full">
+          {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="relative w-full h-full">
-        {viewMode === "kanban" ? <KanbanView /> : <ListView />}
-      </div>
+      {/* Advanced Filter Modal */}
+      {showAdvanceFilter && <AdvanceFilter />}
     </div>
-
-    {/* Advanced Filter Modal */}
-    {showAdvanceFilter && <AdvanceFilter />}
-  </div>
-);
+  );
 }

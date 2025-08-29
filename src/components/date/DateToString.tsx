@@ -9,6 +9,8 @@ export default function DateStringToDateFormat(dataString: string) {
     })
 }
 
+
+
 export function TodayDate() {
     const now = new Date();
     const year = now.getFullYear();

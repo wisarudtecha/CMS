@@ -25,18 +25,13 @@ import { CaseHistory } from "@/store/api/caseApi";
 import { CaseDetails } from "@/types/case";
 
 interface ProgressSteps {
-    id: number;
+    id: string; // Changed from number to string
     title: string;
     completed: boolean;
     current?: boolean;
     type?: string;
     description?: string;
 }
-
-// interface ProgressStepPrevieProps {
-//     progressSteps: ProgressSteps[];
-//     className?: string;
-// }
 
 interface ProgressLane {
     id: string;
@@ -45,111 +40,130 @@ interface ProgressLane {
     isActive: boolean;
 }
 
-// interface ProgressNode {
+// Helper function to check if a node is a delay node
+const isDelayNode = (node: any): boolean => {
+    const label = node.data?.data?.label || '';
+    return label.toLowerCase().includes('delay');
+};
+
+// const mapSopToProgressSteps = (sopData: CaseSop): Array<{
 //     id: string;
 //     title: string;
-//     type: string;
 //     completed: boolean;
 //     current?: boolean;
-//     branches?: ProgressNode[];
-// }
+//     description?: string;
+//     type?: string;
+// }> => {
+//     if (!sopData?.sop || !sopData?.currentStage) {
+//         return [];
+//     }
 
+//     // Get workflow connections
+//     const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
 
-const mapSopToProgressSteps = (sopData: CaseSop): Array<{
-    id: string;
-    title: string;
-    completed: boolean;
-    current?: boolean;
-    description?: string;
-    type?: string;
-}> => {
-    if (!sopData?.sop || !sopData?.currentStage) {
-        return [];
-    }
+//     // Get ALL nodes first (we'll filter later)
+//     const allNodes = sopData.sop.filter(item =>
+//         item.section === "nodes" &&
+//         item.type !== "start" &&
+//         item.type !== "end"
+//     );
 
-    // Get workflow connections to understand the flow order
-    const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
+//     // Filter out only delay nodes for display
+//     const displayNodes = allNodes.filter(node => !isDelayNode(node));
 
-    // Extract nodes and build a flow map
-    const nodes = sopData.sop.filter(item =>
-        item.section === "nodes" &&
-        item.type !== "start" &&
-        item.type !== "end"
-    );
+//     // Build execution order using ALL nodes but only display non-delay ones
+//     const buildExecutionOrder = () => {
+//         const orderMap: string[] = [];
+//         const visited = new Set<string>();
 
-    // Build execution order based on connections starting from start node
-    const buildExecutionOrder = () => {
-        const orderMap: string[] = [];
-        const visited = new Set<string>();
+//         // Find start node
+//         const startNode = sopData.sop.find(item => item.type === "start");
+//         if (!startNode) return displayNodes.map(n => n.nodeId);
 
-        // Find start node
-        const startNode = sopData.sop.find(item => item.type === "start");
-        if (!startNode) return nodes.map(n => n.nodeId);
+//         const traverse = (nodeId: string) => {
+//             if (visited.has(nodeId)) return;
+//             visited.add(nodeId);
 
-        const traverse = (nodeId: string) => {
-            if (visited.has(nodeId)) return;
-            visited.add(nodeId);
+//             // Check if this node should be displayed (not a delay node)
+//             const node = displayNodes.find(n => n.nodeId === nodeId);
+//             if (node) {
+//                 orderMap.push(nodeId);
+//             }
 
-            const node = nodes.find(n => n.nodeId === nodeId);
-            if (node) {
-                orderMap.push(nodeId);
-            }
+//             // Continue traversal regardless of whether we display this node
+//             const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
+//             nextConnections.forEach((conn: any) => {
+//                 traverse(conn.target);
+//             });
+//         };
 
-            // Find next nodes from connections
-            const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
-            nextConnections.forEach((conn: any) => {
-                traverse(conn.target);
-            });
-        };
+//         // Start traversal
+//         const startConnections = connections.filter((conn: any) => conn.source === startNode.nodeId);
+//         startConnections.forEach((conn: any) => {
+//             traverse(conn.target);
+//         });
 
-        // Start traversal from start node's targets
-        const startConnections = connections.filter((conn: any) => conn.source === startNode.nodeId);
-        startConnections.forEach((conn: any) => {
-            traverse(conn.target);
-        });
+//         return orderMap;
+//     };
 
-        return orderMap;
-    };
+//     const executionOrder = buildExecutionOrder();
+    
+//     // Handle current node - if it's a delay node, find the related non-delay node
+//     let effectiveCurrentNodeId = sopData.currentStage.nodeId;
+//     const currentNode = allNodes.find(item => item.nodeId === sopData.currentStage.nodeId);
+    
+//     if (currentNode && isDelayNode(currentNode)) {
+//         // If current is a delay node, find the next non-delay node
+//         const nextConnections = connections.filter((conn: any) => conn.source === sopData.currentStage.nodeId);
+//         for (const conn of nextConnections) {
+//             const nextNode = displayNodes.find(item => item.nodeId === conn.target);
+//             if (nextNode) {
+//                 effectiveCurrentNodeId = conn.target;
+//                 break;
+//             }
+//         }
+//     }
+    
+//     const currentIndex = executionOrder.indexOf(effectiveCurrentNodeId);
 
-    const executionOrder = buildExecutionOrder();
-    const currentNodeId = sopData.currentStage.nodeId;
-    const currentIndex = executionOrder.indexOf(currentNodeId);
+//     return executionOrder.map((nodeId, index) => {
+//         const node = displayNodes.find(n => n.nodeId === nodeId);
+//         if (!node) return null;
 
-    return executionOrder.map((nodeId, index) => {
-        const node = nodes.find(n => n.nodeId === nodeId);
-        if (!node) return null;
+//         const isCompleted = index < currentIndex;
+//         const isCurrent = index === currentIndex;
 
-        const isCompleted = index < currentIndex;
-        const isCurrent = index === currentIndex;
-
-        return {
-            id: node.nodeId,
-            title: node.data?.data?.label || `Step ${index + 1}`,
-            description: node.data?.data?.description,
-            completed: isCompleted,
-            current: isCurrent,
-            type: node.type,
-        };
-    }).filter(Boolean) as Array<{
-        id: string;
-        title: string;
-        completed: boolean;
-        current?: boolean;
-        description?: string;
-        type?: string;
-    }>;
-};
+//         return {
+//             id: node.nodeId, // This is already a string
+//             title: node.data?.data?.label || `Step ${index + 1}`,
+//             description: node.data?.data?.description,
+//             completed: isCompleted,
+//             current: isCurrent,
+//             type: node.type,
+//         };
+//     }).filter(Boolean) as Array<{
+//         id: string;
+//         title: string;
+//         completed: boolean;
+//         current?: boolean;
+//         description?: string;
+//         type?: string;
+//     }>;
+// };
 
 export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
 
-    // Get only process nodes (skip decisions for simplicity)
-    const processNodes = sopData.sop
+    // Get all nodes and filter out delays and non-relevant types
+    const allNodes = sopData.sop.filter(item => item.section === "nodes");
+    
+    // Get displayable nodes (process and dispatch, but not delays)
+    const displayNodes = allNodes
         .filter(item =>
-            item.section === "nodes" &&
-            item.type === "process" // Only show process steps
+            (item.type === "process" || item.type === "dispatch") &&
+            !isDelayNode(item)
         )
         .sort((a, b) => {
             const aY = a.data?.position?.y || 0;
@@ -157,40 +171,36 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
             return aY - bY;
         });
 
-    const currentNodeId = sopData.currentStage.nodeId;
-    const isCurrentDecision = sopData.currentStage.type === "decision";
-
-    // If current stage is a decision, find the next process step
-    let currentProcessNode = currentNodeId;
-    if (isCurrentDecision) {
-        // For decisions, show the decision as current for now
-        // You can enhance this to show next process step
+    // Handle current stage
+    let effectiveCurrentNodeId = sopData.currentStage.nodeId;
+    const currentNode = allNodes.find(item => item.nodeId === sopData.currentStage.nodeId);
+    
+    // If current is delay or decision, find the next relevant node
+    if (currentNode && (isDelayNode(currentNode) || currentNode.type === "decision")) {
         const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-        const nextConnections = connections.filter((conn: any) => conn.source === currentNodeId);
+        const nextConnections = connections.filter((conn: any) => conn.source === sopData.currentStage.nodeId);
 
-        if (nextConnections.length > 0) {
-            // For simplicity, take the first connection
-
-            const nextNodeId = nextConnections[0].target;
-            const nextNode = processNodes.find(n => n.nodeId === nextNodeId);
+        for (const conn of nextConnections) {
+            const nextNode = displayNodes.find(n => n.nodeId === conn.target);
             if (nextNode) {
-                currentProcessNode = nextNodeId;
+                effectiveCurrentNodeId = conn.target;
+                break;
             }
         }
     }
 
     let foundCurrent = false;
 
-    return processNodes.map((node, index) => {
-        const isCompleted = !foundCurrent && node.nodeId !== currentProcessNode;
-        const isCurrent = node.nodeId === currentProcessNode;
+    return displayNodes.map((node, index) => {
+        const isCompleted = !foundCurrent && node.nodeId !== effectiveCurrentNodeId;
+        const isCurrent = node.nodeId === effectiveCurrentNodeId;
 
         if (isCurrent) {
             foundCurrent = true;
         }
 
         return {
-            id: index + 1,
+            id: (index + 1).toString(), // Convert number to string
             title: node.data?.data?.label || `Step ${index + 1}`,
             completed: isCompleted,
             current: isCurrent,
@@ -200,191 +210,86 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
     });
 };
 
-// Advanced progress mapper with branching support
-export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSteps[] => {
+// Simplified version that just shows main workflow nodes in order
+export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
 
-    // Get connections to understand the flow
-    const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-    const nodes = sopData.sop.filter(item =>
-        item.section === "nodes" &&
-        item.type !== "start" &&
-        item.type !== "end"
-    );
+    // Get main workflow nodes (process and dispatch types, excluding delays)
+    const workflowNodes = sopData.sop
+        .filter(item =>
+            item.section === "nodes" &&
+            (item.type === "process" || item.type === "dispatch") &&
+            !isDelayNode(item)
+        )
+        .sort((a, b) => {
+            // Sort by vertical position (Y coordinate)
+            const aY = a.data?.position?.y || 0;
+            const bY = b.data?.position?.y || 0;
+            return aY - bY;
+        });
 
-    // Build the current execution path only
-    const buildCurrentPath = (currentNodeId: string): string[] => {
-        const visited = new Set<string>();
-
-        // Find start node
-        const startNode = sopData.sop.find(item => item.type === "start");
-        if (!startNode) return [];
-
-        // Trace forward from start to current
-        const traceToTarget = (nodeId: string, targetId: string, currentPath: string[]): string[] | null => {
-            if (visited.has(nodeId)) return null;
-            visited.add(nodeId);
-
-            const newPath = [...currentPath, nodeId];
-
-            if (nodeId === targetId) {
-                return newPath;
-            }
-
-            const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
-            for (const conn of nextConnections) {
-                const result = traceToTarget(conn.target, targetId, newPath);
-                if (result) {
-                    return result;
-                }
-            }
-
-            return null;
-        };
-
-        // Start from start node's connections
-        const startConnections = connections.filter((conn: any) => conn.source === startNode.nodeId);
-        for (const conn of startConnections) {
-            const result = traceToTarget(conn.target, currentNodeId, []);
-            if (result) {
-                return result;
-            }
-        }
-
-        return [];
-    };
-
-    const currentPath = buildCurrentPath(sopData.currentStage.nodeId);
+    // Find current stage position
     const currentNodeId = sopData.currentStage.nodeId;
-    const currentIndex = currentPath.indexOf(currentNodeId);
-
-    return currentPath.map((nodeId, index) => {
-        const node = nodes.find(n => n.nodeId === nodeId);
-        if (!node) return null;
-
-        const isCompleted = index < currentIndex;
-        const isCurrent = index === currentIndex;
-
-        // Special handling for decision nodes
-        let title = node.data?.data?.label || `Step ${index + 1}`;
-        if (node.type === "decision") {
-            title = `Decision: ${title}`;
+    const currentNode = sopData.sop.find(item => item.nodeId === currentNodeId);
+    
+    // If current node is delay or decision, find the next workflow node
+    let effectiveCurrentIndex = -1;
+    if (currentNode && (isDelayNode(currentNode) || currentNode.type === "decision")) {
+        // For delay/decision nodes, mark the next workflow step as current
+        const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
+        const nextConnections = connections.filter((conn: any) => conn.source === currentNodeId);
+        
+        for (const conn of nextConnections) {
+            const nextWorkflowIndex = workflowNodes.findIndex(n => n.nodeId === conn.target);
+            if (nextWorkflowIndex !== -1) {
+                effectiveCurrentIndex = nextWorkflowIndex;
+                break;
+            }
         }
-
-        return {
-            id: index + 1,
-            title,
-            completed: isCompleted,
-            current: isCurrent,
-            type: node.type,
-            description: node.data?.data?.description
-        };
-    }).filter(Boolean) as ProgressSteps[];
-};
-
-// Multi-lane progress for complex workflows
-export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
-    const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
-    const nodes = sopData.sop.filter(item =>
-        item.section === "nodes" &&
-        item.type !== "start" &&
-        item.type !== "end"
-    );
-
-    // Find decision nodes
-    const decisionNodes = nodes.filter(n => n.type === "decision");
-    if (decisionNodes.length === 0) {
-        // No decisions, use simple linear progress
-        return [{
-            id: "main",
-            name: "Main Flow",
-            steps: mapSopToSimpleProgress(sopData),
-            isActive: true
-        }];
+    } else {
+        // Current node is a workflow node
+        effectiveCurrentIndex = workflowNodes.findIndex(n => n.nodeId === currentNodeId);
     }
 
-    // Build separate lanes for each decision branch
-    const lanes: ProgressLane[] = [];
-
-    decisionNodes.forEach(decisionNode => {
-        const branches = connections.filter((conn: any) => conn.source === decisionNode.nodeId);
-
-        branches.forEach((branch: any, index: number) => {
-            const laneName = branch.label || `Option ${index + 1}`;
-            const isActiveLane = isNodeInCurrentPath(branch.target, sopData.currentStage.nodeId, connections, nodes);
-
-            lanes.push({
-                id: `${decisionNode.nodeId}-${index}`,
-                name: laneName,
-                steps: buildStepsForBranch(branch.target, sopData, connections, nodes),
-                isActive: isActiveLane
-            });
-        });
-    });
-
-    return lanes;
-};
-
-// Helper function to check if a node is in the current execution path
-const isNodeInCurrentPath = (nodeId: string, currentNodeId: string, connections: any[], _nodes: any[]): boolean => {
-    const visited = new Set<string>();
-
-    const canReach = (fromId: string, toId: string): boolean => {
-        if (fromId === toId) return true;
-        if (visited.has(fromId)) return false;
-        visited.add(fromId);
-
-        const nextConnections = connections.filter((conn: any) => conn.source === fromId);
-        return nextConnections.some((conn: any) => canReach(conn.target, toId));
-    };
-
-    return canReach(nodeId, currentNodeId);
-};
-
-// Build progress steps for a specific branch
-const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections: any[], nodes: any[]): ProgressSteps[] => {
-    const branchNodes: string[] = [];
-    const visited = new Set<string>();
-
-    const traverse = (nodeId: string) => {
-        if (visited.has(nodeId)) return;
-        visited.add(nodeId);
-
-        const node = nodes.find((n: any) => n.nodeId === nodeId);
-        if (node) {
-            branchNodes.push(nodeId);
-        }
-
-        const nextConnections = connections.filter((conn: any) => conn.source === nodeId);
-        nextConnections.forEach((conn: any) => {
-            traverse(conn.target);
-        });
-    };
-
-    traverse(startNodeId);
-
-    const currentNodeId = sopData.currentStage.nodeId;
-    const currentIndex = branchNodes.indexOf(currentNodeId);
-
-    return branchNodes.map((nodeId, index) => {
-        const node = nodes.find((n: any) => n.nodeId === nodeId);
-        if (!node) return null;
-
-        const isCompleted = currentIndex !== -1 && index < currentIndex;
-        const isCurrent = index === currentIndex;
+    return workflowNodes.map((node, index) => {
+        const isCompleted = effectiveCurrentIndex !== -1 && index < effectiveCurrentIndex;
+        const isCurrent = index === effectiveCurrentIndex;
 
         return {
-            id: index + 1,
+            id: (index + 1).toString(), // Convert number to string
             title: node.data?.data?.label || `Step ${index + 1}`,
             completed: isCompleted,
             current: isCurrent,
             type: node.type,
             description: node.data?.data?.description
         };
-    }).filter(Boolean) as ProgressSteps[];
+    });
 };
+
+// Keep the other functions but update them to be more robust
+export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSteps[] => {
+    // Use the simpler ordered approach for now
+    return mapSopToOrderedProgress(sopData);
+};
+
+export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
+    return [{
+        id: "main",
+        name: "Main Flow",
+        steps: mapSopToOrderedProgress(sopData),
+        isActive: true
+    }];
+};
+
+// const buildStepsForBranch = (startNodeId: string, sopData: CaseSop, connections: any[], nodes: any[]): ProgressSteps[] => {
+//     return mapSopToOrderedProgress(sopData);
+// };
+
+// const isNodeInCurrentPath = (nodeId: string, currentNodeId: string, connections: any[], _nodes: any[]): boolean => {
+//     return true; // Simplified for now
+// };
 
 interface CaseCardProps {
     onAddSubCase?: () => void;
@@ -398,7 +303,17 @@ interface CaseCardProps {
     showAttachButton?:boolean;
 }
 
-export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick, onEditClick, caseData, editFormData, setCaseData, comment ,showCommentButton=true,showAttachButton=true}) => {
+export const CaseCard: React.FC<CaseCardProps> = ({ 
+    onAddSubCase, 
+    onAssignClick, 
+    onEditClick, 
+    caseData, 
+    editFormData, 
+    setCaseData, 
+    comment,
+    showCommentButton=true,
+    showAttachButton=true
+}) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
@@ -417,8 +332,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
         { id: "5", title: "On Site", completed: false },
         { id: "6", title: "Completed", completed: false }
     ];
+    
+    // Use the simpler ordered progress approach
     const progressSteps = useMemo(() => {
-        return mapSopToProgressSteps(caseData);
+        return mapSopToOrderedProgress(caseData);
     }, [caseData]);
 
     // Use dynamic steps if available, otherwise use default
@@ -492,12 +409,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Comment
                     </Button>}
-                    {/* Show Attach File button only in edit mode for existing cases */}
 
                     {onEditClick&&<Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>}
-
 
                     {showAttachButton&&<div>
                         <Button
@@ -535,5 +450,3 @@ export const CaseCard: React.FC<CaseCardProps> = ({ onAddSubCase, onAssignClick,
         </div>
     );
 };
-
-

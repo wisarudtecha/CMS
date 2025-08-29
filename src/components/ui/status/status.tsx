@@ -9,26 +9,66 @@ export const statusConfig = {
 };
 
 export const caseStatus = [
-  { title: "New", group: ["S001", "S008"] },
-  { title: "Assigned", group: ["S002", "S009"] },
-  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] },
-  // { title: "On-Hold", group: ["S017", "S018"] },
-  { title: "Done", group: ["S007", "S016"] },
-  // { title: "Cancel", group: ["S014"] },
+  { title:"Draft", group: ["S000"] ,show:false},
+  { title: "New", group: ["S001", "S008"] ,show:true},
+  { title: "Assigned", group: ["S002", "S009"] ,show:true},
+  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
+  { title: "On-Hold", group: ["S017", "S018"] ,show:false},
+  { title: "Done", group: ["S007", "S016"] ,show:true},
+  { title: "Cancel", group: ["S014"] ,show:false},
 ]
 
 export const closeStatus =["S007", "S016", "S017", "S018"]
 
 export const unitStatus = [
-  { title: "ไม่พร้อมปฏิบัติการ", group: ["000"] },
-  { title: "พร้อมปฏิบัติการ", group: ["001"] },
-  { title: "ตอบรับ", group: ["002"] },
-  { title: "กำลังเดินทาง", group: ["003"] },
-  { title: "ถึงที่เกิดเหตุ", group: ["004"] },
-  { title: "ถึงที่เกิดเหตุ", group: ["005"] },
-  { title: "ปิดเหตุ", group: ["006"] },
-  { title: "ถูกสั่งการ", group: ["007"] },
-  // { title: "Cancel", group: ["S014"] },
+  { 
+    title: "ไม่พร้อมปฏิบัติการ", 
+    group: ["000"], 
+    variant: "light" as const, 
+    color: "error" as const 
+  },
+  { 
+    title: "พร้อมปฏิบัติการ", 
+    group: ["001"], 
+    variant: "light" as const, 
+    color: "success" as const 
+  },
+  { 
+    title: "ตอบรับ", 
+    group: ["002"], 
+    variant: "light" as const, 
+    color: "info" as const 
+  },
+  { 
+    title: "กำลังเดินทาง", 
+    group: ["003"], 
+    variant: "light" as const, 
+    color: "warning" as const 
+  },
+  { 
+    title: "ถึงที่เกิดเหตุ", 
+    group: ["004"], 
+    variant: "light" as const, 
+    color: "success" as const 
+  },
+  { 
+    title: "ถึงที่เกิดเหตุ", 
+    group: ["005"], 
+    variant: "light" as const, 
+    color: "success" as const 
+  },
+  { 
+    title: "ปิดเหตุ", 
+    group: ["006"], 
+    variant: "light" as const, 
+    color: "secondary" as const 
+  },
+  { 
+    title: "ถูกสั่งการ", 
+    group: ["007"], 
+    variant: "light" as const, 
+    color: "primary" as const 
+  },
 ]
 
 

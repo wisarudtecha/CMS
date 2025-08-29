@@ -14,6 +14,7 @@ import Badges from "./pages/UiElements/Badges";
 import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import ButtonsCustomize from "./pages/UiElements/ButtonsCustomize";
+import Tabs from "./pages/UiElements/Tabs";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
@@ -69,6 +70,9 @@ import OfflineState from "@/components/offline/OfflineManager";
 
 //auditlog menu Imports
 import AuditLog from "./pages/Admin/AuditLog";
+
+// Area Management Imports
+import AreaManagementPage from "@/pages/Area/AreaManagement";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -153,6 +157,9 @@ export default function App() {
             <Route path="/security/security-alerts" element={<SecurityAlerts />} />
             <Route path="/security/offline-state" element={<OfflineState />} />
 
+            {/* Area Management */}
+            <Route path="/area" element={<AreaManagementPage />} />
+
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
@@ -167,6 +174,7 @@ export default function App() {
             <Route path="/buttons" element={<Buttons />} />
             <Route path="/buttons-customize" element={<ButtonsCustomize />} />
             <Route path="/images" element={<Images />} />
+            <Route path="/tabs" element={<Tabs />} />
             <Route path="/videos" element={<Videos />} />
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />} />

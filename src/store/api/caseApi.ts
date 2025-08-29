@@ -129,6 +129,14 @@ export interface AddComment {
     username: string;
 }
 
+interface ApiResponseCreateCase<T> {
+  status: string
+  msg: string
+  data: T
+  desc?: string
+  caseId?: string
+}
+
 export interface CaseStatus {
     id: string;
     statusId: string;
@@ -177,7 +185,7 @@ export const caseApi = baseApi.injectEndpoints({
             providesTags: ["Cases"],
         }),
 
-        postCreateCase: builder.mutation<ApiResponse<null>, CreateCase>({
+        postCreateCase: builder.mutation<ApiResponseCreateCase<null>, CreateCase>({
             query: (newCase) => ({
                 url: "/case/add",
                 method: "POST",

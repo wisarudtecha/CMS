@@ -13,12 +13,64 @@ import { DepartmentCommandStationData, DepartmentCommandStationDataMerged, merge
 import { unitStatus } from "../ui/status/status"
 import SkillModal from "./officerSkillModal"
 
+
+const SkillsDisplay = ({ skills }: { skills: Array<{ skillId: string, en: string, th: string }> }) => {
+  const [expanded, setExpanded] = useState(false)
+
+  if (!skills || skills.length === 0) {
+    return <span className="text-gray-400 dark:text-gray-500 text-xs">No skills</span>
+  }
+
+  if (skills.length === 1) {
+    return (
+      <Badge color="primary" className="text-xs">
+        {skills[0].th}
+      </Badge>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-center gap-1">
+        <Badge color="primary" className="text-xs">
+          {skills[0].th}
+        </Badge>
+        {skills.length > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded(!expanded)
+            }}
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {expanded ? 'Show less' : `+${skills.length - 1} more`}
+          </button>
+        )}
+      </div>
+      {expanded && (
+        <div className="flex flex-wrap gap-1 justify-center">
+          {skills.slice(1).map((skill) => (
+            <Badge
+              key={skill.skillId}
+              color="secondary"
+              className="text-xs"
+            >
+              {skill.th}
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface AssignOfficerModalProps {
   open: boolean
   onOpenChange: (isOpen: boolean) => void
   officers: Unit[]
   onAssign: (selectedOfficerIds: string[]) => void
   assignedOfficers?: Unit[]
+  canDispatch?: boolean
 }
 
 type SortableColumns = keyof Omit<Unit, "id">
@@ -88,6 +140,7 @@ export default function AssignOfficerModal({
   officers,
   onAssign,
   assignedOfficers = [],
+  canDispatch = true,
 }: AssignOfficerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
@@ -191,9 +244,9 @@ export default function AssignOfficerModal({
   }
 
   // Handle cancel
-  const handleCancel = () => {
-    onOpenChange(false)
-  }
+  // const handleCancel = () => {
+  //   onOpenChange(false)
+  // }
 
   // Get selected officer objects for display
   const selectedOfficerObjects = useMemo(() => {
@@ -211,13 +264,13 @@ export default function AssignOfficerModal({
   //  const skillList = ["กล้อง", "Sensor น้ำ", "เชื่อมท่อ", "ระบบไฟฟ้า", "การซ่อมบำรุง", "เครื่องมือวัด"]
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+      <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             Assign Officers to Case
           </DialogTitle>
         </DialogHeader>
-        <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit}/>
+        <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
         {/* Search Bar and Buttons - Now responsive */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <div className="flex-grow">
@@ -255,8 +308,8 @@ export default function AssignOfficerModal({
             <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-7 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center space-x-2 px-3">
+                <div className="grid grid-cols-6 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center justify-center space-x-2 ">
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
                       indeterminate={isSomeFilteredSelected}
@@ -266,13 +319,11 @@ export default function AssignOfficerModal({
                       }}
                     />
                   </div>
-                  <div>Name</div>
-                  <div>Status</div>
-                  <div>Department</div>
-                  <div>Command</div>
-                  <div>Station</div>
-                  <div>Skill</div>
-                  <div></div>
+                  <div className="flex items-center justify-center">Name</div>
+                  <div className="flex items-center justify-center">Login</div>
+                  <div className="flex items-center justify-center">Status</div>
+                  <div className="flex items-center justify-center">Department-Command-Station</div>
+                  <div className="flex items-center justify-center">Skills</div>
                 </div>
               </div>
 
@@ -281,7 +332,7 @@ export default function AssignOfficerModal({
                 <ScrollArea className="h-full">
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {sortedOfficers.length === 0 ? (
-                      <div className=" justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
+                      <div className="flex justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
                         {officers.length === 0 ? "No officers available" : "No officers match your search"}
                       </div>
                     ) : (
@@ -290,13 +341,13 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-7 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`grid grid-cols-6 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}
                             onClick={() => setShowOFFicerData(officer)}
                           >
-                            <div className="flex items-center pl-3">
+                            <div className="flex items-center justify-center ">
                               <UnifiedCheckbox
                                 checked={isSelected}
                                 onChange={(e) => {
@@ -305,7 +356,7 @@ export default function AssignOfficerModal({
                                 }}
                               />
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center justify-center space-x-2">
                               <Avatar className="w-8 h-8">
                                 <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
                                   {officer.username
@@ -319,23 +370,32 @@ export default function AssignOfficerModal({
                                 {officer.username}
                               </span>
                             </div>
-                            <div className="flex items-center">
-                              <Badge color="info">
-                                <span className="text-gray-600 dark:text-gray-300">
-                                  {unitStatus.find(column => column.group.includes(officer.sttId))?.title || "-"}
-                                </span>
-                              </Badge>
+                            <div className="flex items-center justify-center">
+                              <div className={`w-3 h-3 rounded-full ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+                              </div>
                             </div>
-                            <div className="flex items-center text-gray-600 dark:text-gray-300">
-                              {serviceCenter.find((items) => officer.deptId === items.deptId)?.deptTh || "-"}
+                            <div className="flex items-center justify-center">
+                              {(() => {
+                                const status = unitStatus.find(column => column.group.includes(officer.sttId));
+                                return (
+                                  <Badge
+                                    color={status?.color || "secondary"}
+                                    variant={status?.variant || "light"}
+                                  >
+                                    {status?.title || "-"}
+                                  </Badge>
+                                );
+                              })()}
                             </div>
-                            <div className="flex items-center text-gray-600 dark:text-gray-300">
-                              {serviceCenter.find((items) => officer.commId === items.commId)?.commandTh || "-"}
+                            <div className="flex items-center justify-center text-gray-600 dark:text-gray-300 text-center">
+                              {mergeDeptCommandStation(serviceCenter.find((items) => officer.deptId === items.deptId
+                                && officer.stnId === items.stnId
+                                && officer.commId === items.commId
+                              ) ?? {} as DepartmentCommandStationData) || "-"}
                             </div>
-                            <div className="flex items-center text-gray-600 dark:text-gray-300">
-                              {serviceCenter.find((items) => officer.stnId === items.stnId)?.stationTh || "-"}
+                            <div className="flex items-center justify-center">
+                              <SkillsDisplay skills={officer.skillLists || []} />
                             </div>
-                            <div><Badge color="primary">ซ่างไฟ</Badge></div>
                           </div>
                         )
                       })
@@ -374,20 +434,13 @@ export default function AssignOfficerModal({
         )}
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          <Button
+          {canDispatch && <Button
             onClick={handleAssignOfficers}
             disabled={selectedOfficers.length === 0}
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             Assign Selected Officers ({selectedOfficers.length})
-          </Button>
+          </Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

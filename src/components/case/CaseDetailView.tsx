@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
 import {
     ArrowLeft,
+    FileText,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 
@@ -17,7 +18,7 @@ import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
-import { Modal } from "../ui/modal"
+
 import { CaseTypeSubType } from "../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -114,13 +115,14 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 // ## START: Refactored Components ##
 
 // Memoized Header Component
-const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
+const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, isCreate }: {
     disablePageMeta?: boolean;
     onBack?: () => void;
     onOpenCustomerPanel: () => void;
+    isCreate: boolean;
 }) => (
     <div className="flex-shrink-0">
-        {!disablePageMeta && <PageBreadcrumb pageTitle="Case" />}
+        {!disablePageMeta && <PageBreadcrumb pageTitle={isCreate ? "Create Case" : "Case"} />}
         <div className="px-4 sm:px-6">
             <div className="flex items-center justify-between">
                 {!disablePageMeta && (
@@ -254,6 +256,7 @@ const AssignedOfficers = memo(({
     handleDispatch: (officer: UnitWithSop) => void;
 }) => {
     if (!SopUnit?.length) return null;
+
     return (
         <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
@@ -261,34 +264,43 @@ const AssignedOfficers = memo(({
                     Assigned Officer{SopUnit.length > 1 ? "s" : ""}:
                 </span>
             </div>
-            {SopUnit && SopUnit.map(officer => (
-                <div
-                    key={officer.unit.unitId}
-                    className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
-                >
-                    <div className="flex items-center justify-between"> <div className="flex items-center">
-                        {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                        <span className="ml-2">{officer.unit.username}
-                        </span>
-                    </div>
-                        <div className="flex items-end justify-end">
-                            <Button
-                                size="xxs"
-                                className="mx-1"
-                                variant="primary"
-                                onClick={() => onSelectOfficer(officer)} // pass the officer.unit (type Unit)
-                            >
-                                Officer WO
-                            </Button>
+            {SopUnit && SopUnit.map(officer => {
+                const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
 
-                            <Button onClick={() => handleDispatch(officer)} size="xxs" className="mx-1" variant="outline-no-transparent" > {officer?.Sop?.nextStage?.data?.data?.label ? officer?.Sop?.nextStage?.data?.data?.label : "-"}
-                            </Button>
-                            <Button className="ml-2" title="Remove" variant="outline-no-transparent" size="xxs" > Cancel
-                            </Button>
+                return (
+                    <div
+                        key={officer.unit.unitId}
+                        className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                                <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>
+                                    {officer.unit.username}
+                                </span>
+                            </div>
+                            <div className="flex items-end justify-end">
+                                <Button
+                                    onClick={() => { hasAction && handleDispatch(officer) }}
+                                    size="xxs"
+                                    className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
+                                    variant="outline-no-transparent"
+                                >
+                                    {officer?.Sop?.nextStage?.data?.data?.label || "-"}
+                                </Button>
+                                <Button
+                                    className="ml-2"
+                                    title="Remove"
+                                    variant="outline-no-transparent"
+                                    size="xxs"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 });
@@ -326,18 +338,19 @@ interface CaseFormFieldsProps {
     handleFilesChange: (newFiles: File[]) => void;
     handlePreviewShow: () => void;
     handleSaveDrafts: () => Promise<void>;
+    handleExampleData: () => void;
 }
 
 
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, setCaseState, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate, editFormData, handleWorkOrderNumber,
-    handleWorkOrderDate, handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
+    areaList, listCustomerData, isCreate, editFormData,
+    handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
-    handleIotDateChangeDefault, handleScheduleDateChangeDefault,
-    handleFilesChange, handlePreviewShow, handleSaveDrafts
+    handleIotDateChangeDefault,
+    handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData
 }) => (
     <>
         {/* Priority Section */}
@@ -351,11 +364,22 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-
         {/* Form Grid */}
+        {/* Case Type Form Section */}
+        <CaseTypeFormSection
+            caseType={caseType.caseType}
+            handleCaseTypeChange={handleCaseTypeChange}
+            handleGetTypeFormData={handleGetTypeFormData}
+            hadleIsFillGetType={handleIsFillGetType}
+            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
+            editFormData={editFormData}
+            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
+            disableCaseTypeSelect={!isCreate}
+        />
         <div className="xsm:grid grid-cols-2">
+
             {/* Work Order Number */}
-            <div className="px-3">
+            {/* <div className="px-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
                     Work Order No : {requireElements}
                 </h3>
@@ -368,7 +392,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     placeholder="Work Order Number"
                     disabled
                 />
-            </div>
+            </div> */}
 
             {/* Work Order Reference */}
             {caseData?.referCaseId ? (
@@ -383,10 +407,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={true}
                     />
                 </div>
-            ) : <div></div>}
+            ) : null}
 
             {/* Create Date */}
-            <div className="px-3">
+            {/* <div className="px-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">Create Date :</h3>
                 <Input
                     required
@@ -397,10 +421,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     value={caseState?.workOrderDate || TodayDate()}
                     placeholder="Work Order"
                 />
-            </div>
+            </div> */}
 
             {/* Contract Method */}
-            <div className="px-3">
+            <div className="px-3 col-span-2">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
                     Contract Method : {requireElements}
                 </h3>
@@ -443,17 +467,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
         </div>
 
-        {/* Case Type Form Section */}
-        <CaseTypeFormSection
-            caseType={caseType.caseType}
-            handleCaseTypeChange={handleCaseTypeChange}
-            handleGetTypeFormData={handleGetTypeFormData}
-            hadleIsFillGetType={handleIsFillGetType}
-            selectedCaseTypeForm={selectedCaseTypeForm?.formField}
-            editFormData={editFormData}
-            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
-            disableCaseTypeSelect={!isCreate}
-        />
+
 
         {/* Case Details */}
         <div className="pr-7">
@@ -489,7 +503,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* Location Information */}
             <div className="pr-6 col-span-2">
-                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Location Information :</h3>
+                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Area Information :</h3>
                 <textarea
                     onChange={(e) => handleLocationChange(e.target.value)}
                     value={caseState?.location || ""}
@@ -521,7 +535,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={!caseState?.requireSchedule}
                         className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                         onChange={handleScheduleDate}
-                        value={caseState?.scheduleDate || handleScheduleDateChangeDefault(TodayDate())}
+                        value={caseState?.scheduleDate || ""}
                         min={new Date().toISOString().slice(0, 16)}
                     />
                 </div>}
@@ -543,24 +557,33 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end mt-20 mb-3 mr-3">
-            {!isCreate ? (
-                <Button variant="success" onClick={handlePreviewShow}>
-                    Save Changes
+        <div className="flex justify-between items-center">
+            {/* Left side: Example button */}
+            <div>
+                <Button onClick={handleExampleData} size="sm">
+                    <FileText className=" h-4 w-4" />
                 </Button>
-            ) : (
-                <div className="flex justify-end">
-                    <Button onClick={handleSaveDrafts} className="mx-3">
-                        Save As Draft
-                    </Button>
+            </div>
+
+            {/* Right side: Action Buttons */}
+            <div className="flex justify-end mb-3 mr-3">
+                {!isCreate ? (
                     <Button variant="success" onClick={handlePreviewShow}>
-                        Submit
+                        Save Changes
                     </Button>
-                </div>
-            )}
+                ) : (
+                    <div className="flex">
+                        <Button onClick={handleSaveDrafts} className="mx-3">
+                            Save As Draft
+                        </Button>
+                        <Button variant="success" onClick={handlePreviewShow}>
+                            Submit
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
+
     </>
 ));
 CaseFormFields.displayName = 'CaseFormFields';
@@ -574,7 +597,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const navigate = useNavigate()
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
-    const [refreshStageUnit, setRefreshStageUnit] = useState<boolean>(false)
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!initialCaseData) {
@@ -721,7 +743,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
 
         fetchData();
-    }, [dispatchUnit, refreshStageUnit]);
+    }, [dispatchUnit, sopData]);
 
     // Initialize case type from caseData ONLY ONCE
     useEffect(() => {
@@ -983,21 +1005,24 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             nodeId: caseState?.caseType?.formField?.nextNodeId || "",
             wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField?.versions || "",
-            caseId: caseState?.workOrderNummber || "",
-            createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
             scheduleFlag: caseState.requireSchedule,
-            scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
+            scheduleDate: caseState?.scheduleDate
+                ? new Date(caseState.scheduleDate).toISOString()
+                : undefined,
+
         } as CreateCase;
 
         try {
-            await createCase(createJson).unwrap();
+            const data = await createCase(createJson).unwrap();
+            if (statusId === "S001") {
+                navigate(`/case/${data?.caseId}`)
+            }
         } catch (error: any) {
             setToastType("error");
-            setToastMessage(`Failed to create case`);
+            setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
             setShowToast(true);
             return false;
         }
-
         const caseListData = localStorage.getItem("caseList") || "[]";
         if (caseListData) {
             const caseList = JSON.parse(caseListData) as CaseEntity[];
@@ -1109,7 +1134,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             // setAssignedOfficers(selected);
         }
         setShowAssignModal(false);
-    }, [unit?.data]);
+    }, [unit?.data, sopData]);
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1138,7 +1163,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             resDetail: "",
             deviceId: caseState?.iotDevice || "",
             source: caseState?.customerData?.contractMethod?.id || "",
-            startedDate: new Date(caseState?.iotDate ?? TodayDate()).toISOString(),
             statusId: sopLocal?.statusId,
             userarrive: "",
             userclose: "",
@@ -1151,10 +1175,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             deptId: caseState?.serviceCenter?.deptId || undefined,
             commId: caseState?.serviceCenter?.commId || undefined,
             stnId: caseState?.serviceCenter?.stnId || undefined,
-            caseId: caseState?.workOrderNummber || "",
-            createdDate: new Date(caseState?.workOrderDate ?? TodayDate()).toISOString() || "",
             scheduleFlag: caseState.requireSchedule,
-            scheduleDate: new Date(caseState?.scheduleDate ?? TodayDate()).toISOString() || "",
         } as CreateCase;
 
         try {
@@ -1181,7 +1202,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile]);
 
     const handleCreateCase = useCallback(async () => {
-        setShowPreviewData(false)
+
         const isNotError = await createCaseAction("submit");
         if (isNotError === false) {
             return
@@ -1191,7 +1212,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // setToastType("success");
         // setShowToast(true);
         setShowCreatedCase(true);
-        navigate(`/case/${caseState?.workOrderNummber}`)
+        // navigate(`/case/${caseState?.workOrderNummber}`)
     }, [createCaseAction]);
 
     const handlePreviewShow = useCallback(() => {
@@ -1327,7 +1348,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
         localStorage.setItem("Create Case", JSON.stringify(caseState));
         setEditFormData(false)
-        setToastMessage("Create Case successfully!");
+        setToastMessage("Save As Draft successfully!");
         setToastType("success");
         setShowToast(true);
     }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
@@ -1339,51 +1360,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseId: initialCaseData!.caseId,
             nodeId: officer.Sop?.nextStage?.nodeId,
             status: officer.Sop?.nextStage?.data?.data?.config?.action,
-            unitUser: profile.username
-        };
-        console.log("Dispatching with:", dispatchjson);
-        try {
-            // 2. Call the 'postDispatch' trigger function inside your event handler.
-            //    '.unwrap()' is a helpful utility that will automatically throw an
-            //    error if the mutation fails, making it easy to use with try/catch.
-            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
-                throw new Error("No data found in dispatch object");
-            }
-            const payload = await postDispatch(dispatchjson).unwrap();
-
-            console.log('Dispatch successful:', payload);
-            setToastMessage("Dispatch Successfully!");
-            setToastType("success");
-            setShowToast(true);
-            dispatchUpdateLocate(dispatchjson)
-            setCaseState(prev => {
-                if (!prev) return prev;
-                return {
-                    ...prev,
-                    status: dispatchjson.status
-                };
-            });
-
-            setRefreshStageUnit(!refreshStageUnit)
-            return true
-        } catch (error) {
-            console.error('Dispatch failed:', error);
-            setToastMessage("Dispatch Failed");
-            // You might want an error toast type here
-            setToastType("error");
-            setShowToast(true);
-            return false
-        }
-    }, [initialCaseData, profile.username, postDispatch]);
-    // console.log(unitWorkOrder)
-    const handleDispatch = useCallback(async (officer: Unit) => {
-        // This object creation is correct
-        const dispatchjson = {
-            unitId: officer.unitId,
-            caseId: initialCaseData!.caseId,
-            nodeId: sopData?.data?.dispatchStage?.nodeId,
-            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
-            unitUser: profile.username
+            unitUser: officer.unit?.username
         };
         console.log("Dispatching with:", dispatchjson);
         try {
@@ -1418,7 +1395,48 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, profile.username, postDispatch, sopData]); // 3. Add dependencies to useCallback
+    }, [initialCaseData, postDispatch, sopData]);
+
+    const handleDispatch = useCallback(async (officer: Unit) => {
+        const dispatchjson = {
+            unitId: officer.unitId,
+            caseId: initialCaseData!.caseId,
+            nodeId: sopData?.data?.dispatchStage?.nodeId,
+            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
+            unitUser: officer.username
+        };
+        console.log("Dispatching with:", dispatchjson);
+        try {
+
+            if (!(dispatchjson.caseId && dispatchjson.nodeId && dispatchjson.status && dispatchjson?.unitId)) {
+                throw new Error("No data found in dispatch object");
+            }
+            const payload = await postDispatch(dispatchjson).unwrap();
+
+            console.log('Dispatch successful:', payload);
+            setToastMessage("Dispatch Successfully!");
+            setToastType("success");
+            setShowToast(true);
+            dispatchUpdateLocate(dispatchjson)
+            setCaseState(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    status: dispatchjson.status
+                };
+            });
+
+            refetch()
+            return true
+        } catch (error) {
+            console.error('Dispatch failed:', error);
+            setToastMessage("Dispatch Failed");
+            // You might want an error toast type here
+            setToastType("error");
+            setShowToast(true);
+            return false
+        }
+    }, [initialCaseData, postDispatch, sopData]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1474,6 +1492,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     disablePageMeta={disablePageMeta}
                     onBack={onBack}
                     onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+                    isCreate={isCreate}
                 />
 
                 {/* No Data Content */}
@@ -1537,6 +1556,113 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         );
     }
 
+    const handleExampleData = () => {
+        const exampleCaseState: Partial<CaseDetails> = {
+            location: "เลขที่ 78 ซอยสามเสน 3 (วัดสามพระยา) ถนนสามเสน แขวงวัดสามพระยา เขตพระนคร กรุงเทพมหานคร 10200",
+            date: "",
+            iotDevice: "CAM-001-XYZ123",
+            customerData: {
+                contractMethod: { name: "IOT-Alert", id: "05" },
+                mobileNo: "0991396777",
+                name: "",
+            } as Custommer,
+            caseType: {
+                typeId: "fe4215f5-7127-4f6b-bd7a-d6ed8ccaa29d",
+                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+                en: "IOT Water Sensor",
+                th: "เซ็นเซอร์น้ำอัจฉริยะ",
+                active: true,
+                sTypeId: "b2c3d4e5-f6a7-8901-bc23-45678901def0",
+                sTypeCode: "200",
+                subTypeEn: "Water Sensor Malfunction",
+                subTypeTh: "เซ็นเซอร์น้ำทำงานผิดปกติ",
+                wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
+                caseSla: "45",
+                priority: 5,
+                userSkillList: [
+                    "fe6c8262-04a1-4f5c-8b48-c124cf0152b1"
+                ],
+                unitPropLists: [
+                    "4a56e3c2-1188-40ef-bf0a-4ec07f6a5933"
+                ],
+                subTypeActive: true,
+                caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ",
+                formField: {
+                    nextNodeId: "node-1755508933488",
+                    versions: "draft",
+                    wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
+                    formId: "da7f4b82-dd1f-4743-bea3-eee5d415fccc",
+                    formName: "เซ็นเซอร์น้ำอัจฉริยะ",
+                    formColSpan: 2,
+                    formFieldJson: [
+                        {
+                            colSpan: 1,
+                            id: "18a00f16-6f0d-436e-9a1e-fec5c12513ab",
+                            isChild: false,
+                            label: "เลขเซ็นเซอร์น้ำ",
+                            placeholder: "เลขเซ็นเซอร์น้ำ",
+                            required: false,
+                            showLabel: true,
+                            type: "textInput",
+                            value: ""
+                        },
+                        {
+                            colSpan: 1,
+                            id: "48f15f2d-a3d6-4955-ab52-8138c780094e",
+                            isChild: false,
+                            label: "ระดับน้ำ",
+                            placeholder: "ระดับน้ำ",
+                            required: false,
+                            showLabel: true,
+                            type: "textInput",
+                            value: ""
+                        },
+                        {
+                            colSpan: 2,
+                            id: "35c9cfe7-2779-414a-a1e4-b6954b384981",
+                            isChild: false,
+                            label: "ข้อมูลจากเซ็นเซอร์",
+                            placeholder: "ข้อมูลจากเซ็นเซอร์",
+                            required: false,
+                            showLabel: true,
+                            type: "textAreaInput",
+                            value: ""
+                        }
+                    ]
+                },
+
+
+
+            },
+            priority: 0,
+            description: "เซ็นเซอร์น้ำขัดข้อง",
+            area: {
+                id: "62",
+                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+                countryId: "TH",
+                provId: "10",
+                districtEn: "Phra Nakhon",
+                districtTh: "พระนคร",
+                districtActive: true,
+                distId: "101",
+                provinceEn: "Bangkok",
+                provinceTh: "กรุงเทพมหานคร",
+                provinceActive: true,
+                countryEn: "Thailand",
+                countryTh: "ประเทศไทย",
+                countryActive: true
+            },
+            workOrderNummber: genCaseID(),
+            status: "",
+            scheduleDate: "2025-08-27T16:40",
+            attachFile: [],
+            attachFileResult: [],
+            iotDate: "2025-08-27T16:40",
+            workOrderDate: "2025-08-27T16:40"
+        };
+        setCaseState(exampleCaseState as CaseDetails)
+        setCaseType({ caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ", priority: 0 })
+    }
     // Main component
     return (
         <div className="flex flex-col h-screen">
@@ -1557,6 +1683,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 disablePageMeta={disablePageMeta}
                 onBack={onBack}
                 onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
+                isCreate={isCreate}
             />
 
             {/* Main Content */}
@@ -1629,6 +1756,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         handleFilesChange={handleFilesChange}
                                         handlePreviewShow={handlePreviewShow}
                                         handleSaveDrafts={handleSaveDrafts}
+                                        handleExampleData={handleExampleData}
                                     />
                                 ) : (
                                     <FormFieldValueDisplay caseData={caseState} showResult={true} />
@@ -1663,17 +1791,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             )}
 
             {/* Modals */}
-            <Modal
+            <PreviewDataBeforeSubmit
+                caseData={caseState}
+                submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
-                className="max-w-6xl h-4/5 p-6 dark:!bg-gray-800 overflow-auto custom-scrollbar"
-                closeButtonClassName="!bg-gray-200/80 dark:!bg-gray-800/80"
-            >
-                <PreviewDataBeforeSubmit
-                    caseData={caseState}
-                    submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
-                />
-            </Modal>
+            />
+
 
             <CreateSubCaseModel
                 caseData={initialCaseData}
@@ -1687,6 +1811,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 officers={unit?.data || []}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
+                canDispatch={sopData?.data?.dispatchStage.data ? true : false}
             />
         </div>
     );
