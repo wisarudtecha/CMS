@@ -56,13 +56,14 @@ const renderField = (field: IndividualFormField): Record<string, any> => {
     return { [field.label]: value };
 };
 
-const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData, showResult = false, isCreate = false }) => {
+const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData, showResult = false, isCreate }) => {
     const [closeValue, setCloseValue] = useState<string>("")
     const closeCaseOption = ["แก้ไขเสร็จสิ้น", "เปลี่ยนอุปกรณ์เสร์จสิ้น"]
     const isCloseStage = closeStatus.find(status => status === caseData?.status);
     const handleCloseCaseChange = (value: string) => {
         setCloseValue(value)
     }
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
 
@@ -78,9 +79,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             </div>}
             <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
-                {isCreate &&<div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">No # {caseData?.workOrderNummber || "-"}</span>
-                </div>}
+                {isCreate === false ? (
+                    <div>
+                        <span className="text-md text-gray-500 dark:text-gray-400">
+                            No # {caseData?.workOrderNummber || "-"}
+                        </span>
+                    </div>
+                ) : null}
+
                 <div className="mb-2">
                     <span className="text-md text-gray-500 dark:text-gray-400">Types : {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>

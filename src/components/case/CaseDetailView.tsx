@@ -1385,8 +1385,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         const dispatchjson = {
             unitId: officer.unitId,
             caseId: initialCaseData!.caseId,
-            nodeId: sopData?.data?.dispatchStage?.nodeId,
-            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
+            nodeId: sopLocal?.dispatchStage?.nodeId,
+            status: sopLocal?.dispatchStage?.data?.data?.config?.action,
             unitUser: officer.username
         };
         console.log("Dispatching with:", dispatchjson);
@@ -1797,6 +1797,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
                 officers={unit?.data || []}
+                caseData={sopLocal }
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
                 canDispatch={sopData?.data?.dispatchStage.data ? true : false}
