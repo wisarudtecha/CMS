@@ -805,10 +805,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData, , editFormData]);
 
     const selectedCaseTypeForm = useMemo(() => {
-        if (caseState?.caseType) {
-            return caseState?.caseType
+        if (!isCreate && caseState?.caseType?.formField) {
+            const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType);
+            if (currentCaseType?.typeId === caseState.caseType.typeId &&
+                currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
+                return caseState.caseType;
+            }
         }
-        return getFormByCaseType()
+        return getFormByCaseType();
     }, [getFormByCaseType]);
 
     useEffect(() => {
@@ -1219,19 +1223,25 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
-        if (newCaseType) {
-            setCaseState(
-                prev => prev ? {
-                    ...prev,
-                    priority: newCaseType.priority,
-                    caseType: {
-                        ...newCaseType,
-                        caseType: mergeCaseTypeAndSubType(newCaseType)
-                    } as formType
-                } : prev
-            )
+
+        if (!newCaseType) return;
+
+        // Always update for new cases, or when the case type is actually different
+        const shouldUpdate = isCreate ||
+            newCaseType?.typeId !== caseState?.caseType?.typeId ||
+            newCaseType?.sTypeId !== caseState?.caseType?.sTypeId;
+
+        if (shouldUpdate) {
+            setCaseState(prev => prev ? {
+                ...prev,
+                priority: newCaseType.priority,
+                caseType: {
+                    ...newCaseType,
+                    caseType: mergeCaseTypeAndSubType(newCaseType)
+                } as formType
+            } : prev);
         }
-    }, [caseTypeSupTypeData]);
+    }, [caseTypeSupTypeData, caseState?.caseType, isCreate]);
 
     const updateCaseState = useCallback((updates: Partial<CaseDetails>) => {
         setCaseState(prev => prev ? { ...prev, ...updates } : prev);
@@ -1420,7 +1430,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, postDispatch, sopData, refetch]);
+    }, [initialCaseData, postDispatch, sopLocal, refetch]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1797,7 +1807,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
                 officers={unit?.data || []}
-                caseData={sopLocal }
+                caseData={sopLocal}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
                 canDispatch={sopData?.data?.dispatchStage.data ? true : false}
