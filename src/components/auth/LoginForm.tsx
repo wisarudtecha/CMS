@@ -9,6 +9,7 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Checkbox from "@/components/form/input/Checkbox";
 import Button from "@/components/ui/button/Button";
+import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
 
 export const LoginForm: React.FC = () => {
   const { state, login, forgotPassword, clearError } = useAuth();
@@ -20,6 +21,7 @@ export const LoginForm: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isPasswordResetSent, setIsPasswordResetSent] = useState(false);
@@ -324,8 +326,11 @@ export const LoginForm: React.FC = () => {
                         </span>
                       </div>
                       <a
-                        // href="/reset-password"
                         href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowResetModal(true);
+                        }}
                         className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-500"
                       >
                         Forgot password?
@@ -403,6 +408,16 @@ export const LoginForm: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Reset Password Modal */}
+      <ResetPasswordModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onSuccess={() => {
+          setShowResetModal(false);
+          // อาจจะแสดง toast notification หรือทำอย่างอื่น
+        }}
+      />
     </div>
   );
 };
