@@ -1,15 +1,16 @@
-// /src/pages/Area/AreaManagement.tsx
+// /src/pages/Device/PropertyManagement.tsx
 /**
- * @fileoverview Area Response Management Dashboard.
+ * @fileoverview Advanced Properties Management Dashboard.
  * 
  * @description
- * Advanced geographic response management system integrating with existing CMS infrastructure.
- * Provides interactive area definition, response analytics, and dynamic unit assignment capabilities.
+ * Comprehensive properties management system that builds upon the existing Property interface.
+ * Provides property definition, assignment matrix, lifecycle management, and analytics.
+ * Integrates with existing unitPropLists system and case assignment logic.
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [27-08-2025] v0.1.0
- * Last Updated: [27-08-2025] v0.1.0
+ * First Created: [29-08-2025] v0.1.0
+ * Last Updated: [29-08-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -21,11 +22,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import AreaManagementComponent from "@/components/area/AreaManagement";
+import PropertyManagementComponent from "@/components/device/PropertyManagement"; 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const AreaManagementPage: React.FC = () => {
+const PropertyManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -41,29 +42,32 @@ const AreaManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Area Response Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Area Response Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Property Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Property Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
       <ProtectedRoute requiredPermissions={["service.view"]}>
-        <PageBreadcrumb pageTitle="Area Response Management" />
+        <PageBreadcrumb pageTitle="Property Management" />
 
-        <AreaManagementComponent />
+        <PropertyManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default AreaManagementPage;
+export default PropertyManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Dashboard Overview.
- * - Advanced Area Management.
- * - Unit Coverage Matrix.
+ * - Enhanced Data Architecture.
+ * - Advanced Management Interface.
+ * - Design Consistency.
+ * - Bulk operations.
+ * - Template management.
+ * - Integration with skills, properties, and workflows.
  * 
  * @version 0.1.0
- * @date    27-08-2025
+ * @date    29-08-2025
  * ----------------------------------------------------------------------------
  */

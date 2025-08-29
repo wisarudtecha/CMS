@@ -73,6 +73,10 @@ import AuditLog from "./pages/Admin/AuditLog";
 
 // Area Management Imports
 import AreaManagementPage from "@/pages/Area/AreaManagement";
+// Case Management Imports
+import CaseManagementPage from "@/pages/Case/CaseManagement";
+// Property Management Imports
+import PropertyManagementPage from "@/pages/Device/PropertyManagement";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -159,6 +163,10 @@ export default function App() {
 
             {/* Area Management */}
             <Route path="/area" element={<AreaManagementPage />} />
+            {/* Case Management */}
+            <Route path="/case/management" element={<CaseManagementPage />} />
+            {/* Property Management */}
+            <Route path="/device/property" element={<PropertyManagementPage />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

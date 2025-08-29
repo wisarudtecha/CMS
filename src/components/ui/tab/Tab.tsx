@@ -26,7 +26,7 @@ const Tabs: React.FC<TabsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || items[0]?.id);
 
-  const baseTabClass = "px-4 py-2 text-sm font-medium cursor-pointer transition-colors";
+  const baseTabClass = "px-4 py-2 font-medium cursor-pointer transition-colors";
   const orientationClass = orientation === "vertical" ? "flex-col w-48" : "flex-row";
   const containerClass = orientation === "vertical" ? "flex gap-4" : "flex flex-col";
 
@@ -111,7 +111,7 @@ const Tabs: React.FC<TabsProps> = ({
       </div>
 
       {/* Tab Content */}
-      <div className={`${orientation === "vertical" ? "flex-1 p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg" : "p-6 bg-white dark:bg-gray-900"}`}>
+      <div className={`${orientation === "vertical" ? "flex-1 pt-6 border border-gray-200 dark:border-gray-700 rounded-lg" : "pt-6"}`}>
         {activeTabContent}
       </div>
     </div>

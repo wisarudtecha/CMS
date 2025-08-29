@@ -1,7 +1,8 @@
 // /src/components/area/Overview.tsx
 import React, { useCallback, useState } from "react";
-import { MapPin, Target, TrendingUp } from "lucide-react";
-import { AlertHexaIcon, AngleLeftIcon, ChevronDownIcon, GroupIcon, TimeIcon } from "@/icons";
+import { ChevronDown, ChevronLeft, MapPin, Target, TrendingUp } from "lucide-react";
+import { AlertHexaIcon, GroupIcon, TimeIcon } from "@/icons";
+import Badge from "@/components/ui/badge/Badge";
 import type { ResponseArea, ResponseMetrics } from "@/types/area";
 
 const OverviewContent: React.FC<{
@@ -30,7 +31,7 @@ const OverviewContent: React.FC<{
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Summary Cards */}
-      <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 cursor-default">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -88,7 +89,7 @@ const OverviewContent: React.FC<{
 
       {/* Area Performance Cards */}
       <div className="lg:col-span-3">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Area Performance</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 cursor-default">Area Performance</h2>
         <div className="space-y-4">
           {areas.map((area: ResponseArea) => {
             const metric = metrics.find((m: ResponseMetrics) => m.areaId === area.id);
@@ -97,44 +98,44 @@ const OverviewContent: React.FC<{
             return (
               <div key={area.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                  <div className="xl:flex items-center justify-between">
+                    <div className="flex items-center gap-4 mb-4 xl:mb-0">
                       <button
                         onClick={() => toggleMetricsExpanded(area.id)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       >
                         {isExpanded ? (
-                          <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                         ) : (
-                          <AngleLeftIcon className="w-4 h-4 text-gray-400" />
+                          <ChevronLeft className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                         )}
                       </button>
-                      <div>
+                      <div className="cursor-default">
                         <h3 className="font-semibold text-gray-900 dark:text-white">
                           {area.areaName.en}
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {area.areaCode} • Population: {area.population.toLocaleString()}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${color(area.riskLevel)}`}>
-                        {area.riskLevel.toUpperCase()}
-                      </span>
+                    <div className="flex items-center gap-3 cursor-default">
+                      <Badge className={`capitalize ${color(area.riskLevel)}`} size="sm">
+                        {area.riskLevel}
+                      </Badge>
                       {metric && (
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1">
-                            <TimeIcon className="w-4 h-4 text-gray-400" />
-                            <span>{time(metric.averageResponseTime)}</span>
+                            <TimeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-300">{time(metric.averageResponseTime)}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Target className="w-4 h-4 text-gray-400" />
-                            <span>{percent(metric.slaCompliance)}</span>
+                            <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-300">{percent(metric.slaCompliance)}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <GroupIcon className="w-4 h-4 text-gray-400" />
-                            <span>{metric.availableUnits}</span>
+                            <GroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-300">{metric.availableUnits}</span>
                           </div>
                         </div>
                       )}
@@ -142,8 +143,8 @@ const OverviewContent: React.FC<{
                   </div>
 
                   {isExpanded && metric && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 cursor-default">
+                      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                         <div>
                           <p className="text-xs text-gray-500 dark:text-gray-400">Total Cases</p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">{metric.totalCases}</p>
@@ -160,8 +161,8 @@ const OverviewContent: React.FC<{
                           <p className="text-xs text-gray-500 dark:text-gray-400">Demand Trend</p>
                           <div className="flex items-center gap-1">
                             <TrendingUp className={`w-4 h-4 ${
-                              metric.demandTrend === "up" ? "text-red-500" : 
-                              metric.demandTrend === "down" ? "text-green-500" : "text-gray-400"
+                              metric.demandTrend === "up" ? "text-red-500 dark:text-red-400" : 
+                              metric.demandTrend === "down" ? "text-green-500 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
                             }`} />
                             <span className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
                               {metric.demandTrend}

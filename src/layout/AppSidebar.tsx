@@ -220,6 +220,16 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("service.view"),
         },
         {
+          name: "Case Management",
+          path: "/case/management",
+          permission: permissions.hasPermission("service.view"),
+        },
+        {
+          name: "Property Management",
+          path: "/device/property",
+          permission: permissions.hasPermission("service.view"),
+        },
+        {
           name: "Audit Log",
           path: "/audit",
           permission: permissions.hasPermission("auditlog.view"),
