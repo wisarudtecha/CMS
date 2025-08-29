@@ -111,7 +111,7 @@ export default function CasesView() {
         matchingSubTypesNames(c.caseTypeId, c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
         c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
         c.statusId.toLowerCase().includes(generalSearchTerm) ||
-        c.caseId.toLocaleLowerCase().includes(generalSearchTerm) ||
+        c.caseId.toLowerCase().includes(generalSearchTerm) ||
         assigneeName.toLowerCase().includes(generalSearchTerm) ||
         DateStringToDateFormat(c.createdAt as string).toLowerCase().includes(generalSearchTerm)
       );
@@ -136,12 +136,7 @@ export default function CasesView() {
   const getCasesForColumn = (columnId: string) => {
     return getFilteredCases()
       .filter(c => getStatusKey(c) === columnId)
-      .sort((a, b) => {
-        if (a.priority !== b.priority) {
-          return a.priority - b.priority;
-        }
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
+      ;
   }
 
 
