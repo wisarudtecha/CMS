@@ -72,6 +72,10 @@ export interface CaseStatusQueryParams {
   length?: number;
 }
 
+export interface CaseTypeManagementProps {
+  className?: string;
+}
+
 export interface CaseTypeSubType {
   typeId: string;
   orgId: string;
@@ -107,6 +111,106 @@ export interface Comment {
   isInternal: boolean;
 }
 
+export interface AutomationRule {
+  id: string;
+  trigger: string;
+  condition: string;
+  action: string;
+  enabled: boolean;
+}
+
+export interface SkillRequirement {
+  skillId: string;
+  level: number;
+  required: boolean;
+}
+
+export interface ResourceRequirement {
+  resourceId: string;
+  quantity: number;
+  duration: number;
+}
+
+export interface ApprovalStep {
+  id: string;
+  role: string;
+  required: boolean;
+  order: number;
+}
+
+export interface EnhancedCaseSubType {
+  id: string;
+  typeId: string;
+  sTypeId: string;
+  sTypeCode: string;
+  orgId: string;
+  en: string;
+  th: string;
+  wfId: string;
+  caseSla: string;
+  priority: string;
+  userSkillList: string[];
+  unitPropLists: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  // Enhanced fields
+  automationRules: AutomationRule[];
+  skillRequirements: SkillRequirement[];
+  resourceRequirements: ResourceRequirement[];
+  approvalWorkflow: ApprovalStep[];
+  costCenters: string[];
+  estimatedDuration: number;
+  complexity: "low" | "medium" | "high" | "critical";
+}
+
+export interface EscalationRule {
+  id: string;
+  condition: string;
+  action: string;
+  delay: number;
+  recipient: string;
+}
+
+export interface CustomFieldDefinition {
+  id: string;
+  name: string;
+  type: "text" | "number" | "select" | "multiselect" | "date" | "boolean";
+  required: boolean;
+  options?: string[];
+  validation?: string;
+}
+
+export interface EnhancedCaseType {
+  id: string;
+  typeId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  // Enhanced fields
+  icon: string;
+  color: string;
+  category: string;
+  departmentRestrictions: string[];
+  escalationRules: EscalationRule[];
+  customFields: CustomFieldDefinition[];
+  templates: {
+    description: string;
+    requiredFields: string[];
+    attachmentTypes: string[];
+  };
+  parentTypeId?: string;
+  level: number;
+  sortOrder: number;
+}
+
 export interface ProgressStep {
   key: string;
   label: string;
@@ -135,6 +239,15 @@ export interface ProgressTimelineProps {
   animated?: boolean;
   className?: string;
   onStepClick?: (step: TimelineStep, index: number) => void;
+}
+
+export interface TypeAnalytics {
+  usageCount: number;
+  averageResolutionTime: number;
+  slaCompliance: number;
+  resourceUtilization: number;
+  efficiency: number;
+  lastUsed: string;
 }
 
 export interface CaseDetails {

@@ -1,4 +1,4 @@
-// /src/components/area/AreaResponseDashboard.tsx
+// /src/components/area/AreaManagement.tsx
 /**
  * @fileoverview Area Response Management Dashboard
  * 
@@ -12,31 +12,20 @@
  * Version: 1.0.0
  */
 
-import React, {
-  useState,
-  useMemo,
-  // useCallback
-} from "react";
-import {
-  Activity,
-  MapPin,
-  // Plus,
-  // Settings
-} from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Activity, MapPin } from "lucide-react";
 import { GroupIcon, PieChartIcon } from "@/icons";
 import AnalyticContent from "@/components/area/Analytic";
 import AreaContent from "@/components/area/Area";
 import AreaDesignerContent from "@/components/area/AreaDesigner";
 import CoverageContent from "@/components/area/Coverage";
 import OverviewContent from "@/components/area/Overview";
-// import Button from "@/components/ui/button/Button";
 import Tab from "@/components/ui/tab/Tab";
 import type { TabItem } from "@/components/ui/tab/Tab";
 import type { AreaCoverage, ResponseArea, ResponseMetrics } from "@/types/area";
 
 const AreaManagementComponent: React.FC = () => {
   // State Management
-  // const [selectedTab, setSelectedTab] = useState<"overview" | "areas" | "coverage" | "analytics">("overview");
   const [showAreaDesigner, setShowAreaDesigner] = useState(false);
 
   // Mock Data (replace with actual API calls)
@@ -178,11 +167,6 @@ const AreaManagementComponent: React.FC = () => {
   const formatTime = (minutes: number) => `${minutes}m`;
   const formatPercent = (value: number) => `${value}%`;
 
-  // Event Handlers
-  // const handleTabChange = useCallback((tab: typeof selectedTab) => {
-  //   setSelectedTab(tab);
-  // }, []);
-
   const tabItem: TabItem[] = [
     {
       id: "overview",
@@ -212,71 +196,10 @@ const AreaManagementComponent: React.FC = () => {
 
   // Main Dashboard Render
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 cursor-default">
-      {/* Header */}
-      {/*
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="primary" onClick={() => setShowAreaDesigner(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                New Area
-              </Button>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            {[
-              { key: "overview", label: "Overview", icon: PieChartIcon },
-              { key: "areas", label: "Response Areas", icon: MapPin },
-              { key: "coverage", label: "Unit Coverage", icon: GroupIcon },
-              { key: "analytics", label: "Analytics", icon: Activity }
-            ].map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => handleTabChange(key as typeof selectedTab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTab === key
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
+      <div className="mx-auto w-full">
+        <Tab items={tabItem} variant="underline" />
       </div>
-      */}
-
-      {/* Content */}
-      <Tab items={tabItem} variant="underline" />
-
-      {/*
-      <div className="p-6">
-        {selectedTab === "overview" && (
-          <OverviewContent areas={mockAreas} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
-        )}
-
-        {selectedTab === "areas" && (
-          <AreaContent areas={mockAreas} coverages={mockCoverage} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
-        )}
-
-        {selectedTab === "coverage" && (
-          <CoverageContent areas={mockAreas} coverages={mockCoverage} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
-        )}
-
-        {selectedTab === "analytics" && (
-          <AnalyticContent />
-        )}
-      </div>
-      */}
 
       {/* Area Designer Modal Placeholder */}
       {showAreaDesigner && (

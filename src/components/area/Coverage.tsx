@@ -1,5 +1,6 @@
 // /src/components/area/Coverage.tsx
 import React from "react";
+import Badge from "@/components/ui/badge/Badge";
 import type { AreaCoverage, ResponseArea, ResponseMetrics } from "@/types/area";
 
 const CoverageContent: React.FC<{
@@ -15,13 +16,10 @@ const CoverageContent: React.FC<{
   time
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 cursor-default">
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Unit Coverage Matrix</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Overview of unit assignments and coverage across response areas
-          </p>
         </div>
         
         <div className="overflow-x-auto">
@@ -70,13 +68,13 @@ const CoverageContent: React.FC<{
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <Badge className={`capitalize ${
                         coverage.primaryResponder 
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
-                      }`}>
+                          ? "bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                      }`} size="sm">
                         {coverage.primaryResponder ? "Primary" : `Backup L${coverage.backupLevel}`}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                       {time(coverage.averageResponseTime)}
