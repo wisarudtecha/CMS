@@ -389,85 +389,85 @@ export default function AuditLog() {
         
         // System functions
         if (mainFunc.toLowerCase().includes('system') || mainFunc.toLowerCase().includes('auth')) {
-            if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600' };
-            if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600' };
-            if (combined.includes('register')) return { icon: Users, color: 'text-blue-600' };
-            return { icon: Shield, color: 'text-purple-600' };
+            if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600 dark:text-green-400' };
+            if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600 dark:text-red-400' };
+            if (combined.includes('register')) return { icon: Users, color: 'text-blue-600 dark:text-blue-400' };
+            return { icon: Shield, color: 'text-purple-600 dark:text-purple-400' };
         }
         
         // User functions
         if (mainFunc.toLowerCase().includes('user')) {
-            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
-            if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600' };
-            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-            if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600' };
-            return { icon: User, color: 'text-indigo-600' };
+            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
+            if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+            if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600 dark:text-blue-400' };
+            return { icon: User, color: 'text-indigo-600 dark:text-indigo-400' };
         }
         
         // Case functions
         if (mainFunc.toLowerCase().includes('case')) {
-            if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600' };
-            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
-            if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600' };
-            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-            return { icon: FolderOpen, color: 'text-amber-600' };
+            if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600 dark:text-purple-400' };
+            if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
+            if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+            return { icon: FolderOpen, color: 'text-amber-600 dark:text-amber-400' };
         }
         
         // Report functions
         if (mainFunc.toLowerCase().includes('report')) {
-            if (combined.includes('export')) return { icon: Download, color: 'text-teal-600' };
-            if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600' };
-            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-            return { icon: PieChart, color: 'text-emerald-600' };
+            if (combined.includes('export')) return { icon: Download, color: 'text-teal-600 dark:text-teal-400' };
+            if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600 dark:text-blue-400' };
+            if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+            return { icon: PieChart, color: 'text-emerald-600 dark:text-emerald-400' };
         }
         
         // Notification functions
         if (mainFunc.toLowerCase().includes('notification') || mainFunc.toLowerCase().includes('notify')) {
-            if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600' };
-            if (combined.includes('create')) return { icon: Bell, color: 'text-green-600' };
-            if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600' };
-            return { icon: Bell, color: 'text-yellow-600' };
+            if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
+            if (combined.includes('create')) return { icon: Bell, color: 'text-green-600 dark:text-green-400' };
+            if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600 dark:text-blue-400' };
+            return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
         }
         
         // Settings functions
         if (mainFunc.toLowerCase().includes('settings') || mainFunc.toLowerCase().includes('config')) {
-            return { icon: Settings, color: 'text-gray-600' };
+            return { icon: Settings, color: 'text-gray-600 dark:text-gray-400' };
         }
         
         // Database functions
         if (mainFunc.toLowerCase().includes('database') || mainFunc.toLowerCase().includes('backup')) {
-            if (combined.includes('backup')) return { icon: Save, color: 'text-green-600' };
-            if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600' };
-            return { icon: Database, color: 'text-indigo-600' };
+            if (combined.includes('backup')) return { icon: Save, color: 'text-green-600 dark:text-green-400' };
+            if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600 dark:text-blue-400' };
+            return { icon: Database, color: 'text-indigo-600 dark:text-indigo-400' };
         }
         
         // Default based on action
-        return { icon: Activity, color: 'text-gray-500' };
+        return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
     };
 
     const getStatusBadge = (status: number) => {
         switch (status) {
             case 0: return { 
                 icon: CheckCircle, 
-                color: 'text-green-500', 
+                color: 'text-green-500 dark:text-green-400', 
                 bg: 'bg-green-100 dark:bg-green-900/30', 
                 text: t("audit_log.success") || "Success" 
             };
             case 1: return { 
                 icon: XCircle, 
-                color: 'text-red-500', 
+                color: 'text-red-500 dark:text-red-400', 
                 bg: 'bg-red-100 dark:bg-red-900/30', 
                 text: t("audit_log.failed") || "Failed" 
             };
             case 2: return { 
                 icon: AlertCircle, 
-                color: 'text-yellow-500', 
+                color: 'text-yellow-500 dark:text-yellow-400', 
                 bg: 'bg-yellow-100 dark:bg-yellow-900/30', 
                 text: t("audit_log.warning") || "Warning" 
             };
             default: return { 
                 icon: AlertCircle, 
-                color: 'text-gray-500', 
+                color: 'text-gray-500 dark:text-gray-400', 
                 bg: 'bg-gray-100 dark:bg-gray-700', 
                 text: t("audit_log.unknown") || "Unknown" 
             };
@@ -476,27 +476,27 @@ export default function AuditLog() {
 
     const getActionIcon = (action: string) => {
         switch (action.toLowerCase()) {
-            case 'create': return { icon: Plus, color: 'text-green-500' };
+            case 'create': return { icon: Plus, color: 'text-green-500 dark:text-green-400' };
             case 'update': 
-            case 'edit': return { icon: Edit, color: 'text-orange-500' };
+            case 'edit': return { icon: Edit, color: 'text-orange-500 dark:text-orange-400' };
             case 'delete': 
-            case 'remove': return { icon: Trash2, color: 'text-red-500' };
+            case 'remove': return { icon: Trash2, color: 'text-red-500 dark:text-red-400' };
             case 'login': 
-            case 'signin': return { icon: LogIn, color: 'text-green-500' };
+            case 'signin': return { icon: LogIn, color: 'text-green-500 dark:text-green-400' };
             case 'logout': 
-            case 'signout': return { icon: LogOut, color: 'text-red-500' };
+            case 'signout': return { icon: LogOut, color: 'text-red-500 dark:text-red-400' };
             case 'view': 
             case 'read': 
-            case 'get': return { icon: Eye, color: 'text-blue-500' };
+            case 'get': return { icon: Eye, color: 'text-blue-500 dark:text-blue-400' };
             case 'save': 
-            case 'store': return { icon: Save, color: 'text-green-500' };
-            case 'upload': return { icon: Upload, color: 'text-blue-500' };
+            case 'store': return { icon: Save, color: 'text-green-500 dark:text-green-400' };
+            case 'upload': return { icon: Upload, color: 'text-blue-500 dark:text-blue-400' };
             case 'download': 
-            case 'export': return { icon: Download, color: 'text-purple-500' };
+            case 'export': return { icon: Download, color: 'text-purple-500 dark:text-purple-400' };
             case 'send': 
-            case 'notify': return { icon: Bell, color: 'text-yellow-500' };
-            case 'assign': return { icon: Users, color: 'text-purple-500' };
-            default: return { icon: Activity, color: 'text-gray-500' };
+            case 'notify': return { icon: Bell, color: 'text-yellow-500 dark:text-yellow-400' };
+            case 'assign': return { icon: Users, color: 'text-purple-500 dark:text-purple-400' };
+            default: return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
         }
     };
 
@@ -587,6 +587,16 @@ export default function AuditLog() {
                             />
                         </div>
                         <div className="flex gap-2">
+                            <select 
+                                value={filter.status} 
+                                onChange={(e) => setFilter({ ...filter, status: e.target.value })} 
+                                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">{t("audit_log.all_status") || "All Status"}</option>
+                                <option value="0">{t("audit_log.success") || "Success"}</option>
+                                <option value="1">{t("audit_log.failed") || "Failed"}</option>
+                                <option value="2">{t("audit_log.warning") || "Warning"}</option>
+                            </select>
                             <button 
                                 onClick={() => handleFetchLogs(filter.username)} 
                                 className="group p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed" 
@@ -629,8 +639,8 @@ export default function AuditLog() {
                     {showFilters && (
                         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
                             <div className="space-y-4">
-                                {/* First row - Date range, Username, Function, Status */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* First row - Date range and Username */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <div className="sm:col-span-2">
                                         <div className="flex gap-2">
                                             <div className="flex-1">
@@ -687,7 +697,7 @@ export default function AuditLog() {
                                                     {/* User options */}
                                                     <div className="max-h-40 overflow-y-auto">
                                                         <div
-                                                            className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                                                            className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-white"
                                                             onClick={() => {
                                                                 handleUsernameChange('');
                                                                 setShowUserDropdown(false);
@@ -698,7 +708,7 @@ export default function AuditLog() {
                                                         {filteredUsernames.map(u => (
                                                             <div
                                                                 key={u}
-                                                                className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                                                                className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-white"
                                                                 onClick={() => {
                                                                     handleUsernameChange(u);
                                                                     setShowUserDropdown(false);
@@ -711,21 +721,6 @@ export default function AuditLog() {
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            {t("audit_log.status") || "Status"}
-                                        </label>
-                                        <select 
-                                            value={filter.status} 
-                                            onChange={(e) => setFilter({ ...filter, status: e.target.value })} 
-                                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                        >
-                                            <option value="">{t("audit_log.all_status") || "All Status"}</option>
-                                            <option value="0">{t("audit_log.success") || "Success"}</option>
-                                            <option value="1">{t("audit_log.failed") || "Failed"}</option>
-                                            <option value="2">{t("audit_log.warning") || "Warning"}</option>
-                                        </select>
                                     </div>
                                 </div>
                                 
@@ -915,7 +910,7 @@ export default function AuditLog() {
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-2">
                                                             <actionInfo.icon className={`w-4 h-4 ${actionInfo.color}`} />
-                                                            <span className="capitalize font-medium">{log.action}</span>
+                                                            <span className="capitalize font-medium text-gray-900 dark:text-white">{log.action}</span>
                                                         </div>
                                                     </td>
                                                     

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../hooks/useToast";
 import { useUserProfile } from "@/context/UserProfileContext";
-import ResetPasswordModal from "./ResetPasswordModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import Toast from "../toast/Toast";
 import type { UserProfile } from "@/types/user";
@@ -40,12 +39,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
     linkedin: "",
     instagram: "",
   });
-  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-
-  const handlePasswordResetSuccess = () => {
-    addToast("success", t('userform.passwordResetSuccessToast') || 'รีเซ็ตรหัสผ่านสำเร็จ');
-  };
 
   const handlePasswordChangeSuccess = () => {
     addToast("success", t('userform.passwordChangeSuccessToast') || 'เปลี่ยนรหัสผ่านสำเร็จ');
@@ -180,26 +174,9 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
           </svg>
           {t("userform.changePassword") || "เปลี่ยนรหัสผ่าน"}
         </button>
-        
-        <button
-          onClick={() => setShowResetPasswordModal(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700 hover:bg-orange-100 hover:text-orange-800 dark:border-orange-700 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30 lg:w-auto"
-        >
-          <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 1.5C5.51472 1.5 3.5 3.51472 3.5 6V7H2C1.44772 7 1 7.44772 1 8V14C1 14.5523 1.44772 15 2 15H14C14.5523 15 15 14.5523 15 14V8C15 7.44772 14.5523 7 14 7H12.5V6C12.5 3.51472 10.4853 1.5 8 1.5ZM8 2.5C9.933 2.5 11.5 4.067 11.5 6V7H4.5V6C4.5 4.067 6.067 2.5 8 2.5ZM8 9.5C8.82843 9.5 9.5 10.1716 9.5 11C9.5 11.8284 8.82843 12.5 8 12.5C7.17157 12.5 6.5 11.8284 6.5 11C6.5 10.1716 7.17157 9.5 8 9.5Z" fill="currentColor"/>
-          </svg>
-          {t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน"}
-        </button>
       </div>
 
       {/* Modals */}
-      <ResetPasswordModal 
-        isOpen={showResetPasswordModal}
-        onClose={() => setShowResetPasswordModal(false)}
-        userId={userData?.id?.toString()}
-        onSuccess={handlePasswordResetSuccess}
-      />
-      
       <ChangePasswordModal 
         isOpen={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}

@@ -11,6 +11,7 @@ interface ResetPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId?: string;
+  username?: string;
   onSuccess?: () => void;
 }
 
@@ -19,10 +20,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cms-api-1-pro
 export default function ResetPasswordModal({
   isOpen,
   onClose,
-  userId,
   onSuccess
 }: ResetPasswordModalProps) {
   const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [inputUsername, setInputUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,16 @@ export default function ResetPasswordModal({
   const [success, setSuccess] = useState(false);
 
   const handleReset = async () => {
+    if (!email) {
+      setError(t('forms.email') || 'กรุณากรอกอีเมล');
+      return;
+    }
+
+    if (!inputUsername) {
+      setError(t('forms.username') || 'กรุณากรอกชื่อผู้ใช้');
+      return;
+    }
+
     if (!newPassword) {
       setError(t('userform.newPasswordRequired') || 'กรุณากรอกรหัสผ่านใหม่');
       return;
@@ -56,15 +68,16 @@ export default function ResetPasswordModal({
     setError("");
 
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_BASE_URL}/users/reset_password/${userId}`, {
-        method: 'PATCH',
+      // ใช้ API ใหม่ที่ไม่ต้องมี Authorization header
+      const response = await fetch(`${API_BASE_URL}/users/reset_password`, {
+        method: 'POST',
         headers: {
           'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          email: email,
+          username: inputUsername,
           newPassword: newPassword
         })
       });
@@ -90,6 +103,8 @@ export default function ResetPasswordModal({
   };
 
   const handleClose = () => {
+    setEmail("");
+    setInputUsername("");
     setNewPassword("");
     setConfirmPassword("");
     setError("");
@@ -121,6 +136,34 @@ export default function ResetPasswordModal({
                 <span className="text-red-600 dark:text-red-400 text-sm">{error}</span>
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                {t('forms.email') || 'อีเมล'}
+              </Label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('forms.email') || 'กรอกอีเมล'}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username">
+                {t('forms.username') || 'ชื่อผู้ใช้'}
+              </Label>
+              <input
+                type="text"
+                id="username"
+                value={inputUsername}
+                onChange={(e) => setInputUsername(e.target.value)}
+                placeholder={t('forms.username') || 'กรอกชื่อผู้ใช้'}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="newPassword">

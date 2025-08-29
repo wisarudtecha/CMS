@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Activity, 
   CheckCircle, 
@@ -9,9 +9,9 @@ import {
   Trash2, 
   User,
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
   Filter,
-  X,
+  Search,
   LogIn,
   LogOut,
   Edit,
@@ -30,9 +30,15 @@ import {
   Mail,
   Clock,
   Hash,
-  MessageSquare
+  MessageSquare,
+  Loader2,
+  ServerCrash,
+  Info,
+  FileText,
+  Zap
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import React from 'react';
 
 interface AuditLog {
   id: number;
@@ -71,9 +77,9 @@ const DataDisplay = ({ data }: { data: any }) => {
   
   if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
     return (
-      <div className="text-center py-4">
+      <div className="text-center py-6">
         <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
-          <Database className="w-5 h-5" />
+          <Database className="w-6 h-6" />
           <p className="text-xs italic">{t("common.no_data") || "ไม่มีข้อมูล"}</p>
         </div>
       </div>
@@ -81,7 +87,7 @@ const DataDisplay = ({ data }: { data: any }) => {
   }
 
   return (
-    <div className="space-y-1.5 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border font-mono text-xs max-h-48 overflow-y-auto">
+    <div className="space-y-2 p-3 bg-white dark:bg-gray-800 rounded-md border font-mono text-xs max-h-64 overflow-y-auto">
       {Object.entries(data).map(([key, value]) => (
         <div key={key} className="flex justify-between items-start gap-3 py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
           <span className="font-semibold text-gray-600 dark:text-gray-400 flex-shrink-0 min-w-0">
@@ -112,10 +118,10 @@ interface UserAuditLogProps {
   username?: string;
 }
 
-export default function UserAuditLog({ username }: UserAuditLogProps) {
+const UserAuditLog = ({ username }: UserAuditLogProps) => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -129,9 +135,35 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  // Toast state - simplified for single toast management
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    show: boolean;
+  }>({ message: "", type: "info", show: false });
+  
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const API = import.meta.env.VITE_API_BASE_URL || 'https://cmsapi-production-488d.up.railway.app';
+
+  // Show toast function - ensure only one toast at a time
+  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    // Clear any existing timeout first
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+    
+    // Hide current toast immediately
+    setToast({ message: "", type: "info", show: false });
+    
+    // Show new toast after a tiny delay to ensure previous one is cleared
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast({ message, type, show: true });
+    }, 50);
+  };
 
   // Get authentication headers
   const getAuthHeaders = () => {
@@ -194,6 +226,8 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
       });
 
       setLogs(processedLogs);
+      const message = t("audit_log.query_success", { count: processedLogs.length }) || `โหลดข้อมูลสำเร็จ ${processedLogs.length} รายการ`;
+      showToast(message, "success");
       
     } catch (err: any) {
       console.error("Error fetching user audit logs:", err);
@@ -204,14 +238,23 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
     }
   };
 
-  // Fetch logs when username changes
+  // Initial data fetch
   useEffect(() => {
     if (username) {
       fetchUserAuditLogs(username);
     }
   }, [username]);
 
-  // Memoized computations
+  // Cleanup toast timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // --- MEMOIZED COMPUTATIONS ---
   const uniqueValues = useMemo(() => {
     return {
       mainFuncs: [...new Set(logs.map(log => log.mainFunc))].sort(),
@@ -237,10 +280,9 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
       if (filter.search) {
         const searchLower = filter.search.toLowerCase();
         return (
+          log.username.toLowerCase().includes(searchLower) ||
           log.txId.toLowerCase().includes(searchLower) ||
-          log.message.toLowerCase().includes(searchLower) ||
-          log.mainFunc.toLowerCase().includes(searchLower) ||
-          log.action.toLowerCase().includes(searchLower)
+          log.message.toLowerCase().includes(searchLower)
         );
       }
 
@@ -260,91 +302,91 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
 
   const totalPages = Math.ceil(filteredLogs.length / rowsPerPage);
 
-  // Helper functions
+  // --- HELPER FUNCTIONS ---
   const getFunctionIcon = (mainFunc: string, subFunc: string) => {
     const combined = `${mainFunc}.${subFunc}`.toLowerCase();
     
     // System functions
     if (mainFunc.toLowerCase().includes('system') || mainFunc.toLowerCase().includes('auth')) {
-      if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600' };
-      if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600' };
-      if (combined.includes('register')) return { icon: Users, color: 'text-blue-600' };
-      return { icon: Shield, color: 'text-purple-600' };
+      if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600 dark:text-green-400' };
+      if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600 dark:text-red-400' };
+      if (combined.includes('register')) return { icon: Users, color: 'text-blue-600 dark:text-blue-400' };
+      return { icon: Shield, color: 'text-purple-600 dark:text-purple-400' };
     }
     
     // User functions
     if (mainFunc.toLowerCase().includes('user')) {
-      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
-      if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-      if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600' };
-      return { icon: User, color: 'text-indigo-600' };
+      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
+      if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
+      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+      if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600 dark:text-blue-400' };
+      return { icon: User, color: 'text-indigo-600 dark:text-indigo-400' };
     }
     
     // Case functions
     if (mainFunc.toLowerCase().includes('case')) {
-      if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600' };
-      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600' };
-      if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-      return { icon: FolderOpen, color: 'text-amber-600' };
+      if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600 dark:text-purple-400' };
+      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
+      if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
+      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+      return { icon: FolderOpen, color: 'text-amber-600 dark:text-amber-400' };
     }
     
     // Report functions
     if (mainFunc.toLowerCase().includes('report')) {
-      if (combined.includes('export')) return { icon: Download, color: 'text-teal-600' };
-      if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600' };
-      return { icon: PieChart, color: 'text-emerald-600' };
+      if (combined.includes('export')) return { icon: Download, color: 'text-teal-600 dark:text-teal-400' };
+      if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600 dark:text-blue-400' };
+      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
+      return { icon: PieChart, color: 'text-emerald-600 dark:text-emerald-400' };
     }
     
     // Notification functions
     if (mainFunc.toLowerCase().includes('notification') || mainFunc.toLowerCase().includes('notify')) {
-      if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600' };
-      if (combined.includes('create')) return { icon: Bell, color: 'text-green-600' };
-      if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600' };
-      return { icon: Bell, color: 'text-yellow-600' };
+      if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
+      if (combined.includes('create')) return { icon: Bell, color: 'text-green-600 dark:text-green-400' };
+      if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600 dark:text-blue-400' };
+      return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
     }
     
     // Settings functions
     if (mainFunc.toLowerCase().includes('settings') || mainFunc.toLowerCase().includes('config')) {
-      return { icon: Settings, color: 'text-gray-600' };
+      return { icon: Settings, color: 'text-gray-600 dark:text-gray-400' };
     }
     
     // Database functions
     if (mainFunc.toLowerCase().includes('database') || mainFunc.toLowerCase().includes('backup')) {
-      if (combined.includes('backup')) return { icon: Save, color: 'text-green-600' };
-      if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600' };
-      return { icon: Database, color: 'text-indigo-600' };
+      if (combined.includes('backup')) return { icon: Save, color: 'text-green-600 dark:text-green-400' };
+      if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600 dark:text-blue-400' };
+      return { icon: Database, color: 'text-indigo-600 dark:text-indigo-400' };
     }
     
     // Default based on action
-    return { icon: Activity, color: 'text-gray-500' };
+    return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
   };
 
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 0: return { 
         icon: CheckCircle, 
-        color: 'text-green-500', 
+        color: 'text-green-500 dark:text-green-400', 
         bg: 'bg-green-100 dark:bg-green-900/30', 
         text: t("audit_log.success") || "สำเร็จ" 
       };
       case 1: return { 
         icon: XCircle, 
-        color: 'text-red-500', 
+        color: 'text-red-500 dark:text-red-400', 
         bg: 'bg-red-100 dark:bg-red-900/30', 
         text: t("audit_log.failed") || "ล้มเหลว" 
       };
       case 2: return { 
         icon: AlertCircle, 
-        color: 'text-yellow-500', 
+        color: 'text-yellow-500 dark:text-yellow-400', 
         bg: 'bg-yellow-100 dark:bg-yellow-900/30', 
-        text: t("audit_log.warning") || "เตือน" 
+        text: t("audit_log.warning") || "คำเตือน" 
       };
       default: return { 
         icon: AlertCircle, 
-        color: 'text-gray-500', 
+        color: 'text-gray-500 dark:text-gray-400', 
         bg: 'bg-gray-100 dark:bg-gray-700', 
         text: t("audit_log.unknown") || "ไม่ทราบ" 
       };
@@ -353,28 +395,32 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
 
   const getActionIcon = (action: string) => {
     switch (action.toLowerCase()) {
-      case 'create': return { icon: Plus, color: 'text-green-500' };
+      case 'create': return { icon: Plus, color: 'text-green-500 dark:text-green-400' };
       case 'update': 
-      case 'edit': return { icon: Edit, color: 'text-orange-500' };
+      case 'edit': return { icon: Edit, color: 'text-orange-500 dark:text-orange-400' };
       case 'delete': 
-      case 'remove': return { icon: Trash2, color: 'text-red-500' };
+      case 'remove': return { icon: Trash2, color: 'text-red-500 dark:text-red-400' };
       case 'login': 
-      case 'signin': return { icon: LogIn, color: 'text-green-500' };
+      case 'signin': return { icon: LogIn, color: 'text-green-500 dark:text-green-400' };
       case 'logout': 
-      case 'signout': return { icon: LogOut, color: 'text-red-500' };
+      case 'signout': return { icon: LogOut, color: 'text-red-500 dark:text-red-400' };
       case 'view': 
       case 'read': 
-      case 'get': return { icon: Eye, color: 'text-blue-500' };
+      case 'get': return { icon: Eye, color: 'text-blue-500 dark:text-blue-400' };
       case 'save': 
-      case 'store': return { icon: Save, color: 'text-green-500' };
-      case 'upload': return { icon: Upload, color: 'text-blue-500' };
+      case 'store': return { icon: Save, color: 'text-green-500 dark:text-green-400' };
+      case 'upload': return { icon: Upload, color: 'text-blue-500 dark:text-blue-400' };
       case 'download': 
-      case 'export': return { icon: Download, color: 'text-purple-500' };
+      case 'export': return { icon: Download, color: 'text-purple-500 dark:text-purple-400' };
       case 'send': 
-      case 'notify': return { icon: Bell, color: 'text-yellow-500' };
-      case 'assign': return { icon: Users, color: 'text-purple-500' };
-      default: return { icon: Activity, color: 'text-gray-500' };
+      case 'notify': return { icon: Bell, color: 'text-yellow-500 dark:text-yellow-400' };
+      case 'assign': return { icon: Users, color: 'text-purple-500 dark:text-purple-400' };
+      default: return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
     }
+  };
+
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
   };
 
   const clearFilters = () => {
@@ -384,503 +430,465 @@ export default function UserAuditLog({ username }: UserAuditLogProps) {
     });
   };
 
-  const formatDateTime = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleString('th-TH', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
+  // --- RENDER ---
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-gray-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            {t("userform.auditLog") || "บันทึกการใช้งาน"} - {username}
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t("audit_log.user_activity_history") || "ประวัติการใช้งานของผู้ใช้"}
-          </p>
+      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Activity className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {username ? `${t("audit_log.user_activities") || "กิจกรรมของผู้ใช้"}: ${username}` : t("audit_log.loading") || "กำลังโหลด..."}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("audit_log.user_activity_history") || "ประวัติการใช้งานของผู้ใช้"}
+              </p>
+            </div>
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {filteredLogs.length} {t("audit_log.logs_found") || "รายการที่พบ"}
+          </div>
         </div>
-        <button
-          onClick={() => fetchUserAuditLogs(username)}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm rounded-lg transition-colors shadow-sm"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {t("common.refresh") || "รีเฟรช"}
-        </button>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3 mt-4">
+          <div className="flex-1 w-full relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder={t("audit_log.search_placeholder") || "ค้นหา ผู้ใช้, เลขธุรกรรม, ข้อความ..."} 
+              value={filter.search} 
+              onChange={(e) => setFilter({ ...filter, search: e.target.value })} 
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+            />
+          </div>
+          <div className="flex gap-2">
+            <select 
+              value={filter.status} 
+              onChange={(e) => setFilter({ ...filter, status: e.target.value })} 
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">{t("audit_log.all_status") || "ทุกสถานะ"}</option>
+              <option value="0">{t("audit_log.success") || "สำเร็จ"}</option>
+              <option value="1">{t("audit_log.failed") || "ล้มเหลว"}</option>
+              <option value="2">{t("audit_log.warning") || "คำเตือน"}</option>
+            </select>
+            <button 
+              onClick={() => fetchUserAuditLogs(username)} 
+              className="group p-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed" 
+              title={t("audit_log.search") || "ค้นหา"}
+              disabled={loading}
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => fetchUserAuditLogs(username)} 
+              className="group p-2.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-all duration-200 disabled:bg-orange-400 disabled:cursor-not-allowed" 
+              title={t("audit_log.refresh_data") || "รีเฟรชข้อมูล"}
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} />
+            </button>
+          </div>
+          <button 
+            onClick={() => setShowFilters(!showFilters)} 
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border-2 ${
+              showFilters 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800'
+            }`}
+          >
+            <Filter className="w-4 h-4" />
+            <span>{t("audit_log.filters") || "ตัวกรอง"}</span>
+            {[filter.mainFunc, filter.subFunc, filter.action, filter.dateRange.start, filter.dateRange.end].filter(Boolean).length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded-full">
+                {[filter.mainFunc, filter.subFunc, filter.action, filter.dateRange.start, filter.dateRange.end].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="space-y-4">
+              {/* First row - Date range */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t("audit_log.start_date") || "วันที่เริ่มต้น"}
+                      </label>
+                      <input 
+                        type="datetime-local" 
+                        value={filter.dateRange.start} 
+                        onChange={(e) => setFilter({ ...filter, dateRange: { ...filter.dateRange, start: e.target.value } })} 
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:[color-scheme:dark]" 
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t("audit_log.end_date") || "วันที่สิ้นสุด"}
+                      </label>
+                      <input 
+                        type="datetime-local" 
+                        value={filter.dateRange.end} 
+                        onChange={(e) => setFilter({ ...filter, dateRange: { ...filter.dateRange, end: e.target.value } })} 
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:[color-scheme:dark]" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Second row - Function, Action, Clear button */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t("audit_log.function") || "ฟังก์ชั่น"}
+                  </label>
+                  <select 
+                    value={filter.mainFunc} 
+                    onChange={(e) => setFilter({ ...filter, mainFunc: e.target.value })} 
+                    className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">{t("audit_log.all_functions") || "ฟังก์ชั่นทั้งหมด"}</option>
+                    {uniqueValues.mainFuncs.map(func => <option key={func} value={func}>{func.charAt(0).toUpperCase() + func.slice(1)}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t("audit_log.action") || "การกระทำ"}
+                  </label>
+                  <select 
+                    value={filter.action} 
+                    onChange={(e) => setFilter({ ...filter, action: e.target.value })} 
+                    className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">{t("audit_log.all_actions") || "การกระทำทั้งหมด"}</option>
+                    {uniqueValues.actions.map(a => <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</option>)}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button 
+                    onClick={clearFilters} 
+                    className="w-full text-center px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {t("audit_log.clear_all") || "ล้างทั้งหมด"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Summary Stats */}
-      {logs.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
-            <div className="flex items-center gap-2">
-              <Hash className="w-4 h-4 text-blue-500" />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {t("audit_log.total_activities") || "กิจกรรมทั้งหมด"}
-              </span>
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-800">
+            <tr>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {t("audit_log.user_transaction") || "ผู้ใช้ / ธุรกรรม / เวลา"}
+                </div>
+              </th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  {t("audit_log.function") || "ฟังก์ชั่น"}
+                </div>
+              </th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  {t("audit_log.message") || "ข้อความ"}
+                </div>
+              </th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  {t("audit_log.action") || "การกระทำ"}
+                </div>
+              </th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  {t("audit_log.status") || "สถานะ"}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="text-center p-12">
+                  <div className="flex justify-center items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>{t("audit_log.loading_data") || "กำลังโหลดข้อมูล..."}</span>
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={5} className="text-center p-12">
+                  <div className="flex flex-col justify-center items-center gap-2 text-red-500">
+                    <ServerCrash className="w-8 h-8" />
+                    <span>{t("audit_log.error") || "ข้อผิดพลาด"}: {error}</span>
+                    <span className="text-xs text-gray-400">
+                      {t("audit_log.error_message") || "กรุณาตรวจสอบคอนโซลหรือลองใหม่อีกครั้ง"}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : paginatedLogs.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center p-12">
+                  <div className="flex flex-col justify-center items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <Search className="w-8 h-8" />
+                    <span>{t("audit_log.no_logs_found") || "ไม่พบบันทึกการตรวจสอบ"}</span>
+                    <span className="text-xs">
+                      {t("audit_log.adjust_filters") || "ลองปรับตัวกรองของคุณ"}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              paginatedLogs.map((log) => {
+                const isExpanded = expandedLog === log.id;
+                const statusInfo = getStatusBadge(log.status);
+                const actionInfo = getActionIcon(log.action);
+                const functionInfo = getFunctionIcon(log.mainFunc, log.subFunc);
+                return (
+                  <React.Fragment key={log.id}>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/60 cursor-pointer transition-colors" onClick={() => setExpandedLog(isExpanded ? null : log.id)}>
+                      {/* User / Transaction / Time Column */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="mt-1 flex-shrink-0">
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <User className="w-3 h-3 text-blue-500" />
+                              <span className="font-medium text-gray-900 dark:text-white">{log.username}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Hash className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{log.txId}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(log.createdAt).toLocaleString('th-TH')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* Function Column */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-start gap-2">
+                          <functionInfo.icon className={`w-4 h-4 mt-0.5 ${functionInfo.color}`} />
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white capitalize">
+                              {log.mainFunc}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {log.subFunc} / {log.nameFunc}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* Message Column */}
+                      <td className="px-6 py-4">
+                        <div className="max-w-xs">
+                          <p className="text-sm text-gray-900 dark:text-white" title={log.message}>
+                            {log.message.length > 80 
+                              ? `${log.message.substring(0, 80)}...` 
+                              : log.message
+                            }
+                          </p>
+                          {log.message.length > 80 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {t("audit_log.click_to_view_full") || "คลิกเพื่อดูข้อความเต็ม"}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      
+                      {/* Action Column */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <actionInfo.icon className={`w-4 h-4 ${actionInfo.color}`} />
+                          <span className="capitalize font-medium text-gray-900 dark:text-white">{log.action}</span>
+                        </div>
+                      </td>
+                      
+                      {/* Status Column */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-2 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bg} ${statusInfo.color}`}>
+                          <statusInfo.icon className="w-3 h-3" />
+                          {statusInfo.text}
+                        </span>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={5} className="p-0">
+                          <div className="bg-gray-50 dark:bg-gray-800/50 p-6 border-t border-gray-200 dark:border-gray-700">
+                            <div className="max-w-full space-y-6">
+                              {/* Header with additional info */}
+                              <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                  <Info className="w-5 h-5 text-blue-500" />
+                                  {t("audit_log.log_details") || "รายละเอียดบันทึก"}
+                                </h3>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Hash className="w-4 h-4" />
+                                    {t("audit_log.duration") || "ระยะเวลา"}: {log.duration}ms
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Hash className="w-4 h-4" />
+                                    ID: {log.uniqueId}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Full Message */}
+                              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
+                                  <MessageSquare className="w-4 h-4" /> 
+                                  {t("audit_log.full_message") || "ข้อความเต็ม"}
+                                </h4>
+                                <p className="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 p-3 rounded border font-mono leading-relaxed whitespace-pre-wrap">
+                                  {log.message}
+                                </p>
+                              </div>
+
+                              {/* Data sections */}
+                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-900/30">
+                                  <h4 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
+                                    <FileText className="w-4 h-4" /> 
+                                    {t("audit_log.old_data") || "ข้อมูลเก่า"}
+                                  </h4>
+                                  <DataDisplay data={log.oldData} />
+                                </div>
+                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-900/30">
+                                  <h4 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
+                                    <Plus className="w-4 h-4" /> 
+                                    {t("audit_log.new_data") || "ข้อมูลใหม่"}
+                                  </h4>
+                                  <DataDisplay data={log.newData} />
+                                </div>
+                                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-900/30">
+                                  <h4 className="text-sm font-semibold text-purple-700 dark:text-purple-400 mb-3 flex items-center gap-2">
+                                    <Zap className="w-4 h-4" /> 
+                                    {t("audit_log.response_data") || "ข้อมูลการตอบสนอง"}
+                                  </h4>
+                                  <DataDisplay data={log.resData} />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Pagination */}
+      {filteredLogs.length > 0 && (
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>{t("audit_log.show") || "แสดง"}</span>
+              <select 
+                value={rowsPerPage} 
+                onChange={handleRowsPerPageChange}
+                className="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span>{t("audit_log.entries") || "รายการ"}</span>
             </div>
-            <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
-              {filteredLogs.length}
-            </p>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
+            
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {t("audit_log.success") || "สำเร็จ"}
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {t("audit_log.showing") || "กำลังแสดง"} {((currentPage - 1) * rowsPerPage) + 1} {t("audit_log.to") || "ถึง"} {Math.min(currentPage * rowsPerPage, filteredLogs.length)} {t("audit_log.of") || "จาก"} {filteredLogs.length} {t("audit_log.entries") || "รายการ"}
               </span>
+              
+              <div className="flex gap-1 ml-4">
+                <button 
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {t("audit_log.previous") || "ก่อนหน้า"}
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button 
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {t("audit_log.next") || "ถัดไป"}
+                </button>
+              </div>
             </div>
-            <p className="text-xl font-bold text-green-600 mt-1">
-              {filteredLogs.filter(log => log.status === 0).length}
-            </p>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
-            <div className="flex items-center gap-2">
-              <XCircle className="w-4 h-4 text-red-500" />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {t("audit_log.failed") || "ล้มเหลว"}
-              </span>
-            </div>
-            <p className="text-xl font-bold text-red-600 mt-1">
-              {filteredLogs.filter(log => log.status === 1).length}
-            </p>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-purple-500" />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {t("audit_log.avg_duration") || "เวลาเฉลี่ย"}
-              </span>
-            </div>
-            <p className="text-xl font-bold text-purple-600 mt-1">
-              {filteredLogs.length > 0 ? Math.round(filteredLogs.reduce((sum, log) => sum + log.duration, 0) / filteredLogs.length) : 0}ms
-            </p>
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            {t("common.filters") || "ตัวกรอง"}
-            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-          
-          {Object.values(filter).some(v => v !== '' && !(typeof v === 'object' && Object.values(v).every(val => val === ''))) && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-            >
-              <X className="w-3 h-3" />
-              {t("common.clear_filters") || "ล้างตัวกรอง"}
-            </button>
-          )}
+      {/* Toast */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`px-4 py-2 rounded-lg shadow-lg text-white text-sm ${
+            toast.type === 'success' ? 'bg-green-600' :
+            toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+          }`}>
+            {toast.message}
+          </div>
         </div>
-
-        {showFilters && (
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("common.start_date") || "วันที่เริ่ม"}
-                </label>
-                <input
-                  type="date"
-                  value={filter.dateRange.start}
-                  onChange={(e) => setFilter({...filter, dateRange: {...filter.dateRange, start: e.target.value}})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("common.end_date") || "วันที่สิ้นสุด"}
-                </label>
-                <input
-                  type="date"
-                  value={filter.dateRange.end}
-                  onChange={(e) => setFilter({...filter, dateRange: {...filter.dateRange, end: e.target.value}})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("audit_log.main_function") || "ฟังก์ชั่นหลัก"}
-                </label>
-                <select
-                  value={filter.mainFunc}
-                  onChange={(e) => setFilter({...filter, mainFunc: e.target.value})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">{t("common.all") || "ทั้งหมด"}</option>
-                  {uniqueValues.mainFuncs.map(func => (
-                    <option key={func} value={func}>{func}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("audit_log.action") || "การกระทำ"}
-                </label>
-                <select
-                  value={filter.action}
-                  onChange={(e) => setFilter({...filter, action: e.target.value})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">{t("common.all") || "ทั้งหมด"}</option>
-                  {uniqueValues.actions.map(action => (
-                    <option key={action} value={action}>{action}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("audit_log.status") || "สถานะ"}
-                </label>
-                <select
-                  value={filter.status}
-                  onChange={(e) => setFilter({...filter, status: e.target.value})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">{t("common.all") || "ทั้งหมด"}</option>
-                  <option value="0">{t("audit_log.success") || "สำเร็จ"}</option>
-                  <option value="1">{t("audit_log.failed") || "ล้มเหลว"}</option>
-                  <option value="2">{t("audit_log.warning") || "เตือน"}</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("common.search") || "ค้นหา"}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t("common.search_placeholder") || "ค้นหา..."}
-                  value={filter.search}
-                  onChange={(e) => setFilter({...filter, search: e.target.value})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Logs Cards */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-12 text-center">
-            <div className="inline-flex items-center gap-3 text-gray-500 dark:text-gray-400">
-              <RefreshCw className="w-5 h-5 animate-spin" />
-              <span className="text-lg">{t("common.loading") || "กำลังโหลด"}</span>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-red-200 dark:border-red-800 shadow-sm p-8 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <AlertCircle className="w-8 h-8 text-red-500" />
-              <div className="text-red-600 dark:text-red-400">
-                <p className="font-medium">{t("common.error") || "เกิดข้อผิดพลาด"}</p>
-                <p className="text-sm mt-1">{error}</p>
-              </div>
-            </div>
-          </div>
-        ) : paginatedLogs.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-12 text-center">
-            <div className="flex flex-col items-center gap-3 text-gray-500 dark:text-gray-400">
-              <Activity className="w-8 h-8" />
-              <div>
-                <p className="text-lg font-medium">{t("audit_log.no_data") || "ไม่พบข้อมูล Audit Log"}</p>
-                <p className="text-sm mt-1">{t("audit_log.no_activities_found") || "ไม่พบกิจกรรมของผู้ใช้นี้"}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {paginatedLogs.map((log) => {
-              const isExpanded = expandedLog === log.id;
-              const statusInfo = getStatusBadge(log.status);
-              const functionInfo = getFunctionIcon(log.mainFunc, log.subFunc);
-              const actionInfo = getActionIcon(log.action);
-              
-              return (
-                <div key={log.id} className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                  <div 
-                    className="p-4 cursor-pointer"
-                    onClick={() => setExpandedLog(isExpanded ? null : log.id)}
-                  >
-                    {/* Card Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2 flex-1">
-                        <functionInfo.icon className={`w-4 h-4 ${functionInfo.color} flex-shrink-0`} />
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">
-                            {log.nameFunc || log.mainFunc}
-                          </h4>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            {log.subFunc && log.subFunc !== log.mainFunc ? `${log.mainFunc}.${log.subFunc}` : log.mainFunc}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.bg}`}>
-                          <statusInfo.icon className={`w-3 h-3 ${statusInfo.color}`} />
-                          {statusInfo.text}
-                        </div>
-                        
-                        {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />}
-                      </div>
-                    </div>
-                    
-                    {/* Card Content */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <actionInfo.icon className={`w-3 h-3 ${actionInfo.color} flex-shrink-0`} />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">{t("audit_log.action") || "การกระทำ"}</p>
-                          <p className="font-medium text-gray-900 dark:text-white truncate">{log.action}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-purple-500 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">{t("audit_log.datetime") || "วันที่เวลา"}</p>
-                          <p className="font-medium text-gray-900 dark:text-white text-xs truncate">
-                            {formatDateTime(log.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1.5">
-                        <Hash className="w-3 h-3 text-gray-500 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">{t("audit_log.duration") || "ระยะเวลา"}</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{log.duration}ms</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1.5">
-                        <MessageSquare className="w-3 h-3 text-blue-500 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">{t("audit_log.message") || "ข้อความ"}</p>
-                          <p className="font-medium text-gray-900 dark:text-white text-xs truncate" title={log.message}>
-                            {log.message}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Expanded Content */}
-                  {isExpanded && (
-                    <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800/50">
-                      {/* Basic Information */}
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          {t("audit_log.basic_info") || "ข้อมูลพื้นฐาน"}
-                        </h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.username") || "ชื่อผู้ใช้"}:</span>
-                            <div className="text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.username}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.org_id") || "รหัสองค์กร"}:</span>
-                            <div className="text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.orgId}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.function_name") || "ชื่อฟังก์ชัน"}:</span>
-                            <div className="text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.nameFunc || log.mainFunc}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.sub_function") || "ฟังก์ชันย่อย"}:</span>
-                            <div className="text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.subFunc}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Transaction Details */}
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm flex items-center gap-2">
-                          <Hash className="w-4 h-4" />
-                          {t("audit_log.transaction_details") || "รายละเอียดธุรกรรม"}
-                        </h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.transaction_id") || "Transaction ID"}:</span>
-                            <div className="font-mono text-gray-600 dark:text-gray-400 break-all mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.txId}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.unique_id") || "Unique ID"}:</span>
-                            <div className="font-mono text-gray-600 dark:text-gray-400 break-all mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                              {log.uniqueId}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Full Message */}
-                        <div className="mt-3">
-                          <span className="font-medium text-gray-700 dark:text-gray-300">{t("audit_log.full_message") || "ข้อความทั้งหมด"}:</span>
-                          <div className="text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded border text-xs">
-                            {log.message}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Data Details */}
-                      {(Object.keys(log.newData).length > 0 || Object.keys(log.oldData).length > 0 || Object.keys(log.resData).length > 0) && (
-                        <div>
-                          <h5 className="font-medium text-gray-900 dark:text-white mb-3 text-sm flex items-center gap-2">
-                            <Database className="w-4 h-4" />
-                            {t("audit_log.data_details") || "รายละเอียดข้อมูล"}
-                          </h5>
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {Object.keys(log.newData).length > 0 && (
-                              <div>
-                                <h6 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-xs flex items-center gap-1">
-                                  <Plus className="w-3 h-3 text-green-500" />
-                                  {t("audit_log.new_data") || "ข้อมูลใหม่"}
-                                </h6>
-                                <DataDisplay data={log.newData} />
-                              </div>
-                            )}
-                            {Object.keys(log.oldData).length > 0 && (
-                              <div>
-                                <h6 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-xs flex items-center gap-1">
-                                  <Clock className="w-3 h-3 text-orange-500" />
-                                  {t("audit_log.old_data") || "ข้อมูลเดิม"}
-                                </h6>
-                                <DataDisplay data={log.oldData} />
-                              </div>
-                            )}
-                            {Object.keys(log.resData).length > 0 && (
-                              <div>
-                                <h6 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-xs flex items-center gap-1">
-                                  <CheckCircle className="w-3 h-3 text-blue-500" />
-                                  {t("audit_log.result_data") || "ผลลัพธ์"}
-                                </h6>
-                                <DataDisplay data={log.resData} />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {/* Pagination */}
-        {filteredLogs.length > 0 && (
-          <div className="bg-white dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3">
-              <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <span>{t("common.show") || "แสดง"}:</span>
-                  <select 
-                    value={rowsPerPage} 
-                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                  </select>
-                  <span>{t("common.items") || "รายการ"}</span>
-                </div>
-                
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {t("common.showing") || "แสดง"} {((currentPage - 1) * rowsPerPage) + 1}-{Math.min(currentPage * rowsPerPage, filteredLogs.length)} {t("common.of") || "จาก"} {filteredLogs.length} {t("common.items") || "รายการ"}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 transition-colors"
-                >
-                  <ChevronUp className="w-3 h-3 rotate-[-90deg]" />
-                  {t("common.previous") || "ก่อนหน้า"}
-                </button>
-                
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-7 h-7 text-xs rounded transition-colors ${
-                          currentPage === pageNum
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 transition-colors"
-                >
-                  {t("common.next") || "ถัดไป"}
-                  <ChevronUp className="w-3 h-3 rotate-90" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default UserAuditLog;
