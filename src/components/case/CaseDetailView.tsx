@@ -805,7 +805,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData, , editFormData]);
 
     const selectedCaseTypeForm = useMemo(() => {
-        if (!isCreate && caseState?.caseType?.formField) {
+        if (caseState?.caseType?.formField) {
             const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType);
             if (currentCaseType?.typeId === caseState.caseType.typeId &&
                 currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
@@ -1125,7 +1125,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             }
         }
         setShowAssignModal(false);
-    }, [unit?.data]);
+    }, [unit?.data,sopLocal]);
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1392,6 +1392,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [initialCaseData, postDispatch, refetch]);
 
     const handleDispatch = useCallback(async (officer: Unit) => {
+        
         const dispatchjson = {
             unitId: officer.unitId,
             caseId: initialCaseData!.caseId,
@@ -1430,7 +1431,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, postDispatch, sopLocal, refetch]);
+    }, [initialCaseData, postDispatch,  sopLocal, refetch]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1598,7 +1599,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             required: false,
                             showLabel: true,
                             type: "textInput",
-                            value: ""
+                            value: "WS-001-ABC789"
                         },
                         {
                             colSpan: 1,
@@ -1609,7 +1610,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             required: false,
                             showLabel: true,
                             type: "textInput",
-                            value: ""
+                            value: "200 เมตร"
                         },
                         {
                             colSpan: 2,
@@ -1620,7 +1621,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             required: false,
                             showLabel: true,
                             type: "textAreaInput",
-                            value: ""
+                            value: "ลง   500 m"
                         }
                     ]
                 },
