@@ -8,10 +8,10 @@ import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { Unit } from "@/store/api/dispatch"
-import { DepartmentCommandStationData, DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
+import { CaseSop, Unit } from "@/store/api/dispatch"
 import { unitStatus } from "../ui/status/status"
 import SkillModal from "./officerSkillModal"
+import { Area, mergeArea } from "@/store/api/area"
 
 
 const SkillsDisplay = ({ skills }: { skills: Array<{ skillId: string, en: string, th: string }> }) => {
@@ -71,6 +71,7 @@ interface AssignOfficerModalProps {
   onAssign: (selectedOfficerIds: string[]) => void
   assignedOfficers?: Unit[]
   canDispatch?: boolean
+  caseData: CaseSop | undefined
 }
 
 type SortableColumns = keyof Omit<Unit, "id">
@@ -139,6 +140,7 @@ export default function AssignOfficerModal({
   onOpenChange,
   officers,
   onAssign,
+  caseData,
   assignedOfficers = [],
   canDispatch = true,
 }: AssignOfficerModalProps) {
@@ -148,6 +150,9 @@ export default function AssignOfficerModal({
   const [sortDirection] = useState<"asc" | "desc">("asc")
   const [showModel, setShowModel] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
+  const areaList = useMemo(() =>
+    JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
+  );
   // Reset selection when modal opens and set initial assigned officers
   useEffect(() => {
     if (open) {
@@ -161,21 +166,21 @@ export default function AssignOfficerModal({
   }, [open, assignedOfficers])
 
   // Memoized data
-  const departmentCommandStations = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("DeptCommandStations_data") ?? "[]") as DepartmentCommandStationData[]
-    } catch {
-      return []
-    }
-  }, [])
+  // const departmentCommandStations = useMemo(() => {
+  //   try {
+  //     return JSON.parse(localStorage.getItem("DeptCommandStations_data") ?? "[]") as DepartmentCommandStationData[]
+  //   } catch {
+  //     return []
+  //   }
+  // }, [])
 
-  const serviceCenter = useMemo(() =>
-    departmentCommandStations.map((item) => ({
-      ...item,
-      name: mergeDeptCommandStation(item)
-    })) as DepartmentCommandStationDataMerged[],
-    [departmentCommandStations]
-  )
+  // const serviceCenter = useMemo(() =>
+  //   departmentCommandStations.map((item) => ({
+  //     ...item,
+  //     name: mergeDeptCommandStation(item)
+  //   })) as DepartmentCommandStationDataMerged[],
+  //   [departmentCommandStations]
+  // )
 
   // Filter officers based on search term
   const filteredOfficers = useMemo(() => {
@@ -308,7 +313,7 @@ export default function AssignOfficerModal({
             <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-6 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                <div className="grid grid-cols-5 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
                   <div className="flex items-center justify-center space-x-2 ">
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
@@ -320,9 +325,9 @@ export default function AssignOfficerModal({
                     />
                   </div>
                   <div className="flex items-center justify-center">Name</div>
-                  <div className="flex items-center justify-center">Login</div>
+                  {/* <div className="flex items-center justify-center">Login</div> */}
                   <div className="flex items-center justify-center">Status</div>
-                  <div className="flex items-center justify-center">Department-Command-Station</div>
+                  <div className="flex items-center justify-center">Area</div>
                   <div className="flex items-center justify-center">Skills</div>
                 </div>
               </div>
@@ -341,7 +346,7 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-6 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`grid grid-cols-5 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}
@@ -370,28 +375,38 @@ export default function AssignOfficerModal({
                                 {officer.username}
                               </span>
                             </div>
-                            <div className="flex items-center justify-center">
+                            {/* <div className="flex items-center justify-center">
                               <div className={`w-3 h-3 rounded-full ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
                               </div>
-                            </div>
+                            </div> */}
                             <div className="flex items-center justify-center">
                               {(() => {
                                 const status = unitStatus.find(column => column.group.includes(officer.sttId));
                                 return (
-                                  <Badge
-                                    color={status?.color || "secondary"}
-                                    variant={status?.variant || "light"}
-                                  >
-                                    {status?.title || "-"}
-                                  </Badge>
+                                  <div className=" flex items-center justify-center ">
+                                    <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+                                    </div>
+                                    <Badge
+                                      color={status?.color || "secondary"}
+                                      variant={status?.variant || "light"}
+                                    >
+                                      {status?.title || "-"}
+                                    </Badge>
+                                  </div>
                                 );
                               })()}
                             </div>
                             <div className="flex items-center justify-center text-gray-600 dark:text-gray-300 text-center">
-                              {mergeDeptCommandStation(serviceCenter.find((items) => officer.deptId === items.deptId
-                                && officer.stnId === items.stnId
-                                && officer.commId === items.commId
-                              ) ?? {} as DepartmentCommandStationData) || "-"}
+                              {(() => {
+                                const matchedArea = areaList.find(
+                                  item =>
+                                    caseData?.provId === item.provId &&
+                                    caseData?.countryId === item.countryId &&
+                                    caseData?.distId === item.distId
+                                );
+                                return matchedArea ? mergeArea(matchedArea) : "-";
+                              })()}
+
                             </div>
                             <div className="flex items-center justify-center">
                               <SkillsDisplay skills={officer.skillLists || []} />

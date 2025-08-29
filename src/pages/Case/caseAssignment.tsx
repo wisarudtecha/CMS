@@ -140,7 +140,7 @@ export default function CasesView() {
         if (a.priority !== b.priority) {
           return a.priority - b.priority;
         }
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
   }
 
@@ -587,8 +587,8 @@ export default function CasesView() {
                   size="sm"
                   onClick={() => setViewMode("kanban")}
                   className={`flex-1 sm:flex-none ${viewMode === "kanban"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     }`}
                 >
                   <LayoutGrid className="w-4 h-4 mr-2" />
@@ -599,8 +599,8 @@ export default function CasesView() {
                   size="sm"
                   onClick={() => setViewMode("list")}
                   className={`flex-1 sm:flex-none ${viewMode === "list"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     }`}
                 >
                   <List className="w-4 h-4 mr-2" />
@@ -646,8 +646,8 @@ export default function CasesView() {
             <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
               <div
                 className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === null
-                    ? 'font-semibold text-blue-600 dark:text-blue-400'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'font-semibold text-blue-600 dark:text-blue-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 onClick={() => setSelectedStatus(null)}
               >
@@ -660,8 +660,8 @@ export default function CasesView() {
                 <div
                   key={col.title}
                   className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === col.title
-                      ? 'font-semibold text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'font-semibold text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   onClick={() => setSelectedStatus(col.title)}
                 >

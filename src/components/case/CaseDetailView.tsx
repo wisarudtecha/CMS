@@ -10,7 +10,7 @@ import Button from "@/components/ui/button/Button"
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
-import { formType, FormField } from "@/components/interface/FormField"
+import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
 import { getPriorityColorClass } from "../function/Prioriy"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
@@ -632,7 +632,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [sopLocal, setSopLocal] = useState<CaseSop>();
-    const [caseType, setCaseType] = useState<{ caseType: string, priority: number }>({ caseType: "", priority: 0 });
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -701,7 +700,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             );
             setTriggerFetch(null);
         }
-    }, [apiFormData]);
+    }, [apiFormData, triggerFetch]);
 
     // Initialize sopLocal from API data ONLY when sopData changes
     useEffect(() => {
@@ -743,55 +742,33 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
 
         fetchData();
-    }, [dispatchUnit, sopData]);
+    }, [dispatchUnit, sopData, getSopUnit, initialCaseData?.caseId]);
 
-    // Initialize case type from caseData ONLY ONCE
-    useEffect(() => {
-        if (initialCaseData && caseTypeSupTypeData.length > 0 && !sopLocal) {
-            const newCaseType = {
-                caseType: mergeCaseTypeAndSubType(
-                    findCaseTypeSubTypeByTypeIdSubTypeId(
-                        caseTypeSupTypeData,
-                        sopData?.data?.caseTypeId || "",
-                        sopData?.data?.caseSTypeId || ""
-                    ) ?? ({} as CaseTypeSubType)
-                ) || "",
-                priority: initialCaseData.priority || 0
-            };
-            setCaseType(prev => {
-                if (JSON.stringify(prev) !== JSON.stringify(newCaseType)) {
-                    return newCaseType;
-                }
-                return prev;
-            });
-        }
-    }, [initialCaseData]);
 
     useEffect(() => {
-
-        if (!caseType.caseType || !caseTypeSupTypeData.length) {
+        if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
             return;
         }
 
-        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType);
+        const foundCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType);
 
-        if (!newCaseType?.sTypeId) {
+        if (!foundCaseType?.sTypeId) {
             return;
         }
 
-        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
-        if (formFieldStr === null && triggerFetch !== newCaseType.sTypeId) {
-            setTriggerFetch(newCaseType.sTypeId);
+        const formFieldStr = localStorage.getItem("subTypeForm-" + foundCaseType.sTypeId);
+        if (formFieldStr === null && triggerFetch !== foundCaseType.sTypeId) {
+            setTriggerFetch(foundCaseType.sTypeId);
         }
-    }, [caseType.caseType, caseTypeSupTypeData, triggerFetch]);
+    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, triggerFetch]);
 
 
     const getFormByCaseType = useCallback(() => {
-        if (!caseType.caseType || !caseTypeSupTypeData.length) {
+        if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
             return undefined;
         }
 
-        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseType.caseType);
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType);
 
         if (!newCaseType?.sTypeId) {
             return undefined;
@@ -825,17 +802,17 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
             error: error,
         } as formType & { isLoading: boolean; error: any };
-    }, [caseType.caseType, triggerFetch, apiFormData, apiIsLoading, error]);
+    }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData, , editFormData]);
 
     const selectedCaseTypeForm = useMemo(() => {
+        if (caseState?.caseType) {
+            return caseState?.caseType
+        }
         return getFormByCaseType()
     }, [getFormByCaseType]);
 
-
-
-    // Initialize case state from sopLocal data ONLY when all required data is available
     useEffect(() => {
-        if (initialCaseData && sopLocal && areaList.length > 0 && !caseState) {
+        if (initialCaseData && sopLocal && areaList.length > 0 && !caseState && caseTypeSupTypeData.length > 0) {
             const utcTimestamp: string | undefined = sopLocal?.createdAt;
             const area = areaList.find((items) =>
                 sopLocal.provId === items.provId &&
@@ -843,10 +820,21 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 sopLocal.countryId === items.countryId
             );
 
+            const initialCaseTypeData = findCaseTypeSubTypeByTypeIdSubTypeId(
+                caseTypeSupTypeData,
+                sopLocal.caseTypeId,
+                sopLocal.caseSTypeId
+            ) ?? {} as CaseTypeSubType;
+
+            const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData);
             const newCaseState: CaseDetails = {
                 location: sopLocal?.caselocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
-                caseType: getFormByCaseType(),
+                caseType: {
+                    ...initialCaseTypeData,
+                    caseType: initialMergedCaseType,
+                    formField: sopLocal?.formAnswer || {} as FormFieldWithNode,
+                },
                 priority: sopLocal?.priority || 0,
                 description: sopLocal?.caseDetail || "",
                 workOrderNummber: sopLocal?.caseId || "",
@@ -871,7 +859,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setCaseState(newCaseState);
         }
 
-    }, [sopLocal, initialCaseData, areaList.length]);
+    }, [sopLocal, initialCaseData, areaList.length, caseTypeSupTypeData, isSubCase]);
 
 
     useEffect(() => {
@@ -882,7 +870,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [selectedCaseTypeForm]);
 
-    // Update customer data ONLY when necessary data is available
+
     useEffect(() => {
         if (listCustomerData.length > 0) {
             const result = listCustomerData.find(items => items.mobileNo === initialCaseData?.phoneNo)
@@ -945,7 +933,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     const handleCheckRequiredFields = useCallback(() => {
         let errorMessage = "";
-        if (!caseType.caseType) {
+        if (!caseState?.caseType?.caseType) {
             errorMessage = "Please select a Case Type.";
         } else if (!caseState?.workOrderNummber) {
             errorMessage = "Please enter Work Order Number.";
@@ -957,15 +945,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
         return errorMessage;
-    }, [caseType.caseType, caseState, isValueFill, selectedCaseTypeForm]);
+    }, [caseState, isValueFill, selectedCaseTypeForm]);
 
     const handleCheckRequiredFieldsSaveDraft = useCallback(() => {
         let errorMessage = "";
-        if (!caseType.caseType) {
+        if (!caseState?.caseType?.caseType) {
             errorMessage = "Please select a Service Type.";
         }
         return errorMessage;
-    }, [caseType.caseType]);
+    }, [caseState?.caseType?.caseType]);
 
     const createCaseAction = useCallback(async (action: "draft" | "submit") => {
         if (!caseState) return false;
@@ -1030,7 +1018,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             localStorage.setItem("caseList", JSON.stringify(caseList));
         }
         return true;
-    }, [caseState, profile, createCase]);
+    }, [caseState, profile, createCase, navigate]);
 
     const updateCaseInLocalStorage = useCallback((updateJson: CreateCase) => {
         try {
@@ -1125,16 +1113,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [sopLocal, profile]);
 
-    const handleAssignOfficers = useCallback((selectedOfficerIds: string[]) => {
+    const handleAssignOfficers = useCallback(async (selectedOfficerIds: string[]) => {
         const selected = unit?.data?.filter(o => selectedOfficerIds.includes(o.unitId));
         if (selected) {
-            selected.forEach(async (item) => {
-                await handleDispatch(item)
-            })
-            // setAssignedOfficers(selected);
+            for (const item of selected) {
+                await handleDispatch(item);
+            }
         }
         setShowAssignModal(false);
-    }, [unit?.data, sopData]);
+    }, [unit?.data]);
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1199,7 +1186,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return;
         }
-    }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile]);
+    }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile, unitRefect]);
 
     const handleCreateCase = useCallback(async () => {
 
@@ -1233,13 +1220,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
         if (newCaseType) {
-            setCaseType(prevCaseType => ({
-                ...prevCaseType,
-                caseType: newValue
-            }));
             setCaseState(
                 prev => prev ? {
                     ...prev,
+                    priority: newCaseType.priority,
                     caseType: {
                         ...newCaseType,
                         caseType: mergeCaseTypeAndSubType(newCaseType)
@@ -1317,9 +1301,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
 
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
-        const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseType.caseType } as formType;
+        const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseState?.caseType?.caseType ?? "" } as formType;
         updateCaseState({ caseType: newData });
-    }, [caseType.caseType, selectedCaseTypeForm, updateCaseState]);
+    }, [caseState?.caseType?.caseType, selectedCaseTypeForm, updateCaseState]);
 
     const handleSetArea = useCallback((selectedName: string) => {
         const selected = areaList.find(item => mergeArea(item) === selectedName);
@@ -1395,14 +1379,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, postDispatch, sopData]);
+    }, [initialCaseData, postDispatch, refetch]);
 
     const handleDispatch = useCallback(async (officer: Unit) => {
         const dispatchjson = {
             unitId: officer.unitId,
             caseId: initialCaseData!.caseId,
-            nodeId: sopData?.data?.dispatchStage?.nodeId,
-            status: sopData?.data?.dispatchStage?.data?.data?.config?.action,
+            nodeId: sopLocal?.dispatchStage?.nodeId,
+            status: sopLocal?.dispatchStage?.data?.data?.config?.action,
             unitUser: officer.username
         };
         console.log("Dispatching with:", dispatchjson);
@@ -1436,7 +1420,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, postDispatch, sopData]);
+    }, [initialCaseData, postDispatch, sopData, refetch]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -1634,7 +1618,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
 
             },
-            priority: 0,
+            priority: 5,
             description: "เซ็นเซอร์น้ำขัดข้อง",
             area: {
                 id: "62",
@@ -1661,7 +1645,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             workOrderDate: "2025-08-27T16:40"
         };
         setCaseState(exampleCaseState as CaseDetails)
-        setCaseType({ caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ", priority: 0 })
     }
     // Main component
     return (
@@ -1730,7 +1713,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         caseState={caseState}
                                         caseData={initialCaseData}
                                         setCaseState={setCaseState}
-                                        caseType={caseType}
+                                        caseType={{
+                                            caseType: caseState?.caseType?.caseType ?? "",
+                                            priority: caseState?.priority ?? 0
+                                        }}
                                         selectedCaseTypeForm={selectedCaseTypeForm}
                                         caseTypeSupTypeData={caseTypeSupTypeData}
                                         areaList={areaList}
@@ -1759,7 +1745,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         handleExampleData={handleExampleData}
                                     />
                                 ) : (
-                                    <FormFieldValueDisplay caseData={caseState} showResult={true} />
+                                    <FormFieldValueDisplay
+                                        caseData={caseState} showResult={true}
+                                        isCreate={isCreate} />
                                 )}
                             </div>
                         </div>
@@ -1809,6 +1797,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
                 officers={unit?.data || []}
+                caseData={sopLocal }
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
                 canDispatch={sopData?.data?.dispatchStage.data ? true : false}

@@ -549,11 +549,22 @@ export default function NotificationDropdown() {
                 >
                   <div className="flex items-start gap-3 w-full">
                     <div className="relative flex-shrink-0 mt-1">
-                      <img
-                        src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
-                        alt="Sender"
-                        className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
-                      />
+                      {noti.eventType.toLowerCase() === "broadcast" && (!noti.senderPhoto || noti.senderPhoto.trim() === "") ? (
+                        <div className="h-12 w-12 rounded-full border border-gray-300 dark:border-gray-600 bg-teal-100 dark:bg-teal-900 flex items-center justify-center">
+                          <img 
+                            src="/images/notification/broadcast.svg" 
+                            alt="Broadcast" 
+                            className="h-6 w-6"
+                            style={{ filter: 'invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)' }}
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
+                          alt="Sender"
+                          className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
+                        />
+                      )}
                     </div>
 
                     <div className="flex flex-col w-full gap-1">
@@ -758,11 +769,22 @@ export default function NotificationDropdown() {
                 >
                   <div className="flex items-start gap-3 w-full">
                     <div className="relative flex-shrink-0 mt-6">
-                      <img
-                        src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
-                        alt="Sender"
-                        className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
-                      />
+                      {noti.eventType.toLowerCase() === "broadcast" && (!noti.senderPhoto || noti.senderPhoto.trim() === "") ? (
+                        <div className="h-12 w-12 rounded-full border border-gray-300 dark:border-gray-600 bg-teal-100 dark:bg-teal-900 flex items-center justify-center">
+                          <img 
+                            src="/images/notification/broadcast.svg" 
+                            alt="Broadcast" 
+                            className="h-6 w-6"
+                            style={{ filter: 'invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)' }}
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
+                          alt="Sender"
+                          className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
+                        />
+                      )}
                     </div>
 
                     <div className="flex flex-col w-full gap-1">

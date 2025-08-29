@@ -55,7 +55,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             }
         } else {
             updatedCustomerData = {
-                name:""
+                ...updatedCustomerData
             } as Custommer;
         }
         handleCustomerDataChange(updatedCustomerData);

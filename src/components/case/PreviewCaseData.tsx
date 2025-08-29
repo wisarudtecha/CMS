@@ -100,7 +100,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                     </>
                 )}
 
-                <FormFieldValueDisplay caseData={caseData} />
+                <FormFieldValueDisplay caseData={caseData} isCreate={true} />
 
                 {submitButton && (
                     <div className="flex justify-end">
