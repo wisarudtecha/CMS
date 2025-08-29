@@ -802,12 +802,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
             error: error,
         } as formType & { isLoading: boolean; error: any };
-    }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData]);
+    }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData, , editFormData]);
 
     const selectedCaseTypeForm = useMemo(() => {
-        if(isCreate){
-            return getFormByCaseType()
+        if (caseState?.caseType) {
+            return caseState?.caseType
         }
+        return getFormByCaseType()
     }, [getFormByCaseType]);
 
     useEffect(() => {
@@ -826,7 +827,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             ) ?? {} as CaseTypeSubType;
 
             const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData);
-
             const newCaseState: CaseDetails = {
                 location: sopLocal?.caselocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
@@ -859,7 +859,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setCaseState(newCaseState);
         }
 
-    }, [sopLocal, initialCaseData, areaList.length, caseState, caseTypeSupTypeData, isSubCase]);
+    }, [sopLocal, initialCaseData, areaList.length, caseTypeSupTypeData, isSubCase]);
 
 
     useEffect(() => {
