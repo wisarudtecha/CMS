@@ -297,7 +297,7 @@ export default function CasesView() {
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
           <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
-          <Badge>
+          <Badge className="flex flex-col justify-center items-center text-center truncate">
             {
               caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
             }

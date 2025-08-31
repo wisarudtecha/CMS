@@ -1,6 +1,6 @@
 import { UnitWithSop } from "@/store/api/dispatch"
 import { Dialog, DialogContent } from "@/components/ui/dialog/dialog"
-import { CaseCard } from "./sopCard"
+import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 interface OfficerDataModal {
     // open: boolean
     officer: UnitWithSop
@@ -12,25 +12,41 @@ export default function OfficerDataModal({
     // open,
     onOpenChange,
 }: OfficerDataModal) {
-
+    const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
+    if (isLoading) {
+        return (
+            <Dialog open={!!officer} onOpenChange={onOpenChange}>
+                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )
+    }
     return (
         <Dialog open={!!officer} onOpenChange={onOpenChange}>
             <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-99999 rounded-lg shadow-2xl">
-                {/* <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                    <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                            <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
+                    Officer Data
+                    <div>
+                        <div className="grid-cols-2 grid gap-2">
+                            <div>
+                                Name : {userData?.data?.firstName + " " + userData?.data?.lastName}
+                            </div>
+                            <div>
+                                Mobile Number : {userData?.data?.mobileNo}
+                            </div>
                         </div>
                         <div>
-                            <span>รายการทักษะ</span>
-                            <p className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
-                                เจ้าหน้าที่: {officer?.username || 'ไม่ระบุ'}
-                            </p>
+                            Address : {userData?.data?.address}
                         </div>
-                    </DialogTitle>
-                </DialogHeader> */}
+                    </div>
+                </div>
                 <div className=" overflow-auto custom-scrollbar">
-                    <CaseCard caseData={officer.Sop} editFormData={false} showAttachButton={false} showCommentButton={false} />
+                    {/* <CaseCard caseData={officer.Sop} editFormData={false} showAttachButton={false} showCommentButton={false} /> */}
+
                     <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
                         <div className="mb-2">
                             <span className="text-xs text-gray-500 dark:text-gray-400">หน่วยงาน</span>

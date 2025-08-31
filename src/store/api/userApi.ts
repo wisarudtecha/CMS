@@ -22,6 +22,7 @@ import type {
   // UserCreateData,
   UserGroup,
   UserGroupQueryParams,
+  UserProfile,
   UserQueryParams,
   // UserUpdateData
 } from "@/types/user";
@@ -210,6 +211,13 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [{ type: "User", id }],
     }),
 
+    getUserByUserName: builder.query<ApiResponse<UserProfile>, { username: string }>({
+      query: ({ username }) => ({
+        url: `/users/username/${username}`,
+        method: "GET",
+      }),
+    }),
+
     // Bulk operations
     bulkUpdateUsers: builder.mutation<ApiResponse<{ successful: string[]; failed: string[] }>, {
       userIds: string[];
@@ -308,4 +316,5 @@ export const {
   useCreateDepartmentMutation,
   useImpersonateUserMutation,
   useStopImpersonationMutation,
+  useGetUserByUserNameQuery,
 } = userApi;

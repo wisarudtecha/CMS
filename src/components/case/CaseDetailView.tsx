@@ -1218,8 +1218,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 setToastType("success");
                 setShowToast(true);
             } else {
-                setToastMessage("Changes saved to server, but localStorage update failed");
+                setToastMessage("Changes saved to server");
                 setToastType("success");
+                setEditFormData(false);
                 setShowToast(true);
             }
             unitRefect()
