@@ -12,6 +12,8 @@ interface InputProps {
   className?: string;
   min?: string;
   max?: string;
+  minlength?: number;
+  maxlength?: number;
   step?: number;
   disabled?: boolean;
   success?: boolean;
@@ -52,7 +54,9 @@ const Input: FC<InputProps> = ({
   checked = false, 
   required = false,
   readOnly= false,
-  lang
+  lang,
+  minlength,
+  maxlength
 }) => {
   let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${className}`;
 
@@ -90,6 +94,9 @@ const Input: FC<InputProps> = ({
         required={required}
         readOnly={readOnly}
         lang={lang}
+        minLength={minlength}
+        maxLength={maxlength}
+        
       />
 
       {hint && (

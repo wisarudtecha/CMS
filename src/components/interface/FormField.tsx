@@ -14,6 +14,33 @@ export interface IndividualFormField {
   isChild?: boolean;
   GroupColSpan?: number;
   DynamicFieldColSpan?: number;
+  formRule?:FormRule
+}
+
+export interface FormRule {
+  maxLength?: number;
+  minLength?: number;
+  contain?: string;
+  maxnumber?: number;
+  minnumber?: number;
+  validEmailFormat?: boolean;
+  maxSelections?: number;
+  minSelections?: number;
+  maxFileSize?: number;
+  allowedFileTypes?: string[];
+  hasUppercase?: boolean;
+  hasLowercase?: boolean;
+  hasNumber?: boolean;
+  hasSpecialChar?: boolean;
+  noWhitespace?: boolean;
+  minDate?: string;
+  maxDate?: string;
+  minLocalDate?:string
+  maxLocalDate?:string
+  futureDateOnly?: boolean;
+  pastDateOnly?: boolean;
+  minFiles?: number;
+  maxFiles?: number;
 }
 
 export interface IndividualFormFieldWithChildren extends IndividualFormField {

@@ -35,12 +35,13 @@ import {
   LetterText,
   Slack,
   FileIcon,
+  Settings,
 } from 'lucide-react';
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import TextArea from "../input/TextArea";
 import { Modal } from "@/components/ui/modal";
-import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren } from "@/components/interface/FormField";
+import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren, FormRule } from "@/components/interface/FormField";
 // --- Interface Definitions ---
 import Toast from "@/components/toast/Toast";
 import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
@@ -57,6 +58,8 @@ interface DynamicFormProps {
   saveDraftsLocalStoreName?: string;
   onFormChange?: (data: FormField) => void;
   returnFormAllFill?: (isFill: boolean) => void;
+  returnValidValue?: (isValid: boolean) => void;
+  showValidationErrors?: boolean;
 }
 const maxGridCol = 5
 // --- Responsive Helper Functions & Maps ---
@@ -141,7 +144,8 @@ const DndImageUploader: React.FC<{
   existingFile: File | null;
   handleRemoveFile: () => void;
   disabled?: boolean;
-}> = ({ onFileSelect, existingFile, handleRemoveFile, disabled }) => {
+  accept?: string;
+}> = ({ onFileSelect, existingFile, handleRemoveFile, disabled, accept }) => {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -213,7 +217,7 @@ const DndImageUploader: React.FC<{
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={accept || "image/*"}
             onChange={handleFileChange}
             className="hidden"
             disabled={disabled}
@@ -225,13 +229,58 @@ const DndImageUploader: React.FC<{
     </div>
   );
 };
+interface MultiImageUploadProps {
+  field: {
+    id: string;
+    formRule?: {
+      allowedFileTypes?: string[];
+    };
+  };
+  labelComponent: React.ReactNode;
+  onFilesSelect: (files: File[]) => void;
+}
+
+const MultiImageUpload: React.FC<MultiImageUploadProps> = ({field, labelComponent, onFilesSelect }) => {
+  const [, setSelectedFileNames] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setSelectedFileNames((prev) => [...prev, ...fileArray.map((f) => f.name)]);
+      onFilesSelect(fileArray);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  return (
+    <>
+      {labelComponent}
+      <div>
+        <input
+          ref={fileInputRef}
+          id={field.id}
+          type="file"
+          accept={field.formRule?.allowedFileTypes?.join(",") || "image/*"}
+          multiple
+          className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600"
+          onChange={handleFileChange}
+        />
+      </div>
+    </>
+  );
+};
 
 const DndMultiImageUploader: React.FC<{
   onFilesSelect: (files: File[]) => void;
   existingFiles: (File | { name: string; url: string;[key: string]: any })[]; // Updated type for existingFiles
-  handleRemoveFile: (fileName: string) => void;
+  handleRemoveFile: (index: number) => void;
   disabled?: boolean;
-}> = ({ onFilesSelect, existingFiles, handleRemoveFile, disabled }) => {
+  accept?: string;
+}> = ({ onFilesSelect, existingFiles, handleRemoveFile, disabled, accept }) => {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -273,6 +322,9 @@ const DndMultiImageUploader: React.FC<{
     const files = e.target.files;
     if (files && files.length > 0) {
       onFilesSelect(Array.from(files));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -297,7 +349,7 @@ const DndMultiImageUploader: React.FC<{
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={accept || "image/*"}
           multiple
           onChange={handleFileChange}
           className="hidden"
@@ -326,7 +378,7 @@ const DndMultiImageUploader: React.FC<{
                   alt={`Upload ${index + 1}`}
                   className="w-full h-full object-cover rounded border border-gray-300 dark:border-gray-600"
                 />
-                <Button onClick={() => handleRemoveFile(file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
+                <Button onClick={() => handleRemoveFile(index)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
               </div>
             );
           })}
@@ -348,7 +400,7 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
 
 
 
-// --- Main DynamicForm Component ---
+
 const formConfigurations: FormConfigItem[] = [
   { formType: "textInput", title: "Text", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
   { formType: "Integer", title: "Number", canBeChild: true, property: ["maxnumber", "minnumber"] },
@@ -358,11 +410,11 @@ const formConfigurations: FormConfigItem[] = [
   { formType: "select", title: "Single-Select", options: [], canBeChild: true },
   { formType: "image", title: "Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
   { formType: "dndImage", title: "DnD Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
-  { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles",] },
-  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles",] },
+  { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
+  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
   { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
   { formType: "dateInput", title: "Date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
-  { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
+  { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minLocalDate", "maxLocalDate", "futureDateOnly", "pastDateOnly"] },
   { formType: "radio", title: "Radio", options: [], canBeChild: true },
   { formType: "InputGroup", title: "Group", canBeChild: false },
   { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
@@ -457,6 +509,7 @@ function createDynamicFormField(
     isChild: isChild,
     ...(GroupColSpan !== undefined && { GroupColSpan: GroupColSpan }),
     ...(DynamicFieldColSpan !== undefined && { DynamicFieldColSpan: DynamicFieldColSpan }),
+    formRule: {},
   };
 }
 
@@ -515,7 +568,7 @@ const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
 };
 
 
-function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnFormAllFill }: DynamicFormProps) {
+function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnFormAllFill, returnValidValue, showValidationErrors = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -556,6 +609,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         formFieldJson: [],
       }
   );
+  const [showSettingModal, setShowSettingModal] = useState(false);
+  const [currentEditingField, setCurrentEditingField] = useState<IndividualFormFieldWithChildren | null>(null);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (initialForm) {
@@ -598,6 +654,120 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
   const [isImport, setImport] = useState(false);
   const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
+
+  const validateFieldValue = (field: IndividualFormFieldWithChildren): string[] => {
+    const errors: string[] = [];
+    const { value, formRule, required, label, type } = field;
+
+    // Rule 1: Check if a required field is empty
+    if (required) {
+      const isEmpty =
+        value === null ||
+        value === undefined ||
+        (typeof value === 'string' && value.trim() === '') ||
+        (Array.isArray(value) && value.length === 0);
+
+      if (isEmpty) {
+        errors.push(`'${label}' is a required field.`);
+        return errors;
+      }
+    }
+
+    const isEffectivelyEmpty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
+    if (!required && isEffectivelyEmpty) {
+      return [];
+    }
+
+    if (!formRule) {
+      return [];
+    }
+
+    if (typeof value === 'string' && value) {
+      if (formRule.minLength !== undefined && value.length < formRule.minLength) errors.push(`'${label}' must have at least ${formRule.minLength} characters.`);
+      if (formRule.maxLength !== undefined && value.length > formRule.maxLength) errors.push(`'${label}' must have at most ${formRule.maxLength} characters.`);
+      if (formRule.contain && !value.includes(formRule.contain)) errors.push(`'${label}' must contain the text "${formRule.contain}".`);
+      if (formRule.validEmailFormat && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) errors.push(`'${label}' must be a valid email address.`);
+      if (formRule.hasUppercase && !/[A-Z]/.test(value)) errors.push(`'${label}' must contain an uppercase letter.`);
+      if (formRule.hasLowercase && !/[a-z]/.test(value)) errors.push(`'${label}' must contain a lowercase letter.`);
+      if (formRule.hasNumber && !/\d/.test(value)) errors.push(`'${label}' must contain a number.`);
+      if (formRule.hasSpecialChar && !/[!@#$%^&*(),.?":{}|<>]/.test(value)) errors.push(`'${label}' must contain a special character.`);
+      if (formRule.noWhitespace && /\s/.test(value)) errors.push(`'${label}' must not contain whitespace.`);
+    }
+
+    if (typeof value === 'number') {
+      if (formRule.minnumber !== undefined && value < formRule.minnumber) errors.push(`'${label}' must be at least ${formRule.minnumber}.`);
+      if (formRule.maxnumber !== undefined && value > formRule.maxnumber) errors.push(`'${label}' must be at most ${formRule.maxnumber}.`);
+    }
+
+    if (Array.isArray(value) && type === 'option') {
+      if (formRule.minSelections !== undefined && value.length < formRule.minSelections) errors.push(`For '${label}', you must select at least ${formRule.minSelections} options.`);
+      if (formRule.maxSelections !== undefined && value.length > formRule.maxSelections) errors.push(`For '${label}', you can select at most ${formRule.maxSelections} options.`);
+    }
+
+    if ((type === 'dateInput' || type === 'dateLocal') && typeof value === 'string' && value) {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (formRule.minDate && selectedDate < new Date(formRule.minDate)) errors.push(`'${label}' cannot be earlier than ${formRule.minDate}.`);
+      if (formRule.maxDate && selectedDate > new Date(formRule.maxDate)) errors.push(`'${label}' cannot be later than ${formRule.maxDate}.`);
+      if (formRule.pastDateOnly && selectedDate >= today) errors.push(`'${label}' must be a date in the past.`);
+      if (formRule.futureDateOnly && selectedDate <= today) errors.push(`'${label}' must be a date in the future.`);
+    }
+
+    if (value instanceof File) {
+      if (formRule.maxFileSize && (value.size / 1024 / 1024) > formRule.maxFileSize) errors.push(`File for '${label}' exceeds the max size of ${formRule.maxFileSize}MB.`);
+      if (formRule.allowedFileTypes?.length && !formRule.allowedFileTypes.includes(value.type)) errors.push(`Invalid file type for '${label}'.`);
+    }
+
+    if (Array.isArray(value) && (type === 'multiImage' || type === 'dndMultiImage')) {
+      if (formRule.minFiles !== undefined && value.length < formRule.minFiles) {
+        errors.push(`'${label}' requires at least ${formRule.minFiles} files.`);
+      }
+      if (formRule.maxFiles !== undefined && value.length > formRule.maxFiles) {
+        errors.push(`'${label}' allows at most ${formRule.maxFiles} files.`);
+      }
+
+      if (errors.length > 0) return errors;
+
+      for (const file of value) {
+        if (file instanceof File) {
+          if (formRule.maxFileSize && (file.size / 1024 / 1024) > formRule.maxFileSize) {
+            errors.push(`A file in '${label}' exceeds ${formRule.maxFileSize}MB.`);
+            break;
+          }
+          if (formRule.allowedFileTypes?.length && !formRule.allowedFileTypes.includes(file.type)) {
+            errors.push(`A file in '${label}' has an invalid type.`);
+            break;
+          }
+        }
+      }
+    }
+
+    return errors;
+  };
+
+  const validateForm = useCallback((fields: IndividualFormFieldWithChildren[]): boolean => {
+    for (const field of fields) {
+      const fieldErrors = validateFieldValue(field);
+      if (fieldErrors.length > 0) {
+        // You can enhance this to show specific error messages in the UI
+        console.warn(`Validation Error for field '${field.label}':`, fieldErrors.join('; '));
+        return false; // Found an invalid field
+      }
+
+      // Recursively validate nested structures
+      if (field.type === "InputGroup" && Array.isArray(field.value)) {
+        if (!validateForm(field.value)) return false;
+      } else if (field.type === "dynamicField") {
+        const selectedOption = field.options?.find(o => o.value === field.value);
+        if (selectedOption && Array.isArray(selectedOption.form)) {
+          if (!validateForm(selectedOption.form)) return false;
+        }
+      }
+    }
+    return true; // All fields passed validation
+  }, []);
 
   const toggleCardVisibility = useCallback((id: string) => {
     setHiddenCardIds(prev => {
@@ -684,6 +854,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   }, []);
 
   useEffect(() => {
+    // 1. Notify parent component of any change in the form data
     if (onFormChange && currentForm) {
       if (isSyncingWithInitialFormRef.current) {
         isSyncingWithInitialFormRef.current = false;
@@ -691,11 +862,19 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         onFormChange(currentForm);
       }
     }
+
+    // 2. Run the validation engine on every change
+    const isFormValid = validateForm(currentForm.formFieldJson);
+
+    // 3. Update parent components with the current validation status
     if (returnFormAllFill) {
-      const allFilled = checkAllRequiredFields(currentForm.formFieldJson)
-      returnFormAllFill(allFilled)
+      returnFormAllFill(isFormValid);
     }
-  }, [currentForm, checkAllRequiredFields]);
+    if (returnValidValue) {
+      returnValidValue(isFormValid);
+    }
+  }, [currentForm, onFormChange, returnFormAllFill, returnValidValue, validateForm]);
+
 
 
   const sensors = useSensors(
@@ -962,24 +1141,28 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         }
         if (field.type === "multiImage" || field.type === "dndMultiImage") {
           const currentFiles = Array.isArray(field.value) ? field.value : [];
-          const newFilesArray = (newValue instanceof FileList) ? Array.from(newValue) : Array.isArray(newValue) ? newValue : [];
 
-          const filesToAdd = newFilesArray.filter(
-            (newFile): newFile is File => newFile instanceof File
-          );
-
-          if (filesToAdd.length > 0) {
-            // const uniqueNewFiles = filesToAdd.filter(
-            //   (newFile) => !currentFiles.some((existingFile: File) => existingFile.name === newFile.name && existingFile.size === newFile.size)
-            // );
-            return { ...field, value: [...currentFiles, ...filesToAdd] };
+          let newFilesToAdd: File[] = [];
+          if (newValue instanceof FileList) {
+            newFilesToAdd = Array.from(newValue);
+          } else if (Array.isArray(newValue)) {
+            newFilesToAdd = newValue.filter((f): f is File => f instanceof File);
           }
 
-          return { ...field, value: newValue };
+          if (newFilesToAdd.length > 0) {
+            return { ...field, value: [...currentFiles, ...newFilesToAdd] };
+          }
+          return field;
         }
         if (field.type === "Integer") {
+          const max = field.formRule?.maxnumber ?? Infinity;
+          const min = field.formRule?.minnumber ?? -Infinity;
           const numValue = parseInt(newValue, 10);
-          return { ...field, value: isNaN(numValue) ? null : numValue };
+          if (isNaN(numValue)) {
+            return { ...field, value: null };
+          }
+          const clampedValue = Math.max(min, Math.min(max, numValue));
+          return { ...field, value: clampedValue };
         }
         if (field.type === "InputGroup") {
           return { ...field, value: field.value };
@@ -987,7 +1170,6 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         if (field.type === "select" || field.type === "dynamicField") {
           return { ...field, value: String(newValue) };
         }
-
         return { ...field, value: newValue };
       }),
     }));
@@ -1084,48 +1266,27 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
 
   const handleSend = useCallback(() => {
-    const validateFields = (fields: IndividualFormFieldWithChildren[]): boolean => {
-      for (const field of fields) {
-        if (field.required) {
-          if (field.type === "InputGroup" && Array.isArray(field.value)) {
-            if (!validateFields(field.value)) return false;
-          } else if (field.type === "dynamicField") {
-            const selectedOption = field.options?.find(o => o.value === field.value);
-            if (!selectedOption || !validateFields(selectedOption.form || [])) {
-              return false;
-            }
-          } else if (Array.isArray(field.value)) {
-            if (field.value.length === 0) return false;
-          } else if (typeof field.value === 'string') {
-            if (field.value.trim() === '') return false;
-          } else if (field.type === 'Integer') {
-            if (typeof field.value !== 'number' || isNaN(field.value) || field.value === null) return false;
-          } else if (field.value === null || field.value === undefined) {
-            return false;
-          }
-        }
-      }
-      return true;
-    };
+    // Mark all fields as touched to show errors on attempt
+    setTouchedFields(new Set(getAllFieldIds(currentForm.formFieldJson)));
 
-    const allFieldsValid = validateFields(currentForm.formFieldJson);
-    console.log("Current Form Data:", currentForm);
+    const isFormValid = validateForm(currentForm.formFieldJson);
 
-    if (allFieldsValid) {
+    if (isFormValid) {
       if (onFormSubmit) {
         const submitData: FormField = {
           ...currentForm,
           formFieldJson: currentForm.formFieldJson.map(transformFieldForSubmission),
         };
-        console.log("Sending Form Data:", submitData);
+        console.log("Sending Valid Form Data:", submitData);
         onFormSubmit(submitData);
-        returnFormAllFill && returnFormAllFill(true)
       }
+      returnFormAllFill && returnFormAllFill(true);
     } else {
-      setShowToast(true)
-      returnFormAllFill && returnFormAllFill(false)
+      console.error("Form submission failed due to validation errors.");
+      setShowToast(true); // Notify user of failure
+      returnFormAllFill && returnFormAllFill(false);
     }
-  }, [currentForm, onFormSubmit, transformFieldForSubmission]);
+  }, [currentForm, onFormSubmit, transformFieldForSubmission, returnFormAllFill, validateForm, getAllFieldIds]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
@@ -1196,15 +1357,17 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     }));
   }, [updateFieldRecursively]);
 
-  const handleRemoveFile = useCallback((fieldId: string, fileNameToRemove?: string) => {
+  const handleRemoveFile = useCallback((fieldId: string, indexToRemove?: number) => {
     setCurrentForm(prevForm => ({
       ...prevForm,
       formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
         if (field.type === "image" || field.type === "dndImage") {
           return { ...field, value: null };
         } else if ((field.type === "multiImage" || field.type === "dndMultiImage") && Array.isArray(field.value)) {
-          const updatedFiles = field.value.filter((file: File) => file.name !== fileNameToRemove);
-          return { ...field, value: updatedFiles };
+          if (indexToRemove !== undefined) {
+            const updatedFiles = field.value.filter((_: any, index: number) => index !== indexToRemove);
+            return { ...field, value: updatedFiles };
+          }
         }
         return field;
       }),
@@ -1388,7 +1551,24 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     editFormData: boolean;
     isHidden: boolean;
     toggleCardVisibility: (id: string) => void;
+    settingHandling: (field: IndividualFormFieldWithChildren) => void;
   }
+  const settingHandling = (fieldData: IndividualFormFieldWithChildren) => {
+    setCurrentEditingField(fieldData);
+    setShowSettingModal(true);
+  }
+
+  const handleUpdateFieldRule = useCallback((fieldId: string, newRules: FormRule) => {
+    setCurrentForm(prevForm => ({
+      ...prevForm,
+      formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => ({
+        ...field,
+        formRule: newRules
+      })),
+    }));
+    setCurrentEditingField(null);
+    setShowSettingModal(false);
+  }, [updateFieldRecursively]);
 
   const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
     field,
@@ -1408,6 +1588,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     editFormData,
     isHidden,
     toggleCardVisibility,
+    settingHandling,
   }) => {
     const {
       attributes,
@@ -1486,6 +1667,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     const childFormFields = formConfigurations.filter(f => f.canBeChild);
     const isAnyDropdownOpen = isAddDropdownOpen || Object.values(dynamicOptionDropdown).some(Boolean);
 
+    const config = formConfigurations.find(c => c.formType === field.type);
+    const hasSettings = config && config.property && config.property.length > 0;
+
     return (
       <div
         ref={setNodeRef} style={style}
@@ -1506,6 +1690,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             </svg>
           </div>
           <div className="flex items-center gap-2">
+            {hasSettings && (
+              <Settings onClick={() => settingHandling(field)} className="cursor-pointer text-gray-400 hover:text-blue-500" size={18} />
+            )}
             <Button onClick={() => toggleCardVisibility(field.id)} size="xxs" className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs">
               {isHidden ? 'Show' : 'Hide'}
             </Button>
@@ -1646,7 +1833,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
                           <SortableContext items={(option.form || []).map((f: IndividualFormFieldWithChildren) => f.id)} strategy={rectSortingStrategy}>
                             <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}>
                               {(option.form || []).map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
-                                <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.DynamicFieldColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
+                                <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.DynamicFieldColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} settingHandling={settingHandling} />
                               </div>))}
                             </div>
                           </SortableContext>
@@ -1672,7 +1859,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
                 <SortableContext items={Array.isArray(field.value) ? field.value.map((f: IndividualFormFieldWithChildren) => f.id) : []} strategy={rectSortingStrategy}>
                   <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.GroupColSpan)} gap-4`}>
                     {Array.isArray(field.value) && field.value.map((childField: IndividualFormFieldWithChildren) => (<div className={getResponsiveColSpanClass(childField.colSpan)} key={childField.id}>
-                      <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.GroupColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} />
+                      <SortableFieldEditItem key={childField.id} field={childField} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={field.GroupColSpan || 1} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(childField.id)} toggleCardVisibility={toggleCardVisibility} settingHandling={settingHandling} />
                     </div>))}
                   </div>
                 </SortableContext>
@@ -1686,6 +1873,131 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
 
   const FormEdit = useCallback(() => {
+    const [modalRules, setModalRules] = useState<FormRule>({});
+
+    const commonImageTypes = [
+      { name: 'JPEG', mime: 'image/jpeg' },
+      { name: 'PNG', mime: 'image/png' },
+      { name: 'GIF', mime: 'image/gif' },
+      { name: 'SVG', mime: 'image/svg+xml' },
+      { name: 'WebP', mime: 'image/webp' },
+      { name: 'BMP', mime: 'image/bmp' },
+    ];
+
+    useEffect(() => {
+      if (currentEditingField) {
+        setModalRules(currentEditingField.formRule || {});
+      }
+    }, [currentEditingField]);
+
+    if (!currentEditingField && showSettingModal) return null;
+
+    const handleRuleInputChange = (ruleName: keyof FormRule, value: any) => {
+
+      setModalRules(prevRules => ({
+        ...prevRules,
+        [ruleName]: value
+      }));
+
+
+    };
+    const handleSaveRules = () => {
+      if (currentEditingField) {
+        handleUpdateFieldRule(currentEditingField.id, modalRules);
+      }
+    };
+
+    const getRuleLabel = (ruleName: string): string => {
+      const defaultLabel = ruleName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      const customLabels: Record<string, string> = {
+        maxFileSize: 'Max File Size (MB)',
+      };
+      return customLabels[ruleName] || defaultLabel;
+    };
+
+    const renderRuleInput = (ruleName: string, value: any) => {
+      const label = getRuleLabel(ruleName);
+      const commonInputClass = "mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400";
+      const commonCheckboxClass = "form-checkbox h-4 w-4 text-blue-600 rounded";
+
+      switch (ruleName) {
+        case 'minLength':
+        case 'maxLength':
+        case 'minnumber':
+        case 'maxnumber':
+        case 'minSelections':
+        case 'maxSelections':
+        case 'maxFileSize':
+        case 'minFiles':
+        case 'maxFiles':
+          const isNonNegative = ['minLength', 'maxLength', 'minSelections', 'maxSelections', 'maxFileSize', 'minFiles', 'maxFiles'].includes(ruleName);
+          return <label className="block text-sm font-medium">{label}:
+            <Input
+              type="number"
+              {...(isNonNegative && { min: "0" })}
+              value={value || ''}
+              onChange={e => {
+                const rawValue = e.target.value;
+                if (rawValue === '') {
+                  handleRuleInputChange(ruleName as keyof FormRule, undefined);
+                  return;
+                }
+                let numValue = parseInt(rawValue, 10);
+                if (isNonNegative && numValue < 0) {
+                  numValue = 0;
+                }
+                handleRuleInputChange(ruleName as keyof FormRule, isNaN(numValue) ? undefined : numValue);
+              }}
+              className={commonInputClass}
+            />
+          </label>;
+        case 'contain':
+          return <label className="block text-sm font-medium">{label}:<Input type="text" value={value || ''} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.value)} className={commonInputClass} /></label>;
+        case 'allowedFileTypes':
+          return (
+            <div>
+              <label className="block text-sm font-medium">{label}:</label>
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {commonImageTypes.map(imageType => (
+                  <label key={imageType.mime} className="flex items-center text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      className={commonCheckboxClass}
+                      checked={(modalRules.allowedFileTypes || []).includes(imageType.mime)}
+                      onChange={e => {
+                        const isChecked = e.target.checked;
+                        const currentTypes = modalRules.allowedFileTypes || [];
+                        const newTypes = isChecked
+                          ? [...new Set([...currentTypes, imageType.mime])]
+                          : currentTypes.filter(t => t !== imageType.mime);
+                        handleRuleInputChange('allowedFileTypes', newTypes);
+                      }}
+                    />
+                    <span className="ml-2">{imageType.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          );
+        case 'minLocalDate':
+        case 'maxLocalDate':
+          return <label className="block text-sm font-medium">{label}:<Input type="datetime-local" value={value || ''} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.value)} className={commonInputClass} /></label>;
+        case 'minDate':
+        case 'maxDate':
+          return <label className="block text-sm font-medium">{label}:<Input type="date" value={value || ''} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.value)} className={commonInputClass} /></label>;
+        case 'validEmailFormat':
+        case 'hasUppercase':
+        case 'hasLowercase':
+        case 'hasNumber':
+        case 'hasSpecialChar':
+        case 'noWhitespace':
+        case 'futureDateOnly':
+        case 'pastDateOnly':
+          return <label className="flex items-center text-sm font-medium"><input type="checkbox" checked={!!value} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.checked)} className={commonCheckboxClass} /><span className="ml-2">{label}</span></label>;
+        default:
+          return <p>Unsupported rule: {ruleName}</p>;
+      }
+    };
     return (
       <>
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400">
@@ -1717,12 +2029,11 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             <p className="text-center text-gray-500 italic">No fields added yet. Use the buttons above to add new fields.</p>
           ) : (
             <div>
-
               <SortableContext items={currentForm.formFieldJson.map(field => field.id)} strategy={rectSortingStrategy} key={currentForm.formId}>
                 <div className={`grid w-full grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
                   {currentForm.formFieldJson.map((field) => (
                     <div className={getResponsiveColSpanClass(field.colSpan)} key={field.id}>
-                      <SortableFieldEditItem key={field.id} field={field} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={currentForm.formColSpan} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(field.id)} toggleCardVisibility={toggleCardVisibility} />
+                      <SortableFieldEditItem key={field.id} field={field} handleLabelChange={handleLabelChange} handleShowLabelChange={handleShowLabelChange} updateFieldId={updateFieldId} handleAddOption={handleAddOption} handleRemoveOption={handleRemoveOption} removeField={removeField} handleToggleRequired={handleToggleRequired} handlePlaceholderChange={handlePlaceholderChange} handleColSpanChange={handleColSpanChange} overallFormColSpan={currentForm.formColSpan} addField={addField} addFieldToDynamicOption={addFieldToDynamicOption} editFormData={editFormData} handleChildContainerColSpanChange={handleChildContainerColSpanChange} isHidden={hiddenCardIds.has(field.id)} toggleCardVisibility={toggleCardVisibility} settingHandling={settingHandling} />
                     </div>
                   ))}
                 </div>
@@ -1740,10 +2051,30 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             <Button onClick={() => setImport(false)} variant="error">Cancel</Button>
             <Button onClick={handleFormImport} disabled={!importJsonText.trim()} variant={!importJsonText.trim() ? 'outline' : 'success'}><FileIcon className="w-4 h-4" /> Import Form</Button>
           </div>
-        </Modal>)}
+        </Modal>)
+        }
+        {
+          showSettingModal && currentEditingField && (<Modal isOpen={showSettingModal} onClose={() => { setShowSettingModal(false); setCurrentEditingField(null); }} className="max-w-lg p-6">
+            <div className="dark:text-gray-200">
+              <h3 className="text-lg font-semibold ">Settings for: <span className="font-bold text-blue-500">{currentEditingField.label}</span></h3>
+              <p className="text-sm text-gray-500 mb-4">Field Type: {currentEditingField.type}</p>
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {formConfigurations.find(c => c.formType === currentEditingField.type)?.property?.map(rule => (
+                  <div key={rule}>
+                    {renderRuleInput(rule, modalRules[rule as keyof FormRule])}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-end gap-2 mt-6">
+                <Button onClick={() => { setShowSettingModal(false); setCurrentEditingField(null); }} variant="outline">Cancel</Button>
+                <Button onClick={handleSaveRules} variant="success">Save Rules</Button>
+              </div>
+            </div>
+          </Modal>)
+        }
       </>
     );
-  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, handleShowLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards, isImport, importJsonText, handleFormImport, setImportJsonText]);
+  }, [currentForm, handleFormIdChange, handleFormNameChange, handleOverallFormColSpanChange, handleLabelChange, handleShowLabelChange, updateFieldId, handleAddOption, handleRemoveOption, removeField, handleToggleRequired, handlePlaceholderChange, handleColSpanChange, addField, addFieldToDynamicOption, editFormData, handleChildContainerColSpanChange, expandedDynamicFields, hiddenCardIds, toggleCardVisibility, hideAllCards, showAllCards, isImport, importJsonText, handleFormImport, setImportJsonText, showSettingModal, currentEditingField, handleUpdateFieldRule]);
 
 
   const SearchableSelect: React.FC<{
@@ -1832,6 +2163,23 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       </div>
     );
   };
+
+  const handleBlur = useCallback((fieldId: string) => {
+    setTouchedFields(prev => new Set(prev).add(fieldId));
+  }, []);
+
+  const FieldError: React.FC<{ field: IndividualFormFieldWithChildren }> = useCallback(({ field }) => {
+    if (!showValidationErrors || !touchedFields.has(field.id)) {
+      return null;
+    }
+    const errors = validateFieldValue(field);
+    if (errors.length > 0) {
+      return <p className="text-red-500 text-xs italic mt-1">{errors[0]}</p>;
+    }
+    return null;
+  }, [showValidationErrors, touchedFields, validateFieldValue]);
+
+
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
 
     const commonProps = {
@@ -1840,6 +2188,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       placeholder: field.placeholder || field.label && `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
+      onBlur: () => handleBlur(field.id)
     };
     const labelComponent = field.showLabel ? (
       <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">
@@ -1848,22 +2197,26 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     ) : (
       field.required && <span className="text-red-500">*</span>
     );
-
     switch (field.type) {
       case "textInput": case "emailInput": case "passwordInput":
-        return (<> {labelComponent} <Input type={field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"} value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
+        return (<> {labelComponent} <Input maxlength={field.formRule?.maxLength} minlength={field.formRule?.minLength} type={field.type === "textInput" ? "text" : field.type === "emailInput" ? "email" : "password"} value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> <FieldError field={field} /> </>);
 
       case "Integer":
-        return (<> {labelComponent} <Input type="number" value={field.value !== null ? field.value : ''} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> </>);
+        return (<> {labelComponent} <Input type="number" value={field.value !== null ? field.value : ''} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} /> <FieldError field={field} /> </>);
 
       case "dateInput":
-        return (<> {labelComponent} <Input type="date" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> </>);
+        return (<> {labelComponent} <Input type="date"
+          min={field.formRule?.minDate !== undefined ? field.formRule.minDate.toString() : undefined}
+          max={field.formRule?.maxDate !== undefined ? field.formRule.maxDate.toString() : undefined}
+          value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> <FieldError field={field} /> </>);
 
       case "dateLocal":
-        return (<> {labelComponent} <Input type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> </>);
-
+        return (<> {labelComponent} <Input
+          min={field.formRule?.minLocalDate !== undefined ? field.formRule.minLocalDate.toString() : undefined}
+          max={field.formRule?.maxLocalDate !== undefined ? field.formRule.maxLocalDate.toString() : undefined}
+          type="datetime-local" value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className="dark:[&::-webkit-calendar-picker-indicator]:invert rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100" /> <FieldError field={field} /> </>);
       case "textAreaInput":
-        return (<> {labelComponent} <textarea value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'} rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100`}></textarea> </>);
+        return (<> {labelComponent} <textarea maxLength={field.formRule?.maxLength} minLength={field.formRule?.minLength} value={field.value as string} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800 ' : 'bg-transparent  dark:bg-gray-900'} rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 disabled:dark:bg-gray-800 disabled:dark:border-gray-700 disabled:border-gray-300 disabled:bg-gray-100`}></textarea> <FieldError field={field} /> </>);
 
       case "select":
         if (field.enableSearch) {
@@ -1876,71 +2229,75 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               placeholder={field.placeholder || "Select an option"}
               disabled={!editFormData}
             />
+            <FieldError field={field} />
           </>;
         }
         return (<> {labelComponent} <select value={String(field.value || "")} onChange={(e) => handleFieldChange(field.id, e.target.value)} {...commonProps} className={`${commonProps.className} ${commonProps.disabled ? 'bg-gray-100 dark:bg-gray-800' : ' dark:bg-gray-900 bg-transparent'}`}>
           <option value="" >{field.placeholder || "Select an option"}</option>
           {field.options?.map((option) => (<option className="text-gray-700  dark:text-white dark:bg-gray-800" key={option} value={option}>{option}</option>))}
-        </select> </>);
+        </select> <FieldError field={field} /> </>);
 
       case "option":
-        return (<> {labelComponent} <div className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
+        return (<> {labelComponent} <div onBlurCapture={() => handleBlur(field.id)} className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
           <input type="checkbox" value={option} checked={Array.isArray(field.value) && field.value.includes(option)} onChange={(e) => { const currentValues = Array.isArray(field.value) ? [...field.value] : []; if (e.target.checked) { handleFieldChange(field.id, [...currentValues, option]); } else { handleFieldChange(field.id, currentValues.filter((val: string) => val !== option)); } }} className="form-checkbox h-5 w-5 text-blue-600 rounded" required={field.required && Array.isArray(field.value) && field.value.length === 0} disabled={!editFormData} />
           <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
-        </label>))} </div> </>);
+        </label>))} </div> <FieldError field={field} /> </>);
 
       case "radio":
-        return (<> {labelComponent} <div className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
+        return (<> {labelComponent} <div onBlurCapture={() => handleBlur(field.id)} className="flex flex-col gap-2"> {field.options?.map((option) => (<label key={option} className="inline-flex items-center">
           <input type="radio" name={field.id} value={option} checked={field.value === option} onChange={(e) => handleFieldChange(field.id, e.target.value)} className="form-radio h-5 w-5 text-blue-600" required={field.required} disabled={!editFormData} />
           <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
-        </label>))} </div> </>);
+        </label>))} </div> <FieldError field={field} /> </>);
 
       case "dndImage":
         return (
-          <>
+          <div onBlurCapture={() => handleBlur(field.id)}>
             {labelComponent}
             <DndImageUploader
               onFileSelect={(file) => handleFieldChange(field.id, file)}
               existingFile={field.value instanceof File ? field.value : null}
               handleRemoveFile={() => handleRemoveFile(field.id)}
               disabled={!editFormData}
+              accept={field.formRule?.allowedFileTypes?.join(',')}
             />
-            {field.required && !field.value && <p className="text-red-500 text-xs italic mt-1">This field is required.</p>}
-          </>
+            <FieldError field={field} />
+          </div>
         );
 
       case "image":
-        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && !field.value} disabled={!editFormData} />
+        return (<> {labelComponent} <div> <input id={field.id} type="file" accept={field.formRule?.allowedFileTypes?.join(',') || 'image/*'} onChange={(e) => handleFieldChange(field.id, e.target.files)} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && !field.value} disabled={!editFormData} onBlur={() => handleBlur(field.id)} />
           {field.value instanceof File && (<div className="relative group mt-2 w-20 h-20">
             <img src={URL.createObjectURL(field.value)} alt="Selected" className="w-full h-full object-cover rounded border border-gray-600" />
             <Button onClick={() => handleRemoveFile(field.id)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
           </div>)}
-        </div></>);
+        </div><FieldError field={field} /></>);
 
       case "multiImage":
-        return (<> {labelComponent} <div> <input id={field.id} type="file" accept="image/*" multiple onChange={(e) => {
-          handleFieldChange(field.id, e.target.files)
-          e.target.value = ""
-        }} className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600" required={field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0))} disabled={!editFormData} />
+        return (<> {labelComponent} <div> <MultiImageUpload
+        field={field}
+        labelComponent={null}
+        onFilesSelect={(files) => handleFieldChange(field.id, files)}
+      />
           {Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
             <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
             <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">
               <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-20 object-cover rounded border border-gray-600 " />
-              <Button onClick={() => handleRemoveFile(field.id, file.name)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
-            </div>))} </div> </div>)} </div> </>);
+              <Button onClick={() => handleRemoveFile(field.id, index)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
+            </div>))} </div> </div>)} </div> <FieldError field={field} /> </>);
 
       case "dndMultiImage":
         return (
-          <>
+          <div onBlurCapture={() => handleBlur(field.id)}>
             {labelComponent}
             <DndMultiImageUploader
               onFilesSelect={(files) => handleFieldChange(field.id, files)}
               existingFiles={Array.isArray(field.value) ? field.value : []}
-              handleRemoveFile={(fileName) => handleRemoveFile(field.id, fileName)}
+              handleRemoveFile={(index) => handleRemoveFile(field.id, index)}
               disabled={!editFormData}
+              accept={field.formRule?.allowedFileTypes?.join(',')}
             />
-            {field.required && (!field.value || (Array.isArray(field.value) && field.value.length === 0)) && <p className="text-red-500 text-xs italic mt-1">This field is required.</p>}
-          </>
+            <FieldError field={field} />
+          </div>
         );
 
       case "InputGroup":
@@ -1962,6 +2319,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               disabled={!editFormData}
               isDynamic={true}
             />
+            <FieldError field={field} />
             {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4">
               <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)} </div>))} </div>
             </div>)}
@@ -1971,13 +2329,14 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           <option value="" className="dark:bg-gray-800">{field.placeholder || "Select an option"}</option>
           {field.options?.map((option: any) => (<option className="text-gray-700 dark:text-white dark:bg-gray-800" key={option.value} value={option.value}>{option.value}</option>))}
         </select>
+          <FieldError field={field} />
           {selectedOption && Array.isArray(selectedOption.form) && (<div className="mt-4 pt-4">
             <div className={`grid grid-cols-1 ${getResponsiveGridClass(field.DynamicFieldColSpan)} gap-4`}> {selectedOption.form.map((nestedField: IndividualFormFieldWithChildren) => (<div key={nestedField.id} className={getResponsiveColSpanClass(nestedField.colSpan)}>{renderFormField(nestedField)}</div>))} </div>
           </div>)} </>);
 
       default: return <p className="text-red-500">Unsupported field type: {field.type}</p>;
     }
-  }, [handleFieldChange, handleRemoveFile, editFormData]);
+  }, [handleFieldChange, handleRemoveFile, editFormData, handleBlur, FieldError]);
 
   const FormPreview = useCallback(() => {
     return (
