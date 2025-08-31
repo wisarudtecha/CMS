@@ -8,7 +8,7 @@ export const statusConfig = {
   testing: { icon: BoltIcon, color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800", label: "Testing" ,variants:"low"}
 };
 
-export const caseStatus = [
+export const caseStatusGroup = [
   { title:"Draft", group: ["S000"] ,show:false},
   { title: "New", group: ["S001", "S008"] ,show:true},
   { title: "Assigned", group: ["S002", "S009"] ,show:true},
@@ -17,6 +17,20 @@ export const caseStatus = [
   { title: "Done", group: ["S007", "S016"] ,show:true},
   { title: "Cancel", group: ["S014"] ,show:false},
 ]
+
+
+export interface CaseStatusInterface {
+  id: string;
+  statusId: string;
+  th: string;
+  en: string;
+  color: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
 
 export const closeStatus =["S007", "S016", "S017", "S018"]
 
@@ -75,7 +89,7 @@ export const unitStatus = [
 
 export const statusIdToStatusTitle = (statusId: string) => {
 
-    const status = caseStatus.find(col => col.group.includes(statusId));
+    const status = caseStatusGroup.find(col => col.group.includes(statusId));
     return status ? status.title : statusId;
 
 }

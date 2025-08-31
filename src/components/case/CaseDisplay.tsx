@@ -216,13 +216,13 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div>
                 <div className="flex justify-end items-end">
                     <div className="justify-end items-end flex">
-                        <Button size="sm" className="">Cancel</Button>
+                        <Button size="sm" variant="outline">Cancel</Button>
                     </div>
-                    {isCloseStage &&
-                        <div className="ml-2">
-                            <Button size="sm" className="">Close Case</Button>
-                        </div>
-                    }
+
+                    <div className="ml-2">
+                        <Button size="sm" variant="outline" disabled={!isCloseStage}>Close Case</Button>
+                    </div>
+
                 </div>
             </div>
             }

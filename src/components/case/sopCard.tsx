@@ -20,7 +20,7 @@ import DateStringToDateFormat from "../date/DateToString";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "../progress/ProgressBar";
-import { statusIdToStatusTitle } from "../ui/status/status";
+import { CaseStatusInterface} from "../ui/status/status";
 import { CaseHistory } from "@/store/api/caseApi";
 import { CaseDetails } from "@/types/case";
 
@@ -107,11 +107,11 @@ const isDelayNode = (node: any): boolean => {
 //     };
 
 //     const executionOrder = buildExecutionOrder();
-    
+
 //     // Handle current node - if it's a delay node, find the related non-delay node
 //     let effectiveCurrentNodeId = sopData.currentStage.nodeId;
 //     const currentNode = allNodes.find(item => item.nodeId === sopData.currentStage.nodeId);
-    
+
 //     if (currentNode && isDelayNode(currentNode)) {
 //         // If current is a delay node, find the next non-delay node
 //         const nextConnections = connections.filter((conn: any) => conn.source === sopData.currentStage.nodeId);
@@ -123,7 +123,7 @@ const isDelayNode = (node: any): boolean => {
 //             }
 //         }
 //     }
-    
+
 //     const currentIndex = executionOrder.indexOf(effectiveCurrentNodeId);
 
 //     return executionOrder.map((nodeId, index) => {
@@ -158,7 +158,7 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
 
     // Get all nodes and filter out delays and non-relevant types
     const allNodes = sopData.sop.filter(item => item.section === "nodes");
-    
+
     // Get displayable nodes (process and dispatch, but not delays)
     const displayNodes = allNodes
         .filter(item =>
@@ -174,7 +174,7 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
     // Handle current stage
     let effectiveCurrentNodeId = sopData.currentStage.nodeId;
     const currentNode = allNodes.find(item => item.nodeId === sopData.currentStage.nodeId);
-    
+
     // If current is delay or decision, find the next relevant node
     if (currentNode && (isDelayNode(currentNode) || currentNode.type === "decision")) {
         const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
@@ -233,14 +233,14 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     // Find current stage position
     const currentNodeId = sopData.currentStage.nodeId;
     const currentNode = sopData.sop.find(item => item.nodeId === currentNodeId);
-    
+
     // If current node is delay or decision, find the next workflow node
     let effectiveCurrentIndex = -1;
     if (currentNode && (isDelayNode(currentNode) || currentNode.type === "decision")) {
         // For delay/decision nodes, mark the next workflow step as current
         const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
         const nextConnections = connections.filter((conn: any) => conn.source === currentNodeId);
-        
+
         for (const conn of nextConnections) {
             const nextWorkflowIndex = workflowNodes.findIndex(n => n.nodeId === conn.target);
             if (nextWorkflowIndex !== -1) {
@@ -299,26 +299,26 @@ interface CaseCardProps {
     caseData: CaseSop;
     editFormData: boolean;
     comment?: CaseHistory[];
-    showCommentButton?:boolean;
-    showAttachButton?:boolean;
+    showCommentButton?: boolean;
+    showAttachButton?: boolean;
 }
 
-export const CaseCard: React.FC<CaseCardProps> = ({ 
-    onAddSubCase, 
-    onAssignClick, 
-    onEditClick, 
-    caseData, 
-    editFormData, 
-    setCaseData, 
+export const CaseCard: React.FC<CaseCardProps> = ({
+    onAddSubCase,
+    onAssignClick,
+    onEditClick,
+    caseData,
+    editFormData,
+    setCaseData,
     comment,
-    showCommentButton=true,
-    showAttachButton=true
+    showCommentButton = true,
+    showAttachButton = true
 }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
-
+    const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
     const handleCommentToggle = () => {
         setShowComment(!showComment);
     };
@@ -332,7 +332,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
         { id: "5", title: "On Site", completed: false },
         { id: "6", title: "Completed", completed: false }
     ];
-    
+
     // Use the simpler ordered progress approach
     const progressSteps = useMemo(() => {
         return mapSopToOrderedProgress(caseData);
@@ -395,7 +395,9 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         {getTextPriority(caseData.priority).level} Priority
                     </Badge>
                     <Badge variant="outline">
-                        {statusIdToStatusTitle(caseData.statusId)}
+                        {
+                            caseStatus.find((item) => caseData?.statusId === item.statusId)?.en
+                        }
                     </Badge>
                 </div>
             </div>
@@ -404,17 +406,17 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
                 <div className="flex flex-wrap gap-2">
-                    {showCommentButton&&<Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                    {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                         {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Comment
                     </Button>}
 
-                    {onEditClick&&<Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                    {onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                         {editFormData ? "Cancel Edit" : "Edit"}
                     </Button>}
 
-                    {showAttachButton&&<div>
+                    {showAttachButton && <div>
                         <Button
                             size="sm"
                             variant="outline"
@@ -440,7 +442,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
                             <span>Add WO</span>
                         </Button>}
-                    {onAssignClick&&<Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
+                    {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
                         <User_Icon className="w-4 h-4" />
                         <span>Assign Officer</span>
                     </Button>}

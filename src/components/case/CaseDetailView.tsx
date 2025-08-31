@@ -270,7 +270,7 @@ const AssignedOfficers = memo(({
                 return (
                     <div
                         key={officer.unit.unitId}
-                        className="px-2 py-1 rounded bg-blue-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+                        className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
@@ -284,7 +284,7 @@ const AssignedOfficers = memo(({
                                     onClick={() => { hasAction && handleDispatch(officer) }}
                                     size="xxs"
                                     className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
-                                    variant="outline-no-transparent"
+                                    variant="success"
                                 >
                                     {officer?.Sop?.nextStage?.data?.data?.label || "-"}
                                 </Button>
@@ -1009,17 +1009,56 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             if (statusId === "S001") {
                 navigate(`/case/${data?.caseId}`)
             }
+            const caseListData = localStorage.getItem("caseList") || "[]";
+            if (caseListData) {
+                const caseList = JSON.parse(caseListData) as CaseEntity[];
+                const newCase = {
+                    ...(createJson as object),
+                    caseId: data?.caseId,
+                    createdAt: TodayDate(),
+                    createdBy: profile?.username || ""
+                } as CaseEntity;
+
+                // Helper function to get priority group order
+                const getPriorityOrder = (priority: number): number => {
+                    if (priority <= 3) return 1; // High priority
+                    if (priority <= 6) return 2; // Medium priority
+                    return 3; // Low priority
+                };
+
+                // Find the correct position to insert the new case
+                const insertIndex = caseList.findIndex(existingCase => {
+                    const newCasePriorityOrder = getPriorityOrder(newCase.priority);
+                    const existingCasePriorityOrder = getPriorityOrder(existingCase.priority);
+
+                    // First, compare by priority group (High → Medium → Low)
+                    if (newCasePriorityOrder < existingCasePriorityOrder) {
+                        return true; // Insert before this case
+                    }
+                    if (newCasePriorityOrder > existingCasePriorityOrder) {
+                        return false; // Continue searching
+                    }
+
+                    // If priority groups are equal, compare by date (newer first)
+                    const newCaseDate = new Date(newCase.createdAt || newCase.createdDate);
+                    const existingCaseDate = new Date(existingCase.createdAt || existingCase.createdDate);
+                    console.log(newCaseDate , existingCaseDate)
+                    return newCaseDate > existingCaseDate; // Insert before if new case is newer
+                });
+                // Insert at the found position, or at the end if no position found
+                if (insertIndex === -1) {
+                    caseList.push(newCase);
+                } else {
+                    caseList.splice(insertIndex, 0, newCase);
+                }
+
+                localStorage.setItem("caseList", JSON.stringify(caseList));
+            }
         } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
             setShowToast(true);
             return false;
-        }
-        const caseListData = localStorage.getItem("caseList") || "[]";
-        if (caseListData) {
-            const caseList = JSON.parse(caseListData) as CaseEntity[];
-            caseList.push({ ...(createJson as object), createdAt: TodayDate(), createdBy: profile?.username || "" } as CaseEntity);
-            localStorage.setItem("caseList", JSON.stringify(caseList));
         }
         return true;
     }, [caseState, profile, createCase, navigate]);
@@ -1125,7 +1164,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             }
         }
         setShowAssignModal(false);
-    }, [unit?.data,sopLocal]);
+    }, [unit?.data, sopLocal]);
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1392,7 +1431,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [initialCaseData, postDispatch, refetch]);
 
     const handleDispatch = useCallback(async (officer: Unit) => {
-        
+
         const dispatchjson = {
             unitId: officer.unitId,
             caseId: initialCaseData!.caseId,
@@ -1431,7 +1470,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             setShowToast(true);
             return false
         }
-    }, [initialCaseData, postDispatch,  sopLocal, refetch]);
+    }, [initialCaseData, postDispatch, sopLocal, refetch]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {

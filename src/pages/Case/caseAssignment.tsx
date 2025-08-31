@@ -15,17 +15,17 @@ import CaseDetailView from "../../components/case/CaseDetailView"
 
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
-import DateStringToDateFormat from "@/components/date/DateToString"
+import DateStringToDateFormat, { DateStringToAgoFormat } from "@/components/date/DateToString"
 
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/CaseApiManager"
 import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
-import { caseStatus, statusIdToStatusTitle } from "@/components/ui/status/status"
+import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
 
-const statusColumns = caseStatus.filter((item) => {
+const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
 });
 
@@ -44,6 +44,7 @@ export default function CasesView() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [showDynamicForm, setShowDynamicForm] = useState(false)
   const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
+  const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
   const [searchText, setSearchText] = useState("")
   const [sortField] = useState<"title" | "date">("date")
   const [sortOrder] = useState<"asc" | "desc">("asc")
@@ -53,11 +54,7 @@ export default function CasesView() {
   const [caseData, setCaseData] = useState<CaseEntity[]>(() => {
     const savedCases = localStorage.getItem("caseList");
     return savedCases
-      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)).sort((a, b) => {
-        if (a.priority !== b.priority) {
-          return a.priority - b.priority;
-        } return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }) : [];
+      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
 
   const [advancedFilters, setAdvancedFilters] = useState({
@@ -92,7 +89,24 @@ export default function CasesView() {
   const handleAdvanceFilterClose = () => {
     setShowAdvanceFilter(false)
   }
-
+  const handleClear = async () => {
+      const clearedFilters = {
+        priority: "",
+        category: "",
+        titleSearch: "",
+        descriptionSearch: "",
+        startDate: "",
+        endDate: "",
+        caseType: "",
+        caseSubtype: ""
+      };
+      setAdvancedFilters(clearedFilters);
+      setSelectedStatus(null)
+      await useFetchCase({ start: 0, length: 100 });
+      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+      setCaseData(updatedCases);
+      handleAdvanceFilterClose();
+    };
   // Refactored to remove advanced filtering logic, which is now handled by the API
   const getFilteredCases = () => {
     let allCases: CaseEntity[] = caseData.map(c => ({
@@ -109,11 +123,11 @@ export default function CasesView() {
       // General search condition remains on the client side for instant feedback
       return (
         matchingSubTypesNames(c.caseTypeId, c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
-        c.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
-        c.statusId.toLowerCase().includes(generalSearchTerm) ||
-        c.caseId.toLowerCase().includes(generalSearchTerm) ||
-        assigneeName.toLowerCase().includes(generalSearchTerm) ||
-        DateStringToDateFormat(c.createdAt as string).toLowerCase().includes(generalSearchTerm)
+        c?.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
+        c?.statusId?.toLowerCase().includes(generalSearchTerm) ||
+        c?.caseId?.toLowerCase().includes(generalSearchTerm) ||
+        assigneeName?.toLowerCase().includes(generalSearchTerm) ||
+        DateStringToDateFormat(c?.createdAt as string).toLowerCase().includes(generalSearchTerm)
       );
     });
 
@@ -123,9 +137,6 @@ export default function CasesView() {
       if (sortField === "title") {
         aVal = a.caseSTypeId?.toLowerCase() ?? "";
         bVal = b.caseSTypeId?.toLowerCase() ?? "";
-      } else if (sortField === "date") {
-        aVal = new Date(a.createdAt).getTime();
-        bVal = new Date(b.createdAt).getTime();
       }
       if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
       if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
@@ -145,13 +156,13 @@ export default function CasesView() {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
-      // const category = statusColumns.find(col => col.title === localFilters.category)?.group[0] || "";
+      // const category = statusColumns.find(col => col.title === localFilters.category)?.group[0] || "";ßß
       await useFetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
         detail: localFilters.descriptionSearch,
-        start_date: localFilters.startDate ? new Date(localFilters.startDate).toISOString() : undefined,
-        end_date: localFilters.endDate ? new Date(localFilters.endDate).toISOString() : undefined,
+        start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
+        end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
       });
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);
@@ -172,25 +183,6 @@ export default function CasesView() {
         caseType: selectedCaseTypes?.typeId || ""
       }));
 
-    };
-
-    const handleClear = async () => {
-      const clearedFilters = {
-        priority: "",
-        category: "",
-        titleSearch: "",
-        descriptionSearch: "",
-        startDate: "",
-        endDate: "",
-        caseType: "",
-        caseSubtype: ""
-      };
-      setAdvancedFilters(clearedFilters);
-      setSelectedStatus(null)
-      await useFetchCase({ start: 0, length: 100 });
-      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
-      setCaseData(updatedCases);
-      handleAdvanceFilterClose();
     };
 
     const caseTypeOptions = useMemo(() => {
@@ -303,11 +295,11 @@ export default function CasesView() {
             <span>{caseItem.comments ?? 0}</span>
           </div> */}
         </div>
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-gray-500 font-medium">{DateStringToDateFormat(caseItem.createdAt as string)}</span>
+        <div className="flex items-center justify-between pt-2 text-sm">
+          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
           <Badge>
             {
-              statusIdToStatusTitle(caseItem.statusId)
+              caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
             }
           </Badge>
         </div>
@@ -365,12 +357,6 @@ export default function CasesView() {
       <div className="space-y-2">
         {getFilteredCases()
           .filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus)
-          .sort((a, b) => {
-            if (a.priority !== b.priority) {
-              return a.priority - b.priority;
-            }
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          })
           .map((caseItem) => (
             <div
               key={caseItem.id}
@@ -405,7 +391,9 @@ export default function CasesView() {
                     color="primary"
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                   >
-                    {statusIdToStatusTitle(caseItem.statusId)}
+                    {
+                      caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
+                    }
                   </Badge>
                 </div>
 
@@ -449,7 +437,7 @@ export default function CasesView() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg> */}
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {DateStringToDateFormat(caseItem.createdAt as string)}
+                      {DateStringToAgoFormat(caseItem.createdAt as string)}
                     </span>
                   </div>
                 </div>
@@ -519,7 +507,7 @@ export default function CasesView() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>{DateStringToDateFormat(caseItem.createdAt as string)}</span>
+                    <span>{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
                   </div>
                 </div>
               </div>
@@ -564,7 +552,9 @@ export default function CasesView() {
     navigate(`/case/${selectedCase.caseId}`)
     // return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
   }
-
+  const hasActiveFilters = () => {
+    return Object.values(advancedFilters).some(value => value !== "");
+  };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
@@ -622,6 +612,16 @@ export default function CasesView() {
                   <span className="sm:hidden">Advanced Filters</span>
                   <span className="hidden sm:inline">Advance Filtering</span>
                 </Button>
+                {hasActiveFilters() && (
+                  <Button
+                    variant="primary"
+                    onClick={handleClear}
+                    className="w-full sm:w-auto whitespace-nowrap"
+                    size="sm"
+                  >
+                    <span>Clear</span>
+                  </Button>
+                )}
               </div>
             </div>
 
