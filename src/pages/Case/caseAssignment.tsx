@@ -78,7 +78,7 @@ export default function CasesView() {
   };
 
   const matchingSubTypesNames = (caseTypeId: string, caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
-    const matchingSubType = caseTypeSupType.find(item => item.typeId === caseTypeId || item.sTypeId === caseSTypeId);
+    const matchingSubType = caseTypeSupType.find(item => item.typeId === caseTypeId && item.sTypeId === caseSTypeId);
     return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : "Unknow";
   }
 

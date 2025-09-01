@@ -43,6 +43,7 @@ import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
+import { CaseStatusInterface } from "../ui/status/status"
 
 
 
@@ -243,19 +244,84 @@ AttachedFiles.displayName = 'AttachedFiles';
 // });
 // AssignedOfficers.displayName = 'AssignedOfficers';
 
+// Separate Officer Item Component
+const OfficerItem = memo(({
+    officer,
+    onSelectOfficer,
+    handleDispatch,
+    caseStatus,
+}: {
+    officer: UnitWithSop;
+    onSelectOfficer: (officer: UnitWithSop) => void;
+    handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    caseStatus: CaseStatusInterface[]
+}) => {
+    const [disableButton, setDisableButton] = useState<boolean>(false);
+
+
+    const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
+    useEffect(() => {
+        setDisableButton(false);
+    }, [officer?.Sop?.nextStage?.data?.data?.config?.action]);
+
+
+    return (
+        <div
+            key={officer.unit.unitId}
+            className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
+        >
+            <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                    {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                    <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>
+                        {officer.unit.username}
+                    </span>
+                </div>
+                <div className="flex items-end justify-end">
+                    <Button
+                        onClick={() => {
+                            if (hasAction) {
+                                handleDispatch(officer, setDisableButton);
+                            }
+                        }}
+                        size="xxs"
+                        className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
+                        variant="success"
+                        disabled={disableButton || !hasAction}
+                    >
+                        {caseStatus.find((item) => officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId)?.en || "End"}
+                    </Button>
+                    <Button
+                        className="ml-2"
+                        title="Remove"
+                        variant="outline-no-transparent"
+                        size="xxs"
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+});
+OfficerItem.displayName = 'OfficerItem';
+
+
 const AssignedOfficers = memo(({
     SopUnit,
     onSelectOfficer,
-    // onRemoveOfficer,
     handleDispatch,
+    caseStatus
+
 }: {
     SopUnit: UnitWithSop[] | null;
     onSelectOfficer: (officer: UnitWithSop) => void;
     onRemoveOfficer: (officer: UnitWithSop) => void;
-    handleDispatch: (officer: UnitWithSop) => void;
+    handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    caseStatus: CaseStatusInterface[];
 }) => {
     if (!SopUnit?.length) return null;
-    const [disableButton, setDisableButton] = useState<boolean>(false)
+
     return (
         <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
@@ -263,55 +329,21 @@ const AssignedOfficers = memo(({
                     Assigned Officer{SopUnit.length > 1 ? "s" : ""}:
                 </span>
             </div>
-            {SopUnit && SopUnit.map(officer => {
-                const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
-
-                return (
-                    <div
-                        key={officer.unit.unitId}
-                        className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                                <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>
-                                    {officer.unit.username}
-                                </span>
-                            </div>
-                            <div className="flex items-end justify-end">
-                                <Button
-                                    onClick={() => {
-                                        if (hasAction) {
-                                            handleDispatch(officer);
-                                            setDisableButton(true);
-                                        }
-                                    }}
-                                    size="xxs"
-                                    className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
-                                    variant="success"
-                                    disabled={disableButton || !hasAction}
-                                >
-                                    {officer?.Sop?.nextStage?.data?.data?.label || "-"}
-                                </Button>
-                                <Button
-                                    className="ml-2"
-                                    title="Remove"
-                                    variant="outline-no-transparent"
-                                    size="xxs"
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
+            {SopUnit.map(officer => (
+                <OfficerItem
+                    key={officer.unit.unitId}
+                    officer={officer}
+                    onSelectOfficer={onSelectOfficer}
+                    handleDispatch={handleDispatch}
+                    caseStatus={caseStatus}
+                />
+            ))}
         </div>
     );
 });
 AssignedOfficers.displayName = 'AssignedOfficers';
 
-// Props interface for the form fields component
+
 interface CaseFormFieldsProps {
     caseState: CaseDetails;
     caseData?: CaseEntity;
@@ -599,12 +631,13 @@ CaseFormFields.displayName = 'CaseFormFields';
 
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
+    const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
     const navigate = useNavigate()
     const handleBack = useCallback(() => {
         if (onBack) {
             onBack();
         } else {
-            navigate('/case/assignment'); 
+            navigate('/case/assignment');
         }
     }, [onBack, navigate]);
 
@@ -662,7 +695,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     );
 
     // Only make API calls if initialCaseData exists
-    const { data: sopData, isFetching, isError, isLoading, refetch } = useGetCaseSopQuery(
+    const { data: sopData, isError, isLoading, refetch } = useGetCaseSopQuery(
         { caseId: initialCaseData?.caseId || "" },
         {
             refetchOnMountOrArgChange: true,
@@ -1055,7 +1088,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     // If priority groups are equal, compare by date (newer first)
                     const newCaseDate = new Date(newCase.createdAt || newCase.createdDate);
                     const existingCaseDate = new Date(existingCase.createdAt || existingCase.createdDate);
-                    console.log(newCaseDate, existingCaseDate)
                     return newCaseDate > existingCaseDate; // Insert before if new case is newer
                 });
                 // Insert at the found position, or at the end if no position found
@@ -1400,8 +1432,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowToast(true);
     }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
 
-    const handleUnitSopDispatch = useCallback(async (officer: UnitWithSop) => {
+    const handleUnitSopDispatch = useCallback(async (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => {
         // This object creation is correct
+        setDisableButton(true)
         const dispatchjson = {
             unitId: officer.unit.unitId,
             caseId: initialCaseData!.caseId,
@@ -1432,7 +1465,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 };
             });
 
-            refetch()
+            await refetch()
+            setDisableButton(false);
+
             return true
         } catch (error) {
             console.error('Dispatch failed:', error);
@@ -1440,6 +1475,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             // You might want an error toast type here
             setToastType("error");
             setShowToast(true);
+            setDisableButton(false);
             return false
         }
     }, [initialCaseData, postDispatch, refetch]);
@@ -1495,7 +1531,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
 
     // Loading state for existing cases
-    if (initialCaseData && (isLoading || isFetching)) {
+    // if (initialCaseData && (isLoading || isFetching)) {
+    if (initialCaseData && (isLoading)) {
         return (
             <div className="relative flex-1 min-h-screen ">
                 <div className="absolute inset-0 flex items-center justify-center  dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50 rounded-2xl">
@@ -1765,6 +1802,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     onSelectOfficer={handleSelectOfficer}
                                     onRemoveOfficer={handleRemoveOfficer}
                                     handleDispatch={handleUnitSopDispatch}
+                                    caseStatus={caseStatus}
                                 />
 
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
@@ -1860,7 +1898,11 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             <AssignOfficerModal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
-                officers={unit?.data || []}
+                officers={unit?.data?.filter((officer) => {
+                    return !sopLocal?.unitLists?.some((assignedUnit) =>
+                        assignedUnit.unitId === officer.unitId
+                    );
+                }) || []}
                 caseData={sopLocal}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
