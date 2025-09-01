@@ -256,7 +256,7 @@ const AssignedOfficers = memo(({
     handleDispatch: (officer: UnitWithSop) => void;
 }) => {
     if (!SopUnit?.length) return null;
-
+    const [disableButton, setDisableButton] = useState<boolean>(false)
     return (
         <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
@@ -281,10 +281,16 @@ const AssignedOfficers = memo(({
                             </div>
                             <div className="flex items-end justify-end">
                                 <Button
-                                    onClick={() => { hasAction && handleDispatch(officer) }}
+                                    onClick={() => {
+                                        if (hasAction) {
+                                            handleDispatch(officer);
+                                            setDisableButton(true);
+                                        }
+                                    }}
                                     size="xxs"
                                     className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
                                     variant="success"
+                                    disabled={disableButton || !hasAction}
                                 >
                                     {officer?.Sop?.nextStage?.data?.data?.label || "-"}
                                 </Button>
@@ -1042,7 +1048,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     // If priority groups are equal, compare by date (newer first)
                     const newCaseDate = new Date(newCase.createdAt || newCase.createdDate);
                     const existingCaseDate = new Date(existingCase.createdAt || existingCase.createdDate);
-                    console.log(newCaseDate , existingCaseDate)
+                    console.log(newCaseDate, existingCaseDate)
                     return newCaseDate > existingCaseDate; // Insert before if new case is newer
                 });
                 // Insert at the found position, or at the end if no position found
