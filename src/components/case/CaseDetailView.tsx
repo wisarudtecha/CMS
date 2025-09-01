@@ -8,7 +8,6 @@ import {
 import Button from "@/components/ui/button/Button"
 
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
-import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
@@ -115,15 +114,15 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 // ## START: Refactored Components ##
 
 // Memoized Header Component
-const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, isCreate }: {
+const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
     disablePageMeta?: boolean;
     onBack?: () => void;
     onOpenCustomerPanel: () => void;
     isCreate: boolean;
 }) => (
     <div className="flex-shrink-0">
-        {!disablePageMeta && <PageBreadcrumb pageTitle={isCreate ? "Create Case" : "Case"} />}
-        <div className="px-4 sm:px-6">
+        {/* {!disablePageMeta && <PageBreadcrumb pageTitle={isCreate ? "Create Case" : "Case"} />} */}
+        <div className="">
             <div className="flex items-center justify-between">
                 {!disablePageMeta && (
                     <div className="flex items-center space-x-4">
@@ -601,6 +600,14 @@ CaseFormFields.displayName = 'CaseFormFields';
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
     const navigate = useNavigate()
+    const handleBack = useCallback(() => {
+        if (onBack) {
+            onBack();
+        } else {
+            navigate('/case/assignment'); 
+        }
+    }, [onBack, navigate]);
+
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
@@ -1531,7 +1538,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 {/* Header */}
                 <CaseHeader
                     disablePageMeta={disablePageMeta}
-                    onBack={onBack}
+                    onBack={handleBack}
                     onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
                     isCreate={isCreate}
                 />
@@ -1721,7 +1728,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             {/* Header */}
             <CaseHeader
                 disablePageMeta={disablePageMeta}
-                onBack={onBack}
+                onBack={handleBack}
                 onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
                 isCreate={isCreate}
             />

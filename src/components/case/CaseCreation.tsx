@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router";
 import CaseDetailView from "./CaseDetailView";
 
 export default function CaseCreation() {
-return <CaseDetailView  caseData={undefined}/>;
+    const navigate = useNavigate();
+    return <CaseDetailView caseData={undefined} onBack={() => navigate(-1)} />;
 }
