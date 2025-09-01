@@ -171,14 +171,14 @@ const AppSidebar: React.FC = () => {
       ],
     },
     {
-      icon: <PlugInIcon />,
-      name: "System Configuration",
+      icon: <UserCircleIcon />,
+      name: "User Management",
       permission: permissions.hasAnyPermission([
-        "user.view", "role.view", "organization.view", "unit.view", "service.view", "auditlog.view",
+        "user.view", "role.view", "organization.view", "auditlog.view",
       ]),
       subItems: [
         {
-          name: "User Management",
+          name: "User",
           path: "/users",
           permission: permissions.hasPermission("user.view"),
         },
@@ -188,19 +188,26 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("role.view"),
         },
         {
-          name: "Organization Management",
+          name: "Organization",
           path: "/organization",
           permission: permissions.hasPermission("organization.view"),
         },
         {
-          name: "Unit Management",
-          // path: "/unit",
-          path: "/device/unit",
-          permission: permissions.hasPermission("unit.view"),
+          name: "Audit Log",
+          path: "/audit",
+          permission: permissions.hasPermission("auditlog.view"),
         },
+      ],
+    },
+    {
+      icon: <PlugInIcon />,
+      name: "System Configuration",
+      permission: permissions.hasAnyPermission([
+        "service.view", "unit.view", "user.view",
+      ]),
+      subItems: [
         {
           name: "Service Management",
-          // path: "/service",
           path: "/case/management",
           permission: permissions.hasPermission("service.view"),
           // subItems: [
@@ -217,13 +224,8 @@ const AppSidebar: React.FC = () => {
           // ]
         },
         {
-          name: "Area Management",
-          path: "/area",
-          permission: permissions.hasPermission("service.view"),
-        },
-        {
-          name: "Property Management",
-          path: "/device/property",
+          name: "Unit Management",
+          path: "/device/unit",
           permission: permissions.hasPermission("unit.view"),
         },
         {
@@ -232,9 +234,14 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("user.view"),
         },
         {
-          name: "Audit Log",
-          path: "/audit",
-          permission: permissions.hasPermission("auditlog.view"),
+          name: "Property Management",
+          path: "/device/property",
+          permission: permissions.hasPermission("unit.view"),
+        },
+        {
+          name: "Area Management",
+          path: "/area",
+          permission: permissions.hasPermission("service.view"),
         },
       ],
     },
