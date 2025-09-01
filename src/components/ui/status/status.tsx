@@ -12,8 +12,8 @@ export const caseStatusGroup = [
   { title:"Draft", group: ["S000"] ,show:false},
   { title: "New", group: ["S001", "S008"] ,show:true},
   { title: "Assigned", group: ["S002", "S009"] ,show:true},
-  { title: "In-progress ", group: ["S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
-  { title: "On-Hold", group: ["S017", "S018"] ,show:false},
+  { title: "In-progress ", group: ["S017","S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
+  { title: "On-Hold", group: [, "S018"] ,show:false},
   { title: "Done", group: ["S007", "S016"] ,show:true},
   { title: "Cancel", group: ["S014"] ,show:false},
 ]

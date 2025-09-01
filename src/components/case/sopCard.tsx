@@ -215,7 +215,7 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
-
+    const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
     // Get main workflow nodes (process and dispatch types, excluding delays)
     const workflowNodes = sopData.sop
         .filter(item =>
@@ -259,7 +259,9 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
 
         return {
             id: (index + 1).toString(), // Convert number to string
-            title: node.data?.data?.label || `Step ${index + 1}`,
+            title:
+                caseStatus.find((item) => node.data?.data?.config?.action === item.statusId)?.en
+                || `Step ${index + 1}`,
             completed: isCompleted,
             current: isCurrent,
             type: node.type,
