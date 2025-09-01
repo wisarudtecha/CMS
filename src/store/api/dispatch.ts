@@ -99,6 +99,18 @@ export interface CaselocAddr {
     country: string;
 }
 
+interface SlaTimelineEntry {
+  orgId: string;
+  caseId: string;
+  unitId: string;
+  userOwner: string;
+  statusId: string;
+  statusTh: string;
+  statusEn: string;
+  createdAt: string;
+  duration: number;
+}
+
 
 export interface CaseSop {
     id: string;
@@ -148,8 +160,9 @@ export interface CaseSop {
     dispatchStage: any;
     nextStage: any;
     referCaseLists: string[];
-    unitLists: CaseSopUnit[]
-    formAnswer: FormFieldWithNode
+    unitLists: CaseSopUnit[];
+    formAnswer: FormFieldWithNode;
+    slaTimelines: SlaTimelineEntry[];
 }
 
 export interface CaseSopUnit {

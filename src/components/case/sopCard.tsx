@@ -215,7 +215,10 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
-    const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
+    
+    const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[];
+    const slaTimelines = sopData.slaTimelines || [];
+    
     // Get main workflow nodes (process and dispatch types, excluding delays)
     const workflowNodes = sopData.sop
         .filter(item =>
@@ -256,16 +259,28 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     return workflowNodes.map((node, index) => {
         const isCompleted = effectiveCurrentIndex !== -1 && index < effectiveCurrentIndex;
         const isCurrent = index === effectiveCurrentIndex;
+        
+        // Find corresponding timeline data
+        const statusId = node.data?.data?.config?.action;
+        const timelineData = slaTimelines.find(timeline => timeline.statusId === statusId);
+        
+        // Get the latest timeline entry for this status (in case there are multiple)
+        const latestTimelineData = slaTimelines
+            .filter(timeline => timeline.statusId === statusId)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
         return {
-            id: (index + 1).toString(), // Convert number to string
-            title:
-                caseStatus.find((item) => node.data?.data?.config?.action === item.statusId)?.en
-                || `Step ${index + 1}`,
+            id: (index + 1).toString(),
+            title: caseStatus.find((item) => statusId === item.statusId)?.en || `Step ${index + 1}`,
             completed: isCompleted,
             current: isCurrent,
             type: node.type,
-            description: node.data?.data?.description
+            description: node.data?.data?.description,
+            timeline: latestTimelineData ? {
+                completedAt: latestTimelineData.createdAt,
+                duration: latestTimelineData.duration,
+                userOwner: latestTimelineData.userOwner
+            } : undefined
         };
     });
 };
