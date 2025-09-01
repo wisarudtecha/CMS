@@ -131,7 +131,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt)}
+                                        {DateStringToDateFormat(step.timeline.completedAt,true)}
                                     </div>
                                 )}
                             </div>

@@ -1,12 +1,21 @@
 import { formatDistanceToNow } from 'date-fns';
-export default function DateStringToDateFormat(dataString: string) {
+export default function DateStringToDateFormat(dataString: string, simplifiedMonth =false): string {
     const date = new Date(dataString);
 
-    const year = date.getUTCFullYear();
-    const monthNames = [
+    // Define arrays for both full and simplified month names
+    const fullMonthNames = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
+    const simplifiedMonthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    // Select the correct month name array based on the simplifiedMonth flag
+    const monthNames = simplifiedMonth ? simplifiedMonthNames : fullMonthNames;
+
+    const year = date.getUTCFullYear();
     const month = monthNames[date.getUTCMonth()];
     const day = date.getUTCDate();
 
@@ -17,6 +26,7 @@ export default function DateStringToDateFormat(dataString: string) {
 
     return `${month} ${day}, ${year}, ${hour}:${minute} ${ampm}`;
 }
+
 
 
 export function DateStringToAgoFormat(dateString: string) {
