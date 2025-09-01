@@ -73,6 +73,9 @@ export interface CaseStatusQueryParams {
 }
 
 export interface CaseTypeManagementProps {
+  analytics?: Record<string, TypeAnalytics>;
+  caseSubTypes?: EnhancedCaseSubType[];
+  caseTypes?: EnhancedCaseType[];
   className?: string;
 }
 

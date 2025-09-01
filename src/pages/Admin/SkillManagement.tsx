@@ -1,16 +1,18 @@
-// /src/pages/Case/CaseManagement.tsx
+// /src/pages/Admin/SkillManagement.tsx
 /**
- * @fileoverview Advanced Case Type & Sub-Type Management Component.
+ * @fileoverview Enhanced Skill Management Dashboard.
  * 
  * @description
- * Comprehensive management interface for case types and sub-types with
- * hierarchical organization, advanced configuration, and analytics.
- * Builds upon existing CaseType and CaseSubType interfaces.
+ * Comprehensive skill management system for CMS with advanced features:
+ * - Skill taxonomy management
+ * - Proficiency tracking and assessment
+ * - Skill gap analysis
+ * - Integration with case assignment
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [28-08-2025] v0.1.0
- * Last Updated: [28-08-2025] v0.1.0
+ * First Created: [01-09-2025] v0.1.0
+ * Last Updated: [01-09-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -22,11 +24,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import CaseManagementComponent from "@/components/case/CaseManagement"; 
+import SkillManagementComponent from "@/components/admin/skill/SkillManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const CaseManagementPage: React.FC = () => {
+const SkillManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -42,32 +44,31 @@ const CaseManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Service Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Service Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Skill Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Skill Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["service.view"]}>
-        <PageBreadcrumb pageTitle="Service Management" />
+      <ProtectedRoute requiredPermissions={["user.view"]}>
+        <PageBreadcrumb pageTitle="Skill Management" />
 
-        <CaseManagementComponent />
+        <SkillManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default CaseManagementPage;
+export default SkillManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Hierarchical type builder with drag-and-drop.
- * - Advanced sub-type configuration.
- * - Type analytics and optimization.
- * - Bulk operations.
- * - Template management.
- * - Integration with skills, properties, and workflows.
+ * - Interactive skill matrix with proficiency levels.
+ * - Real-time skill analytics and metrics.
+ * - Advanced filtering and search.
+ * - Skill assessment workflow integration.
+ * - Case assignment skill matching visualization.
  * 
  * @version 0.1.0
- * @date    28-08-2025
+ * @date    01-09-2025
  * ----------------------------------------------------------------------------
  */

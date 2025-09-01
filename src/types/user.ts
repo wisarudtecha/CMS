@@ -1,8 +1,44 @@
 // /src/types/user.ts
-import type {
-  Permission,
-  // Role
-} from "@/types/role";
+import type { Permission } from "@/types/role";
+
+export interface EnhancedSkill {
+  id: string;
+  orgId: string;
+  skillId: string;
+  en: string;
+  th: string;
+  category: "technical" | "operational" | "safety" | "certification" | "soft_skill";
+  level: "basic" | "intermediate" | "advanced" | "expert";
+  prerequisites: string[];
+  certificationRequired: boolean;
+  expirationPeriod?: number; // months
+  active: boolean;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface EnhancedUserSkill {
+  orgId: string;
+  userName: string;
+  skillId: string;
+  proficiencyLevel: number; // 1-5 scale
+  certificationDate?: string;
+  expirationDate?: string;
+  lastAssessment?: string;
+  assessmentScore: number;
+  verifiedBy: string;
+  practiceHours: number;
+  status: "active" | "expired" | "pending" | "revoked";
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
 
 export interface Role {
   id: string;
@@ -21,6 +57,25 @@ export interface TemporaryRole {
   expiresAt: string;
   reason: string;
   assignedBy: string;
+}
+
+export interface SkillCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  skillCount: number;
+  avgProficiency: number;
+}
+
+export interface SkillMetrics {
+  totalSkills: number;
+  totalUserSkills: number;
+  avgProficiencyScore: number;
+  skillsNeedingAssessment: number;
+  expiringCertifications: number;
+  topPerformers: number;
 }
 
 export interface UserMeta {

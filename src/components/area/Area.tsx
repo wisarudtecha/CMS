@@ -9,6 +9,8 @@ import type { AreaCoverage, ResponseArea, ResponseMetrics } from "@/types/area";
 
 const AreaContent: React.FC<{
   areas: ResponseArea[],
+  avgResponseTime: number,
+  avgSlaCompliance: number,
   coverages: AreaCoverage[],
   metrics: ResponseMetrics[],
   color: (value: string) => void,
@@ -16,6 +18,8 @@ const AreaContent: React.FC<{
   time: (value: number) => string,
 }> = ({
   areas,
+  avgResponseTime,
+  avgSlaCompliance,
   coverages,
   metrics,
   color,
@@ -107,16 +111,16 @@ const AreaContent: React.FC<{
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500 dark:text-gray-400">Avg Response</span>
                         <span className={`font-medium ${
-                          metric.averageResponseTime <= area.responseTimeTarget 
+                          avgResponseTime <= area.responseTimeTarget 
                             ? "text-green-500 dark:text-green-400" 
                             : "text-red-500 dark:text-red-400"
                         }`}>
-                          {time(metric.averageResponseTime)}
+                          {time(avgResponseTime)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500 dark:text-gray-400">SLA Compliance</span>
-                        <span className="text-gray-900 dark:text-white font-medium">{percent(metric.slaCompliance)}</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{percent(Math.round(avgSlaCompliance))}</span>
                       </div>
                     </>
                   )}

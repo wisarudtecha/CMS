@@ -1,20 +1,7 @@
 // /src/components/area/AreaManagement.tsx
-/**
- * @fileoverview Area Response Management Dashboard
- * 
- * @description
- * Advanced geographic response management system integrating with existing CMS infrastructure.
- * Provides interactive area definition, response analytics, and dynamic unit assignment capabilities.
- * 
- * @metadata
- * Author: Claude Sonnet 4
- * Created: 2025-08-27
- * Version: 1.0.0
- */
-
 import React, { useState, useMemo } from "react";
-import { Activity, MapPin } from "lucide-react";
-import { GroupIcon, PieChartIcon } from "@/icons";
+// import { Activity, MapPin } from "lucide-react";
+// import { GroupIcon, PieChartIcon } from "@/icons";
 import AnalyticContent from "@/components/area/Analytic";
 import AreaContent from "@/components/area/Area";
 import AreaDesignerContent from "@/components/area/AreaDesigner";
@@ -167,29 +154,66 @@ const AreaManagementComponent: React.FC = () => {
   const formatTime = (minutes: number) => `${minutes}m`;
   const formatPercent = (value: number) => `${value}%`;
 
+  // Helper function to safely convert number | string | undefined to number
+  const getNumericValue = (value: number | string | undefined): number => {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const numericValue = parseFloat(value);
+      return isNaN(numericValue) ? 0 : numericValue;
+    }
+    return 0; // fallback for undefined
+  };
+
+  // Calculate average response time safely
+  const validResponseTimes = mockMetrics.map(m => getNumericValue(m.averageResponseTime)).filter(time => time > 0);
+  const averageResponseTime = validResponseTimes.length > 0 ? validResponseTimes.reduce((acc, time) => acc + time, 0) / validResponseTimes.length : 0;
+  // Calculate SLA compliance safely
+  const validSlaCompliance = mockMetrics.map(m => getNumericValue(m.slaCompliance)).filter(sla => sla > 0);
+  const averageSlaCompliance = validSlaCompliance.length > 0 ? validSlaCompliance.reduce((acc, sla) => acc + sla, 0) / validSlaCompliance.length : 0;
+
   const tabItem: TabItem[] = [
     {
       id: "overview",
       label: "Overview",
-      icon: <PieChartIcon className="w-4 h-4 mr-2" />,
-      content: <OverviewContent areas={mockAreas} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
+      // icon: <PieChartIcon className="w-4 h-4 mr-2" />,
+      content: <OverviewContent
+        areas={mockAreas}
+        avgResponseTime={averageResponseTime}
+        avgSlaCompliance={averageSlaCompliance}
+        metrics={mockMetrics}
+        color={getRiskLevelColor}
+        getNum={getNumericValue}
+        percent={formatPercent}
+        time={formatTime}
+      />
     },
     {
       id: "areas",
       label: "Response Areas",
-      icon: <MapPin className="w-4 h-4 mr-2" />,
-      content: <AreaContent areas={mockAreas} coverages={mockCoverage} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
+      // icon: <MapPin className="w-4 h-4 mr-2" />,
+      content: <AreaContent
+        areas={mockAreas}
+        avgResponseTime={averageResponseTime}
+        avgSlaCompliance={averageSlaCompliance}
+        coverages={mockCoverage}
+        metrics={mockMetrics}
+        color={getRiskLevelColor}
+        percent={formatPercent}
+        time={formatTime}
+      />
     },
     {
       id: "coverage",
       label: "Unit Coverage",
-      icon: <GroupIcon className="w-4 h-4 mr-2" />,
+      // icon: <GroupIcon className="w-4 h-4 mr-2" />,
       content: <CoverageContent areas={mockAreas} coverages={mockCoverage} metrics={mockMetrics} color={getRiskLevelColor} percent={formatPercent} time={formatTime} />
     },
     {
       id: "analytics",
       label: "Analytics",
-      icon: <Activity className="w-4 h-4 mr-2" />,
+      // icon: <Activity className="w-4 h-4 mr-2" />,
       content: <AnalyticContent />
     },
   ];

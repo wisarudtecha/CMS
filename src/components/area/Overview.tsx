@@ -2,19 +2,26 @@
 import React, { useCallback, useState } from "react";
 import { ChevronDown, ChevronLeft, MapPin, Target, TrendingUp } from "lucide-react";
 import { AlertHexaIcon, GroupIcon, TimeIcon } from "@/icons";
+import MetricsView from "@/components/admin/MetricsView";
 import Badge from "@/components/ui/badge/Badge";
 import type { ResponseArea, ResponseMetrics } from "@/types/area";
 
 const OverviewContent: React.FC<{
   areas: ResponseArea[],
+  avgResponseTime: number,
+  avgSlaCompliance: number,
   metrics: ResponseMetrics[],
   color: (value: string) => void,
+  getNum: (value: number | string | undefined) => number,
   percent: (value: number) => string,
   time: (value: number) => string,
 }> = ({
   areas,
+  avgResponseTime,
+  avgSlaCompliance,
   metrics,
   color,
+  getNum,
   percent,
   time
 }) => {
@@ -28,157 +35,119 @@ const OverviewContent: React.FC<{
     );
   }, []);
 
+  const mockMetrics: ResponseMetrics = {
+    totalCases: areas.length || 0,
+    averageResponseTime: time(avgResponseTime) || "0m",
+    slaCompliance: percent(Math.round(avgSlaCompliance)) || "0%",
+    activeIncidents: metrics.reduce((acc, m) => acc + (m?.activeIncidents || 0), 0) || 0,
+  };
+
+  const attrMetrics = [
+    { key: "totalCases", title: "Total Areas", icon: MapPin, color: "blue", className: "text-blue-600" },
+    { key: "averageResponseTime", title: "Avg Response Time", icon: TimeIcon, color: "green", className: "text-green-600" },
+    { key: "slaCompliance", title: "SLA Compliance", icon: Target, color: "yellow", className: "text-yellow-600" },
+    { key: "activeIncidents", title: "Active Incidents", icon: AlertHexaIcon, color: "orange", className: "text-orange-600" },
+  ];
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <>
       {/* Summary Cards */}
-      <div className="xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 cursor-default">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Areas</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{areas.length}</p>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
+      <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} />
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {time(metrics.reduce((acc, m) => acc + m.averageResponseTime, 0) / metrics.length)}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <TimeIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">SLA Compliance</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {percent(Math.round(metrics.reduce((acc, m) => acc + m.slaCompliance, 0) / metrics.length))}
-              </p>
-            </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <Target className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Active Incidents</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {metrics.reduce((acc, m) => acc + m.activeIncidents, 0)}
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <AlertHexaIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Area Performance Cards */}
-      <div className="lg:col-span-3">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 cursor-default">Area Performance</h2>
-        <div className="space-y-4">
-          {areas.map((area: ResponseArea) => {
-            const metric = metrics.find((m: ResponseMetrics) => m.areaId === area.id);
-            const isExpanded = expandedMetrics.includes(area.id);
-            
-            return (
-              <div key={area.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div className="p-6">
-                  <div className="xl:flex items-center justify-between">
-                    <div className="flex items-center gap-4 mb-4 xl:mb-0">
-                      <button
-                        onClick={() => toggleMetricsExpanded(area.id)}
-                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        ) : (
-                          <ChevronLeft className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Area Performance Cards */}
+        <div className="lg:col-span-3">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 cursor-default">Area Performance</h2>
+          <div className="space-y-4">
+            {areas.map((area: ResponseArea) => {
+              const metric = metrics.find((m: ResponseMetrics) => m.areaId === area.id);
+              const isExpanded = expandedMetrics.includes(area.id);
+              
+              return (
+                <div key={area.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="p-6">
+                    <div className="xl:flex items-center justify-between">
+                      <div className="flex items-center gap-4 mb-4 xl:mb-0">
+                        <button
+                          onClick={() => toggleMetricsExpanded(area.id)}
+                          className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                          ) : (
+                            <ChevronLeft className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                          )}
+                        </button>
+                        <div className="cursor-default">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {area.areaName.en}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {area.areaCode} • Population: {area.population.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 cursor-default">
+                        <Badge className={`capitalize ${color(area.riskLevel)}`} size="sm">
+                          {area.riskLevel}
+                        </Badge>
+                        {metric && (
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-1">
+                              <TimeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" /> 
+                              <span className="text-gray-600 dark:text-gray-300">{time(getNum(metric.averageResponseTime))}</span> 
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" /> 
+                              <span className="text-gray-600 dark:text-gray-300">{percent(getNum(metric.slaCompliance))}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <GroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                              <span className="text-gray-600 dark:text-gray-300">{metric.availableUnits || 0}</span>
+                            </div>
+                          </div>
                         )}
-                      </button>
-                      <div className="cursor-default">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {area.areaName.en}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {area.areaCode} • Population: {area.population.toLocaleString()}
-                        </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 cursor-default">
-                      <Badge className={`capitalize ${color(area.riskLevel)}`} size="sm">
-                        {area.riskLevel}
-                      </Badge>
-                      {metric && (
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="flex items-center gap-1">
-                            <TimeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            <span className="text-gray-600 dark:text-gray-300">{time(metric.averageResponseTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            <span className="text-gray-600 dark:text-gray-300">{percent(metric.slaCompliance)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <GroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            <span className="text-gray-600 dark:text-gray-300">{metric.availableUnits}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
 
-                  {isExpanded && metric && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 cursor-default">
-                      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Total Cases</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{metric.totalCases}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Active Incidents</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{metric.activeIncidents}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Response Target</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{time(area.responseTimeTarget)}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Demand Trend</p>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className={`w-4 h-4 ${
-                              metric.demandTrend === "up" ? "text-red-500 dark:text-red-400" : 
-                              metric.demandTrend === "down" ? "text-green-500 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
-                            }`} />
-                            <span className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                              {metric.demandTrend}
-                            </span>
+                    {isExpanded && metric && (
+                      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 cursor-default">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Total Cases</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{metric.totalCases || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Active Incidents</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{metric.activeIncidents || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Response Target</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{time(area.responseTimeTarget)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Demand Trend</p>
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className={`w-4 h-4 ${
+                                metric.demandTrend === "up" ? "text-red-500 dark:text-red-400" : 
+                                metric.demandTrend === "down" ? "text-green-500 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
+                              }`} />
+                              <span className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                                {metric.demandTrend || "stable"}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

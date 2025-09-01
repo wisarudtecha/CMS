@@ -41,9 +41,20 @@ const RoleManagementPage: React.FC = () => {
   const rolesPermissions = rolesPermissionsData?.data as unknown as RolePermission[] || [];
 
   const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
-  const roles = rolesData?.data?.map((r) => ({
+  // const roles = rolesData?.data?.map((r) => ({
+  //   ...r,
+  //   permissions: rolesPermissions.filter(rp => rp.roleId === r.id).map(rp => rp.permId)
+  // })) as unknown as Role[] || [];
+  const sortOrder = ["system_admin", "admin", "dispatch", "user", "responder", "monitor", "report"];
+  const roles = (rolesData?.data?.map((r) => ({
     ...r,
-    permissions: rolesPermissions.filter(rp => rp.roleId === r.id).map(rp => rp.permId)
+    permissions: rolesPermissions
+      .filter((rp) => rp.roleId === r.id)
+      .map((rp) => rp.permId),
+  }))?.sort((a, b) => {
+    const aIndex = sortOrder.indexOf(a.roleName);
+    const bIndex = sortOrder.indexOf(b.roleName);
+    return (aIndex === -1 ? sortOrder.length : aIndex) - (bIndex === -1 ? sortOrder.length : bIndex);
   })) as unknown as Role[] || [];
 
   return (permissions && rolesPermissions && roles) ? (

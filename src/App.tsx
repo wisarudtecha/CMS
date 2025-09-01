@@ -77,6 +77,12 @@ import AreaManagementPage from "@/pages/Area/AreaManagement";
 import CaseManagementPage from "@/pages/Case/CaseManagement";
 // Property Management Imports
 import PropertyManagementPage from "@/pages/Device/PropertyManagement";
+// Property Management Imports
+import UnitManagementPage from "@/pages/Device/UnitManagement";
+// Skill Management Imports
+import SkillManagementPage from "@/pages/Admin/SkillManagement";
+// Organization Management Imports
+import OrganizationManagementPage from "@/pages/Organization/OrganizationManagement";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -167,6 +173,12 @@ export default function App() {
             <Route path="/case/management" element={<CaseManagementPage />} />
             {/* Property Management */}
             <Route path="/device/property" element={<PropertyManagementPage />} />
+            {/* Unit Management */}
+            <Route path="/device/unit" element={<UnitManagementPage />} />
+            {/* Skill Management */}
+            <Route path="/skill" element={<SkillManagementPage />} />
+            {/* Organization Management */}
+            <Route path="/organization" element={<OrganizationManagementPage />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

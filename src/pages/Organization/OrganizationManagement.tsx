@@ -1,16 +1,16 @@
-// /src/pages/Case/CaseManagement.tsx
+// /src/pages/Organization/OrganizationManagement.tsx
 /**
- * @fileoverview Advanced Case Type & Sub-Type Management Component.
+ * @fileoverview Enhanced Organization Management Component.
  * 
  * @description
- * Comprehensive management interface for case types and sub-types with
- * hierarchical organization, advanced configuration, and analytics.
- * Builds upon existing CaseType and CaseSubType interfaces.
+ * Comprehensive organization management system that builds on existing 
+ * Department → Command → Station hierarchy while adding enterprise-level
+ * multi-tenant capabilities, branding, and governance features.
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [28-08-2025] v0.1.0
- * Last Updated: [28-08-2025] v0.1.0
+ * First Created: [01-09-2025] v0.1.0
+ * Last Updated: [01-09-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -22,11 +22,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import CaseManagementComponent from "@/components/case/CaseManagement"; 
+import OrganizationManagementComponent from "@/components/organization/OrganizationManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const CaseManagementPage: React.FC = () => {
+const OrganizationManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -42,32 +42,29 @@ const CaseManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Service Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Service Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Organization Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Organization Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["service.view"]}>
-        <PageBreadcrumb pageTitle="Service Management" />
+      <ProtectedRoute requiredPermissions={["organization.view"]}>
+        <PageBreadcrumb pageTitle="Organization Management" />
 
-        <CaseManagementComponent />
+        <OrganizationManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default CaseManagementPage;
+export default OrganizationManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Hierarchical type builder with drag-and-drop.
- * - Advanced sub-type configuration.
- * - Type analytics and optimization.
- * - Bulk operations.
- * - Template management.
- * - Integration with skills, properties, and workflows.
+ * - Leveraged existing theme system.
+ * - Used established patterns.
+ * - Multi-tenant ready.
  * 
  * @version 0.1.0
- * @date    28-08-2025
+ * @date    01-09-2025
  * ----------------------------------------------------------------------------
  */

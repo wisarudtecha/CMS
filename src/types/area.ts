@@ -45,11 +45,11 @@ export interface ResponseArea {
 }
 
 export interface ResponseMetrics {
-  areaId: string;
-  totalCases: number;
-  averageResponseTime: number;
-  slaCompliance: number;
-  activeIncidents: number;
-  availableUnits: number;
-  demandTrend: "up" | "down" | "stable";
+  areaId?: string;
+  totalCases?: number;
+  averageResponseTime?: number | string;
+  slaCompliance?: number | string;
+  activeIncidents?: number;
+  availableUnits?: number;
+  demandTrend?: "up" | "down" | "stable";
 }

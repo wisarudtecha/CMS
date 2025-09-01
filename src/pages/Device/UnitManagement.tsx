@@ -1,16 +1,16 @@
-// /src/pages/Case/CaseManagement.tsx
+// /src/pages/Device/UnitManagement.tsx
 /**
- * @fileoverview Advanced Case Type & Sub-Type Management Component.
+ * @fileoverview Advanced Units Management Dashboard.
  * 
  * @description
- * Comprehensive management interface for case types and sub-types with
- * hierarchical organization, advanced configuration, and analytics.
- * Builds upon existing CaseType and CaseSubType interfaces.
+ * Comprehensive units management system that builds upon the existing Property interface.
+ * Provides property definition, assignment matrix and hierarchy, lifecycle management, and analytics.
+ * Integrates with existing unitPropLists system and case assignment logic.
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [28-08-2025] v0.1.0
- * Last Updated: [28-08-2025] v0.1.0
+ * First Created: [01-09-2025] v0.1.0
+ * Last Updated: [01-09-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -22,11 +22,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import CaseManagementComponent from "@/components/case/CaseManagement"; 
+import UnitManagementComponent from "@/components/device/UnitManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const CaseManagementPage: React.FC = () => {
+const UnitManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -42,32 +42,30 @@ const CaseManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Service Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Service Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Unit Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Unit Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["service.view"]}>
-        <PageBreadcrumb pageTitle="Service Management" />
+      <ProtectedRoute requiredPermissions={["unit.view"]}>
+        <PageBreadcrumb pageTitle="Unit Management" />
 
-        <CaseManagementComponent />
+        <UnitManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default CaseManagementPage;
+export default UnitManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Hierarchical type builder with drag-and-drop.
- * - Advanced sub-type configuration.
- * - Type analytics and optimization.
- * - Bulk operations.
- * - Template management.
- * - Integration with skills, properties, and workflows.
+ * - Interactive Unit Cards.
+ * - Advanced Table View.
+ * - Detailed Preview System.
+ * - Smart Filtering System.
  * 
  * @version 0.1.0
- * @date    28-08-2025
+ * @date    01-09-2025
  * ----------------------------------------------------------------------------
  */

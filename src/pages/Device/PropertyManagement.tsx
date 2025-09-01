@@ -46,7 +46,7 @@ const PropertyManagementPage: React.FC = () => {
         description="This is React.js Property Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["service.view"]}>
+      <ProtectedRoute requiredPermissions={["unit.view"]}>
         <PageBreadcrumb pageTitle="Property Management" />
 
         <PropertyManagementComponent />
