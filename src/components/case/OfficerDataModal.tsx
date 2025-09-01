@@ -1,9 +1,6 @@
 import { UnitWithSop } from "@/store/api/dispatch"
 import { Dialog, DialogContent } from "@/components/ui/dialog/dialog"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
-import { mapSopToOrderedProgress } from "./sopStepTranForm"
-import { useMemo } from "react"
-import ProgressStepPreview from "../progress/ProgressBar"
 interface OfficerDataModal {
     // open: boolean
     officer: UnitWithSop
@@ -16,9 +13,6 @@ export default function OfficerDataModal({
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
-    const progressSteps = useMemo(() => {
-            return mapSopToOrderedProgress(officer.Sop);
-        }, [officer]);
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
@@ -48,18 +42,15 @@ export default function OfficerDataModal({
                         <div>
                             Address : {userData?.data?.address}
                         </div>
-                        <div>
-                            Vehicle : {officer?.unit?.unitId}
-                        </div>
                     </div>
                 </div>
-                {/* <div className=" overflow-auto custom-scrollbar">
-                    <CaseCard caseData={officer.Sop} editFormData={false} showAttachButton={false} showCommentButton={false} />
+                <div className=" overflow-auto custom-scrollbar">
+                    {/* <CaseCard caseData={officer.Sop} editFormData={false} showAttachButton={false} showCommentButton={false} /> */}
 
                     <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
                         <div className="mb-2">
                             <span className="text-xs text-gray-500 dark:text-gray-400">หน่วยงาน</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div>
+                            {/* <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div> */}
                             <div className="text-sm font-medium text-gray-900 dark:text-white">หน่วงงาน 1</div>
                         </div>
                         <div className="mb-2">
@@ -91,9 +82,6 @@ export default function OfficerDataModal({
                             <div className="text-sm font-medium text-gray-900 dark:text-white">ตอบรับงาน : 00:00:00 เดินทาง 00.00.00 ปฎิบัติงาน 00.00.00</div>
                         </div>
                     </div>
-                </div> */}
-                <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
-                    <ProgressStepPreview progressSteps={progressSteps}/>
                 </div>
                 {/* <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                  
