@@ -258,16 +258,15 @@ const OfficerItem = memo(({
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
 
-
+    // console.log(officer.Sop?.nextStage?.nodeId,officer.unit)
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
     useEffect(() => {
         setDisableButton(false);
-    }, [officer?.Sop?.nextStage?.data?.data?.config?.action]);
-
+    }, [officer.Sop?.nextStage?.nodeId]);
 
     return (
         <div
-            key={officer.unit.unitId}
+            key={officer.unit.unitId + "-" + officer.Sop.currentStage.nodeId}
             className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-900 text-blue-700 dark:text-blue-200 text-xs font-medium"
         >
             <div className="flex items-center justify-between">
@@ -279,7 +278,7 @@ const OfficerItem = memo(({
                 </div>
                 <div className="flex items-end justify-end">
                     <Button
-                        onClick={() => {
+                        onClick={async () => {
                             if (hasAction) {
                                 handleDispatch(officer, setDisableButton);
                             }
@@ -331,7 +330,7 @@ const AssignedOfficers = memo(({
             </div>
             {SopUnit.map(officer => (
                 <OfficerItem
-                    key={officer.unit.unitId}
+                    key={officer.unit.unitId + "-" + officer.Sop.currentStage.caseId}
                     officer={officer}
                     onSelectOfficer={onSelectOfficer}
                     handleDispatch={handleDispatch}
@@ -1466,7 +1465,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             });
 
             await refetch()
-            setDisableButton(false);
+            // setDisableButton(false);
 
             return true
         } catch (error) {

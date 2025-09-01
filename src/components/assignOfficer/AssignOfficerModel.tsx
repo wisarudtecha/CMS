@@ -149,6 +149,7 @@ export default function AssignOfficerModal({
   const [sortColumn] = useState<SortableColumns>("locAlt")
   const [sortDirection] = useState<"asc" | "desc">("asc")
   const [showModel, setShowModel] = useState(false)
+  const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
   const areaList = useMemo(() =>
     JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
@@ -163,8 +164,10 @@ export default function AssignOfficerModal({
       setSelectedOfficers([])
       setSearchTerm("")
     }
+    setDisableAssign(false)
   }, [open, assignedOfficers])
-
+  const workLoadsMock = [{ skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
+  { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }]
   // Memoized data
   // const departmentCommandStations = useMemo(() => {
   //   try {
@@ -243,10 +246,18 @@ export default function AssignOfficerModal({
     }
   }
 
-  // Handle final assignment and close modal
-  const handleAssignOfficers = () => {
-    onAssign(selectedOfficers)
-  }
+
+  const handleAssignOfficers = async () => {
+    if (selectedOfficers.length === 0 || disableAssign) return;
+    setDisableAssign(true);
+    try {
+      await onAssign(selectedOfficers);
+    } catch (error) {
+      console.error("Failed to assign officers:", error);
+    } finally {
+      setDisableAssign(false);
+    }
+  };
 
   // Handle cancel
   // const handleCancel = () => {
@@ -313,7 +324,7 @@ export default function AssignOfficerModal({
             <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-5 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                <div className="grid grid-cols-6 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
                   <div className="flex items-center justify-center space-x-2 ">
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
@@ -329,6 +340,7 @@ export default function AssignOfficerModal({
                   <div className="flex items-center justify-center">Status</div>
                   <div className="flex items-center justify-center">Area</div>
                   <div className="flex items-center justify-center">Skills</div>
+                  <div className="flex items-center justify-center">Work Loads</div>
                 </div>
               </div>
 
@@ -346,7 +358,7 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-5 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`grid grid-cols-6 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}
@@ -411,6 +423,9 @@ export default function AssignOfficerModal({
                             <div className="flex items-center justify-center">
                               <SkillsDisplay skills={officer.skillLists || []} />
                             </div>
+                            <div className="flex items-center justify-center mr-3">
+                              <SkillsDisplay skills={workLoadsMock || []} />
+                            </div>
                           </div>
                         )
                       })
@@ -451,7 +466,7 @@ export default function AssignOfficerModal({
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
           {canDispatch && <Button
             onClick={handleAssignOfficers}
-            disabled={selectedOfficers.length === 0}
+            disabled={selectedOfficers.length === 0 || disableAssign}
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             Assign Selected Officers ({selectedOfficers.length})

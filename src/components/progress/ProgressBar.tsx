@@ -23,10 +23,11 @@ interface ProgressStepPreviewProps {
 
 const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
     const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
+        
         if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
             return '';
         }
-
+       
         const fromTime = new Date(fromStep.timeline.completedAt).getTime();
         const toTime = new Date(toStep.timeline.completedAt).getTime();
         const diffMs = toTime - fromTime;
