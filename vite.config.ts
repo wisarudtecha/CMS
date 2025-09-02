@@ -99,12 +99,45 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom"],
-          redux: ["@reduxjs/toolkit", "react-redux"],
-          api: ["@reduxjs/toolkit/query"],
+          'react-vendor': ['react', 'react-dom'],
+          'router': ['react-router', 'react-router-dom'],
+          'fullcalendar': [
+            '@fullcalendar/core',
+            '@fullcalendar/daygrid', 
+            '@fullcalendar/interaction',
+            '@fullcalendar/list',
+            '@fullcalendar/react',
+            '@fullcalendar/timegrid',
+          ],
+          'charts': ['apexcharts', 'react-apexcharts'],
+          'maps': ['@react-jvectormap/core', '@react-jvectormap/world'],
+          'redux': ['@reduxjs/toolkit', 'react-redux'],
+          'dnd': [
+            '@dnd-kit/core', '@dnd-kit/modifiers', 
+            '@dnd-kit/sortable', '@dnd-kit/utilities',
+            '@hello-pangea/dnd', 'react-dnd', 'react-dnd-html5-backend',
+          ],
+          'ui': [
+            '@headlessui/react',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-scroll-area',
+          ],
+          'icons': ['lucide', 'lucide-react'],
+          'utils': ['flatpickr', 'react-grid-layout', 'axios', 'uuid'],
         },
       },
+      onwarn(warning, warn) {
+        // Suppress eval warnings from react-jvectormap
+        if (warning.code === "EVAL" && warning.id?.includes("@react-jvectormap/core")) {
+          return
+        }
+        warn(warning)
+      },
     },
+    minify: "terser",
+    cssMinify: false,
+    chunkSizeWarningLimit: 2000,
   },
   
   define: {
