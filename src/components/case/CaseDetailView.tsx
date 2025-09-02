@@ -718,6 +718,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [updateCase] = usePatchUpdateCaseMutation();
     const [postDispatch] = usePostDispacthMutationMutation();
     const [getSopUnit] = useLazyGetSopUnitQuery();
+    const [refetchTriggerUnit, setRefetchTriggerUnit] = useState(Boolean);
     // Initialize customer data ONCE
     useEffect(() => {
         if (!isInitialized) {
@@ -758,6 +759,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [sopData?.data, initialCaseData?.caseId]);
 
 
+    const triggerRefetchUnit = useCallback(async () => {
+        const result = await refetch();
+        setRefetchTriggerUnit(prev => !prev);
+        return result;
+    }, [refetch]);
+
     useEffect(() => {
         if (!dispatchUnit || dispatchUnit.length === 0) {
             setUnitWorkOrder([]);
@@ -787,7 +794,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
 
         fetchData();
-    }, [dispatchUnit, sopData, getSopUnit, initialCaseData?.caseId]);
+    }, [dispatchUnit, sopData, getSopUnit,refetchTriggerUnit, initialCaseData?.caseId]);
 
 
     useEffect(() => {
@@ -1464,7 +1471,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 };
             });
 
-            await refetch()
+            await triggerRefetchUnit()
             // setDisableButton(false);
 
             return true
