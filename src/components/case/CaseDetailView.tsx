@@ -15,7 +15,7 @@ import { getPriorityColorClass } from "../function/Prioriy"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import Toast from "../toast/Toast"
 import Input from "../form/input/InputField"
-import { getLocalISOString, TodayDate } from "../date/DateToString"
+import { getLocalISOString, TodayDate, TodayLocalDate } from "../date/DateToString"
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
 
 import { CaseTypeSubType } from "../interface/CaseType"
@@ -497,7 +497,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                     onChange={handleIotDeviceDate}
                     disabled
-                    value={caseState?.iotDate || handleIotDateChangeDefault(TodayDate())}
+                    value={caseState?.iotDate || handleIotDateChangeDefault(TodayLocalDate())}
                     placeholder="Work Order"
                 />
             </div>
@@ -896,7 +896,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 workOrderNummber: sopLocal?.caseId || "",
                 workOrderRef: sopLocal?.referCaseId || "",
                 iotDevice: sopLocal?.deviceId || "",
-                iotDate: sopLocal?.startedDate || "",
+                iotDate: getLocalISOString(sopLocal?.startedDate) || "",
                 area: area,
                 status: "",
                 attachFile: [] as File[], // For new cases (edit mode)
