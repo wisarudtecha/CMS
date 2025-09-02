@@ -20,8 +20,8 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-// import { useGetListCaseQuery } from "@/store/api/caseApi";
-// import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
+import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi";
+import type { EnhancedCaseSubType, EnhancedCaseType } from "@/types/case";
 import CaseManagementComponent from "@/components/case/CaseManagement"; 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -30,14 +30,11 @@ const CaseManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  // const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
-  // const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
+  const { data: caseSubTypesData } = useGetSubTypeQuery(null);
+  const caseSubTypes = caseSubTypesData?.data as unknown as EnhancedCaseSubType[] || [];
 
-  // const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
-  // const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
-
-  // const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
-  // const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+  const { data: caseTypesData } = useGetTypeQuery(null);
+  const caseTypes = caseTypesData?.data as unknown as EnhancedCaseType[] || [];
 
   return (
     <>
@@ -49,7 +46,7 @@ const CaseManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["service.view"]}>
         <PageBreadcrumb pageTitle="Service Management" />
 
-        <CaseManagementComponent />
+        <CaseManagementComponent caseSubTypes={caseSubTypes} caseTypes={caseTypes} />
       </ProtectedRoute>
     </>
   );

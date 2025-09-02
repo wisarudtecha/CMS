@@ -1,16 +1,20 @@
 // /src/components/case/CaseHierarchyView.tsx
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Plus } from "lucide-react";
-import { AlertIcon, CheckCircleIcon, FileIcon, PencilIcon, TaskIcon, TrashBinIcon } from "@/icons";
+import { AlertIcon, CheckCircleIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import type { EnhancedCaseSubType, EnhancedCaseType, TypeAnalytics } from "@/types/case";
 
-// Priority levels configuration
 const PRIORITY_LEVELS = [
-  { value: 1, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 border-green-200 dark:border-green-700" },
-  { value: 2, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 border-yellow-200 dark:border-yellow-700" },
-  { value: 3, label: "High", color: "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-100 border-orange-200 dark:border-orange-700" },
-  { value: 4, label: "Critical", color: "bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 border-red-200 dark:border-red-700" },
-  { value: 5, label: "Emergency", color: "bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-100 border-purple-200 dark:border-purple-700" }
+  { value: 0, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+  { value: 1, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+  { value: 2, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+  { value: 3, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+  { value: 4, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+  { value: 5, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+  { value: 6, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+  { value: 7, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
+  { value: 8, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
+  { value: 9, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
 ];
 
 const CaseHierarchyContent: React.FC<{
@@ -29,7 +33,7 @@ const CaseHierarchyContent: React.FC<{
   setIsLoading
 }) => {
   // State management
-  const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes);
+  const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedSubType, setSelectedSubType] = useState<string | null>(null);
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(["EMERGENCY"]));
@@ -93,18 +97,18 @@ const CaseHierarchyContent: React.FC<{
     }
   };
 
-  const handleDuplicateType = (type: EnhancedCaseType) => {
-    const newType: EnhancedCaseType = {
-      ...type,
-      id: Date.now().toString(),
-      typeId: `${type.typeId}_COPY`,
-      en: `${type.en} (Copy)`,
-      th: `${type.th} (สำเนา)`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setCaseTypes(prev => [...prev, newType]);
-  };
+  // const handleDuplicateType = (type: EnhancedCaseType) => {
+  //   const newType: EnhancedCaseType = {
+  //     ...type,
+  //     id: Date.now().toString(),
+  //     typeId: `${type.typeId}_COPY`,
+  //     en: `${type.en} (Copy)`,
+  //     th: `${type.th} (สำเนา)`,
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString(),
+  //   };
+  //   setCaseTypes(prev => [...prev, newType]);
+  // };
 
   const handleToggleActive = (id: string, isType: boolean) => {
     if (isType) {
@@ -119,6 +123,10 @@ const CaseHierarchyContent: React.FC<{
     }
   };
 
+  useEffect(() => {
+    setCaseSubType(caseSubTypes || []);
+  }, [caseSubTypes]);
+
   return (
     <div className="space-y-2">
       {filteredTypes.map((type) => {
@@ -132,7 +140,7 @@ const CaseHierarchyContent: React.FC<{
               className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${
                 selectedType === type.id ? "bg-blue-100 dark:bg-blue-800" : ""
               }`}
-              onClick={() => setSelectedType(type.id)}
+              // onClick={() => setSelectedType(type.id)}
             >
               <div className="flex items-center space-x-3">
                 <button
@@ -173,7 +181,8 @@ const CaseHierarchyContent: React.FC<{
                       )}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {type.typeId} • {subTypes.length} sub-types
+                      {/* {type.typeId} • {subTypes.length} sub-types */}
+                      {subTypes.length} sub-types
                       {analytic && (
                         <span className="ml-2">
                           • {analytic.usageCount} cases • {analytic.slaCompliance}% SLA
@@ -185,10 +194,12 @@ const CaseHierarchyContent: React.FC<{
               </div>
               
               <div className="flex items-center space-x-2">
+                {/*
                 <div 
                   className="w-4 h-4 rounded-full border-2"
                   style={{ backgroundColor: type.color, borderColor: type.color }}
                 />
+                */}
                 
                 <div className="flex items-center space-x-1">
                   <button
@@ -213,6 +224,7 @@ const CaseHierarchyContent: React.FC<{
                     <PencilIcon className="w-4 h-4" />
                   </button>
                   
+                  {/*
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -223,6 +235,7 @@ const CaseHierarchyContent: React.FC<{
                   >
                     <TaskIcon className="w-4 h-4" />
                   </button>
+                  */}
                   
                   <button
                     onClick={(e) => {
@@ -290,7 +303,8 @@ const CaseHierarchyContent: React.FC<{
                             )}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {subType.sTypeCode} • SLA: {subType.caseSla}min • {subType.skillRequirements.length} skills required
+                            {/* {subType.sTypeCode} • SLA: {subType.caseSla}min • {subType.skillRequirements?.length} skills required */}
+                            SLA: {subType.caseSla}min • {subType.skillRequirements?.length} skills required
                           </div>
                         </div>
                       </div>

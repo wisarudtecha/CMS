@@ -77,6 +77,9 @@ export interface CaseTypeManagementProps {
   caseSubTypes?: EnhancedCaseSubType[];
   caseTypes?: EnhancedCaseType[];
   className?: string;
+  filteredTypes?: EnhancedCaseType[];
+  searchQuery?: string;
+  setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export interface CaseTypeSubType {
@@ -160,13 +163,13 @@ export interface EnhancedCaseSubType {
   createdBy: string;
   updatedBy: string;
   // Enhanced fields
-  automationRules: AutomationRule[];
-  skillRequirements: SkillRequirement[];
-  resourceRequirements: ResourceRequirement[];
-  approvalWorkflow: ApprovalStep[];
-  costCenters: string[];
-  estimatedDuration: number;
-  complexity: "low" | "medium" | "high" | "critical";
+  automationRules?: AutomationRule[];
+  skillRequirements?: SkillRequirement[];
+  resourceRequirements?: ResourceRequirement[];
+  approvalWorkflow?: ApprovalStep[];
+  costCenters?: string[];
+  estimatedDuration?: number;
+  complexity?: "low" | "medium" | "high" | "critical";
 }
 
 export interface EscalationRule {
@@ -198,20 +201,20 @@ export interface EnhancedCaseType {
   createdBy: string;
   updatedBy: string;
   // Enhanced fields
-  icon: string;
-  color: string;
-  category: string;
-  departmentRestrictions: string[];
-  escalationRules: EscalationRule[];
-  customFields: CustomFieldDefinition[];
-  templates: {
-    description: string;
-    requiredFields: string[];
-    attachmentTypes: string[];
+  icon?: string;
+  color?: string;
+  category?: string;
+  departmentRestrictions?: string[];
+  escalationRules?: EscalationRule[];
+  customFields?: CustomFieldDefinition[];
+  templates?: {
+    description?: string;
+    requiredFields?: string[];
+    attachmentTypes?: string[];
   };
   parentTypeId?: string;
-  level: number;
-  sortOrder: number;
+  level?: number;
+  sortOrder?: number;
 }
 
 export interface ProgressStep {
