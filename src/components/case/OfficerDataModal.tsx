@@ -1,93 +1,190 @@
 import { UnitWithSop } from "@/store/api/dispatch"
-import { Dialog, DialogContent } from "@/components/ui/dialog/dialog"
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dialog"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
+import { mapSopToOrderedProgress } from "./sopStepTranForm"
+import { useMemo } from "react"
+import ProgressStepPreviewUnit from "./SopUnitData"
+import { DialogTitle } from "@radix-ui/react-dialog"
+
 interface OfficerDataModal {
-    // open: boolean
     officer: UnitWithSop
     onOpenChange: () => void
 }
 
 export default function OfficerDataModal({
     officer,
-    // open,
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
+    const progressSteps = useMemo(() => {
+        return mapSopToOrderedProgress(officer.Sop);
+    }, [officer]);
+
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
-                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+                <DialogContent aria-describedby="" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle hidden={true}>
+
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading officer data...</p>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
         )
     }
+
     return (
         <Dialog open={!!officer} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-99999 rounded-lg shadow-2xl">
-                <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
-                    Officer Data
-                    <div>
-                        <div className="grid-cols-2 grid gap-2">
-                            <div>
-                                Name : {userData?.data?.firstName + " " + userData?.data?.lastName}
-                            </div>
-                            <div>
-                                Mobile Number : {userData?.data?.mobileNo}
-                            </div>
-                        </div>
-                        <div>
-                            Address : {userData?.data?.address}
-                        </div>
-                    </div>
-                </div>
-                <div className=" overflow-auto custom-scrollbar">
-                    {/* <CaseCard caseData={officer.Sop} editFormData={false} showAttachButton={false} showCommentButton={false} /> */}
+            <DialogHeader>
+                <DialogTitle hidden={true}>
 
-                    <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg `}>
-                        <div className="mb-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">หน่วยงาน</span>
-                            {/* <div className="text-sm font-medium text-gray-900 dark:text-white">{fieldMap["1. Service Type:"] ?? "-"}</div> */}
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">หน่วงงาน 1</div>
+                </DialogTitle>
+            </DialogHeader>
+            <DialogContent aria-describedby="" className=" dark:text-white bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar z-99999 rounded-xl shadow-2xl">
+
+                {/* Header */}
+                {/* <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 px-6 py-4  top-0  rounded-2xl">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        Officer Information
+                    </h2>
+                </div> */}
+
+                {/* Officer Details Section */}
+                <div className=" dark:border-gray-700 rounded-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Personal Information */}
+                        <div className="space-y-4">
+                            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                                <div className="flex items-center gap-2 ">
+
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">Personal Details</h3>
+                                </div>
+
+                                <div className="">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Full Name</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                            {userData?.data?.firstName && userData?.data?.lastName
+                                                ? `${userData.data.firstName} ${userData.data.lastName}`
+                                                : "N/A"
+                                            }
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Mobile Number</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
+                                            {userData?.data?.mobileNo || "N/A"}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Email</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                            {userData?.data?.email || "N/A"}
+                                        </p>
+                                    </div>
+
+                                    {/* <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Department</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                            {userData?.data?.commId || "N/A"}
+                                        </p>
+                                    </div> */}
+                                </div>
+                            </div>
                         </div>
-                        <div className="mb-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">หมายเลขรถ</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">001</div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">เจ้าหน้าที่สายตรวจ</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">watee</div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">วันเวลาที่สั่งการ</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white"><br /></div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">วันเวลาที่ตอบรับสั่งการ</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white"><br /></div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">วันเวลาที่ถึงจุดขอรับบริการ</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white"><br /></div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">วันเวลาที่เสร็จสิ้น</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white"><br /></div>
-                        </div>
-                        <div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">ระยะเวลา</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">ตอบรับงาน : 00:00:00 เดินทาง 00.00.00 ปฎิบัติงาน 00.00.00</div>
+
+                        {/* Service Information */}
+                        <div className="space-y-4">
+                            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">Service Details</h3>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Vehicle ID</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                            {officer?.unit?.unitId || "N/A"}
+
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Username</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
+                                            {officer?.unit?.username || "N/A"}
+                                        </p>
+                                    </div>
+
+                                    {/* <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+                                            <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-md text-xs">
+                                                Active
+                                            </span>
+                                        </p>
+                                    </div> */}
+
+                                    {/* <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Last Updated</label>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {new Date().toLocaleString()}
+                                        </p>
+                                    </div> */}
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Address Section - Full Width */}
+                    {userData?.data?.address && (
+                        <div className="mt-6 bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                                    <span className="text-purple-600 dark:text-purple-400 text-xs">📍</span>
+                                </div>
+                                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Address</label>
+                            </div>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-8">
+                                {userData.data.address}
+                            </p>
+                        </div>
+                    )}
+
+
                 </div>
-                {/* <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                 
-                
-                </DialogFooter> */}
+
+                {/* Progress Steps Section */}
+                <div className="rounded-2xl">
+                    <div className="flex items-center gap-2 mb-6">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">Service Progress</h3>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-900 rounded-lg   p-6">
+                        <ProgressStepPreviewUnit progressSteps={progressSteps} />
+                    </div>
+                </div>
+
+                {/* Footer with additional details */}
+                {/* <div className="bg-gray-100 dark:bg-gray-900 p-6 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Last updated: {new Date().toLocaleString()} • Officer ID: {officer?.unit?.unitId}
+                        </p>
+                    </div>
+                </div> */}
             </DialogContent>
+
+
         </Dialog>
     )
 }

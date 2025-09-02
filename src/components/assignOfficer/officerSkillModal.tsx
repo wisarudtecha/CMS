@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog/dialog"
 import { Unit } from "@/store/api/dispatch"
 import { Wrench } from "lucide-react"
 import Badge from "../ui/badge/Badge"
@@ -19,9 +19,9 @@ export default function SkillModal({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-99999 rounded-lg shadow-2xl">
-                {/* <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
                     <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+                        {/* <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
                             <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -29,9 +29,9 @@ export default function SkillModal({
                             <p className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
                                 เจ้าหน้าที่: {officer?.username || 'ไม่ระบุ'}
                             </p>
-                        </div>
+                        </div> */}
                     </DialogTitle>
-                </DialogHeader> */}
+                </DialogHeader>
 
                 <div className="flex-1 overflow-auto p-6 space-y-6">
                     {/* Officer Info Card */}
