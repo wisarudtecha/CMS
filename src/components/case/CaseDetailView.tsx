@@ -44,6 +44,7 @@ import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
 import { CaseStatusInterface } from "../ui/status/status"
+import { ConfirmationModal } from "./modal/cancelUnitModal"
 
 
 
@@ -250,10 +251,12 @@ const OfficerItem = memo(({
     onSelectOfficer,
     handleDispatch,
     caseStatus,
+    handleCancel,
 }: {
     officer: UnitWithSop;
     onSelectOfficer: (officer: UnitWithSop) => void;
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[]
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
@@ -295,6 +298,7 @@ const OfficerItem = memo(({
                         title="Remove"
                         variant="outline-no-transparent"
                         size="xxs"
+                        onClick={() => handleCancel(officer)}
                     >
                         Cancel
                     </Button>
@@ -310,13 +314,14 @@ const AssignedOfficers = memo(({
     SopUnit,
     onSelectOfficer,
     handleDispatch,
-    caseStatus
-
+    caseStatus,
+    handleCancel
 }: {
     SopUnit: UnitWithSop[] | null;
     onSelectOfficer: (officer: UnitWithSop) => void;
     onRemoveOfficer: (officer: UnitWithSop) => void;
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[];
 }) => {
     if (!SopUnit?.length) return null;
@@ -335,6 +340,7 @@ const AssignedOfficers = memo(({
                     onSelectOfficer={onSelectOfficer}
                     handleDispatch={handleDispatch}
                     caseStatus={caseStatus}
+                    handleCancel={handleCancel}
                 />
             ))}
         </div>
@@ -639,7 +645,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             navigate('/case/assignment');
         }
     }, [onBack, navigate]);
-
+    const [showCloseCaseModal, setShowCloseCaseModal] = useState<boolean>(false)
+    const [showCancelUnitModal, setShowCancelUnitModal] = useState<boolean>(false)
+    const [showCancelCaseModal, setShowCancelCaseModal] = useState<boolean>(false)
+    const [unitToCancel, setUnitToCancel] = useState<UnitWithSop | null>(null);
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
@@ -794,7 +803,47 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
 
         fetchData();
-    }, [dispatchUnit, sopData, getSopUnit,refetchTriggerUnit, initialCaseData?.caseId]);
+    }, [dispatchUnit, sopData, getSopUnit, refetchTriggerUnit, initialCaseData?.caseId]);
+
+    const handleCancelUnitClick = useCallback((officer: UnitWithSop) => {
+        setUnitToCancel(officer);
+        setShowCancelUnitModal(true);
+    }, []);
+
+    const handleConfirmCancelUnit = useCallback(() => {
+        // Placeholder for API call to cancel the unit
+        console.log("Cancelling assignment for:", unitToCancel?.unit.username);
+        // Here you would typically make an API call
+        setShowCancelUnitModal(false);
+        setUnitToCancel(null);
+        setToastMessage("Unit assignment cancelled.");
+        setToastType("info");
+        setShowToast(true);
+        // Optionally, refetch data after cancellation
+        // refetch(); 
+    }, [unitToCancel]);
+
+    const handleConfirmCancelCase = useCallback(() => {
+        // Placeholder for API call to cancel the case
+        console.log("Cancelling case:", sopLocal?.caseId);
+        setShowCancelCaseModal(false);
+        setToastMessage("Case has been cancelled.");
+        setToastType("error");
+        setShowToast(true);
+        // Optionally, navigate away or update state
+        // navigate('/case/assignment');
+    }, [sopLocal]);
+
+    const handleConfirmCloseCase = useCallback(() => {
+        // Placeholder for API call to close the case
+        console.log("Closing case:", sopLocal?.caseId);
+        setShowCloseCaseModal(false);
+        setToastMessage("Case has been closed.");
+        setToastType("success");
+        setShowToast(true);
+        // Optionally, update state to reflect closed status
+        // setSopLocal(prev => ({ ...prev, statusId: 'CLOSED_STATUS_ID' }));
+    }, [sopLocal]);
 
 
     useEffect(() => {
@@ -1809,6 +1858,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     onRemoveOfficer={handleRemoveOfficer}
                                     handleDispatch={handleUnitSopDispatch}
                                     caseStatus={caseStatus}
+                                    handleCancel={handleCancelUnitClick}
                                 />
 
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
@@ -1913,6 +1963,36 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
                 canDispatch={sopData?.data?.dispatchStage.data ? true : false}
+            />
+
+            <ConfirmationModal
+                isOpen={showCancelUnitModal}
+                onClose={() => setShowCancelUnitModal(false)}
+                onConfirm={handleConfirmCancelUnit}
+                title="Cancel Assignment"
+                description={<>Are you sure you want to cancel the assignment for <strong>{unitToCancel?.unit.username}</strong>?</>}
+                confirmButtonText="Confirm"
+                confirmButtonVariant="error"
+            />
+
+            <ConfirmationModal
+                isOpen={showCancelCaseModal}
+                onClose={() => setShowCancelCaseModal(false)}
+                onConfirm={handleConfirmCancelCase}
+                title="Cancel Case"
+                description="Are you sure you want to cancel this entire case? This action cannot be undone."
+                confirmButtonText="Confirm"
+                confirmButtonVariant="error"
+            />
+
+            <ConfirmationModal
+                isOpen={showCloseCaseModal}
+                onClose={() => setShowCloseCaseModal(false)}
+                onConfirm={handleConfirmCloseCase}
+                title="Close Case"
+                description="Are you sure you want to close this case?"
+                confirmButtonText="Confirm"
+                confirmButtonVariant="success"
             />
         </div>
     );
