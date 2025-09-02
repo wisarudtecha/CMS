@@ -898,7 +898,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 iotDevice: sopLocal?.deviceId || "",
                 iotDate: getLocalISOString(sopLocal?.startedDate) || "",
                 area: area,
-                status: "",
+                status: sopLocal?.statusId || "",
                 attachFile: [] as File[], // For new cases (edit mode)
                 attachFileResult: [] as File[] // Initialize as empty array for view mode
             } as CaseDetails;
