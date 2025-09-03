@@ -82,7 +82,7 @@ export const useFetchArea = async () => {
 
 export const caseApiSetup = async () => {
   await useFetchCustomers();
-  await useFetchCase({ start: 0, length: 100 });
+  await useFetchCase({});
   await useFetchTypeSubType();
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();

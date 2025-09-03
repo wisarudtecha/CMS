@@ -102,7 +102,7 @@ export default function CasesView() {
       };
       setAdvancedFilters(clearedFilters);
       setSelectedStatus(null)
-      await useFetchCase({ start: 0, length: 100 });
+      await useFetchCase({});
       const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
       setCaseData(updatedCases);
       handleAdvanceFilterClose();

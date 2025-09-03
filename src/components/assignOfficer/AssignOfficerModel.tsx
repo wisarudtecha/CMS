@@ -23,7 +23,7 @@ const SkillsDisplay = ({ skills }: { skills: Array<{ skillId: string, en: string
 
   if (skills.length === 1) {
     return (
-      <Badge color="primary" className="text-xs">
+      <Badge variant="outline" className="text-md">
         {skills[0].th}
       </Badge>
     )
@@ -32,7 +32,7 @@ const SkillsDisplay = ({ skills }: { skills: Array<{ skillId: string, en: string
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-center gap-1">
-        <Badge color="primary" className="text-xs">
+        <Badge variant="outline" className="text-md">
           {skills[0].th}
         </Badge>
         {skills.length > 1 && (
@@ -98,13 +98,13 @@ const UnifiedCheckbox = ({
   }, [indeterminate])
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center">
       <input
         ref={checkboxRef}
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className={`w-5 h-5 appearance-none rounded-md cursor-pointer transition-all duration-200 
+        className={`w-4 h-4 appearance-none rounded cursor-pointer transition-all duration-200 
       bg-gray-200  border-gray-300 
       focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
       checked:bg-blue-600 checked:border-blue-600
@@ -117,15 +117,15 @@ const UnifiedCheckbox = ({
       />
       {checked && (
         <svg
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none w-fit h-3/5 pb-1"
+          className="absolute pointer-events-none w-2.5 h-2.5 text-white"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 14 14"
           fill="none"
         >
           <path
             d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-            stroke="white"
-            strokeWidth="1.94437"
+            stroke="currentColor"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -168,22 +168,6 @@ export default function AssignOfficerModal({
   }, [open, assignedOfficers])
   const workLoadsMock = [{ skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
   { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }]
-  // Memoized data
-  // const departmentCommandStations = useMemo(() => {
-  //   try {
-  //     return JSON.parse(localStorage.getItem("DeptCommandStations_data") ?? "[]") as DepartmentCommandStationData[]
-  //   } catch {
-  //     return []
-  //   }
-  // }, [])
-
-  // const serviceCenter = useMemo(() =>
-  //   departmentCommandStations.map((item) => ({
-  //     ...item,
-  //     name: mergeDeptCommandStation(item)
-  //   })) as DepartmentCommandStationDataMerged[],
-  //   [departmentCommandStations]
-  // )
 
   // Filter officers based on search term
   const filteredOfficers = useMemo(() => {
@@ -259,25 +243,11 @@ export default function AssignOfficerModal({
     }
   };
 
-  // Handle cancel
-  // const handleCancel = () => {
-  //   onOpenChange(false)
-  // }
-
   // Get selected officer objects for display
   const selectedOfficerObjects = useMemo(() => {
     return officers.filter(officer => selectedOfficers.includes(officer.unitId))
   }, [officers, selectedOfficers])
 
-  // useEffect(() => {
-  //   if (showOfficerData) {
-  //     setShowModel(true)
-  //   }
-  //   if(showModel===false){
-  //     setShowOFFicerData(null)
-  //   }
-  // }, [showOfficerData])
-  //  const skillList = ["กล้อง", "Sensor น้ำ", "เชื่อมท่อ", "ระบบไฟฟ้า", "การซ่อมบำรุง", "เครื่องมือวัด"]
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
@@ -306,7 +276,7 @@ export default function AssignOfficerModal({
               size="sm"
               className="bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
             >
-              Recommend Officers
+              Recommend By Skills
             </Button>
             <Button
               variant="ghost"
@@ -323,9 +293,9 @@ export default function AssignOfficerModal({
           <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar"> {/* Added overflow-x-auto here */}
             <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
               {/* Table Header */}
-              <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-6 gap-4 pt-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center justify-center space-x-2 ">
+              <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
+                <div className="flex items-center">
+                  <div className="px-4 py-3">
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
                       indeterminate={isSomeFilteredSelected}
@@ -335,12 +305,13 @@ export default function AssignOfficerModal({
                       }}
                     />
                   </div>
-                  <div className="flex items-center justify-center">Name</div>
-                  {/* <div className="flex items-center justify-center">Login</div> */}
-                  <div className="flex items-center justify-center">Status</div>
-                  <div className="flex items-center justify-center">Area</div>
-                  <div className="flex items-center justify-center">Skills</div>
-                  <div className="flex items-center justify-center">Work Loads</div>
+                  <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
+                    <div className="flex items-center justify-center">Name</div>
+                    <div className="flex items-center justify-center">Status</div>
+                    <div className="flex items-center justify-center">Area</div>
+                    <div className="flex items-center justify-center">Skills</div>
+                    <div className="flex items-center justify-center">Work Loads</div>
+                  </div>
                 </div>
               </div>
 
@@ -358,13 +329,12 @@ export default function AssignOfficerModal({
                         return (
                           <div
                             key={officer.unitId}
-                            className={`grid grid-cols-6 gap-4 pt-3 text-sm pb-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
+                            className={`flex items-center text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected
                               ? "bg-blue-50 dark:bg-blue-900/20"
                               : "bg-white dark:bg-gray-900"
                               }`}
-                            onClick={() => setShowOFFicerData(officer)}
                           >
-                            <div className="flex items-center justify-center ">
+                            <div className="px-4">
                               <UnifiedCheckbox
                                 checked={isSelected}
                                 onChange={(e) => {
@@ -373,58 +343,58 @@ export default function AssignOfficerModal({
                                 }}
                               />
                             </div>
-                            <div className="flex items-center justify-center space-x-2">
-                              <Avatar className="w-8 h-8">
-                                <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
-                                  {officer.username
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                    .toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-gray-800 dark:text-white font-medium">
-                                {officer.username}
-                              </span>
-                            </div>
-                            {/* <div className="flex items-center justify-center">
-                              <div className={`w-3 h-3 rounded-full ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+                            <div
+                              className="grid grid-cols-5 flex-1 gap-4 py-3 pr-10 cursor-pointer"
+                              onClick={() => setShowOFFicerData(officer)}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
+                                    {officer.username
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")
+                                      .toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-gray-800 dark:text-white font-medium">
+                                  {officer.username}
+                                </span>
                               </div>
-                            </div> */}
-                            <div className="flex items-center justify-center">
-                              {(() => {
-                                const status = unitStatus.find(column => column.group.includes(officer.sttId));
-                                return (
-                                  <div className=" flex items-center justify-center ">
-                                    <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+                              <div className="flex items-center justify-center">
+                                {(() => {
+                                  const status = unitStatus.find(column => column.group.includes(officer.sttId));
+                                  return (
+                                    <div className=" flex items-center ">
+                                      <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+                                      </div>
+                                      <Badge
+                                        color={status?.color || "secondary"}
+                                        variant={status?.variant || "light"}
+                                      >
+                                        {status?.title || "-"}
+                                      </Badge>
                                     </div>
-                                    <Badge
-                                      color={status?.color || "secondary"}
-                                      variant={status?.variant || "light"}
-                                    >
-                                      {status?.title || "-"}
-                                    </Badge>
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                            <div className="flex items-center justify-center text-gray-600 dark:text-gray-300 text-center">
-                              {(() => {
-                                const matchedArea = areaList.find(
-                                  item =>
-                                    caseData?.provId === item.provId &&
-                                    caseData?.countryId === item.countryId &&
-                                    caseData?.distId === item.distId
-                                );
-                                return matchedArea ? mergeArea(matchedArea) : "-";
-                              })()}
-
-                            </div>
-                            <div className="flex items-center justify-center">
-                              <SkillsDisplay skills={officer.skillLists || []} />
-                            </div>
-                            <div className="flex items-center justify-center mr-3">
-                              <SkillsDisplay skills={workLoadsMock || []} />
+                                  );
+                                })()}
+                              </div>
+                              <div className="flex items-center justify-center text-gray-600 dark:text-gray-300">
+                                {(() => {
+                                  const matchedArea = areaList.find(
+                                    item =>
+                                      caseData?.provId === item.provId &&
+                                      caseData?.countryId === item.countryId &&
+                                      caseData?.distId === item.distId
+                                  );
+                                  return matchedArea ? mergeArea(matchedArea) : "-";
+                                })()}
+                              </div>
+                              <div className="flex items-center justify-center">
+                                <SkillsDisplay skills={officer.skillLists || []} />
+                              </div>
+                              <div className="flex items-center justify-center">
+                                <SkillsDisplay skills={workLoadsMock || []} />
+                              </div>
                             </div>
                           </div>
                         )

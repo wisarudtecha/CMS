@@ -545,7 +545,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* Location Information */}
             <div className="pr-6 col-span-2">
-                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Area Information :</h3>
+                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Event Information :</h3>
                 <textarea
                     onChange={(e) => handleLocationChange(e.target.value)}
                     value={caseState?.location || ""}
@@ -1108,10 +1108,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         try {
             const data = await createCase(createJson).unwrap();
             if (data?.msg !== "Success") {
-                setToastType("error");
-                setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
-                setShowToast(true);
-                return false;
+                throw new Error(data?.desc);
             }
             if (statusId === "S001") {
                 navigate(`/case/${data?.caseId}`)
@@ -1946,7 +1943,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             {/* Modals */}
             <PreviewDataBeforeSubmit
                 caseData={caseState}
-                submitButton={initialCaseData ? handleSaveChanges : handleCreateCase}
+                submitButton={!isCreate ? handleSaveChanges : handleCreateCase}
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
             />

@@ -107,7 +107,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             <div className="col-span-2 sm:col-span-1">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
                     <div className="flex mb-2 text-blue-500 dark:text-blue-400">
-                        <MapPin /><span className=" mx-1 text-md  " >Area Information</span>
+                        <MapPin /><span className=" mx-1 text-md  " >Event Information</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex  gap-x-2 gap-y-1 ">

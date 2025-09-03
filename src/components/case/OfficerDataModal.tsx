@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dial
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
 import { useMemo } from "react"
-import ProgressStepPreviewUnit from "./SopUnitData"
 import { DialogTitle } from "@radix-ui/react-dialog"
+import ProgressStepPreviewUnit from "../progress/ProgressSopUnitData"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -23,7 +23,7 @@ export default function OfficerDataModal({
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
-                <DialogContent aria-describedby="" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
+                <DialogContent aria-describedby="" className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
                     <DialogHeader>
                         <DialogTitle hidden={true}>
 
@@ -61,7 +61,7 @@ export default function OfficerDataModal({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Personal Information */}
                         <div className="space-y-4">
-                            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2 ">
 
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Personal Details</h3>
@@ -75,6 +75,12 @@ export default function OfficerDataModal({
                                                 ? `${userData.data.firstName} ${userData.data.lastName}`
                                                 : "N/A"
                                             }
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Username</label>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
+                                            {officer?.unit?.username || "N/A"}
                                         </p>
                                     </div>
 
@@ -104,7 +110,7 @@ export default function OfficerDataModal({
 
                         {/* Service Information */}
                         <div className="space-y-4">
-                            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2">
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Service Details</h3>
                                 </div>
@@ -118,12 +124,7 @@ export default function OfficerDataModal({
                                         </p>
                                     </div>
 
-                                    <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Username</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
-                                            {officer?.unit?.username || "N/A"}
-                                        </p>
-                                    </div>
+                                    
 
                                     {/* <div>
                                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</label>
@@ -147,7 +148,7 @@ export default function OfficerDataModal({
 
                     {/* Address Section - Full Width */}
                     {userData?.data?.address && (
-                        <div className="mt-6 bg-white dark:bg-gray-900 p-4 rounded-lg  ">
+                        <div className="mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                                     <span className="text-purple-600 dark:text-purple-400 text-xs">📍</span>
@@ -169,7 +170,7 @@ export default function OfficerDataModal({
                         <h3 className="font-semibold text-gray-900 dark:text-white">Service Progress</h3>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-900 rounded-lg   p-6">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg   p-6">
                         <ProgressStepPreviewUnit progressSteps={progressSteps} />
                     </div>
                 </div>

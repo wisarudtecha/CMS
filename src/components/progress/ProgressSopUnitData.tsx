@@ -77,7 +77,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                     }
                                 `}>
                                     {step.completed ? (
-                                        <CheckCircle className="w-5 h-5 fill-current" />
+                                        <CheckCircle className="w-5 h-5" />
                                     ) : (
                                         <Circle className={`w-3 h-3 ${step.current ? 'fill-current' : ''}`} />
                                     )}
