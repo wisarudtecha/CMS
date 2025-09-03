@@ -32,13 +32,13 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
 
     return (
         <Modal
-    isOpen={isOpen}
-    onClose={onClose}
-    className="max-w-6xl p-8 dark:!bg-gray-800  flex flex-col  "
-    closeButtonClassName="!bg-transparent"
->
-    {/* Scrollable content */}
-    <div className=" overflow-y-auto custom-scrollbar pr-2  max-h-[90vh] ">
+            isOpen={isOpen}
+            onClose={onClose}
+            className="max-w-6xl p-8 dark:!bg-gray-800  flex flex-col  "
+            closeButtonClassName="!bg-transparent"
+        >
+            {/* Scrollable content */}
+            <div className=" overflow-y-auto custom-scrollbar pr-2  max-h-[90vh] ">
                 <div
                     className={`mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 ${getPriorityBorderColorClass(
                         caseData?.caseType?.priority || 0

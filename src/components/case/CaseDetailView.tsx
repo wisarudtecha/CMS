@@ -1107,6 +1107,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         try {
             const data = await createCase(createJson).unwrap();
+            if (data?.msg !== "Success") {
+                setToastType("error");
+                setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
+                setShowToast(true);
+                return false;
+            }
             if (statusId === "S001") {
                 navigate(`/case/${data?.caseId}`)
             }
@@ -1336,6 +1342,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         const isNotError = await createCaseAction("submit");
         if (isNotError === false) {
+            setShowPreviewData(false)
             return
         }
         setEditFormData(false)
