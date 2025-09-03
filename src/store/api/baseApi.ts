@@ -46,9 +46,6 @@ const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQuery
   // Enhanced error handling with CORS-specific messages
   if (result.error) {
     // console.error("API Error:", result.error);
-    if(result.error.status ===500){
-      return result.error
-    }
     // Handle CORS-specific errors
     if (result.error.status === "FETCH_ERROR") {
       // console.error("CORS Error detected. Check server configuration or use proxy.");
