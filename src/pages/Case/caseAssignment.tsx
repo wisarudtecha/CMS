@@ -66,6 +66,7 @@ export default function CasesView() {
     endDate: "",
     caseType: "",
     caseSubtype: "",
+    createBy:"",
   })
 
   const uniqueCategories = statusColumns.map(col => col.title);
@@ -98,7 +99,8 @@ export default function CasesView() {
         startDate: "",
         endDate: "",
         caseType: "",
-        caseSubtype: ""
+        caseSubtype: "",
+        createBy:""
       };
       setAdvancedFilters(clearedFilters);
       setSelectedStatus(null)
@@ -163,6 +165,7 @@ export default function CasesView() {
         detail: localFilters.descriptionSearch,
         start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
         end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
+        createBy:localFilters.createBy ??undefined
       });
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);
@@ -257,6 +260,17 @@ export default function CasesView() {
               <option value="">All Categories</option>
               {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Create By</label>
+            <input
+              id="createBy"
+              type="texts"
+              value={localFilters.createBy}
+              onChange={(e) => setLocalFilters({ ...localFilters, createBy: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder="Create By..."
+            />
           </div>
         </div>
         <div className="mt-6 flex justify-end space-x-3">

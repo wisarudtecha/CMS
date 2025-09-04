@@ -157,6 +157,7 @@ export interface CaseListParams extends PaginationParams {
     category?: string;
     caseType?: string;
     caseSType?: string;
+    createBy?:string
 }
 
 export interface CaseHistory {
