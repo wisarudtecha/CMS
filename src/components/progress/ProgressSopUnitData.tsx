@@ -10,6 +10,7 @@ interface ProgressSteps {
     current?: boolean;
     type?: string;
     description?: string;
+    sla?: number;
     timeline?: {
         completedAt?: string;
         duration?: number;
@@ -17,13 +18,23 @@ interface ProgressSteps {
     };
 }
 
+
 interface ProgressStepPreviewProps {
     progressSteps: ProgressSteps[];
 }
 
 const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
-    const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
+    const isSlaViolated = (step: ProgressSteps): boolean => {
+        if (!step.sla || !step.timeline?.duration || step.sla === 0) {
+            return false;
+        }
 
+        // Convert SLA from minutes to seconds for comparison
+        const slaInSeconds = step.sla * 60;
+        return step.timeline.duration > slaInSeconds;
+    };
+
+    const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
         if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
             return '';
         }
@@ -55,7 +66,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                 {progressSteps.map((step, index) => {
                     const isLastStep = index === progressSteps.length - 1;
                     const nextStep = !isLastStep ? progressSteps[index + 1] : null;
-
+                    const violated = isSlaViolated(step);
                     // Determine line color for this segment
                     const shouldShowActiveLine =
                         (step.completed && nextStep?.completed) ||
@@ -68,14 +79,17 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                             <div className="flex flex-col items-center relative">
                                 {/* Step Circle */}
                                 <div className={`
-                                    w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white dark:bg-gray-800 relative z-10 flex-shrink-0
-                                    ${step.completed
-                                        ? 'border-blue-500 text-blue-500'
+                                w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white dark:bg-gray-800 relative z-10 flex-shrink-0
+                                ${step.completed
+                                        ? violated
+                                            ? 'border-red-500 text-red-500'
+                                            : 'border-blue-500 text-blue-500'
                                         : step.current
-                                            ? 'border-blue-500 text-blue-500'
+                                            ? violated ? 'border-red-500 text-red-500'
+                                                : 'border-blue-500 text-blue-500'
                                             : 'border-gray-300 dark:border-gray-600 text-gray-400'
                                     }
-                                `}>
+                            `}>
                                     {step.completed ? (
                                         <CheckCircle className="w-5 h-5" />
                                     ) : (

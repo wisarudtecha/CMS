@@ -2,12 +2,13 @@ import { CaseSop } from "@/store/api/dispatch";
 import { CaseStatusInterface } from "../ui/status/status";
 
 interface ProgressSteps {
-    id: string; // Changed from number to string
+    id: string;
     title: string;
     completed: boolean;
     current?: boolean;
     type?: string;
     description?: string;
+    sla?: number;
 }
 
 interface ProgressLane {
@@ -292,6 +293,10 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
             .filter(timeline => timeline.statusId === statusId)
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
+        // Extract SLA from node config and convert to number
+        const slaValue = node.data?.data?.config?.sla;
+        const sla = slaValue ? parseInt(slaValue, 10) : undefined;
+
         return {
             id: (index + 1).toString(),
             title: caseStatus.find((item) => statusId === item.statusId)?.en || 
@@ -301,6 +306,7 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
             current: isCurrent,
             type: node.type,
             description: node.data?.data?.description,
+            sla: sla, // Added SLA value
             timeline: latestTimelineData ? {
                 completedAt: latestTimelineData.createdAt,
                 duration: latestTimelineData.duration,
