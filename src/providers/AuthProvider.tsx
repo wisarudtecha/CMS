@@ -132,6 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearTimeout(sessionTimer);
       }
 
+      const minutes = 60;
+      // const minutes = 2;
+
       const timer = setTimeout(() => {
         dispatch({ type: "SET_SESSION_TIMEOUT", payload: Date.now() + 60000 }); // 1 minute warning
 
@@ -139,13 +142,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logout();
         }, 60000);
       },
-      60 * 60 * 1000); // 60 minutes
+      minutes * 60 * 1000);
 
       setSessionTimer(timer);
     };
 
-    if (state.isAuthenticated) {
+    if (state.isAuthenticated && state.token) {
       setupSessionTimeout();
+    }
+    else {
+      logout();
     }
 
     return () => {
@@ -156,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     state.isAuthenticated,
-    state.lastActivity
+    // state.lastActivity
   ]);
 
   // Token refresh management
@@ -198,6 +204,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (state.isAuthenticated && state.token) {
       // console.log("🔄 Setting up token refresh.", state?.isAuthenticated);
       setupTokenRefresh();
+    }
+    else {
+      logout();
     }
 
     return () => {

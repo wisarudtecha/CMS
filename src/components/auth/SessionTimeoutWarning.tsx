@@ -25,7 +25,7 @@ export const SessionTimeoutWarning: React.FC = () => {
     return () => clearInterval(interval);
   }, [state.sessionTimeout, logout]);
 
-  if (!state.sessionTimeout) {
+  if (state && !state.sessionTimeout) {
     return null;
   }
 

@@ -43,7 +43,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!state.isAuthenticated) {
+  if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
     return <LoginForm />;
   }
 
