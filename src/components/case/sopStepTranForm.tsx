@@ -308,7 +308,7 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
             description: node.data?.data?.description,
             sla: sla, // Added SLA value
             timeline: latestTimelineData ? {
-                completedAt: latestTimelineData.createdAt,
+                 completedAt: new Date(latestTimelineData?.createdAt).getTime() + (7 * 60 * 60 * 1000),
                 duration: latestTimelineData.duration,
                 userOwner: latestTimelineData.userOwner
             } : undefined
