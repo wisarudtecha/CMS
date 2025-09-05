@@ -39,7 +39,7 @@ interface CaseCardProps {
 }
 
 export const CaseCard: React.FC<CaseCardProps> = ({
-    onAddSubCase,
+    // onAddSubCase,
     onAssignClick,
     onEditClick,
     caseData,
@@ -173,10 +173,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
-                    {onAddSubCase &&
+                    {/* {onAddSubCase &&
                         <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
                             <span>Add WO</span>
-                        </Button>}
+                        </Button>} */}
                     {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
                         <User_Icon className="w-4 h-4" />
                         <span>Assign Officer</span>
