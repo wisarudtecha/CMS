@@ -1,5 +1,6 @@
 // contexts/WebSocketContext.tsx
 import React, { createContext, useContext, useRef, useEffect, useState, ReactNode } from 'react';
+import { getNewCaseData } from '../case/caseLocalStorage.tsx/caseListUpdate';
 
 export interface WebSocketMessage {
   type: string;
@@ -46,9 +47,9 @@ export const defalutWebsocketConfig = {
   url: `${WEBSOCKET}/api/v1/notifications/register`,
   reconnectInterval: 5000,
   maxReconnectAttempts: 10,
-  heartbeatInterval: 60000 ,  
+  heartbeatInterval: 60000,
 
-  
+
 } as WebSocketConfig;
 
 
@@ -118,7 +119,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       connect(config);
     }, interval);
   };
-  
+
   const getProfile = () => {
     const profile = localStorage.getItem("profile");
     if (profile) {
@@ -131,9 +132,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   };
 
   const connect = (config: WebSocketConfig) => {
-    
     if (isConnectingRef.current || wsRef.current?.readyState === WebSocket.OPEN) {
-      
+
       return;
     }
 
@@ -143,7 +143,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     clearTimers();
 
     try {
-      
+
       const ws = new WebSocket(config.url);
       const profile = getProfile();
       ws.onopen = () => {
@@ -158,7 +158,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         startHeartbeat();
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = async (event) => {
         try {
           const parsed = JSON.parse(event.data);
           const message: WebSocketMessage = {
@@ -168,7 +168,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           };
 
           setLastMessage(message);
-
+          if (message.data.eventType || "Create") {
+            await getNewCaseData();
+            window.dispatchEvent(new StorageEvent("storage", {
+              key: "caseList",
+              newValue: localStorage.getItem("caseList"),
+            }));
+          }
           // Notify all subscribers
           subscribersRef.current.forEach(callback => {
             try {
