@@ -7,6 +7,7 @@ import { FormFieldWithNode } from "@/components/interface/FormField";
 export interface CreateCase {
     formData: FormFieldWithNode;
     customerName: string;
+    caseSla:string;
     arrivedDate: string;
     caseDetail: string;
     caseDuration: number;
