@@ -5,6 +5,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useTranslation } from "../../hooks/useTranslation";
 import axios, { AxiosError } from "axios";
 import { Menu } from "@headlessui/react";
+import { useWebSocket } from "../websocket/websocket";
 
 interface Data {
   key: string;
@@ -19,13 +20,13 @@ interface Recipient {
 interface Notification {
   id: string;
   tenantId: string;
-  senderType: "low" | "medium" | "high" | string; // ← รองรับระดับ
+  senderType: "low" | "medium" | "high" | string;
   senderPhoto: string;
   sender: string;
   message: string;
   eventType: string;
-  redirectURL?: string; // เดิม
-  redirectUrl?: string; // เพิ่มรองรับแบบตัวเล็ก
+  redirectURL?: string;
+  redirectUrl?: string;
   createdAt: string;
   read: boolean;
   data: Data[];
@@ -43,24 +44,25 @@ function timeAgo(date: string): string {
   return `${days}d ago`;
 }
 
-// ====== NEW: popup queue config ======
+// ====== Popup queue config ======
 type PopupItem = { id: string; noti: Notification };
-const POPUP_AUTO_DISMISS_MS = 10000; // แต่ละป็อปอัปโชว์ 10 วิ
-const POPUP_TRANSITION_MS = 300;    // animation 300ms (ต้องตรงกับ duration-300)
-const POPUP_GROUP_AUTO_CLOSE_MS = 8000; // ปิดทั้งชุดใน 8 วิ
+const POPUP_AUTO_DISMISS_MS = 10000;
+const POPUP_TRANSITION_MS = 300;
+const POPUP_GROUP_AUTO_CLOSE_MS = 8000;
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  // Use main WebSocket context instead of creating own socket
+  const { isConnected, subscribe, connect, connectionState } = useWebSocket();
 
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [searchMode, setSearchMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const socketRef = useRef<WebSocket | null>(null);
   const [unread, setUnread] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
   const hasInitialized = useRef(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -69,11 +71,9 @@ export default function NotificationDropdown() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [filterType, setFilterType] = useState<string>("All Types");
 
-
   const API = import.meta.env.VITE_API_BASE_URL;
-  const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
 
-  // ====== NEW: popup queue states & timers ======
+  // ====== Popup queue states & timers ======
   const [popupQueue, setPopupQueue] = useState<PopupItem[]>([]);
   const visibleIdsRef = useRef<Set<string>>(new Set());
   const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -142,7 +142,7 @@ export default function NotificationDropdown() {
     if (!profile) return;
     const updated = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(updated);
-    setUnread(0); // อัปเดต unread ทันที
+    setUnread(0);
     localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
@@ -151,7 +151,7 @@ export default function NotificationDropdown() {
     if (!profile) return;
     const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
     setNotifications(updated);
-    setUnread(updated.filter((n) => !n.read).length); // อัปเดต unread ทันที
+    setUnread(updated.filter((n) => !n.read).length);
     localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
@@ -164,12 +164,9 @@ export default function NotificationDropdown() {
 
   // Real-time UI update เมื่อมี notification ใหม่
   useEffect(() => {
-    // ถ้ามี notification ใหม่เข้ามา ให้ refresh การแสดงผล
     if (notifications.length > 0 && isOpen) {
-      // Force refresh filtered notifications และ UI components
       const latestNotification = notifications[0];
       if (latestNotification && !latestNotification.read) {
-        // Scroll to top ของรายการ notification
         const notificationList = document.querySelector('.custom-scrollbar');
         if (notificationList) {
           notificationList.scrollTop = 0;
@@ -180,7 +177,6 @@ export default function NotificationDropdown() {
 
   // Real-time timestamp update
   useEffect(() => {
-    // อัปเดต timestamp ทุก 30 วินาที
     const interval = setInterval(() => {
       (Date.now());
     }, 30000);
@@ -240,7 +236,7 @@ export default function NotificationDropdown() {
     }
   }, [notifications, profile]);
 
-  // ====== NEW: popup queue helpers ======
+  // ====== Popup queue helpers ======
   const startGroupCloseTimer = () => {
     if (closeAllTimerRef.current) clearTimeout(closeAllTimerRef.current);
     closeAllTimerRef.current = setTimeout(() => {
@@ -262,44 +258,36 @@ export default function NotificationDropdown() {
 
     setPopupQueue((q) => [...q, item]);
 
-    // สไลด์เข้า
     setTimeout(() => {
       visibleIdsRef.current.add(popupId);
       setPopupQueue((q) => [...q]);
     }, 10);
 
-    // ตั้งเวลาปิดแต่ละชิ้น
     const t = setTimeout(() => closePopup(popupId), POPUP_AUTO_DISMISS_MS);
     itemTimersRef.current[popupId] = t;
 
-    // เริ่มจับเวลาปิดชุด 8 วิ (รีเซ็ตเมื่อมีของใหม่เข้า)
     startGroupCloseTimer();
   };
 
   const closePopup = (popupId: string) => {
-    // สไลด์ออก
     visibleIdsRef.current.delete(popupId);
     setPopupQueue((q) => [...q]);
 
-    // เคลียร์ timer ชิ้น
     if (itemTimersRef.current[popupId]) {
       clearTimeout(itemTimersRef.current[popupId]);
       delete itemTimersRef.current[popupId];
     }
 
-    // ลบหลังแอนิเมชัน
     setTimeout(() => {
       setPopupQueue((q) => {
         const next = q.filter((i) => i.id !== popupId);
         if (next.length === 0) clearGroupCloseTimer();
-        // เมื่อมีการลบออก ให้แสดงรายการถัดไป
         if (next.length > 0) {
           const nextItem = next[0];
           setTimeout(() => {
             visibleIdsRef.current.add(nextItem.id);
             setPopupQueue((q) => [...q]);
           }, 10);
-          // ตั้งเวลาปิดรายการถัดไป
           const t = setTimeout(() => closePopup(nextItem.id), POPUP_AUTO_DISMISS_MS);
           itemTimersRef.current[nextItem.id] = t;
         }
@@ -309,7 +297,6 @@ export default function NotificationDropdown() {
   };
 
   const closeAllPopups = () => {
-    // สไลด์ออกทั้งหมด
     popupQueue.forEach((i) => {
       visibleIdsRef.current.delete(i.id);
       if (itemTimersRef.current[i.id]) {
@@ -317,36 +304,36 @@ export default function NotificationDropdown() {
         delete itemTimersRef.current[i.id];
       }
     });
-    setPopupQueue((q) => [...q]); // re-render สำหรับแอนิเมชัน
+    setPopupQueue((q) => [...q]);
     clearGroupCloseTimer();
     setTimeout(() => setPopupQueue([]), POPUP_TRANSITION_MS);
   };
 
-  // เดิม: popupNotification/showPopup/popupTimerRef ไม่ใช้แล้ว
-
-  const isConnectingRef = useRef(false);
+  // ====== Use WebSocket from context instead of creating own socket ======
   useEffect(() => {
-    if (socketRef.current || !profile?.username || !profile?.orgId || isConnectingRef.current) return;
-
     const prefs = getPreferences();
     if (!prefs.pushEnabled) {
       console.log("Push notifications disabled by user preference.");
       return;
     }
 
-    isConnectingRef.current = true;
-    const ws = new WebSocket(`${WEBSOCKET}/api/v1/notifications/register`);
+    if (!profile?.username || !profile?.orgId) return;
 
-    ws.onopen = () => {
-      const payload = { orgId: profile.orgId, username: profile.username };
-      ws.send(JSON.stringify(payload));
-      isConnectingRef.current = false;
-      setIsConnected(true);
-    };
+    // Auto-connect if not connected
+    if (connectionState === 'disconnected') {
+      const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
+      connect({
+        url: `${WEBSOCKET}/api/v1/notifications/register`,
+        reconnectInterval: 5000,
+        maxReconnectAttempts: 10,
+        heartbeatInterval: 60000
+      });
+    }
 
-    ws.onmessage = (event) => {
+    // Subscribe to WebSocket messages
+    const unsubscribe = subscribe((message) => {
       try {
-        const data: Notification = JSON.parse(event.data);
+        const data: Notification = message.data;
         const prefs = getPreferences();
 
         if (data.eventType && data.message) {
@@ -378,30 +365,17 @@ export default function NotificationDropdown() {
 
           // Force re-render dropdown ถ้าเปิดอยู่
           if (isOpen) {
-            // Trigger re-calculation of filtered notifications
             setFilterType((current) => current);
           }
-        } else {
-          // System message (ignored)
         }
       } catch (err) {
-        console.error("Parse WebSocket message error:", event.data, err);
+        console.error("Parse WebSocket message error:", message, err);
       }
-    };
+    });
 
-    ws.onclose = () => {
-      socketRef.current = null;
-      isConnectingRef.current = false;
-      setIsConnected(false);
-    };
-
-    socketRef.current = ws;
-
+    // Cleanup subscription on unmount
     return () => {
-      ws.close();
-      socketRef.current = null;
-      isConnectingRef.current = false;
-      setIsConnected(false);
+      unsubscribe();
       // ล้างทุก timer
       Object.keys(itemTimersRef.current).forEach((id) => {
         clearTimeout(itemTimersRef.current[id]);
@@ -409,7 +383,7 @@ export default function NotificationDropdown() {
       });
       clearGroupCloseTimer();
     };
-  }, [profile?.username, profile?.orgId]);
+  }, [profile?.username, profile?.orgId, subscribe, connect, connectionState, isOpen]);
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -471,12 +445,12 @@ export default function NotificationDropdown() {
 
   const getNotificationId = (noti?: Notification | null) => noti?.id || "";
 
-  // ====== NEW: badge นับคิว popup ถ้ามีคิว ให้เด้งนับคิวแทน unread ======
+  // ====== Badge นับคิว popup ถ้ามีคิว ให้เด้งนับคิวแทน unread ======
   const badgeCount = popupQueue.length > 0 ? popupQueue.length : unread;
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* ====== NEW: Single Popup with Counter ====== */}
+      {/* ====== Single Popup with Counter ====== */}
       {popupQueue.length > 0 && (
         <div className="fixed top-6 right-6 z-[9999]">
           {/* แสดงเฉพาะรายการแรก */}
@@ -490,10 +464,10 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
+              borderColor = "";
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
+              borderColor = "";
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
@@ -535,10 +509,7 @@ export default function NotificationDropdown() {
                 <div
                   className="cursor-pointer p-3"
                   onClick={() => {
-                    // ลองหาใน data array ด้วย เผื่อ redirectURL อยู่ใน data
                     const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
-                    
-                    // รองรับทั้ง redirectURL และ redirectUrl
                     const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
                     
                     if (finalRedirectURL && finalRedirectURL.trim() !== "") {
@@ -726,10 +697,10 @@ export default function NotificationDropdown() {
             let badgeColor = "";
             const delay = noti.data?.find(d => d.key === "delay")?.value;
             if (delay === "1") {
-              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
+              borderColor = "";
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
             } else if (delay === "2") {
-              borderColor = ""; // ไม่ใช้ขอบสีแล้ว
+              borderColor = "";
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
             } else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
@@ -746,10 +717,7 @@ export default function NotificationDropdown() {
                   e.preventDefault();
                   if (!noti.read) handleMarkAsRead(noti.id);
                   
-                  // ลองหาใน data array ด้วย เผื่อ redirectURL อยู่ใน data
                   const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
-                  
-                  // รองรับทั้ง redirectURL และ redirectUrl
                   const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
                   
                   if (finalRedirectURL && finalRedirectURL.trim() !== "") {

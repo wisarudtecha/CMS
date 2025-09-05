@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   Plus,
   List,
@@ -24,6 +24,8 @@ import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInp
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
+import { useWebSocket } from "@/components/websocket/websocket"
+import { useGetListCaseMutationMutation } from "@/store/api/caseApi"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
@@ -39,6 +41,7 @@ function createAvatarFromString(name: string): string {
 }
 
 export default function CasesView() {
+  const { subscribe, isConnected, connect, connectionState } = useWebSocket();
   const [selectedCase, setSelectedCase] = useState<CaseEntity | null>(null)
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
@@ -56,7 +59,7 @@ export default function CasesView() {
     return savedCases
       ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
-
+  const [getCaseList] = useGetListCaseMutationMutation();
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
@@ -66,9 +69,8 @@ export default function CasesView() {
     endDate: "",
     caseType: "",
     caseSubtype: "",
-    createBy:"",
+    createBy: "",
   })
-
   const uniqueCategories = statusColumns.map(col => col.title);
 
   const getStatusKey = (caseItem: CaseEntity): string => {
@@ -83,6 +85,67 @@ export default function CasesView() {
     return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : "Unknow";
   }
 
+  const getNewCaseData = async () => {
+    const result = await getCaseList({})
+    localStorage.setItem("caseList", JSON.stringify(result.data?.data));
+    const savedCases = result.data?.data
+
+    if (savedCases) {
+      try {
+        const caseList = (savedCases as CaseEntity[])
+          .filter(c => allowedStatusIds.includes(c.statusId));
+        setCaseData(caseList);
+        console.log("✅ Case data updated with", caseList.length, "cases");
+      } catch (parseError) {
+        console.error('Error parsing saved cases:', parseError);
+        setCaseData([]);
+      }
+    }
+
+  }
+
+
+  useEffect(() => {
+
+    if (connectionState === 'disconnected' || !isConnected) {
+      console.log("Connecting to WebSocket...");
+      const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
+      connect({
+        url: `${WEBSOCKET}/api/v1/notifications/register`,
+        reconnectInterval: 5000,
+        maxReconnectAttempts: 10,
+        heartbeatInterval: 60000
+      });
+    }
+
+
+    const listener = subscribe(async (message) => {
+      try {
+        if (message?.data) {
+          const data = message.data;
+          console.log("Message data:", data);
+          console.log("Event type:", data.eventType);
+
+          // Handle case-related events
+          if (data.eventType === 'Create' ||
+            data.eventType === 'Update' ||
+            data.eventType === 'StatusChange' ||
+            data.eventType === 'case_created' ||
+            data.eventType === 'case_updated') {
+            getNewCaseData()
+          }
+        }
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
+      }
+    });
+
+    return () => {
+      console.log("Cleaning up WebSocket subscription for CasesView");
+      listener();
+    };
+  }, [subscribe, connect, connectionState, isConnected]);
+
   const handleCaseClick = (caseItem: CaseEntity) => {
     setSelectedCase(caseItem)
   }
@@ -91,24 +154,24 @@ export default function CasesView() {
     setShowAdvanceFilter(false)
   }
   const handleClear = async () => {
-      const clearedFilters = {
-        priority: "",
-        category: "",
-        titleSearch: "",
-        descriptionSearch: "",
-        startDate: "",
-        endDate: "",
-        caseType: "",
-        caseSubtype: "",
-        createBy:""
-      };
-      setAdvancedFilters(clearedFilters);
-      setSelectedStatus(null)
-      await useFetchCase({});
-      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
-      setCaseData(updatedCases);
-      handleAdvanceFilterClose();
+    const clearedFilters = {
+      priority: "",
+      category: "",
+      titleSearch: "",
+      descriptionSearch: "",
+      startDate: "",
+      endDate: "",
+      caseType: "",
+      caseSubtype: "",
+      createBy: ""
     };
+    setAdvancedFilters(clearedFilters);
+    setSelectedStatus(null)
+    getNewCaseData()
+    const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+    setCaseData(updatedCases);
+    handleAdvanceFilterClose();
+  };
   // Refactored to remove advanced filtering logic, which is now handled by the API
   const getFilteredCases = () => {
     let allCases: CaseEntity[] = caseData.map(c => ({
@@ -165,7 +228,7 @@ export default function CasesView() {
         detail: localFilters.descriptionSearch,
         start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
         end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
-        createBy:localFilters.createBy ??undefined
+        createBy: localFilters.createBy ?? undefined
       });
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);

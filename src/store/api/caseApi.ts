@@ -224,6 +224,14 @@ export const caseApi = baseApi.injectEndpoints({
             providesTags: ["Cases"],
         }),
 
+        getListCaseMutation: builder.mutation<ApiResponse<Case[]>, CaseListParams>({
+            query: (params) => ({
+                url: "/case",
+                params,
+            }),
+            invalidatesTags: ["Cases"],
+        }),
+
         getStatus: builder.query<ApiResponse<CaseStatus[]>, PaginationParams>({
             query: (params) => ({
                 url: "/case_status",
@@ -258,6 +266,7 @@ export const {
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,
     useGetCaseHistoryQuery,
-    usePostAddCaseHistoryMutation
+    usePostAddCaseHistoryMutation,
+    useGetListCaseMutationMutation
 } = caseApi;
 

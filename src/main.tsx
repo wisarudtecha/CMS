@@ -14,6 +14,7 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 import "@/index.css";
 import "swiper/swiper-bundle.css";
 import "flatpickr/dist/flatpickr.css";
+import { WebSocketProvider } from "./components/websocket/websocket";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -25,7 +26,9 @@ createRoot(document.getElementById("root")!).render(
               <SessionTimeoutWarning />
               <ProtectedRoute>
                 <AppWrapper>
+                  <WebSocketProvider autoConnect={true}>
                   <App />
+                  </WebSocketProvider>
                 </AppWrapper>
               </ProtectedRoute>
             </AuthProvider>

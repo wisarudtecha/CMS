@@ -192,25 +192,25 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
-    
+
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[];
     const slaTimelines = sopData.slaTimelines || [];
-    
+
     // Get connections and all nodes
     const connections = sopData.sop.find(item => item.section === "connections")?.data || [];
     const allNodes = sopData.sop.filter(item => item.section === "nodes");
-    
+
     // Get workflow nodes (process and dispatch types, excluding delays)
     const workflowNodes = allNodes.filter(item =>
         (item.type === "process" || item.type === "dispatch") &&
         !isDelayNode(item)
     );
-    
+
     // Build execution order by following connections
     const buildExecutionOrder = (): string[] => {
         const visited = new Set<string>();
         const executionOrder: string[] = [];
-        
+
         // Find start node
         const startNode = allNodes.find(item => item.type === "start");
         if (!startNode) {
@@ -219,20 +219,20 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
                 .sort((a, b) => (a.data?.position?.y || 0) - (b.data?.position?.y || 0))
                 .map(node => node.nodeId);
         }
-        
+
         const traverse = (nodeId: string) => {
             if (visited.has(nodeId)) return;
             visited.add(nodeId);
-            
+
             // Check if this is a workflow node we want to display
             const workflowNode = workflowNodes.find(n => n.nodeId === nodeId);
             if (workflowNode) {
                 executionOrder.push(nodeId);
             }
-            
+
             // Get all outgoing connections from this node
             const outgoingConnections = connections.filter((conn: any) => conn.source === nodeId);
-            
+
             // Sort connections to ensure consistent ordering (optional)
             outgoingConnections.sort((a: any, b: any) => {
                 // If there are labeled connections, prioritize "yes" over "no"
@@ -242,29 +242,29 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
                 }
                 return 0;
             });
-            
+
             // Continue traversal
             outgoingConnections.forEach((conn: any) => {
                 traverse(conn.target);
             });
         };
-        
+
         // Start traversal from the start node
         traverse(startNode.nodeId);
-        
+
         return executionOrder;
     };
-    
+
     const orderedNodeIds = buildExecutionOrder();
-    
+
     // Handle current stage - if it's a delay node or decision, find the related workflow node
     let effectiveCurrentNodeId = sopData.currentStage.nodeId;
     const currentNode = allNodes.find(item => item.nodeId === sopData.currentStage.nodeId);
-    
+
     if (currentNode && (isDelayNode(currentNode) || currentNode.type === "decision")) {
         // If current is a delay/decision node, find the next workflow node in the flow
         const nextConnections = connections.filter((conn: any) => conn.source === sopData.currentStage.nodeId);
-        
+
         for (const conn of nextConnections) {
             const nextNode = workflowNodes.find(n => n.nodeId === conn.target);
             if (nextNode) {
@@ -273,21 +273,21 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
             }
         }
     }
-    
+
     // Find current position in the ordered flow
     const currentIndex = orderedNodeIds.indexOf(effectiveCurrentNodeId);
-    
+
     // Create progress steps based on the connection-ordered nodes
     return orderedNodeIds.map((nodeId, index) => {
         const node = workflowNodes.find(n => n.nodeId === nodeId);
         if (!node) return null;
-        
+
         const isCompleted = currentIndex !== -1 && index < currentIndex;
         const isCurrent = index === currentIndex;
-        
+
         // Find corresponding timeline data
         const statusId = node.data?.data?.config?.action;
-        
+
         // Get the latest timeline entry for this status
         const latestTimelineData = slaTimelines
             .filter(timeline => timeline.statusId === statusId)
@@ -299,16 +299,16 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
 
         return {
             id: (index + 1).toString(),
-            title: caseStatus.find((item) => statusId === item.statusId)?.en || 
-                   node.data?.data?.label || 
-                   `Step ${index + 1}`,
+            title: caseStatus.find((item) => statusId === item.statusId)?.en ||
+                node.data?.data?.label ||
+                `Step ${index + 1}`,
             completed: isCompleted,
             current: isCurrent,
             type: node.type,
             description: node.data?.data?.description,
             sla: sla, // Added SLA value
             timeline: latestTimelineData ? {
-                 completedAt: new Date(latestTimelineData?.createdAt).getTime() + (7 * 60 * 60 * 1000),
+                completedAt: new Date(latestTimelineData?.createdAt).getTime() + (7 * 60 * 60 * 1000),
                 duration: latestTimelineData.duration,
                 userOwner: latestTimelineData.userOwner
             } : undefined
