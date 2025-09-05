@@ -1,4 +1,4 @@
-// /src/components/area/Area.tsx
+// /src/components/admin/system-configuration/area/AreaResponse.tsx
 import React, { useMemo, useState } from "react";
 import { Eye } from "lucide-react";
 import { GroupIcon, PencilIcon, TrashBinIcon } from "@/icons";
@@ -12,7 +12,7 @@ import type {
   ResponseMetrics
 } from "@/types/area";
 
-const AreaContent: React.FC<{
+const AreaResponseContent: React.FC<{
   // areas: Area[],
   areas: ResponseArea[],
   avgResponseTime: number,
@@ -171,4 +171,4 @@ const AreaContent: React.FC<{
   );
 };
 
-export default AreaContent;
+export default AreaResponseContent;

@@ -1,4 +1,4 @@
-// /src/components/area/Overview.tsx
+// /src/components/admin/system-configuration/area/AreaOverview.tsx
 import React, { useCallback, useState } from "react";
 import { ChevronDown, ChevronLeft, MapPin, Target, TrendingUp } from "lucide-react";
 import { AlertHexaIcon, GroupIcon, TimeIcon } from "@/icons";
@@ -10,7 +10,7 @@ import type {
   ResponseMetrics
 } from "@/types/area";
 
-const OverviewContent: React.FC<{
+const AreaOverviewContent: React.FC<{
   // areas: Area[],
   areas: ResponseArea[],
   avgResponseTime: number,
@@ -167,4 +167,4 @@ const OverviewContent: React.FC<{
   );
 };
 
-export default OverviewContent;
+export default AreaOverviewContent;

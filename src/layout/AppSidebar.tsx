@@ -179,12 +179,12 @@ const AppSidebar: React.FC = () => {
       subItems: [
         {
           name: "User",
-          path: "/users",
+          path: "/user",
           permission: permissions.hasPermission("user.view"),
         },
         {
-          name: "Roles & Privileges",
-          path: "/roles",
+          name: "Role & Privilege",
+          path: "/role-privilege",
           permission: permissions.hasPermission("role.view"),
         },
         {
@@ -194,7 +194,7 @@ const AppSidebar: React.FC = () => {
         },
         {
           name: "Audit Log",
-          path: "/audit",
+          path: "/auditlog",
           permission: permissions.hasPermission("auditlog.view"),
         },
       ],
@@ -208,7 +208,7 @@ const AppSidebar: React.FC = () => {
       subItems: [
         {
           name: "Service Management",
-          path: "/case/management",
+          path: "/service",
           permission: permissions.hasPermission("service.view"),
           // subItems: [
           //   {
@@ -225,7 +225,7 @@ const AppSidebar: React.FC = () => {
         },
         {
           name: "Unit Management",
-          path: "/device/unit",
+          path: "/unit",
           permission: permissions.hasPermission("unit.view"),
         },
         {
@@ -235,7 +235,7 @@ const AppSidebar: React.FC = () => {
         },
         {
           name: "Property Management",
-          path: "/device/property",
+          path: "/property",
           permission: permissions.hasPermission("unit.view"),
         },
         {

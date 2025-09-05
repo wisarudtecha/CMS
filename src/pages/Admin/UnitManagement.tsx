@@ -1,13 +1,11 @@
-// /src/pages/Admin/SkillManagement.tsx
+// /src/pages/Admin/UnitManagement.tsx
 /**
- * @fileoverview Enhanced Skill Management Dashboard.
+ * @fileoverview Advanced Units Management Dashboard.
  * 
  * @description
- * Comprehensive skill management system for CMS with advanced features:
- * - Skill taxonomy management
- * - Proficiency tracking and assessment
- * - Skill gap analysis
- * - Integration with case assignment
+ * Comprehensive units management system that builds upon the existing Property interface.
+ * Provides property definition, assignment matrix and hierarchy, lifecycle management, and analytics.
+ * Integrates with existing unitPropLists system and case assignment logic.
  * 
  * @metadata
  * Author: [Wisarud Techa]
@@ -24,11 +22,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import SkillManagementComponent from "@/components/admin/system-configuration/skill/SkillManagement";
+import UnitManagementComponent from "@/components/admin/system-configuration/unit/UnitManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const SkillManagementPage: React.FC = () => {
+const UnitManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -44,29 +42,28 @@ const SkillManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Skill Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Skill Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Unit Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Unit Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["user.view"]}>
-        <PageBreadcrumb pageTitle="Skill Management" />
+      <ProtectedRoute requiredPermissions={["unit.view"]}>
+        <PageBreadcrumb pageTitle="Unit Management" />
 
-        <SkillManagementComponent />
+        <UnitManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default SkillManagementPage;
+export default UnitManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Interactive skill matrix with proficiency levels.
- * - Real-time skill analytics and metrics.
- * - Advanced filtering and search.
- * - Skill assessment workflow integration.
- * - Case assignment skill matching visualization.
+ * - Interactive Unit Cards.
+ * - Advanced Table View.
+ * - Detailed Preview System.
+ * - Smart Filtering System.
  * 
  * @version 0.1.0
  * @date    01-09-2025

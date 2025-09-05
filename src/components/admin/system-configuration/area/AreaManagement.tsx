@@ -1,15 +1,15 @@
-// /src/components/area/AreaManagement.tsx
+// /src/components/admin/system-configuration/area/AreaManagement.tsx
 import React, {
   useState,
   useMemo
 } from "react";
 // import { Activity, MapPin } from "lucide-react";
 // import { GroupIcon, PieChartIcon } from "@/icons";
-import AnalyticContent from "@/components/area/Analytic";
-import AreaContent from "@/components/area/Area";
-import AreaDesignerContent from "@/components/area/AreaDesigner";
-import CoverageContent from "@/components/area/Coverage";
-import OverviewContent from "@/components/area/Overview";
+import AreaAnalyticContent from "@/components/admin/system-configuration/area/AreaAnalytic";
+import AreaResponseContent from "@/components/admin/system-configuration/area/AreaResponse";
+import AreaDesignerContent from "@/components/admin/system-configuration/area/AreaDesigner";
+import AreaCoverageContent from "@/components/admin/system-configuration/area/AreaCoverage";
+import AreaOverviewContent from "@/components/admin/system-configuration/area/AreaOverview";
 import Tab from "@/components/ui/tab/Tab";
 import type { TabItem } from "@/components/ui/tab/Tab";
 import type { Area } from "@/store/api/area";
@@ -188,7 +188,7 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = (
       id: "overview",
       label: "Overview",
       // icon: <PieChartIcon className="w-4 h-4 mr-2" />,
-      content: <OverviewContent
+      content: <AreaOverviewContent
         // areas={areas}
         areas={mockAreas}
         avgResponseTime={averageResponseTime}
@@ -204,7 +204,7 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = (
       id: "areas",
       label: "Response Areas",
       // icon: <MapPin className="w-4 h-4 mr-2" />,
-      content: <AreaContent
+      content: <AreaResponseContent
         // areas={areas}
         areas={mockAreas}
         avgResponseTime={averageResponseTime}
@@ -220,7 +220,7 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = (
       id: "coverage",
       label: "Unit Coverage",
       // icon: <GroupIcon className="w-4 h-4 mr-2" />,
-      content: <CoverageContent
+      content: <AreaCoverageContent
         // areas={areas}
         areas={mockAreas}
         coverages={mockCoverage}
@@ -234,7 +234,7 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = (
       id: "analytics",
       label: "Analytics",
       // icon: <Activity className="w-4 h-4 mr-2" />,
-      content: <AnalyticContent />
+      content: <AreaAnalyticContent />
     },
   ];
 

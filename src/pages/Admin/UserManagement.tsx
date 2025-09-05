@@ -25,7 +25,7 @@ import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "
 import type { Department, Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
-import UserManagementComponent from "@/components/admin/UserManagement";
+import UserManagementComponent from "@/components/admin/user-management/user/UserManagement";
 import Toast from "../../components/toast/Toast";
 
 const UserManagementPage: React.FC = () => {

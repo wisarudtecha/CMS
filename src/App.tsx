@@ -3,39 +3,36 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 
 // Template Imports
-import SignIn from "./pages/AuthPages/SignIn";
-import SignUp from "./pages/AuthPages/SignUp";
-import NotFound from "./pages/OtherPage/NotFound";
-import UserProfiles from "./pages/UserProfiles";
-import Videos from "./pages/UiElements/Videos";
-import Images from "./pages/UiElements/Images";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Avatars from "./pages/UiElements/Avatars";
-import Buttons from "./pages/UiElements/Buttons";
-import ButtonsCustomize from "./pages/UiElements/ButtonsCustomize";
-import Tabs from "./pages/UiElements/Tabs";
-import LineChart from "./pages/Charts/LineChart";
-import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
-import BasicTables from "./pages/Tables/BasicTables";
-import FormElements from "./pages/Forms/FormElements";
-import DynamicForm from "./components/form/dynamic-form/DynamicForm";
-import Blank from "./pages/Blank";
-import Home from "./pages/Dashboard/Home";
-import AppLayout from "./layout/AppLayout";
-import { ScrollToTop } from "./components/common/ScrollToTop";
-
-// Authentication Imports
-import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
+import { ScrollToTop } from "@/components/common/ScrollToTop";
+import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
+import AppLayout from "@/layout/AppLayout";
+import SignIn from "@/pages/AuthPages/SignIn";
+import SignUp from "@/pages/AuthPages/SignUp";
+import Blank from "@/pages/Blank";
+import Calendar from "@/pages/Calendar";
+import LineChart from "@/pages/Charts/LineChart";
+import BarChart from "@/pages/Charts/BarChart";
+import Home from "@/pages/Dashboard/Home";
+import FormElements from "@/pages/Forms/FormElements";
+import NotFound from "@/pages/OtherPage/NotFound";
+import Alerts from "@/pages/UiElements/Alerts";
+import Avatars from "@/pages/UiElements/Avatars";
+import Badges from "@/pages/UiElements/Badges";
+import Buttons from "@/pages/UiElements/Buttons";
+import ButtonsCustomize from "@/pages/UiElements/ButtonsCustomize";
+import Images from "@/pages/UiElements/Images";
+import Tabs from "@/pages/UiElements/Tabs";
+import Videos from "@/pages/UiElements/Videos";
+import BasicTables from "@/pages/Tables/BasicTables";
+import UserProfiles from "@/pages/UserProfiles";
 
 // Case Management Imports
-import CasesAssignment from "./pages/Case/caseAssignment";
-import CaseCreation from "./components/case/CaseCreation";
-import CaseHistoryPage from "./pages/Case/CaseHistory";
-// Case Management (Archived) Imports 
+import CasesAssignment from "@/pages/Case/caseAssignment";
+import CaseCreation from "@/components/case/CaseCreation";
+import CaseHistoryPage from "@/pages/Case/CaseHistory";
 // Case Management (No Longer Used) Imports
-// import CasesView from "./pages/Case/caseView";
+// import CasesView from "@/pages/Case/caseView";
+// import Kanban from "@/pages/Task/kanban";
 
 // Dashboard Imports
 import Dashboard from "@/components/dashboard/Dashboard";
@@ -46,9 +43,9 @@ import CallcenterDashboard from "@/components/dashboard/CallcenterDashboard";
 import ServiceDashboard from "@/components/dashboard/ServiceDashboard";
 
 // Form Builder Imports
-import FormManagement from "./pages/Forms/FormManagement"
-// Form Builder (Archived) Imports
-
+import FormManagement from "@/pages/Forms/FormManagement"
+// Form Builder (No Longer Used) Imports
+// import LoadDynamicFrom from "@/components/form/dynamic-form/LoadDynamicForm";
 
 // Workflow Imports
 import WorkflowListPage from "@/pages/Workflow/List";
@@ -57,9 +54,21 @@ import WorkflowEditorPage from "@/pages/Workflow/Editor";
 import WorkflowEditorV1Page from "@/pages/Workflow/v1/Editor";
 
 // User Management Imports
-import UserManagementPage from "./pages/Admin/UserManagement";
-import UserForm from "./pages/Admin/UserForm";
-import RoleManagementPage from "./pages/Admin/RoleManagement";
+import UserManagementPage from "@/pages/Admin/UserManagement";
+import UserForm from "@/pages/Admin/UserForm";
+import RolePrivilegeManagementPage from "@/pages/Admin/RolePrivilegeManagement";
+import OrganizationManagementPage from "@/pages/Admin/OrganizationManagement";
+import AuditLog from "@/pages/Admin/AuditLog";
+
+// System Configuration Imports
+import AreaManagementPage from "@/pages/Admin/AreaManagement";
+import PropertyManagementPage from "@/pages/Admin/PropertyManagement";
+import ServiceManagementPage from "@/pages/Admin/ServiceManagement";
+import SkillManagementPage from "@/pages/Admin/SkillManagement";
+import UnitManagementPage from "@/pages/Admin/UnitManagement";
+
+// Authentication Imports
+import { AuthenticatedContent } from "@/components/auth/AuthenticatedContent";
 
 // Security & Error Handling Imports
 import ErrorBoundary from "@/components/security/ErrorBoundary";
@@ -67,21 +76,9 @@ import LoadingSystem from "@/components/ui/loading/LoadingSystem";
 import SecurityAlerts from "@/components/security/SecurityAlerts";
 import OfflineState from "@/components/offline/OfflineManager";
 
-//auditlog menu Imports
-import AuditLog from "./pages/Admin/AuditLog";
-
-// Area Management Imports
-import AreaManagementPage from "@/pages/Area/AreaManagement";
-// Case Management Imports
-import CaseManagementPage from "@/pages/Case/CaseManagement";
-// Property Management Imports
-import PropertyManagementPage from "@/pages/Device/PropertyManagement";
-// Property Management Imports
-import UnitManagementPage from "@/pages/Device/UnitManagement";
-// Skill Management Imports
-import SkillManagementPage from "@/pages/Admin/SkillManagement";
-// Organization Management Imports
-import OrganizationManagementPage from "@/pages/Organization/OrganizationManagement";
+// Custom Theme Imports
+import ThemeDebugger from "@/components/debug/ThemeDebugger";
+import CaseDetailView from "@/components/case/CaseDetailView";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -95,123 +92,109 @@ import OrganizationManagementPage from "@/pages/Organization/OrganizationManagem
 // });
 // i18n.activate("en");
 
-// Custom Theme Imports
-import ThemeDebugger from "@/components/debug/ThemeDebugger";
-import CaseDetailView from "./components/case/CaseDetailView";
-// import { CaseEntity } from "./types/case";
-
 export default function App() {
   return (
-    // <I18nProvider i18n={i18n}>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            {/* Home Page */}
-            <Route index path="/" element={<Home />} />
+    <Router>
+      <ScrollToTop />
+      <Routes>
+        {/* Dashboard Layout */}
+        <Route element={<AppLayout />}>
+          {/* Home Page */}
+          <Route index path="/" element={<Home />} />
 
-            {/* Authentication */}
-            <Route path="/authenticate" element={<AuthenticatedContent />} />
+          {/* Case Management (Latest) */}
+          <Route path="/case/assignment" element={<CasesAssignment />} />
+          <Route path="/case/creation" element={<CaseCreation/>} />
+          <Route path="/case/history" element={<CaseHistoryPage />} />
+          {/* Case Management (Archived) */}
+          <Route path="/case-assignment" element={<CasesAssignment />} />
+          <Route path="/case-creation" element={<CaseCreation/>} />
+          <Route path="/case/:caseId" element={<CaseDetailView isCreate={false} />} />
+          {/* Case Management (No Longer Used) */}
+          {/* <Route path="/case-view" element={<CasesView />} /> */}
+          {/* <Route path="/kanban" element={<Kanban />} /> */}
 
-            {/* Case Management (Latest) */}
-            <Route path="/case/assignment" element={<CasesAssignment />} />
-            <Route path="/case/creation" element={<CaseCreation/>} />
-            <Route path="/case/history" element={<CaseHistoryPage />} />
-            {/* Case Management (Archived) */}
-            <Route path="/case-assignment" element={<CasesAssignment />} />
-            <Route path="/case-creation" element={<CaseCreation/>} />
-            <Route path="/case/:caseId" element={<CaseDetailView isCreate={false} />} />
-            {/* Case Management (No Longer Used) */}
-            {/* <Route path="/case-view" element={<CasesView />} /> */}
+          {/* Dashboard */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Dashboard Mock Data (Archived) */}
+          <Route path="/dashboard/agent-status" element={<AgentStatusDashboard />} />
+          <Route path="/dashboard/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/dashboard/callcenter" element={<CallcenterDashboard />} />
+          <Route path="/dashboard/service" element={<ServiceDashboard />} />
 
-            {/* Dashboard */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            {/* Dashboard Mock Data (Archived) */}
-            <Route path="/dashboard/agent-status" element={<AgentStatusDashboard />} />
-            <Route path="/dashboard/analytics" element={<AnalyticsDashboard />} />
-            <Route path="/dashboard/callcenter" element={<CallcenterDashboard />} />
-            <Route path="/dashboard/service" element={<ServiceDashboard />} />
+          {/* Forms Builder */}
+          <Route path="/form-elements" element={<FormElements />} />
+          <Route path="/dynamic-form" element={<DynamicForm enableSelfBg={true}/>} />
+          <Route path="/form-management" element={<FormManagement />} />
+          {/* Forms Builder (No Longer Used) */}
+          {/* <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} /> */}
 
-            {/* Forms Builder */}
-            <Route path="/form-elements" element={<FormElements />} />
-            <Route path="/dynamic-form" element={<DynamicForm enableSelfBg={true}/>} />
-            <Route path="/form-management" element={<FormManagement />} />
-            {/* Forms Builder (Archived) */}
-            
+          {/* Workflow Management (SOP) */}
+          <Route path="/workflow/list" element={<WorkflowListPage />} />
+          {/* Workflow Builder (Latest Version: v0.2.0) */}
+          <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />
+          <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorPage />} />
+          <Route path="/workflow/editor/v2/:id/:action" element={<WorkflowEditorPage />} />
+          {/* Workflow Builder (Archived Version: v0.1.0) */}
+          <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
 
-            {/* Workflow Management (SOP) */}
-            <Route path="/workflow/list" element={<WorkflowListPage />} />
-            {/* Workflow Builder (Latest Version: v0.2.0) */}
-            <Route path="/workflow/editor/v2" element={<WorkflowEditorPage />} />
-            <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorPage />} />
-            <Route path="/workflow/editor/v2/:id/:action" element={<WorkflowEditorPage />} />
-            {/* Workflow Builder (Archived Version: v0.1.0) */}
-            <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
+          {/* User Management */}
+          <Route path="/user" element={<UserManagementPage />} />
+          <Route path="/user/create" element={<UserForm />} />
+          <Route path="/user/edit/:id" element={<UserForm />} />
+          <Route path="/user/:id" element={<UserForm />} /> 
+          <Route path="/role-privilege" element={<RolePrivilegeManagementPage />} />
+          <Route path="/organization" element={<OrganizationManagementPage />} />
+          <Route path="/auditlog" element={<AuditLog />} />
 
-            {/* Report */}
-            <Route path="/audit" element={<AuditLog />} />
+          {/* System Configuration */}
+          <Route path="/area" element={<AreaManagementPage />} />
+          <Route path="/property" element={<PropertyManagementPage />} />
+          <Route path="/service" element={<ServiceManagementPage />} />
+          <Route path="/skill" element={<SkillManagementPage />} />
+          <Route path="/unit" element={<UnitManagementPage />} />
 
-            {/* User Management */}
-            <Route path="/users" element={<UserManagementPage />} />
-            <Route path="/user/create" element={<UserForm />} />
-            <Route path="/user/edit/:id" element={<UserForm />} />
-            <Route path="/user/:id" element={<UserForm />} /> 
-            <Route path="/roles" element={<RoleManagementPage />} />
+          {/* Others Page */}
+          <Route path="/profile" element={<UserProfiles />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/blank" element={<Blank />} />
+          {/* <Route path="/kanban" element={<Kanban />} /> */}
+          {/* Tables */}
+          <Route path="/basic-tables" element={<BasicTables />} />
+          {/* Ui Elements */}
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/avatars" element={<Avatars />} />
+          <Route path="/badge" element={<Badges />} />
+          <Route path="/buttons" element={<Buttons />} />
+          <Route path="/buttons-customize" element={<ButtonsCustomize />} />
+          <Route path="/images" element={<Images />} />
+          <Route path="/tabs" element={<Tabs />} />
+          <Route path="/videos" element={<Videos />} />
+          {/* Charts */}
+          <Route path="/line-chart" element={<LineChart />} />
+          <Route path="/bar-chart" element={<BarChart />} />
+          {/* Authentication */}
+          <Route path="/authenticate" element={<AuthenticatedContent />} />
+          {/* Security & Error Handling */}
+          <Route path="/security/error-boundaries" element={<ErrorBoundary />} />
+          <Route path="/security/loading-system" element={<LoadingSystem />} />
+          <Route path="/security/security-alerts" element={<SecurityAlerts />} />
+          <Route path="/security/offline-state" element={<OfflineState />} />
 
-            {}{/* Security & Error Handling */}
-            <Route path="/security/error-boundaries" element={<ErrorBoundary />} />
-            <Route path="/security/loading-system" element={<LoadingSystem />} />
-            <Route path="/security/security-alerts" element={<SecurityAlerts />} />
-            <Route path="/security/offline-state" element={<OfflineState />} />
+          {/* Test Page */}
+          {/* Lingui (No Longer Used) */}
+          {/* <Route path="/test/lingui" element={<Lingui />} /> */}
+          {/* Custom Theme */}
+          <Route path="/theme-debugger" element={<ThemeDebugger />} />
+        </Route>
 
-            {/* Area Management */}
-            <Route path="/area" element={<AreaManagementPage />} />
-            {/* Case Management */}
-            <Route path="/case/management" element={<CaseManagementPage />} />
-            {/* Property Management */}
-            <Route path="/device/property" element={<PropertyManagementPage />} />
-            {/* Unit Management */}
-            <Route path="/device/unit" element={<UnitManagementPage />} />
-            {/* Skill Management */}
-            <Route path="/skill" element={<SkillManagementPage />} />
-            {/* Organization Management */}
-            <Route path="/organization" element={<OrganizationManagementPage />} />
+        {/* Auth Layout */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/buttons-customize" element={<ButtonsCustomize />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/tabs" element={<Tabs />} />
-            <Route path="/videos" element={<Videos />} />
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
-
-            {/* Test Page */}
-            {/* Lingui (No Longer Used) */}
-            {/* <Route path="/test/lingui" element={<Lingui />} /> */}
-            {/* Custom Theme */}
-            <Route path="/theme-debugger" element={<ThemeDebugger />} />
-          </Route>
-
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    // </I18nProvider>
+        {/* Fallback Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }

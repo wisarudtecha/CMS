@@ -1,18 +1,16 @@
-// /src/pages/Admin/SkillManagement.tsx
+// /src/pages/Admin/PropertyManagement.tsx
 /**
- * @fileoverview Enhanced Skill Management Dashboard.
+ * @fileoverview Advanced Properties Management Dashboard.
  * 
  * @description
- * Comprehensive skill management system for CMS with advanced features:
- * - Skill taxonomy management
- * - Proficiency tracking and assessment
- * - Skill gap analysis
- * - Integration with case assignment
+ * Comprehensive properties management system that builds upon the existing Property interface.
+ * Provides property definition, assignment matrix, lifecycle management, and analytics.
+ * Integrates with existing unitPropLists system and case assignment logic.
  * 
  * @metadata
  * Author: [Wisarud Techa]
- * First Created: [01-09-2025] v0.1.0
- * Last Updated: [01-09-2025] v0.1.0
+ * First Created: [29-08-2025] v0.1.0
+ * Last Updated: [29-08-2025] v0.1.0
  * 
  * @notes
  * - Auto-generated code; may contain incomplete logic or require validation.
@@ -24,11 +22,11 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // import { useGetListCaseQuery } from "@/store/api/caseApi";
 // import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
-import SkillManagementComponent from "@/components/admin/system-configuration/skill/SkillManagement";
+import PropertyManagementComponent from "@/components/admin/system-configuration/property/PropertyManagement"; 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
-const SkillManagementPage: React.FC = () => {
+const PropertyManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
@@ -44,31 +42,32 @@ const SkillManagementPage: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="React.js Skill Management | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Skill Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="React.js Property Management | TailAdmin - Next.js Admin Dashboard Template"
+        description="This is React.js Property Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["user.view"]}>
-        <PageBreadcrumb pageTitle="Skill Management" />
+      <ProtectedRoute requiredPermissions={["unit.view"]}>
+        <PageBreadcrumb pageTitle="Property Management" />
 
-        <SkillManagementComponent />
+        <PropertyManagementComponent />
       </ProtectedRoute>
     </>
   );
 };
 
-export default SkillManagementPage;
+export default PropertyManagementPage;
 
 /**
  * @keyFeatures
  * ----------------------------------------------------------------------------
- * - Interactive skill matrix with proficiency levels.
- * - Real-time skill analytics and metrics.
- * - Advanced filtering and search.
- * - Skill assessment workflow integration.
- * - Case assignment skill matching visualization.
+ * - Enhanced Data Architecture.
+ * - Advanced Management Interface.
+ * - Design Consistency.
+ * - Bulk operations.
+ * - Template management.
+ * - Integration with skills, properties, and workflows.
  * 
  * @version 0.1.0
- * @date    01-09-2025
+ * @date    29-08-2025
  * ----------------------------------------------------------------------------
  */

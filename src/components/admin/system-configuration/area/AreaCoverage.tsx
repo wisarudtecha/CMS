@@ -1,4 +1,4 @@
-// /src/components/area/Coverage.tsx
+// /src/components/admin/system-configuration/area/AreaCoverage.tsx
 import React from "react";
 import Badge from "@/components/ui/badge/Badge";
 // import type { Area } from "@/store/api/area";
@@ -8,7 +8,7 @@ import type {
   ResponseMetrics
 } from "@/types/area";
 
-const CoverageContent: React.FC<{
+const AreaCoverageContent: React.FC<{
   // areas: Area[],
   areas: ResponseArea[],
   coverages: AreaCoverage[],
@@ -121,4 +121,4 @@ const CoverageContent: React.FC<{
   );
 };
 
-export default CoverageContent;
+export default AreaCoverageContent;
