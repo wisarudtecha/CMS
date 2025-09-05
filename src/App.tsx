@@ -34,7 +34,6 @@ import CasesAssignment from "./pages/Case/caseAssignment";
 import CaseCreation from "./components/case/CaseCreation";
 import CaseHistoryPage from "./pages/Case/CaseHistory";
 // Case Management (Archived) Imports 
-import Kanban from "./pages/Task/kanban";
 // Case Management (No Longer Used) Imports
 // import CasesView from "./pages/Case/caseView";
 
@@ -49,7 +48,7 @@ import ServiceDashboard from "@/components/dashboard/ServiceDashboard";
 // Form Builder Imports
 import FormManagement from "./pages/Forms/FormManagement"
 // Form Builder (Archived) Imports
-import LoadDynamicFrom from "./components/form/dynamic-form/LoadDynamicForm";
+
 
 // Workflow Imports
 import WorkflowListPage from "@/pages/Workflow/List";
@@ -123,7 +122,6 @@ export default function App() {
             <Route path="/case-assignment" element={<CasesAssignment />} />
             <Route path="/case-creation" element={<CaseCreation/>} />
             <Route path="/case/:caseId" element={<CaseDetailView isCreate={false} />} />
-            <Route path="/kanban" element={<Kanban />} />
             {/* Case Management (No Longer Used) */}
             {/* <Route path="/case-view" element={<CasesView />} /> */}
 
@@ -140,7 +138,7 @@ export default function App() {
             <Route path="/dynamic-form" element={<DynamicForm enableSelfBg={true}/>} />
             <Route path="/form-management" element={<FormManagement />} />
             {/* Forms Builder (Archived) */}
-            <Route path="/load-dynamic-form" element={<LoadDynamicFrom />} />
+            
 
             {/* Workflow Management (SOP) */}
             <Route path="/workflow/list" element={<WorkflowListPage />} />
@@ -184,7 +182,6 @@ export default function App() {
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
-            <Route path="/kanban" element={<Kanban />} />
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
             {/* Ui Elements */}
