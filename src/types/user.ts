@@ -40,6 +40,21 @@ export interface EnhancedUserSkill {
   updatedBy: string;
 }
 
+export type Preferences = {
+  popupEnabled: boolean;
+  soundEnabled: boolean;
+  sound: string;
+  pushEnabled: boolean;
+  autoDelete: boolean;
+  hideRead: boolean;
+  autoDeleteDays: number;
+};
+
+export interface PreferencesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 export interface Role {
   id: string;
   orgId: string;

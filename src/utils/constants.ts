@@ -60,6 +60,8 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
+export const AUTO_DELETE_OPTIONS = [1, 3, 5, 7, 15, 30] as const;
+
 export const CASE_CANNOT_DELETE = ["S007", "S013", "S014", "S016"] as const;
 
 export const DEFAULT_PAGINATION = {
@@ -112,6 +114,10 @@ export const PERMISSIONS = {
     SETTINGS: "admin:settings",
   },
 } as const;
+
+export const POPUP_AUTO_DISMISS_MS = 10000 as const; // แต่ละป็อปอัปโชว์ 10 วิ
+export const POPUP_GROUP_AUTO_CLOSE_MS = 8000 as const; // ปิดทั้งชุดใน 8 วิ
+export const POPUP_TRANSITION_MS = 300 as const; // animation 300ms (ต้องตรงกับ duration-300)
 
 export const PRIORITY_COLORS = {
   low: "text-gray-600 bg-gray-50",
@@ -192,3 +198,5 @@ export const VALIDATION_RULES = {
   // PHONE: /^\+?[\d\s\-\(\)]+$/,
   PHONE: /^\+?[\d\s\-()]+$/,
 } as const;
+
+export const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;

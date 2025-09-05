@@ -1,22 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { Dropdown } from "../ui/dropdown/Dropdown";
+import React, { useEffect, useRef, useState } from "react";
+import { Dropdown } from "@/components/ui/dropdown/Dropdown";
+import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { useAuth } from "@/hooks/useAuth";
-import { useTranslation } from "../../hooks/useTranslation";
+import { useTranslation } from "@/hooks/useTranslation";
+import { AUTO_DELETE_OPTIONS } from "@/utils/constants";
+import { isValidImageUrl, isValidImageUrlByContentType } from "@/utils/resourceValidators";
+import type { Preferences, PreferencesModalProps } from "@/types/user";
 
-const AUTO_DELETE_OPTIONS = [1, 3, 5, 7, 15, 30];
-
-type Prefs = {
-  popupEnabled: boolean;
-  soundEnabled: boolean;
-  sound: string;
-  pushEnabled: boolean;
-  autoDelete: boolean;
-  hideRead: boolean;
-  autoDeleteDays: number;
-};
-
-const getInitialPreferences = (): Prefs => {
+const getInitialPreferences = (): Preferences => {
   const saved = localStorage.getItem("notification_preferences");
   if (saved) {
     try {
@@ -30,7 +21,10 @@ const getInitialPreferences = (): Prefs => {
         hideRead: typeof parsed.hideRead === "boolean" ? parsed.hideRead : false,
         autoDeleteDays: typeof parsed.autoDeleteDays === "number" ? parsed.autoDeleteDays : 7,
       };
-    } catch {}
+    }
+    catch {
+      // 
+    }
   }
   return {
     popupEnabled: true,
@@ -43,21 +37,12 @@ const getInitialPreferences = (): Prefs => {
   };
 };
 
-interface PreferencesModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 /* ---------- Reusable Toggle (ไม่พึ่ง peer) ---------- */
-function Toggle({
-  checked,
-  onChange,
-  "aria-label": ariaLabel,
-}: {
+const Toggle = ({ checked, onChange, "aria-label": ariaLabel }: {
   checked: boolean;
   onChange: (v: boolean) => void;
   "aria-label"?: string;
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -79,8 +64,26 @@ function Toggle({
 
 /* ================= Preferences Dropdown ================ */
 const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose }) => {
-  const [preferences, setPreferences] = useState<Prefs>(getInitialPreferences());
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [preferences, setPreferences] = useState<Preferences>(getInitialPreferences());
+
+  const setPref = <K extends keyof Preferences>(key: K, value: Preferences[K]) => setPreferences((prev) => ({ ...prev, [key]: value }));
+
+  const handleAutoDeleteDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPref("autoDeleteDays", Number(e.target.value));
+  };
+
+  const handleSave = () => {
+    localStorage.setItem("notification_preferences", JSON.stringify(preferences));
+    onClose();
+  };
+
+  const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSound = e.target.value;
+    setPref("sound", selectedSound);
+    const audio = new Audio(`/sounds/${selectedSound}.mp3`);
+    audio.play().catch((err) => console.warn("🔇 Sound preview failed:", err));
+  };
 
   // โหลดค่าทุกครั้งที่เปิด
   useEffect(() => {
@@ -93,27 +96,10 @@ const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose 
     }
   }, [isOpen]);
 
-  const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
-    setPreferences((prev) => ({ ...prev, [key]: value }));
-
-  const handleSoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedSound = e.target.value;
-    setPref("sound", selectedSound);
-    const audio = new Audio(`/sounds/${selectedSound}.mp3`);
-    audio.play().catch((err) => console.warn("🔇 Sound preview failed:", err));
-  };
-
-  const handleAutoDeleteDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPref("autoDeleteDays", Number(e.target.value));
-  };
-
-  const handleSave = () => {
-    localStorage.setItem("notification_preferences", JSON.stringify(preferences));
-    onClose();
-  };
-
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         onClose();
@@ -123,7 +109,9 @@ const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div
@@ -256,69 +244,89 @@ const PreferencesDropdown: React.FC<PreferencesModalProps> = ({ isOpen, onClose 
 };
 
 /* ===================== User Dropdown ===================== */
-export default function UserDropdown() {
+const UserDropdown = () => {
   const { t } = useTranslation();
   const { state, logout } = useAuth();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [showPreferences, setShowPreferences] = useState(false);
   const [displayName, setDisplayName] = useState("");
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const [photo, setPhoto] = useState("");
+  const [showPreferences, setShowPreferences] = useState(false);
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-  function closeDropdown() {
+  const storage = localStorage || sessionStorage;
+  const profileStorage = storage?.getItem("profile") || "{}";
+
+  const closeDropdown = () => {
     setIsOpen(false);
   }
-  function openPreferencesModal() {
-    setShowPreferences(true);
-    setIsOpen(false);
-  }
-  function closePreferencesModal() {
+
+  const closePreferencesModal = () => {
     setShowPreferences(false);
     setIsOpen(false);
   }
 
-  useEffect(() => {
-    const profileStr = localStorage.getItem("profile");
-    if (profileStr) {
-      try {
-        const profile = JSON.parse(profileStr);
-        setDisplayName(profile.displayName || "Musharof");
-        setFullName(`${profile.firstName || "Musharof"} ${profile.lastName || "Chowdhury"}`);
-        setEmail(profile.email || "randomuser@pimjo.com");
-        setPhoto(profile.photo || "/images/user/owner.jpg");
-      } catch (err) {
-        console.error("Error parsing profile from localStorage", err);
+  const openPreferencesModal = () => {
+    setShowPreferences(true);
+    setIsOpen(false);
+  }
+
+  // Remove localStorge Profile || Notification || Token Data
+  const removeData = () => {
+    try {
+      // const profileData = localStorage.getItem("profile");
+      if (profileStorage) {
+        const parsed = JSON.parse(profileStorage);
+        const username = parsed.username;
+        if (username) {
+          // localStorage.removeItem(`notifications`);
+          storage.removeItem(`notifications`);
+        }
       }
+      // localStorage.removeItem("profile");
+      storage.removeItem(`profile`);
+      // localStorage.removeItem("access_token");
+      storage.removeItem(`access_token`);
     }
-  }, []);
+    catch (error) {
+      console.error("Remove data failed:", error);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  }
 
   const handleLogoutClick = () => {
     removeData();
     logout();
   };
 
-  //Remove localStorge Profile || Notification || Token Data
-  const removeData = () => {
-    try {
-      const profileData = localStorage.getItem("profile");
-      if (profileData) {
-        const parsed = JSON.parse(profileData);
-        const username = parsed.username;
-        if (username) {
-          localStorage.removeItem(`notifications`);
-        }
+  useEffect(() => {
+    // const profileStr = localStorage.getItem("profile");
+    if (profileStorage) {
+      try {
+        const profile = JSON.parse(profileStorage);
+        setDisplayName(profile.displayName || "Musharof");
+        setFullName(`${profile.firstName || "Musharof"} ${profile.lastName || "Chowdhury"}`);
+        setEmail(profile.email || "randomuser@pimjo.com");
+        setPhoto(profile.photo || "/images/user/owner.jpg");
       }
-      localStorage.removeItem("profile");
-      localStorage.removeItem("access_token");
-    } catch (error) {
-      console.error("Remove data failed:", error);
+      catch (err) {
+        console.error("Error parsing profile from localStorage or sessionStorage:", err);
+      }
     }
-  };
+  }, [profileStorage]);
+
+  useEffect(() => {
+    const checkImageValidity = async () => {
+      if (photo && (isValidImageUrl(photo) || await isValidImageUrlByContentType(photo))) {
+        setPhoto(photo);
+      }
+    };
+    checkImageValidity();
+  }, [photo]);
 
   return (
     <div className="relative">
@@ -326,9 +334,15 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={photo || "/images/notification/user.jpg"} alt="User" />
-        </span>
+        {photo ?
+          <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+            <img src={photo || "/images/notification/user.jpg"} alt="User" />
+          </span>
+        :
+          <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xl mr-3">
+            <span className="w-11 text-center capitalize">{fullName[0]}</span>
+          </div>
+        }
         <span className="block mr-1 font-medium text-theme-sm">{displayName}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -469,3 +483,5 @@ export default function UserDropdown() {
     </div>
   );
 }
+
+export default UserDropdown;

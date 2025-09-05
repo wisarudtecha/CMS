@@ -1,7 +1,7 @@
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import UserMetaCard from "../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../components/UserProfile/UserInfoCard";
-import UserOrganizationCard from "../components/UserProfile/UserOrganizationCardCard";
+import UserOrganizationCard from "../components/UserProfile/UserOrganizationCard";
 import UserAuditLog from "../components/UserProfile/UserAuditLog";
 import PageMeta from "../components/common/PageMeta";
 import { useState, useEffect } from "react";

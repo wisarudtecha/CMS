@@ -1,124 +1,71 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { useTranslation } from "../../hooks/useTranslation";
+// /src/components/header/NotificationDropdown.tsx
 import axios, { AxiosError } from "axios";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Dropdown } from "@/components/ui/dropdown/Dropdown";
+import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+import { useWebSocket } from "@/components/websocket/websocket";
 import { Menu } from "@headlessui/react";
-import { useWebSocket } from "../websocket/websocket";
+import { useTranslation } from "@/hooks/useTranslation";
+import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS, WEBSOCKET } from "@/utils/constants";
+import { isValidImageUrl } from "@/utils/resourceValidators";
+import { formatLastNotification } from "@/utils/utils";
+import type { Notification, PopupItem } from "@/types/notification";
 
-interface Data {
-  key: string;
-  value: string;
-}
-
-interface Recipient {
-  type: string;
-  value: string;
-}
-
-interface Notification {
-  id: string;
-  tenantId: string;
-  senderType: "low" | "medium" | "high" | string;
-  senderPhoto: string;
-  sender: string;
-  message: string;
-  eventType: string;
-  redirectURL?: string;
-  redirectUrl?: string;
-  createdAt: string;
-  read: boolean;
-  data: Data[];
-  recipients: Recipient[];
-}
-
-function timeAgo(date: string): string {
-  const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-// ====== Popup queue config ======
-type PopupItem = { id: string; noti: Notification };
-const POPUP_AUTO_DISMISS_MS = 10000;
-const POPUP_TRANSITION_MS = 300;
-const POPUP_GROUP_AUTO_CLOSE_MS = 8000;
-
-export default function NotificationDropdown() {
+const NotificationDropdown = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Use main WebSocket context instead of creating own socket
   const { isConnected, subscribe, connect, connectionState } = useWebSocket();
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const closeAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const hasInitialized = useRef(false);
+  const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
+  const visibleIdsRef = useRef<Set<string>>(new Set());
+  
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<string>("All Types");
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(false);
+  const [isOverflow, setIsOverflow] = useState<{ [key: string]: boolean }>({});
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifying, setNotifying] = useState(false);
+  const [popupQueue, setPopupQueue] = useState<PopupItem[]>([]);
   const [searchMode, setSearchMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAll, setShowAll] = useState(false);
   const [unread, setUnread] = useState(0);
-  const hasInitialized = useRef(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isOverflow, setIsOverflow] = useState<{ [key: string]: boolean }>({});
-  const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const [filterType, setFilterType] = useState<string>("All Types");
 
-  const API = import.meta.env.VITE_API_BASE_URL;
+  // ===================================================================
+  // Token
+  // ===================================================================
+  const getAuthToken = () => {
+    const token = localStorage.getItem("access_token");
+    return token;
+  };
 
-  // ====== Popup queue states & timers ======
-  const [popupQueue, setPopupQueue] = useState<PopupItem[]>([]);
-  const visibleIdsRef = useRef<Set<string>>(new Set());
-  const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const closeAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // ===================================================================
   // Get profile
+  // ===================================================================
   const getProfile = () => {
     const profile = localStorage.getItem("profile");
     if (profile) {
-      try { return JSON.parse(profile); } catch (err) {
-        console.error("Failed to parse profile:", err);
+      try {
+        return JSON.parse(profile);
+      }
+      catch {
         return null;
       }
     }
     return null;
   };
 
-  // Token
-  const getAuthToken = () => {
-    const token = localStorage.getItem("access_token");
-    return token;
-  };
-
-  const getAuthHeaders = () => {
-    const token = getAuthToken();
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    };
-  };
-
-  const toggleDropdown = () => {
-    setIsOpen((prev) => {
-      setNotifying(false);
-      return !prev;
-    });
-  };
-
-  const toggleExpand = (id: string) => {
-    setExpandedId((cur) => cur === id ? null : id);
-  };
-
-  // preferences
+  // ===================================================================
+  // Preferences
+  // ===================================================================
   const getPreferences = () => {
     const defaultPreferences = {
       autoDelete: false,
@@ -137,111 +84,17 @@ export default function NotificationDropdown() {
     return defaultPreferences;
   };
 
-  const handleMarkAllRead = () => {
-    const profile = getProfile();
-    if (!profile) return;
-    const updated = notifications.map((n) => ({ ...n, read: true }));
-    setNotifications(updated);
-    setUnread(0);
-    localStorage.setItem(`notifications`, JSON.stringify(updated));
-  };
-
-  const handleMarkAsRead = (id: string) => {
-    const profile = getProfile();
-    if (!profile) return;
-    const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
-    setNotifications(updated);
-    setUnread(updated.filter((n) => !n.read).length);
-    localStorage.setItem(`notifications`, JSON.stringify(updated));
-  };
-
-  const profile = getProfile();
-
-  useEffect(() => {
-    if (!profile) return;
-    setUnread(notifications.filter((n) => !n.read).length);
-  }, [notifications, profile]);
-
-  // Real-time UI update เมื่อมี notification ใหม่
-  useEffect(() => {
-    if (notifications.length > 0 && isOpen) {
-      const latestNotification = notifications[0];
-      if (latestNotification && !latestNotification.read) {
-        const notificationList = document.querySelector('.custom-scrollbar');
-        if (notificationList) {
-          notificationList.scrollTop = 0;
-        }
+  const closeAllPopups = () => {
+    popupQueue.forEach((i) => {
+      visibleIdsRef.current.delete(i.id);
+      if (itemTimersRef.current[i.id]) {
+        clearTimeout(itemTimersRef.current[i.id]);
+        delete itemTimersRef.current[i.id];
       }
-    }
-  }, [notifications.length, isOpen]);
-
-  // Real-time timestamp update
-  useEffect(() => {
-    const interval = setInterval(() => {
-      (Date.now());
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const uniqueEventTypes = ["All Types", ...Array.from(new Set(notifications.map(n => n.eventType)))];
-
-  const isUserRecipient = (_noti: Notification) => true;
-
-  // auto-delete by days on preferences
-  useEffect(() => {
-    const prefs = getPreferences();
-    if (!prefs.autoDelete) return;
-    const now = Date.now();
-    const filtered = notifications.filter(n => (now - new Date(n.createdAt).getTime()) / 86400000 < prefs.autoDeleteDays);
-    if (filtered.length < notifications.length) {
-      setNotifications(filtered);
-      if (profile) localStorage.setItem(`notifications`, JSON.stringify(filtered));
-    }
-  }, [notifications, profile]);
-
-  const filteredNotifications = notifications.filter((n) => {
-    const prefs = getPreferences();
-    if (prefs.hideRead && n.read) return false;
-    if (!isUserRecipient(n)) return false;
-    if (filterType !== "All Types" && n.eventType.toLowerCase() !== filterType.toLowerCase()) return false;
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    const caseId = n.data.find(d => d.key === "caseId")?.value || "";
-    return caseId.toLowerCase().includes(term)
-      || n.sender.toLowerCase().includes(term)
-      || n.eventType.toLowerCase().includes(term)
-      || n.message.toLowerCase().includes(term);
-  });
-
-  useEffect(() => {
-    const newIsOverflow: { [key: string]: boolean } = {};
-    filteredNotifications.forEach((noti) => {
-      const el = textRefs.current[noti.id];
-      if (el) newIsOverflow[noti.id] = el.scrollHeight > el.clientHeight + 1;
     });
-    const changed = Object.keys(newIsOverflow).some((k) => newIsOverflow[k] !== isOverflow[k]);
-    if (changed) setIsOverflow(newIsOverflow);
-  }, [filteredNotifications, expandedId]);
-
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true;
-      return;
-    }
-    if (profile) {
-      const key = `notifications`;
-      const existing = localStorage.getItem(key);
-      if (existing === null) localStorage.setItem(key, JSON.stringify(notifications));
-    }
-  }, [notifications, profile]);
-
-  // ====== Popup queue helpers ======
-  const startGroupCloseTimer = () => {
-    if (closeAllTimerRef.current) clearTimeout(closeAllTimerRef.current);
-    closeAllTimerRef.current = setTimeout(() => {
-      closeAllPopups();
-    }, POPUP_GROUP_AUTO_CLOSE_MS);
+    setPopupQueue((q) => [...q]);
+    clearGroupCloseTimer();
+    setTimeout(() => setPopupQueue([]), POPUP_TRANSITION_MS);
   };
 
   const clearGroupCloseTimer = () => {
@@ -249,24 +102,6 @@ export default function NotificationDropdown() {
       clearTimeout(closeAllTimerRef.current);
       closeAllTimerRef.current = null;
     }
-  };
-
-  const enqueuePopup = (noti: Notification) => {
-    if (!noti || !noti.id) return;
-    const popupId = `${noti.id}-${Date.now()}`;
-    const item: PopupItem = { id: popupId, noti };
-
-    setPopupQueue((q) => [...q, item]);
-
-    setTimeout(() => {
-      visibleIdsRef.current.add(popupId);
-      setPopupQueue((q) => [...q]);
-    }, 10);
-
-    const t = setTimeout(() => closePopup(popupId), POPUP_AUTO_DISMISS_MS);
-    itemTimersRef.current[popupId] = t;
-
-    startGroupCloseTimer();
   };
 
   const closePopup = (popupId: string) => {
@@ -296,18 +131,170 @@ export default function NotificationDropdown() {
     }, POPUP_TRANSITION_MS);
   };
 
-  const closeAllPopups = () => {
-    popupQueue.forEach((i) => {
-      visibleIdsRef.current.delete(i.id);
-      if (itemTimersRef.current[i.id]) {
-        clearTimeout(itemTimersRef.current[i.id]);
-        delete itemTimersRef.current[i.id];
-      }
-    });
-    setPopupQueue((q) => [...q]);
-    clearGroupCloseTimer();
-    setTimeout(() => setPopupQueue([]), POPUP_TRANSITION_MS);
+  const enqueuePopup = (noti: Notification) => {
+    if (!noti || !noti.id) return;
+    const popupId = `${noti.id}-${Date.now()}`;
+    const item: PopupItem = { id: popupId, noti };
+
+    setPopupQueue((q) => [...q, item]);
+
+    setTimeout(() => {
+      visibleIdsRef.current.add(popupId);
+      setPopupQueue((q) => [...q]);
+    }, 10);
+
+    const t = setTimeout(() => closePopup(popupId), POPUP_AUTO_DISMISS_MS);
+    itemTimersRef.current[popupId] = t;
+
+    startGroupCloseTimer();
   };
+
+  const getAuthHeaders = () => {
+    const token = getAuthToken();
+    return token ? {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    } : {
+      "Content-Type": "application/json"
+    };
+  };
+
+  const getNotificationId = (noti?: Notification | null) => noti?.id || "";
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isUserRecipient = (_noti: Notification) => true;
+
+  const startGroupCloseTimer = () => {
+    if (closeAllTimerRef.current) clearTimeout(closeAllTimerRef.current);
+    closeAllTimerRef.current = setTimeout(() => {
+      closeAllPopups();
+    }, POPUP_GROUP_AUTO_CLOSE_MS);
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen((prev) => {
+      setNotifying(false);
+      return !prev;
+    });
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedId((cur) => cur === id ? null : id);
+  };
+
+  const handleMarkAllRead = () => {
+    const profile = getProfile();
+    if (!profile) {
+      return;
+    }
+    const updated = notifications.map((n) => ({ ...n, read: true }));
+    setNotifications(updated);
+    setUnread(0);
+    localStorage.setItem(`notifications`, JSON.stringify(updated));
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    const profile = getProfile();
+    if (!profile) {
+      return;
+    }
+    const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
+    setNotifications(updated);
+    setUnread(updated.filter((n) => !n.read).length);
+    localStorage.setItem(`notifications`, JSON.stringify(updated));
+  };
+
+  const badgeCount = popupQueue.length > 0 ? popupQueue.length : unread;
+  const filteredNotifications = notifications.filter((n) => {
+    const prefs = getPreferences();
+    if (prefs.hideRead && n.read) {
+      return false;
+    }
+    if (!isUserRecipient(n)) {
+      return false;
+    }
+    if (filterType !== "All Types" && n.eventType.toLowerCase() !== filterType.toLowerCase()) {
+      return false;
+    }
+    if (!searchTerm) {
+      return true;
+    }
+    const term = searchTerm.toLowerCase();
+    const caseId = n.data.find(d => d.key === "caseId")?.value || "";
+    return caseId.toLowerCase().includes(term)
+      || n.sender.toLowerCase().includes(term)
+      || n.eventType.toLowerCase().includes(term)
+      || n.message.toLowerCase().includes(term);
+  });
+  const profile = getProfile();
+  const uniqueEventTypes = ["All Types", ...Array.from(new Set(notifications.map(n => n.eventType)))];
+  const visibleNotifications = showAll ? filteredNotifications : filteredNotifications.slice(0, 5);
+
+  useEffect(() => {
+    if (!profile) {
+      return;
+    }
+    setUnread(notifications.filter((n) => !n.read).length);
+  }, [notifications, profile]);
+
+  useEffect(() => {
+    if (notifications.length > 0 && isOpen) {
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.read) {
+        const notificationList = document.querySelector(".custom-scrollbar");
+        if (notificationList) {
+          notificationList.scrollTop = 0;
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notifications.length, isOpen]);
+
+  // Real-time timestamp update
+  useEffect(() => {
+    const interval = setInterval(() => {
+      (Date.now());
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // auto-delete by days on preferences
+  useEffect(() => {
+    const prefs = getPreferences();
+    if (!prefs.autoDelete) {
+      return;
+    }
+    const now = Date.now();
+    const filtered = notifications.filter(n => (now - new Date(n.createdAt).getTime()) / 86400000 < prefs.autoDeleteDays);
+    if (filtered.length < notifications.length) {
+      setNotifications(filtered);
+      if (profile) localStorage.setItem(`notifications`, JSON.stringify(filtered));
+    }
+  }, [notifications, profile]);
+
+  useEffect(() => {
+    const newIsOverflow: { [key: string]: boolean } = {};
+    filteredNotifications.forEach((noti) => {
+      const el = textRefs.current[noti.id];
+      if (el) newIsOverflow[noti.id] = el.scrollHeight > el.clientHeight + 1;
+    });
+    const changed = Object.keys(newIsOverflow).some((k) => newIsOverflow[k] !== isOverflow[k]);
+    if (changed) setIsOverflow(newIsOverflow);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredNotifications, expandedId]);
+
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      return;
+    }
+    if (profile) {
+      const key = `notifications`;
+      const existing = localStorage.getItem(key);
+      if (existing === null) localStorage.setItem(key, JSON.stringify(notifications));
+    }
+  }, [notifications, profile]);
 
   // ====== Use WebSocket from context instead of creating own socket ======
   useEffect(() => {
@@ -317,11 +304,12 @@ export default function NotificationDropdown() {
       return;
     }
 
-    if (!profile?.username || !profile?.orgId) return;
+    if (!profile?.username || !profile?.orgId) {
+      return;
+    }
 
     // Auto-connect if not connected
     if (connectionState === 'disconnected') {
-      const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
       connect({
         url: `${WEBSOCKET}/api/v1/notifications/register`,
         reconnectInterval: 5000,
@@ -337,7 +325,6 @@ export default function NotificationDropdown() {
         const prefs = getPreferences();
 
         if (data.eventType && data.message) {
-          // อัปเดตรายการ Real-time ก่อน
           setNotifications((prev) => {
             if (prev.some((n) => n.id === data.id)) return prev;
             const updated = [{ ...data, read: false }, ...prev];
@@ -345,17 +332,13 @@ export default function NotificationDropdown() {
             return updated;
           });
 
-          // อัปเดต unread count ทันที
           setUnread((prev) => prev + 1);
 
-          // แสดง popup แบบคิว
           if (prefs.popupEnabled) enqueuePopup(data);
 
-          // เซ็ต notifying และ auto clear หลัง 3 วินาที
           setNotifying(true);
           setTimeout(() => setNotifying(false), 3000);
 
-          // เล่นเสียง
           if (prefs.soundEnabled && audioRef.current) {
             const soundFile = `/sounds/${prefs.sound}.mp3`;
             audioRef.current.src = soundFile;
@@ -363,7 +346,6 @@ export default function NotificationDropdown() {
             audioRef.current.play().catch(() => {});
           }
 
-          // Force re-render dropdown ถ้าเปิดอยู่
           if (isOpen) {
             setFilterType((current) => current);
           }
@@ -376,20 +358,23 @@ export default function NotificationDropdown() {
     // Cleanup subscription on unmount
     return () => {
       unsubscribe();
-      // ล้างทุก timer
       Object.keys(itemTimersRef.current).forEach((id) => {
         clearTimeout(itemTimersRef.current[id]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         delete itemTimersRef.current[id];
       });
       clearGroupCloseTimer();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.username, profile?.orgId, subscribe, connect, connectionState, isOpen]);
 
   useEffect(() => {
     const loadNotifications = async () => {
       const profile = getProfile();
       const token = getAuthToken();
-      if (!profile || !profile.username || !profile.orgId) return;
+      if (!profile || !profile.username || !profile.orgId) {
+        return;
+      }
 
       const key = `notifications`;
       const saved = localStorage.getItem(key);
@@ -402,13 +387,18 @@ export default function NotificationDropdown() {
             setUnread(parsed.filter((n: Notification) => !n.read).length);
             return;
           }
-        } catch {}
+        }
+        catch {
+          //
+        }
       }
 
-      if (!token) return;
+      if (!token) {
+        return;
+      }
 
       try {
-        const url = `${API}/notifications/${profile.orgId}/${profile.username}`;
+        const url = `${APP_CONFIG.API_BASE_URL}/notifications/${profile.orgId}/${profile.username}`;
         const headers = getAuthHeaders();
         const res = await axios.get(url, { headers });
 
@@ -418,7 +408,8 @@ export default function NotificationDropdown() {
           localStorage.setItem(key, JSON.stringify(notificationsAsRead));
           setUnread(0);
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error("Fetch error:", err);
         if (err instanceof AxiosError) {
           console.error("Response:", err.response?.data, err.response?.status);
@@ -427,33 +418,28 @@ export default function NotificationDropdown() {
     };
 
     loadNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => { document.removeEventListener("mousedown", handleClickOutside); };
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isOpen]);
-
-  const [showAll, setShowAll] = useState(false);
-  const visibleNotifications = showAll ? filteredNotifications : filteredNotifications.slice(0, 5);
-
-  const getNotificationId = (noti?: Notification | null) => noti?.id || "";
-
-  // ====== Badge นับคิว popup ถ้ามีคิว ให้เด้งนับคิวแทน unread ======
-  const badgeCount = popupQueue.length > 0 ? popupQueue.length : unread;
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* ====== Single Popup with Counter ====== */}
       {popupQueue.length > 0 && (
         <div className="fixed top-6 right-6 z-[9999]">
-          {/* แสดงเฉพาะรายการแรก */}
           {(() => {
             const item = popupQueue[0];
             const { noti } = item;
@@ -466,13 +452,16 @@ export default function NotificationDropdown() {
             if (delay === "1") {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
-            } else if (delay === "2") {
+            }
+            else if (delay === "2") {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
-            } else if (noti.eventType.toLowerCase() === "broadcast") {
+            }
+            else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
               badgeColor = "bg-gradient-to-r from-teal-100 to-cyan-100 dark:bg-gradient-to-r dark:from-teal-900 dark:to-cyan-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-600";
-            } else {
+            }
+            else {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-indigo-100 to-blue-100 dark:bg-gradient-to-r dark:from-indigo-900 dark:to-blue-900 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-600";
             }
@@ -510,6 +499,7 @@ export default function NotificationDropdown() {
                   className="cursor-pointer p-3"
                   onClick={() => {
                     const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
+                    
                     const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
                     
                     if (finalRedirectURL && finalRedirectURL.trim() !== "") {
@@ -526,7 +516,7 @@ export default function NotificationDropdown() {
                             src="/images/notification/broadcast.svg" 
                             alt="Broadcast" 
                             className="h-6 w-6"
-                            style={{ filter: 'invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)' }}
+                            style={{ filter: "invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)" }}
                           />
                         </div>
                       ) : (
@@ -556,7 +546,7 @@ export default function NotificationDropdown() {
                       <div className="flex flex-col text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                         <div className="flex justify-end items-center gap-1 mt-0.5">
                           <span className="font-mono text-gray-400 dark:text-gray-500">
-                            {timeAgo(noti.createdAt)}
+                            {formatLastNotification(noti.createdAt)}
                           </span>
                         </div>
                       </div>
@@ -573,7 +563,6 @@ export default function NotificationDropdown() {
         </div>
       )}
 
-      {/* เสียง */}
       <audio ref={audioRef} src="/sound/defalut.mp3" preload="auto" />
 
       {/* Bell Icon */}
@@ -583,16 +572,14 @@ export default function NotificationDropdown() {
         aria-label="Toggle notifications"
         type="button"
       >
-        {/* WebSocket Connection Status - ล่างขวา */}
-        <span className={`absolute bottom-0 right-0 z-40 h-3 w-3 rounded-full border-2 border-white dark:border-gray-900 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}>
-        </span>
+        <span className={`absolute bottom-0 right-0 z-40 h-3 w-3 rounded-full border-2 border-white dark:border-gray-900 ${isConnected ? "bg-green-500" : "bg-red-500"}`}></span>
         {notifying && (
           <span className="absolute right-0.5 top-1 z-10 h-2 w-2 rounded-full bg-orange-400">
             <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
           </span>
         )}
         {badgeCount > 0 && (
-          <span className={`absolute -top-1 -right-1 z-20 flex h-5 w-5 items-center justify-center rounded-full ${notifying ? 'bg-red-500 animate-pulse' : 'bg-blue-600'} text-xs font-bold text-white transition-all duration-300`}>
+          <span className={`absolute -top-1 -right-1 z-20 flex h-5 w-5 items-center justify-center rounded-full ${notifying ? "bg-red-500 animate-pulse" : "bg-blue-600"} text-xs font-bold text-white transition-all duration-300`}>
             {badgeCount}
           </span>
         )}
@@ -699,13 +686,16 @@ export default function NotificationDropdown() {
             if (delay === "1") {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-yellow-100 to-orange-100 dark:bg-gradient-to-r dark:from-yellow-900 dark:to-orange-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600";
-            } else if (delay === "2") {
+            }
+            else if (delay === "2") {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-red-100 to-pink-100 dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-600 animate-pulse";
-            } else if (noti.eventType.toLowerCase() === "broadcast") {
+            }
+            else if (noti.eventType.toLowerCase() === "broadcast") {
               borderColor = "border-l-8 border-t-2 border-r-2 border-b-2 border-teal-500 dark:border-teal-400";
               badgeColor = "bg-gradient-to-r from-teal-100 to-cyan-100 dark:bg-gradient-to-r dark:from-teal-900 dark:to-cyan-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-600";
-            } else {
+            }
+            else {
               borderColor = "";
               badgeColor = "bg-gradient-to-r from-indigo-100 to-blue-100 dark:bg-gradient-to-r dark:from-indigo-900 dark:to-blue-900 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-600";
             }
@@ -716,10 +706,8 @@ export default function NotificationDropdown() {
                 onClick={(e) => {
                   e.preventDefault();
                   if (!noti.read) handleMarkAsRead(noti.id);
-                  
                   const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
                   const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
-                  
                   if (finalRedirectURL && finalRedirectURL.trim() !== "") {
                     navigate(finalRedirectURL);
                   }
@@ -743,15 +731,21 @@ export default function NotificationDropdown() {
                             src="/images/notification/broadcast.svg" 
                             alt="Broadcast" 
                             className="h-6 w-6"
-                            style={{ filter: 'invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)' }}
+                            style={{ filter: "invert(0.4) sepia(1) saturate(5) hue-rotate(120deg)" }}
                           />
                         </div>
                       ) : (
-                        <img
-                          src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
-                          alt="Sender"
-                          className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
-                        />
+                        isValidImageUrl(noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg") ? (
+                          <img
+                            src={noti.senderPhoto && noti.senderPhoto.trim() !== "" ? noti.senderPhoto : "/images/notification/user.jpg"}
+                            alt="Sender"
+                            className="h-12 w-12 rounded-full border border-gray-300 object-cover dark:border-gray-600"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                            <span className="w-12 text-center capitalize">{noti.sender[0]}</span>
+                          </div>
+                        )
                       )}
                     </div>
 
@@ -797,7 +791,7 @@ export default function NotificationDropdown() {
                         {getNotificationId(noti) && <span className="truncate max-w-full" />}
                         <div className="flex justify-end items-center gap-1 mt-0.5">
                           <span className="font-mono text-gray-400 dark:text-gray-500">
-                            {timeAgo(noti.createdAt)}
+                            {formatLastNotification(noti.createdAt)}
                           </span>
                         </div>
                       </div>
@@ -823,3 +817,5 @@ export default function NotificationDropdown() {
     </div>
   );
 }
+
+export default NotificationDropdown;
