@@ -45,6 +45,7 @@ import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
 import { CaseStatusInterface } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/cancelUnitModal"
+import { useWebSocket } from "../websocket/websocket"
 
 
 
@@ -688,7 +689,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [sopLocal, setSopLocal] = useState<CaseSop>();
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     const [isInitialized, setIsInitialized] = useState(false);
-
+    const { subscribe, isConnected, connectionState, connect } = useWebSocket()
     // Memoize static data to prevent re-renders
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
@@ -746,6 +747,42 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     } = useGetTypeSubTypeQuery(triggerFetch || '', {
         skip: !triggerFetch,
     });
+
+    useEffect(() => {
+
+        if (connectionState === 'disconnected' || !isConnected) {
+            console.log("Connecting to WebSocket...");
+            const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
+            connect({
+                url: `${WEBSOCKET}/api/v1/notifications/register`,
+                reconnectInterval: 5000,
+                maxReconnectAttempts: 10,
+                heartbeatInterval: 60000
+            });
+        }
+
+
+        const listener = subscribe(async (message) => {
+            try {
+                if (message?.data) {
+                    const data = message.data;
+                    if (data.eventType=== "Update") {
+                        const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
+                        if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
+                           console.log("wor")
+                            await refetch();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        });
+
+        return () => {
+            listener();
+        };
+    }, [subscribe, connect, connectionState, isConnected]);
 
     useEffect(() => {
         if (apiFormData?.data && triggerFetch) {
@@ -1274,6 +1311,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         setShowPreviewData(false)
         const updateJson = {
+            caseId: caseState?.workOrderNummber,
             formData: caseState?.caseType?.formField,
             customerName: caseState?.customerData?.name,
             caseDetail: caseState?.description || "",

@@ -168,7 +168,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           };
 
           setLastMessage(message);
-          if (message.data.eventType || "Create") {
+          if (message.data.eventType === "Create") {
             await getNewCaseData();
             window.dispatchEvent(new StorageEvent("storage", {
               key: "caseList",
