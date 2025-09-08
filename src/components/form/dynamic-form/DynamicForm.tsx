@@ -547,7 +547,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }
 
           return updatedField;
-        })?? []
+        }) ?? []
       } :
       {
         formId: uuidv4(),
@@ -582,7 +582,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }
 
           return updatedField;
-        })??[]
+        }) ?? []
       });
     } else {
       setCurrentForm({
@@ -944,7 +944,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         setShowToast(true)
         console.log("error")
       }
-    } catch (e:any) {
+    } catch (e: any) {
       setToastMessage(e.data.desc)
       setShowToast(true)
     }
@@ -1836,12 +1836,11 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
     const commonProps = {
       id: field.id,
-      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700",
+      className: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 autofill:shadow-[inset_0_0_0px_1000px_white] autofill:[-webkit-text-fill-color:rgb(55,65,81)] dark:autofill:shadow-[inset_0_0_0px_1000px_rgb(17,24,39)] dark:autofill:[-webkit-text-fill-color:rgb(209,213,219)]",
       placeholder: field.placeholder || field.label && `Enter ${field.label.toLowerCase()}`,
       required: field.required,
       disabled: !editFormData,
     };
-
     const labelComponent = field.showLabel ? (
       <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">
         {field.label} {field.required && <span className="text-red-500">*</span>}
