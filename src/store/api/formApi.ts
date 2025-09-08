@@ -294,6 +294,7 @@ export const {
     useUpdateFormMutation,
     useCreateFormMutation,
     usePostSubTypeFormMutation,
-    useGetTypeSubTypeQuery
+    useGetTypeSubTypeQuery,
+    useLazyGetTypeSubTypeQuery,
 } = formApi;
 

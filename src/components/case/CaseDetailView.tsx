@@ -6,7 +6,7 @@ import {
     FileText,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
-
+import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
@@ -37,7 +37,6 @@ import DragDropFileUpload from "../d&d upload/dndUpload"
 import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { genCaseID } from "../genCaseId/genCaseId"
-import { useGetTypeSubTypeQuery } from "@/store/api/formApi"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
@@ -656,6 +655,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [unitToCancel, setUnitToCancel] = useState<UnitWithSop | null>(null);
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
+    const [formDataUpdated, setFormDataUpdated] = useState(0);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         // Only initialize if it's a new case (no caseData)
         if (!initialCaseData) {
@@ -742,15 +742,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [isInitialized]);
 
-    const [triggerFetch, setTriggerFetch] = useState<string | null>(null);
 
-    const {
-        data: apiFormData,
-        error,
-        isLoading: apiIsLoading
-    } = useGetTypeSubTypeQuery(triggerFetch || '', {
-        skip: !triggerFetch,
-    });
 
     useEffect(() => {
 
@@ -788,15 +780,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         };
     }, [subscribe, connect, connectionState, isConnected]);
 
-    useEffect(() => {
-        if (apiFormData?.data && triggerFetch) {
-            localStorage.setItem(
-                "subTypeForm-" + triggerFetch,
-                JSON.stringify(apiFormData.data)
-            );
-            setTriggerFetch(null);
-        }
-    }, [apiFormData, triggerFetch]);
 
     // Initialize sopLocal from API data ONLY when sopData changes
     useEffect(() => {
@@ -886,24 +869,35 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // setSopLocal(prev => ({ ...prev, statusId: 'CLOSED_STATUS_ID' }));
     }, [sopLocal]);
 
+    const [getTypeSubType] = useLazyGetTypeSubTypeQuery();
 
     useEffect(() => {
-        if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
-            return;
-        }
+        const fetchFormData = async () => {
+            if (!caseState?.caseType?.sTypeId) return;
 
-        const foundCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType);
+            // Check if data already exists in localStorage
+            const existingData = localStorage.getItem("subTypeForm-" + caseState.caseType.sTypeId);
+            if (existingData && existingData !== "undefined") {
+                return; // Data already exists, no need to fetch
+            }
 
-        if (!foundCaseType?.sTypeId) {
-            return;
-        }
+            try {
+                const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
+                if (result) {
+                    localStorage.setItem(
+                        "subTypeForm-" + caseState.caseType.sTypeId,
+                        JSON.stringify(result.data)
+                    );
+                    // Trigger re-evaluation
+                    setFormDataUpdated(prev => prev + 1);
+                }
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+            }
+        };
 
-        const formFieldStr = localStorage.getItem("subTypeForm-" + foundCaseType.sTypeId);
-        if (formFieldStr === null && triggerFetch !== foundCaseType.sTypeId) {
-            setTriggerFetch(foundCaseType.sTypeId);
-        }
-    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, triggerFetch]);
-
+        fetchFormData();
+    }, [caseState?.caseType?.sTypeId, getTypeSubType]);
 
     const getFormByCaseType = useCallback(() => {
         if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
@@ -918,7 +912,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         // Check localStorage first
         const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
-
         if (formFieldStr && formFieldStr !== "undefined") {
             try {
                 const formField: FormField = JSON.parse(formFieldStr);
@@ -932,19 +925,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             } catch (e) {
                 console.error("Failed to parse formField JSON:", e);
                 localStorage.removeItem("subTypeForm-" + newCaseType.sTypeId);
-                // Continue to the fetch logic below
             }
         }
 
-        // Return data based on the current API state
+        // Return data without formField if not found
         return {
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType),
-            // formField: apiFormData?.data || ({} as FormField),
-            isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
-            error: error,
-        } as formType & { isLoading: boolean; error: any };
-    }, [caseState?.caseType?.caseType, triggerFetch, apiFormData, apiIsLoading, error, caseTypeSupTypeData, , editFormData]);
+        } as formType;
+    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, editFormData, formDataUpdated]);
 
     const selectedCaseTypeForm = useMemo(() => {
         if (caseState?.caseType?.formField) {
