@@ -107,7 +107,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             <div className="col-span-2 sm:col-span-1">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
                     <div className="flex mb-2 text-blue-500 dark:text-blue-400">
-                        <MapPin /><span className=" mx-1 text-md  " >Event Information</span>
+                        <MapPin /><span className=" mx-1 text-md  " >Event Area</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex  gap-x-2 gap-y-1 ">
@@ -147,7 +147,9 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             {caseData?.customerData?.name || "-"}
                         </div>
                     </div> */}
-
+                    <div className="flex mb-2 text-blue-500 dark:text-blue-400">
+                        <span className="text-md  " >Contact</span>
+                    </div>
                     <span className="text-md text-gray-500 dark:text-gray-400">Phone Number</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
                         {caseData?.customerData?.mobileNo || "-"}
@@ -187,7 +189,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Case Detail {requireElements}</span>
+                    <span className="flex mb-2 text-blue-500 dark:text-blue-400">Detail {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
                         {caseData?.description || "-"}
                     </div>

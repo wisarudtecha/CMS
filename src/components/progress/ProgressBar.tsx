@@ -72,7 +72,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                         <div key={step.id} className="flex items-start space-x-3 relative">
                             {/* Vertical Line for Mobile */}
                             {!isLastStep && (
-                                <div className="absolute left-4 top-8 w-0.5 h-12 bg-gray-300 dark:bg-gray-600 z-0"></div>
+                                <div className="absolute left-4 top-8 w-0.5 h-13 bg-gray-300 dark:bg-gray-600 z-0"></div>
                             )}
 
                             {/* Step Circle */}
@@ -123,7 +123,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                             (() => {
                                                 const timeDiff = getTimeDifference(progressSteps[index - 1], step);
                                                 return timeDiff && (
-                                                    <div className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium self-start">
+                                                    <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium self-start`}>
                                                         {timeDiff}
                                                     </div>
                                                 );
@@ -196,7 +196,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                     {(() => {
                                         const timeDiff = getTimeDifference(progressSteps[index - 1], step);
                                         return timeDiff && (
-                                            <div className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium whitespace-nowrap">
+                                            <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
                                                 {timeDiff}
                                             </div>
                                         );

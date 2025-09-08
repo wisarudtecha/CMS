@@ -65,6 +65,7 @@ interface CaseTypeFormSectionProps {
     editFormData: boolean;
     caseTypeSupTypeData: CaseTypeSubType[];
     disableCaseTypeSelect: boolean;
+    className?: string;
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -75,6 +76,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     selectedCaseTypeForm,
     caseTypeSupTypeData,
     disableCaseTypeSelect,
+    className,
 }) => {
     const caseTypeOptions = useMemo(() => {
         if (!caseTypeSupTypeData?.length) return [];
@@ -94,7 +96,7 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                     value={caseType}
                     onChange={handleCaseTypeChange}
                     placeholder={"Select CaseType"}
-                    className=" 2xsm:mx-3 mb-2"
+                    className={`2xsm:mx-3 mb-2 ${className}`}
                     disabled={disableCaseTypeSelect}
                 />
             </div>
@@ -419,6 +421,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             caseTypeSupTypeData={caseTypeSupTypeData ?? []}
             disableCaseTypeSelect={!isCreate}
         />
+
         <div className="xsm:grid grid-cols-2">
 
             {/* Work Order Number */}
@@ -467,20 +470,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div> */}
 
             {/* Contract Method */}
-            <div className="px-3 col-span-2">
-                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
-                    Contract Method : {requireElements}
-                </h3>
-                <SearchableSelect
-                    options={contractMethodMock.map(m => m.name)}
-                    className="sm:my-3"
-                    value={caseState?.customerData?.contractMethod?.name ?? ""}
-                    onChange={(selectedName) => {
-                        const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
-                        if (selectedMethod) handleContactMethodChange(selectedMethod);
-                    }}
-                />
-            </div>
+
 
             {/* IoT Device */}
             <div className="px-3">
@@ -546,7 +536,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* Location Information */}
             <div className="pr-6 col-span-2">
-                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Event Information :</h3>
+                <h3 className="text-gray-900 dark:text-gray-400 mx-3">Event Area :</h3>
                 <textarea
                     onChange={(e) => handleLocationChange(e.target.value)}
                     value={caseState?.location || ""}
@@ -556,6 +546,20 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
 
             {/* Schedule Date */}
+            <div className="px-3 col-span-1">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                    Contract Method : {requireElements}
+                </h3>
+                <SearchableSelect
+                    options={contractMethodMock.map(m => m.name)}
+                    className="sm:my-3"
+                    value={caseState?.customerData?.contractMethod?.name ?? ""}
+                    onChange={(selectedName) => {
+                        const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+                        if (selectedMethod) handleContactMethodChange(selectedMethod);
+                    }}
+                />
+            </div>
             {isCreate &&
                 <div className="px-3">
                     <div className="flex mb-3">
@@ -766,10 +770,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             try {
                 if (message?.data) {
                     const data = message.data;
-                    if (data.eventType=== "Update") {
+                    if (data.eventType === "Update") {
                         const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
                         if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
-                           console.log("wor")
+                            console.log("wor")
                             await refetch();
                         }
                     }
@@ -1108,7 +1112,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseDetail: caseState?.description || "",
             caseDuration: 0,
             caseLat: "",
-            caseSla:caseState?.caseType?.caseSla || "",
+            caseSla: caseState?.caseType?.caseSla || "",
             caseLon: "",
             caseSTypeId: caseState?.caseType?.sTypeId || "",
             caseTypeId: caseState?.caseType?.typeId || "",
@@ -1333,7 +1337,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             provId: caseState?.area?.provId || "",
             referCaseId: caseState?.workOrderRef || "",
             resDetail: "",
-            caseSla:caseState?.caseType?.caseSla || "",
+            caseSla: caseState?.caseType?.caseSla || "",
             deviceId: caseState?.iotDevice || "",
             source: caseState?.customerData?.contractMethod?.id || "",
             statusId: sopLocal?.statusId,

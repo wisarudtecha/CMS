@@ -59,7 +59,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
             return `${diffSeconds}s`;
         }
     };
-
+    console.log(progressSteps)
     return (
         <div className="mb-6">
             <div className="flex flex-col">
@@ -121,7 +121,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                                 {(() => {
                                                     const timeDiff = getTimeDifference(step, progressSteps[index + 1]);
                                                     return timeDiff && (
-                                                        <div className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium whitespace-nowrap">
+                                                        <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
                                                             {timeDiff}
                                                         </div>
                                                     );
