@@ -449,7 +449,7 @@ const UserDropdown = () => {
                   fill="currentColor"
                 />
               </svg>
-              Notification
+              {t("navigation.topbar.profile.notification")}
             </DropdownItem>
           </li>
         </ul>

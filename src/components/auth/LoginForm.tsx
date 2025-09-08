@@ -1,22 +1,25 @@
 // /src/components/auth/LoginForm.tsx
 import React, { useState } from "react";
 import { AlertIcon, CloseIcon, EnvelopeIcon, EyeCloseIcon, EyeIcon,  } from "@/icons";
-import { API_CONFIG } from "@/config/api";
+// import { API_CONFIG } from "@/config/api";
 import { Autocomplete } from "@/components/form/form-elements/Autocomplete";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { LoginCredentials } from "@/types/auth";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Checkbox from "@/components/form/input/Checkbox";
+import LangDropdown from "@/components/header/LangDropdown";
 import Button from "@/components/ui/button/Button";
 import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
 
 export const LoginForm: React.FC = () => {
   const { state, login, forgotPassword, clearError } = useAuth();
+  const { t } = useTranslation();
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: "",
     password: "",
-    organization: "",
+    organization: "SKY-AI",
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -32,18 +35,18 @@ export const LoginForm: React.FC = () => {
     const errors: Record<string, string> = {};
     
     if (!credentials.username) {
-      errors.username = "Username is required";
+      errors.username = t("auth.signin.username.required");
     }
     
     if (!credentials.password) {
-      errors.password = "Password is required";
+      errors.password = t("auth.signin.password.required");
     }
     else if (credentials.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
+      errors.password = t("auth.signin.password.min");
     }
 
     if (!credentials.organization) {
-      errors.organization = "Organization is required";
+      errors.organization = t("auth.signin.organization.required");
     }
     
     setValidationErrors(errors);
@@ -54,7 +57,7 @@ export const LoginForm: React.FC = () => {
     if (!validateForm()) return;
     
     if (state.networkStatus === "offline") {
-      setValidationErrors({ network: "No internet connection. Please check your connection and try again." });
+      setValidationErrors({ network: t("auth.signin.state.network_status") });
       return;
     }
     
@@ -64,12 +67,12 @@ export const LoginForm: React.FC = () => {
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) {
-      setValidationErrors({ forgotEmail: "Email is required" });
+      setValidationErrors({ forgotEmail: t("auth.signin.email.required") });
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(forgotEmail)) {
-      setValidationErrors({ forgotEmail: "Email is invalid" });
+      setValidationErrors({ forgotEmail: t("auth.signin.email.invalid") });
       return;
     }
 
@@ -80,7 +83,7 @@ export const LoginForm: React.FC = () => {
     }
     catch (error) {
       setValidationErrors({ 
-        forgotEmail: error instanceof Error ? error.message : "Failed to send reset email" 
+        forgotEmail: error instanceof Error ? error.message : t("auth.signin.email.error") 
       });
     }
   };
@@ -101,6 +104,9 @@ export const LoginForm: React.FC = () => {
   return (
     <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
       <div className="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900 sm:p-0">
+        <div className="absolute top-6 right-6">
+          <LangDropdown />
+        </div>
         <div className="flex flex-col flex-1">
           <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
             <div>
@@ -111,14 +117,20 @@ export const LoginForm: React.FC = () => {
 
               <div className="mb-5 sm:mb-8">
                 <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md cursor-default">
-                  {showForgotPassword ? "Reset Password" : "Sign In"}
+                  {showForgotPassword ? t("auth.signin.forgot_password.title") : t("auth.signin.title")}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 cursor-default">
-                  {showForgotPassword ? "Enter your email to reset password" : "Enter your username, password, and organization to sign in!"}
+                  {showForgotPassword ? t("auth.signin.forgot_password.subtitle") : t("auth.signin.subtitle")}
                 </p>
               </div>
 
               {/* Network Status */}
+              {state.networkStatus !== "online" && (
+                <div className="mb-4 p-3 rounded-lg flex items-center text-sm bg-red-50 border border-red-200 text-red-700">
+                  <CloseIcon className="w-4 h-4 mr-2" />
+                  <span>{t("auth.signin.state.network_offline")}</span>
+                </div>
+              )}
               {/*
               <div className={`mb-4 p-3 rounded-lg flex items-center text-sm ${
                 state.networkStatus === "online" 
@@ -131,7 +143,10 @@ export const LoginForm: React.FC = () => {
                   <CloseIcon className="w-4 h-4 mr-2" />
                 )}
                 <span>
-                  {state.networkStatus === "online" ? "Connected" : "Offline - Some features may not work"}
+                  {state.networkStatus === "online"
+                    ? t("auth.signin.state.network_online")
+                    : t("auth.signin.state.network_offline")
+                  }
                 </span>
               </div>
               */}
@@ -142,7 +157,7 @@ export const LoginForm: React.FC = () => {
                   <div className="flex items-center">
                     <AlertIcon className="w-5 h-5 text-red-500 mr-2" />
                     <span className="text-red-700 text-sm">
-                      Account temporarily locked due to multiple failed attempts. Please try again later.
+                      {t("auth.signin.state.is_locked")}
                     </span>
                   </div>
                 </div>
@@ -240,14 +255,14 @@ export const LoginForm: React.FC = () => {
                     {/* Username field */}
                     <div>
                       <Label htmlFor="username">
-                        Username <span className="text-error-500 dark:text-error-400">*</span>{" "}
+                        {t("auth.signin.username.label")} <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <Input
                         id="username"
                         value={credentials.username}
                         onChange={(e) => handleInputChange("username", e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                        placeholder="Enter your username"
+                        placeholder={t("auth.signin.username.placeholder")}
                         disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                         required
                       />
@@ -261,7 +276,7 @@ export const LoginForm: React.FC = () => {
                     {/* Password field */}
                     <div>
                       <Label htmlFor="password">
-                        Password <span className="text-error-500 dark:text-error-400">*</span>{" "}
+                        {t("auth.signin.password.label")} <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <div className="relative">
                         <Input
@@ -270,7 +285,7 @@ export const LoginForm: React.FC = () => {
                           value={credentials.password}
                           onChange={(e) => handleInputChange("password", e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                          placeholder="Enter your password"
+                          placeholder={t("auth.signin.password.placeholder")}
                           disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                           required
                         />
@@ -295,13 +310,13 @@ export const LoginForm: React.FC = () => {
                     {/* Organization field */}
                     <div>
                       <Label htmlFor="organization">
-                        Organization <span className="text-error-500 dark:text-error-400">*</span>{" "}
+                        {t("auth.signin.organization.label")} <span className="text-error-500 dark:text-error-400">*</span>{" "}
                       </Label>
                       <Autocomplete
                         id="organization"
                         value={credentials.organization}
                         onSelect={(value) => handleInputChange("organization", value)}
-                        placeholder="Type an organization..."
+                        placeholder={t("auth.signin.organization.placeholder")}
                         disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                         required
                       />
@@ -322,7 +337,7 @@ export const LoginForm: React.FC = () => {
                           disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                         />
                         <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-200 cursor-default">
-                          Keep me logged in
+                          {t("auth.signin.keep_logged_in")}
                         </span>
                       </div>
                       <a
@@ -333,7 +348,7 @@ export const LoginForm: React.FC = () => {
                         }}
                         className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-500"
                       >
-                        Forgot password?
+                        {t("auth.signin.reset_password")}
                       </a>
                     </div>
 
@@ -345,10 +360,11 @@ export const LoginForm: React.FC = () => {
                         onClick={handleSubmit}
                         disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                       >
-                        {state.isLoading ? "Signing in..." : "Sign In"}
+                        {state.isLoading ? t("auth.signin.loading") : t("auth.signin.button")}
                       </Button>
                     </div>
 
+                    {/*
                     {!API_CONFIG.DEMO_MODE && (
                       <div className="bg-yellow-100 dark:bg-yellow-800 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3 cursor-default">
                         <p className="text-xs text-yellow-700 dark:text-yellow-200 mb-2">API Mode Active:</p>
@@ -360,15 +376,17 @@ export const LoginForm: React.FC = () => {
                         </div>
                       </div>
                     )}
+                    */}
 
                     {/* Demo credentials */}
+                    {/*
                     <div className="bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-700 rounded-lg p-3 cursor-default">
-                      <p className="text-xs text-blue-700 dark:text-blue-200 mb-2">Demo credentials:</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-200 mb-2">{t("auth.signin.demo.title")}</p>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-blue-600 dark:text-blue-300">Username: wisarud.tec</p>
-                          <p className="text-xs text-blue-600 dark:text-blue-300">Password: string</p>
-                          <p className="text-xs text-blue-600 dark:text-blue-300">Organization: SKY-AI</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-300">{t("auth.signin.demo.username")}: wisarud.tec</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-300">{t("auth.signin.demo.password")}: string</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-300">{t("auth.signin.demo.organization")}: SKY-AI</p>
                         </div>
                         <Button
                           onClick={() => {
@@ -384,22 +402,23 @@ export const LoginForm: React.FC = () => {
                           variant="info"
                           size="xs"
                         >
-                          Auto-fill
+                          {t("auth.signin.demo.auto_fill")}
                         </Button>
                       </div>
                     </div>
+                    */}
                   </div>
                 )}
 
                 <div className="mt-5">
                   <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start cursor-default">
-                    Don&apos;t have an account? {""}
+                    {t("auth.signin.no_account")} {""}
                     <a
                       // href="/signup"
                       href="/#"
                       className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-500"
                     >
-                      Sign Up
+                      {t("auth.signin.sign_up")}
                     </a>
                   </p>
                 </div>

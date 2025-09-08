@@ -29,6 +29,80 @@
     "search_placeholder": "Search...",
     "refresh": "Refresh"
   },
+  "auth": {
+    "signin": {
+      "title": "Sign In",
+      "subtitle": "Enter your username, password, and organization to sign in!",
+      "username": {
+        "label": "Username",
+        "placeholder": "Enter your username",
+        "required": "Username is required"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password",
+        "required": "Password is required",
+        "min": "Password must be at least 6 characters"
+      },
+      "organization": {
+        "label": "Organization",
+        "placeholder": "Enter your organization",
+        "required": "Organization is required"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email",
+        "required": "Email is required",
+        "invalid": "Email is invalid",
+        "error": "Failed to send reset email"
+      },
+      "keep_logged_in": "Keep me logged in",
+      "reset_password": "Forgot password?",
+      "button": "Sign In",
+      "loading": "Signing in...",
+      "demo": {
+        "title": "Demo credentials:",
+        "username": "Username",
+        "password": "Password",
+        "organization": "Organization",
+        "auto_fill": "Auto-fill"
+      },
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign Up",
+      "forgot_password": {
+        "title": "Reset Password",
+        "subtitle": "Enter your email to reset password"
+      },
+      "state": {
+        "is_locked": "Account temporarily locked due to multiple failed attempts. Please try again later.",
+        "network_status": "No internet connection. Please check your connection and try again.",
+        "network_online": "Connected",
+        "network_offline": "Offline - Some features may not work",
+        "is_loading": "Authenticating...",
+        "is_refreshing": "Refreshing session...",
+        "wating": "Please wait",
+        "session_timeout": {
+          "title": "Session Timeout Warning",
+          "subtitle": "Your session will expire in",
+          "description": "seconds due to inactivity.",
+          "login": "Stay Signed In",
+          "logout": "Signed Out"
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "Access Denied",
+        "subtitle": "You don't have permission to",
+        "description": "Required permission"
+      },
+      "insufficient_permissions": {
+        "title": "Insufficient Permissions",
+        "subtitle": "You don't have all the required permissions for this action.",
+        "description": "Required permissions"
+      }
+    }
+  },
   "navigation": {
     "home": "Home",
     "topbar": {
@@ -46,23 +120,80 @@
           "title": "Notifications",
           "mark_all_as_read": "Mark all as read",
           "no_notifications": "No notifications found",
+          "search": "Search",
           "view_all_notifications": "View all notifications"
         }
       },
       "profile": {
         "edit_profile": "Profile",
         "account_settings": "Account Settings",
-        "support": "Email",
+        "notification": "Notification",
         "sign_out": "Sign out"
       }
     },
     "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "Case Management",
+          "nested": {
+            "case_creation": "Case Creation",
+            "case_assignment": "Case Assignment",
+            "case_history": "Case History"
+          }
+        },
+        "dashboard": {
+          "title": "Dashboard & Analytics",
+          "nested": {
+            "analytics": "Analytics",
+            "call_center": "Call Center",
+            "agent_status": "Agent Status",
+            "service": "Service"
+          }
+        },
+        "report": {
+          "title": "Report"
+        },
+        "form_builder": {
+          "title": "Form Builder",
+          "nested": {
+            "form_management": "Form Management",
+            "form_builder": "Form Builder"
+          }
+        },
+        "workflow": {
+          "title": "Workflow",
+          "nested": {
+            "workflow_management": "Workflow Management",
+            "workflow_builder": "Workflow Builder"
+          }
+        },
+        "user_management": {
+          "title": "User Management",
+          "nested": {
+            "user": "User",
+            "role_privilege": "Role & Privilege",
+            "organization": "Organization",
+            "audit_log": "Audit Log"
+          }
+        },
+        "system_configuration": {
+          "title": "System Configuration",
+          "nested": {
+            "service_management": "Service Management",
+            "unit_management": "Unit Management",
+            "skill_management": "Skill Management",
+            "property_management": "Property Management",
+            "area_management": "Area Management"
+          }
+        }
+      },
       "menu": {
         "title": "Menu",
         "dashboard": {
           "title": "Dashboard",
           "nested": {
-            "ecommerce": "Ecommerce"
+            "ecommerce": "Ecommerce",
+            "dashboard_framework": "Dashboard Framework"
           }
         },
         "calendar": "Calendar",
@@ -103,7 +234,9 @@
             "avatar": "Avatar",
             "badge": "Badge",
             "buttons": "Buttons",
+            "buttons_customize": "Buttons (Customize)",
             "images": "Images",
+            "tabs": "Tabs",
             "videos": "Videos"
           }
         },
@@ -111,7 +244,35 @@
           "title": "Authentication",
           "nested": {
             "sign_in": "Sign In",
-            "sing_up": "Sign Up"
+            "sign_up": "Sign Up",
+            "authenticate_inspector": "Authenticate Inspector"
+          }
+        },
+        "security": {
+          "title": "Security & Error",
+          "nested": {
+            "error_boundaries": "Error Boundaries",
+            "loading": "Loading & Skeletons",
+            "security_alert": "Security Alert",
+            "offline": "Offline Handling"
+          }
+        },
+        "theme_debugger": {
+          "title": "Theme Debugger"
+        }
+      },
+      "archives": {
+        "title": "Archives",
+        "case_management": {
+          "title": "Case Management",
+          "nested": {
+            "case_history": "Case History"
+          }
+        },
+        "workflow": {
+          "title": "Workflow",
+          "nested": {
+            "workflow_builder_v1": "Workflow Builder v0.1.0"
           }
         }
       }

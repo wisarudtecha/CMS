@@ -602,7 +602,7 @@ const NotificationDropdown = () => {
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <h5 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              {t("Notifications")}
+              {t("navigation.topbar.settings.notification.title")}
             </h5>
           </div>
           <Menu as="div" className="relative inline-block text-left">
@@ -617,7 +617,7 @@ const NotificationDropdown = () => {
                       onClick={() => setSearchMode(!searchMode)}
                       className={`${active ? "bg-gray-100 dark:bg-gray-700" : ""} group flex w-full items-center rounded-md px-3 py-2 text-sm text-gray-700 dark:text-white`}
                     >
-                      🔍 Search
+                      🔍 {t("navigation.topbar.settings.notification.search")}
                     </button>
                   )}
                 </Menu.Item>
@@ -630,7 +630,7 @@ const NotificationDropdown = () => {
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Mark All as Read
+                      {t("navigation.topbar.settings.notification.mark_all_as_read")}
                     </button>
                   )}
                 </Menu.Item>

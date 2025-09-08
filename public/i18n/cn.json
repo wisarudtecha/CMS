@@ -1,0 +1,519 @@
+{
+  "common": {
+    "welcome": "欢迎",
+    "hello": "你好",
+    "goodbye": "再见",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "新增",
+    "search": "搜索",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "previous": "上一页",
+    "next": "下一页",
+    "no_data": "暂无数据",
+    "show": "显示",
+    "of": "的",
+    "all": "全部",
+    "items": "条目",
+    "filters": "筛选器",
+    "clear_filters": "清除筛选",
+    "start_date": "开始日期",
+    "end_date": "结束日期",
+    "search_placeholder": "搜索...",
+    "refresh": "刷新"
+  },
+  "auth": {
+    "signin": {
+      "title": "登录",
+      "subtitle": "请输入用户名、密码和组织名称进行登录！",
+      "username": {
+        "label": "用户名",
+        "placeholder": "请输入用户名",
+        "required": "用户名是必填项"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "请输入密码",
+        "required": "需要密码",
+        "min": "密码必须至少包含 6 个字符"
+      },
+      "organization": {
+        "label": "组织",
+        "placeholder": "请输入组织",
+        "required": "需要组织"
+      },
+      "email": {
+        "label": "电子邮件",
+        "placeholder": "输入您的电子邮件",
+        "required": "需要电子邮件",
+        "invalid": "电子邮件无效",
+        "error": "无法发送重置电子邮件"
+      },
+      "keep_logged_in": "保持登录状态",
+      "reset_password": "忘记密码？",
+      "button": "登录",
+      "loading": "加载中...",
+      "demo": {
+        "title": "演示账号:",
+        "username": "用户名",
+        "password": "密码",
+        "organization": "组织",
+        "auto_fill": "自动填写"
+      },
+      "no_account": "没有账号？",
+      "sign_up": "注册",
+      "forgot_password": {
+        "title": "重置密码",
+        "subtitle": "输入您的电子邮件以重置密码"
+      },
+      "state": {
+        "is_locked": "由于多次尝试失败，帐户被暂时锁定。请稍后重试",
+        "network_status": "没有网络连接。请检查您的连接并重试",
+        "network_online": "已连接",
+        "network_offline": "离线 - 某些功能可能无法使用",
+        "is_loading": "身份验证...",
+        "is_refreshing": "刷新会话...",
+        "wating": "请稍等",
+        "session_timeout": {
+          "title": "会话超时警告",
+          "subtitle": "由于没有活动，您的会话将在",
+          "description": "秒后过期",
+          "login": "保持登录状态",
+          "logout": "登出"
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "拒绝访问",
+        "subtitle": "您无权",
+        "description": "所需权限"
+      },
+      "insufficient_permissions": {
+        "title": "权限不足",
+        "subtitle": "您没有执行此操作所需的全部权限",
+        "description": "所需权限"
+      }
+    }
+  },
+  "navigation": {
+    "home": "首页",
+    "topbar": {
+      "search": {
+        "title": "搜索",
+        "placeholder": "搜索或输入命令...",
+        "search_button": "搜索",
+        "no_results": "未找到结果"
+      },
+      "settings": {
+        "title": "设置",
+        "language": "语言",
+        "theme": "主题",
+        "notification": {
+          "title": "通知",
+          "mark_all_as_read": "全部标记为已读",
+          "no_notifications": "没有通知",
+          "search": "搜索",
+          "view_all_notifications": "查看所有通知"
+        }
+      },
+      "profile": {
+        "edit_profile": "个人资料",
+        "account_settings": "账户设置",
+        "notification": "通知",
+        "sign_out": "退出登录"
+      }
+    },
+    "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "案件管理",
+          "nested": {
+            "case_creation": "案件创建",
+            "case_assignment": "案件分配",
+            "case_history": "案件历史"
+          }
+        },
+        "dashboard": {
+          "title": "仪表板 & 分析",
+          "nested": {
+            "analytics": "分析",
+            "call_center": "呼叫中心",
+            "agent_status": "座席状态",
+            "service": "服务"
+          }
+        },
+        "report": {
+          "title": "报告"
+        },
+        "form_builder": {
+          "title": "表单构建器",
+          "nested": {
+            "form_management": "表单管理",
+            "form_builder": "表单构建"
+          }
+        },
+        "workflow": {
+          "title": "工作流",
+          "nested": {
+            "workflow_management": "工作流管理",
+            "workflow_builder": "工作流构建"
+          }
+        },
+        "user_management": {
+          "title": "用户管理",
+          "nested": {
+            "user": "用户",
+            "role_privilege": "角色与权限",
+            "organization": "组织",
+            "audit_log": "审计日志"
+          }
+        },
+        "system_configuration": {
+          "title": "系统配置",
+          "nested": {
+            "service_management": "服务管理",
+            "unit_management": "单位管理",
+            "skill_management": "技能管理",
+            "property_management": "属性管理",
+            "area_management": "区域管理"
+          }
+        }
+      },
+      "menu": {
+        "title": "菜单",
+        "dashboard": {
+          "title": "仪表板",
+          "nested": {
+            "ecommerce": "电子商务",
+            "dashboard_framework": "仪表板框架"
+          }
+        },
+        "calendar": "日历",
+        "user_profile": "用户资料",
+        "forms": {
+          "title": "表单",
+          "nested": {
+            "form_elements": "表单元素"
+          }
+        },
+        "tables": {
+          "title": "表格",
+          "nested": {
+            "basic_tables": "基础表格"
+          }
+        },
+        "pages": {
+          "title": "页面",
+          "nested": {
+            "blank_page": "空白页",
+            "404_error": "404 错误"
+          }
+        }
+      },
+      "other": {
+        "title": "其它",
+        "charts": {
+          "title": "图表",
+          "nested": {
+            "line_chart": "折线图",
+            "bar_chart": "柱状图"
+          }
+        },
+        "ui_elements": {
+          "title": "UI 元素",
+          "nested": {
+            "alerts": "提醒",
+            "avatar": "头像",
+            "badge": "徽章",
+            "buttons": "按钮",
+            "buttons_customize": "按钮（自定义）",
+            "images": "图片",
+            "tabs": "标签",
+            "videos": "视频"
+          }
+        },
+        "authentication": {
+          "title": "认证",
+          "nested": {
+            "sign_in": "登录",
+            "sign_up": "注册",
+            "authenticate_inspector": "验证检查员"
+          }
+        },
+        "security": {
+          "title": "安全与错误",
+          "nested": {
+            "error_boundaries": "错误边界",
+            "loading": "加载与骨架屏",
+            "security_alert": "安全警报",
+            "offline": "离线处理"
+          }
+        },
+        "theme_debugger": {
+          "title": "主题调试器"
+        }
+      },
+      "archives": {
+        "title": "归档",
+        "case_management": {
+          "title": "案件管理",
+          "nested": {
+            "case_history": "案件历史"
+          }
+        },
+        "workflow": {
+          "title": "工作流",
+          "nested": {
+            "workflow_builder_v1": "工作流构建 v0.1.0"
+          }
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "电子邮箱",
+    "password": "密码",
+    "username": "用户名",
+    "name": "姓名",
+    "phone": "电话",
+    "address": "地址",
+    "required": "必填",
+    "invalid_email": "无效的邮箱"
+  },
+  "messages": {
+    "welcome_user": "欢迎 {{name}}",
+    "items_count": "{{count}} 项",
+    "last_updated": "最后更新 {{date}}"
+  },
+  "status": {
+    "active": "启用",
+    "inactive": "禁用",
+    "pending": "待处理",
+    "completed": "完成",
+    "failed": "失败",
+    "status": "状态"
+  },
+  "errors": {
+    "not_found": "页面未找到",
+    "unauthorized": "未授权",
+    "forbidden": "拒绝访问",
+    "server_error": "服务器错误",
+    "network_error": "网络错误"
+  },
+  "buttons": {
+    "submit": "提交",
+    "reset": "重置",
+    "view_details": "查看详情",
+    "download": "下载"
+  },
+  "notifications": {
+    "new_message": "{{count}} 条新消息",
+    "update_available": "有可用更新"
+  },
+  "userform": {
+    "createUser": "创建用户",
+    "editUser": "编辑用户",
+    "viewUser": "查看用户",
+    "view": "查看",
+    "home": "首页",
+    "userMgmt": "用户管理",
+    "profile": "个人资料",
+    "activity": "活动",
+    "auditLog": "审计日志",
+    "profilePhoto": "头像",
+    "changePhoto": "更换照片",
+    "allowedTypes": "允许: JPG, PNG, GIF",
+    "orgInfo": "组织信息",
+    "department": "部门",
+    "command": "指挥部",
+    "station": "岗位",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "timestamps": "记录时间",
+    "created": "创建",
+    "updated": "更新",
+    "by": "由",
+    "accountLogin": "账户与登录",
+    "username": "用户名",
+    "displayName": "显示名称",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "pwdHint": "密码必须至少8个字符，包含1个大写字母和1个特殊字符。",
+    "personal": "个人信息",
+    "title": "称谓",
+    "firstName": "名",
+    "middleName": "中间名",
+    "lastName": "姓",
+    "email": "邮箱",
+    "mobile": "手机号",
+    "citizenId": "身份证号",
+    "dob": "出生日期",
+    "gender": "性别",
+    "genderMale": "男",
+    "genderFemale": "女",
+    "genderOther": "其他",
+    "blood": "血型",
+    "address": "地址",
+    "addressPlaceholderEn": "输入完整地址",
+    "addressPlaceholderTh": "输入完整地址",
+    "cancel": "取消",
+    "back": "返回",
+    "create": "创建用户",
+    "saving": "保存中...",
+    "saveChanges": "保存更改",
+    "viewMode": "查看模式",
+    "switchToEdit": "切换到编辑",
+    "na": "无",
+    "selectTitle": "选择称谓",
+    "selectGender": "选择性别",
+    "auditLogToggle": "显示审计日志",
+    "auditLogDescription": "查看你的活动历史",
+    "auditLogTitle": "审计日志",
+    "cannotLoadUserData": "无法加载用户数据",
+    "viewProfile": "查看个人资料",
+    "selectBlood": "选择血型",
+    "selectDepartment": "选择部门",
+    "selectCommand": "选择指挥部",
+    "selectStation": "选择岗位",
+    "loadingUserData": "正在加载用户数据...",
+    "noUserData": "无用户数据。",
+    "createSuccess": "用户创建成功！",
+    "updateSuccess": "用户更新成功！",
+    "mobileFormat": "格式: 0XX-XXX-XXXX",
+    "citizenIdFormat": "格式: X-XXXX-XXXXX-XX-X",
+    "dobHint": "不允许未来日期，最多115岁",
+    "empId": "员工编号",
+    "userType": "用户类型",
+    "userTypeRegular": "普通用户",
+    "userTypeAdmin": "管理员",
+    "userTypeSuperAdmin": "超级管理员",
+    "userTypeUnknown": "未知",
+    "resetPassword": "重置密码",
+    "changePassword": "修改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "enterCurrentPassword": "输入当前密码",
+    "enterNewPassword": "输入新密码",
+    "confirmNewPassword": "确认新密码",
+    "currentPasswordRequired": "必须输入当前密码",
+    "newPasswordRequired": "必须输入新密码",
+    "passwordMismatch": "密码不一致",
+    "passwordTooShort": "密码至少8个字符",
+    "samePassword": "新密码必须不同于当前密码",
+    "incorrectCurrentPassword": "当前密码错误",
+    "unauthorized": "未经授权的访问",
+    "resetPasswordError": "无法重置密码",
+    "changePasswordError": "无法修改密码",
+    "resetPasswordSuccess": "密码重置成功！",
+    "changePasswordSuccess": "密码修改成功！",
+    "passwordResetSuccessToast": "密码已成功重置！",
+    "passwordChangeSuccessToast": "密码已成功修改！",
+    "passwordsMatch": "密码匹配",
+    "passwordsDoNotMatch": "密码不匹配",
+    "passwordRequirementsNotMet": "密码不符合要求",
+    "userIdRequired": "必须输入用户ID",
+    "resetPasswordFailed": "重置密码失败",
+    "changePasswordFailed": "修改密码失败",
+    "resetting": "重置中...",
+    "changing": "修改中...",
+    "passwordRequirements": "密码必须至少8个字符，包含1个大写字母和1个特殊字符",
+    "passwordValidation": {
+      "minLength": "至少8个字符",
+      "uppercase": "至少1个大写字母",
+      "specialChar": "至少1个特殊字符"
+    }
+  },
+  "breadcrumb": {
+    "home": "首页",
+    "system_configuration": "系统配置",
+    "audit_log": "审计日志"
+  },
+  "audit_log": {
+    "title": "审计日志",
+    "user_activities": "用户活动",
+    "loading": "加载中...",
+    "search": "搜索",
+    "search_placeholder": "按用户、事务ID、功能、操作搜索...",
+    "search_data": "搜索数据",
+    "refresh_data": "刷新数据",
+    "filters": "筛选",
+    "date_time_range": "日期与时间范围",
+    "start_date": "开始日期/时间",
+    "end_date": "结束日期/时间",
+    "username": "用户名",
+    "function": "功能",
+    "action": "操作",
+    "status": "状态",
+    "message": "消息",
+    "all_users": "所有用户",
+    "all_functions": "所有功能",
+    "all_actions": "所有操作",
+    "all_status": "所有状态",
+    "success": "成功",
+    "failed": "失败",
+    "warning": "警告",
+    "unknown": "未知",
+    "clear_all": "清除全部",
+    "clear_filters": "清除筛选",
+    "apply_filter": "应用筛选",
+    "refresh": "刷新",
+    "search_users": "搜索用户...",
+    "filters_cleared": "筛选已成功清除",
+    "query_success": "成功加载 {{count}} 条记录",
+    "audit_log_query_success": "成功加载审计日志 {{count}} 条记录",
+    "user_transaction": "用户 / 事务 / 时间",
+    "time": "时间",
+    "loading_data": "正在加载数据...",
+    "error": "错误",
+    "error_message": "请检查控制台或稍后再试。",
+    "no_logs_found": "未找到日志",
+    "no_logs_description": "没有该用户的审计日志",
+    "showing_records": "显示 {{start}}-{{end}}，共 {{total}} 条记录",
+    "transaction_id": "事务ID",
+    "duration": "持续时间",
+    "invalid_username": "提供的用户名无效",
+    "adjust_filters": "请尝试调整筛选条件。",
+    "rows_per_page": "每页行数",
+    "show": "显示",
+    "showing": "正在显示",
+    "entries": "条目",
+    "to": "至",
+    "records_found": "条记录",
+    "user_activity_history": "用户活动历史",
+    "total_activities": "总活动数",
+    "avg_duration": "平均持续时间",
+    "no_activities_found": "未找到该用户的活动",
+    "transaction_details": "事务详情",
+    "data_details": "数据详情",
+    "unique_id": "唯一ID",
+    "datetime": "日期与时间",
+    "main_function": "主功能",
+    "all": "全部",
+    "items": "条目",
+    "basic_info": "基本信息",
+    "org_id": "组织ID",
+    "function_name": "功能名称",
+    "sub_function": "子功能",
+    "of": "的",
+    "logs": "日志",
+    "previous": "上一页",
+    "next": "下一页",
+    "log_details": "日志详情",
+    "full_message": "完整消息",
+    "old_data": "旧数据",
+    "new_data": "新数据",
+    "response_data": "响应数据",
+    "click_to_view_full": "点击查看完整消息",
+    "click_to_expand": "点击展开",
+    "search_and_filter": "搜索并筛选系统审计日志",
+    "logs_found": "条日志"
+  }
+}

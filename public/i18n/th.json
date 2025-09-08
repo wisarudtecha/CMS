@@ -30,6 +30,80 @@
     "search_placeholder": "ค้นหา...",
     "refresh": "รีเฟรช"
   },
+  "auth": {
+    "signin": {
+      "title": "เข้าสู่ระบบ",
+      "subtitle": "กรอกชื่อผู้ใช้ รหัสผ่าน และองค์กรเพื่อเข้าสู่ระบบ!",
+      "username": {
+        "label": "ชื่อผู้ใช้",
+        "placeholder": "กรอกชื่อผู้ใช้ของคุณ",
+        "required": "จำเป็นต้องมีชื่อผู้ใช้"
+      },
+      "password": {
+        "label": "รหัสผ่าน",
+        "placeholder": "กรอกรหัสผ่านของคุณ",
+        "required": "จำเป็นต้องมีรหัสผ่าน",
+        "min": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+      },
+      "organization": {
+        "label": "องค์กร",
+        "placeholder": "กรอกชื่อองค์กรของคุณ",
+        "required": "จำเป็นต้องมีชื่อองค์กร"
+      },
+      "email": {
+        "label": "อีเมล",
+        "placeholder": "กรอกอีเมลของคุณ",
+        "required": "จำเป็นต้องมีอีเมล",
+        "invalid": "อีเมลไม่ถูกต้อง",
+        "error": "ไม่สามารถส่งอีเมลรีเซ็ตได้"
+      },
+      "keep_logged_in": "จดจำการเข้าสู่ระบบ",
+      "reset_password": "ลืมรหัสผ่าน?",
+      "button": "เข้าสู่ระบบ",
+      "loading": "กำลังเข้าสู่ระบบ...",
+      "demo": {
+        "title": "บัญชีสาธิต:",
+        "username": "ชื่อผู้ใช้",
+        "password": "รหัสผ่าน",
+        "organization": "องค์กร",
+        "auto_fill": "กรอกอัตโนมัติ"
+      },
+      "no_account": "ยังไม่มีบัญชี?",
+      "sign_up": "สมัครสมาชิก",
+      "forgot_password": {
+        "title": "รีเซ็ตรหัสผ่าน",
+        "subtitle": "กรอกอีเมล์ของคุณเพื่อรีเซ็ตรหัสผ่าน"
+      },
+      "state": {
+        "is_locked": "บัญชีถูกล็อคชั่วคราวเนื่องจากพยายามหลายครั้งไม่สำเร็จ โปรดลองอีกครั้งในภายหลัง",
+        "network_status": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต โปรดตรวจสอบการเชื่อมต่อและลองอีกครั้ง",
+        "network_online": "เชื่อมต่อแล้ว",
+        "network_offline": "ออฟไลน์ - คุณสมบัติบางอย่างอาจไม่ทำงาน",
+        "is_loading": "กำลังตรวจสอบความถูกต้อง...",
+        "is_refreshing": "กำลังรีเฟรชเซสชั่น...",
+        "wating": "โปรดรอ",
+        "session_timeout": {
+          "title": "คำเตือนการหมดเวลาเซสชั่น",
+          "subtitle": "เซสชันของคุณจะหมดอายุใน",
+          "description": "วินาทีเนื่องจากไม่มีการใช้งาน",
+          "login": "ต่ออายุ",
+          "logout": "ออกจากระบบ"
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "การเข้าถึงถูกปฏิเสธ",
+        "subtitle": "คุณไม่มีสิทธิ์ในการ",
+        "description": "ต้องได้รับอนุญาต"
+      },
+      "insufficient_permissions": {
+        "title": "สิทธิ์อนุญาตไม่เพียงพอ",
+        "subtitle": "คุณไม่มีสิทธิ์ที่จำเป็นทั้งหมดสำหรับการดำเนินการนี้",
+        "description": "ต้องได้รับอนุญาต"
+      }
+    }
+  },
   "navigation": {
     "home": "หน้าหลัก",
     "topbar": {
@@ -47,31 +121,88 @@
           "title": "การแจ้งเตือน",
           "mark_all_as_read": "ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว",
           "no_notifications": "ไม่พบการแจ้งเตือน",
+          "search": "ค้นหา",
           "view_all_notifications": "ดูการแจ้งเตือนทั้งหมด"
         }
       },
       "profile": {
         "edit_profile": "โปรไฟล์",
         "account_settings": "การตั้งค่าบัญชี",
-        "support": "ช่วยเหลือ",
+        "notification": "การแจ้งเตือน",
         "sign_out": "ออกจากระบบ"
       }
     },
     "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "การจัดการเคส",
+          "nested": {
+            "case_creation": "สร้างเคส",
+            "case_assignment": "มอบหมายเคส",
+            "case_history": "ประวัติเคส"
+          }
+        },
+        "dashboard": {
+          "title": "แดชบอร์ดและการวิเคราะห์",
+          "nested": {
+            "analytics": "การวิเคราะห์",
+            "call_center": "ศูนย์บริการ",
+            "agent_status": "สถานะเจ้าหน้าที่",
+            "service": "บริการ"
+          }
+        },
+        "report": {
+          "title": "รายงาน"
+        },
+        "form_builder": {
+          "title": "ตัวสร้างฟอร์ม",
+          "nested": {
+            "form_management": "การจัดการฟอร์ม",
+            "form_builder": "สร้างฟอร์ม"
+          }
+        },
+        "workflow": {
+          "title": "เวิร์กโฟลว์",
+          "nested": {
+            "workflow_management": "การจัดการเวิร์กโฟลว์",
+            "workflow_builder": "สร้างเวิร์กโฟลว์"
+          }
+        },
+        "user_management": {
+          "title": "การจัดการผู้ใช้",
+          "nested": {
+            "user": "ผู้ใช้",
+            "role_privilege": "บทบาทและสิทธิ์",
+            "organization": "องค์กร",
+            "audit_log": "บันทึกการตรวจสอบ"
+          }
+        },
+        "system_configuration": {
+          "title": "การกำหนดค่าระบบ",
+          "nested": {
+            "service_management": "การจัดการบริการ",
+            "unit_management": "การจัดการหน่วย",
+            "skill_management": "การจัดการทักษะ",
+            "property_management": "การจัดการคุณสมบัติ",
+            "area_management": "การจัดการพื้นที่"
+          }
+        }
+      },
       "menu": {
         "title": "เมนู",
         "dashboard": {
           "title": "แดชบอร์ด",
           "nested": {
-            "ecommerce": "อีคอมเมิร์ซ"
+            "ecommerce": "อีคอมเมิร์ซ",
+            "dashboard_framework": "แดชบอร์ด Framework"
           }
         },
         "calendar": "ปฏิทิน",
         "user_profile": "โปรไฟล์ผู้ใช้",
         "forms": {
-          "title": "แบบฟอร์ม",
+          "title": "ฟอร์ม",
           "nested": {
-            "form_elements": "องค์ประกอบแบบฟอร์ม"
+            "form_elements": "องค์ประกอบฟอร์ม"
           }
         },
         "tables": {
@@ -81,9 +212,9 @@
           }
         },
         "pages": {
-          "title": "หน้า",
+          "title": "เพจ",
           "nested": {
-            "blank_page": "หน้าเปล่า",
+            "blank_page": "หน้าว่าง",
             "404_error": "ข้อผิดพลาด 404"
           }
         }
@@ -91,10 +222,10 @@
       "other": {
         "title": "อื่นๆ",
         "charts": {
-          "title": "กราฟ",
+          "title": "แผนภูมิ",
           "nested": {
-            "line_chart": "กราฟเส้น",
-            "bar_chart": "กราฟแท่ง"
+            "line_chart": "แผนภูมิเส้น",
+            "bar_chart": "แผนภูมิแท่ง"
           }
         },
         "ui_elements": {
@@ -104,7 +235,9 @@
             "avatar": "อวาตาร์",
             "badge": "ป้าย",
             "buttons": "ปุ่ม",
+            "buttons_customize": "ปุ่ม (ปรับแต่ง)",
             "images": "รูปภาพ",
+            "tabs": "แท็บ",
             "videos": "วิดีโอ"
           }
         },
@@ -112,7 +245,35 @@
           "title": "การยืนยันตัวตน",
           "nested": {
             "sign_in": "เข้าสู่ระบบ",
-            "sing_up": "ลงทะเบียน"
+            "sign_up": "สมัครสมาชิก",
+            "authenticate_inspector": "ตรวจสอบรับรองความถูกต้อง"
+          }
+        },
+        "security": {
+          "title": "ความปลอดภัย",
+          "nested": {
+            "error_boundaries": "ข้อผิดพลาด",
+            "loading": "การโหลด",
+            "security_alert": "การแจ้งเตือนความปลอดภัย",
+            "offline": "การทำงานออฟไลน์"
+          }
+        },
+        "theme_debugger": {
+          "title": "ดีบักธีม"
+        }
+      },
+      "archives": {
+        "title": "คลังเก็บ",
+        "case_management": {
+          "title": "การจัดการเคส",
+          "nested": {
+            "case_history": "ประวัติเคส"
+          }
+        },
+        "workflow": {
+          "title": "เวิร์กโฟลว์",
+          "nested": {
+            "workflow_builder_v1": "เวิร์กโฟลว์ Builder v0.1.0"
           }
         }
       }

@@ -116,7 +116,7 @@ export default function ResetPasswordModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-md w-[90vw] rounded-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white cursor-default">
             {t('userform.resetPassword') || 'รีเซ็ตรหัสผ่าน'}
           </DialogTitle>
         </DialogHeader>
@@ -229,7 +229,7 @@ export default function ResetPasswordModal({
               )}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500 dark:text-gray-400 cursor-default">
               <p>{t('userform.passwordRequirements') || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'}</p>
             </div>
           </div>

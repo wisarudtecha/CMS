@@ -65,23 +65,23 @@ const AppSidebar: React.FC = () => {
   const mainItems: NavItem[] = useMemo(() => [
     {
       icon: <TaskIcon />,
-      name: "Case Management",
+      name: t("navigation.sidebar.main.case_management.title"),
       permission: permissions.hasAnyPermission([
         "case.create", "case.assign", "case.view_history",
       ]),
       subItems: [
         {
-          name: "Case Creation",
+          name: t("navigation.sidebar.main.case_management.nested.case_creation"),
           path: "/case/creation",
           permission: permissions.hasPermission("case.create"),
         },
         {
-          name: "Case Assignment",
+          name: t("navigation.sidebar.main.case_management.nested.case_assignment"),
           path: "/case/assignment",
           permission: permissions.hasPermission("case.assign"),
         },
         {
-          name: "Case History",
+          name: t("navigation.sidebar.main.case_management.nested.case_history"),
           path: "/case/history",
           permission: permissions.hasPermission("case.view_history"),
         },
@@ -89,7 +89,7 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <PieChartIcon />,
-      name: "Dashboard & Analytics",
+      name: t("navigation.sidebar.main.dashboard.title"),
       permission: permissions.hasAnyPermission([
         "dashboard.view",
       ]),
@@ -101,51 +101,51 @@ const AppSidebar: React.FC = () => {
         // { name: "Transaction Details", path: "/transaction-details", permission: permissions.hasPermission("dashboard.view"), },
         // { name: "Responder Performance", path: "/responder-performance", permission: permissions.hasPermission("dashboard.view"), },
         {
-          name: "Analytics",
+          name: t("navigation.sidebar.main.dashboard.nested.analytics"),
           path: "/dashboard/analytics",
           permission: permissions.hasPermission("dashboard.view"),
         }, // Mockup
         {
-          name: "Call Center",
+          name: t("navigation.sidebar.main.dashboard.nested.call_center"),
           path: "/dashboard/callcenter",
           permission: permissions.hasPermission("dashboard.view"),
         }, // Mockup
         {
-          name: "Agent Status",
+          name: t("navigation.sidebar.main.dashboard.nested.agent_status"),
           path: "/dashboard/agent-status",
           permission: permissions.hasPermission("dashboard.view"),
         }, // Mockup
         {
-          name: "Service",
+          name: t("navigation.sidebar.main.dashboard.nested.service"),
           path: "/dashboard/service",
           permission: permissions.hasPermission("dashboard.view"),
         }, // Mockup
       ],
     },
     {
-  icon: <FileIcon />,
-  name: "Report",
-  permission: permissions.hasAnyPermission([
-    "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
-  ]),
-  subItems: [
-   
-  ],
-},
+      icon: <FileIcon />,
+      name: t("navigation.sidebar.main.report.title"),
+      permission: permissions.hasAnyPermission([
+        "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
+      ]),
+      subItems: [
+      
+      ],
+    },
     {
       icon: <ListIcon />,
-      name: "Form Builder",
+      name: t("navigation.sidebar.main.form_builder.title"),
       permission: permissions.hasAnyPermission([
         "form.view", "form.create",
       ]),
       subItems: [
         {
-          name: "Form Management",
+          name: t("navigation.sidebar.main.form_builder.nested.form_management"),
           path: "/form-management",
           permission: permissions.hasPermission("form.view"),
         },
         {
-          name: "Form Builder",
+          name: t("navigation.sidebar.main.form_builder.nested.form_builder"),
           path:"/dynamic-form",
           permission: permissions.hasPermission("form.create"),
         },
@@ -153,18 +153,18 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <BoxIcon />,
-      name: "Workflow",
+      name: t("navigation.sidebar.main.workflow.title"),
       permission: permissions.hasAnyPermission([
         "workflow.view", "workflow.create",
       ]),
       subItems: [
         {
-          name: "Workflow Management",
+          name: t("navigation.sidebar.main.workflow.nested.workflow_management"),
           path: "/workflow/list",
           permission: permissions.hasPermission("workflow.view"),
         },
         {
-          name: "Workflow Builder",
+          name: t("navigation.sidebar.main.workflow.nested.workflow_builder"),
           path: "/workflow/editor/v2",
           permission: permissions.hasPermission("workflow.create"),
         },
@@ -172,28 +172,28 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <UserCircleIcon />,
-      name: "User Management",
+      name: t("navigation.sidebar.main.user_management.title"),
       permission: permissions.hasAnyPermission([
         "user.view", "role.view", "organization.view", "auditlog.view",
       ]),
       subItems: [
         {
-          name: "User",
+          name: t("navigation.sidebar.main.user_management.nested.user"),
           path: "/user",
           permission: permissions.hasPermission("user.view"),
         },
         {
-          name: "Role & Privilege",
+          name: t("navigation.sidebar.main.user_management.nested.role_privilege"),
           path: "/role-privilege",
           permission: permissions.hasPermission("role.view"),
         },
         {
-          name: "Organization",
+          name: t("navigation.sidebar.main.user_management.nested.organization"),
           path: "/organization",
           permission: permissions.hasPermission("organization.view"),
         },
         {
-          name: "Audit Log",
+          name: t("navigation.sidebar.main.user_management.nested.audit_log"),
           path: "/auditlog",
           permission: permissions.hasPermission("auditlog.view"),
         },
@@ -201,13 +201,13 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <PlugInIcon />,
-      name: "System Configuration",
+      name: t("navigation.sidebar.main.system_configuration.title"),
       permission: permissions.hasAnyPermission([
         "service.view", "unit.view", "user.view",
       ]),
       subItems: [
         {
-          name: "Service Management",
+          name: t("navigation.sidebar.main.system_configuration.nested.service_management"),
           path: "/service",
           permission: permissions.hasPermission("service.view"),
           // subItems: [
@@ -224,36 +224,37 @@ const AppSidebar: React.FC = () => {
           // ]
         },
         {
-          name: "Unit Management",
+          name: t("navigation.sidebar.main.system_configuration.nested.unit_management"),
           path: "/unit",
           permission: permissions.hasPermission("unit.view"),
         },
         {
-          name: "Skill Management",
+          name: t("navigation.sidebar.main.system_configuration.nested.skill_management"),
           path: "/skill",
           permission: permissions.hasPermission("user.view"),
         },
         {
-          name: "Property Management",
+          name: t("navigation.sidebar.main.system_configuration.nested.property_management"),
           path: "/property",
           permission: permissions.hasPermission("unit.view"),
         },
         {
-          name: "Area Management",
+          name: t("navigation.sidebar.main.system_configuration.nested.area_management"),
           path: "/area",
           permission: permissions.hasPermission("service.view"),
         },
       ],
     },
-  ], [permissions]);
+  ], [permissions, t]);
 
+  // Menu
   const navItems: NavItem[] = useMemo(() => [
     {
       icon: <GridIcon />,
       name: t("navigation.sidebar.menu.dashboard.title"),
       subItems: [
         { name: t("navigation.sidebar.menu.dashboard.nested.ecommerce"), path: "/", },
-        { name: "Dashboard Framework", path: "/dashboard", },
+        { name: t("navigation.sidebar.menu.dashboard.nested.dashboard_framework"), path: "/dashboard", },
       ],
     },
     {
@@ -267,20 +268,22 @@ const AppSidebar: React.FC = () => {
       path: "/profile",
     },
     {
-      name: t("navigation.sidebar.menu.forms.title"),
       icon: <ListIcon />,
+      name: t("navigation.sidebar.menu.forms.title"),
       subItems: [
         { name: t("navigation.sidebar.menu.forms.nested.form_elements"), path: "/form-elements", },
       ],
     },
     {
-      name: t("navigation.sidebar.menu.tables.title"),
       icon: <TableIcon />,
-      subItems: [{ name: t("navigation.sidebar.menu.tables.nested.basic_tables"), path: "/basic-tables", }],
+      name: t("navigation.sidebar.menu.tables.title"),
+      subItems: [
+        { name: t("navigation.sidebar.menu.tables.nested.basic_tables"), path: "/basic-tables", }
+      ],
     },
     {
-      name: t("navigation.sidebar.menu.pages.title"),
       icon: <PageIcon />,
+      name: t("navigation.sidebar.menu.pages.title"),
       subItems: [
         { name: t("navigation.sidebar.menu.pages.nested.blank_page"), path: "/blank", },
         { name: t("navigation.sidebar.menu.pages.nested.404_error"), path: "/error-404", },
@@ -288,6 +291,7 @@ const AppSidebar: React.FC = () => {
     },
   ], [t]);
 
+  // Others
   const othersItems: NavItem[] = useMemo(() => [
     {
       icon: <PieChartIcon />,
@@ -305,9 +309,9 @@ const AppSidebar: React.FC = () => {
         { name: t("navigation.sidebar.other.ui_elements.nested.avatar"), path: "/avatars", },
         { name: t("navigation.sidebar.other.ui_elements.nested.badge"), path: "/badge", },
         { name: t("navigation.sidebar.other.ui_elements.nested.buttons"), path: "/buttons", },
-        { name: "Buttons Customize", path: "/buttons-customize", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.buttons_customize"), path: "/buttons-customize", },
         { name: t("navigation.sidebar.other.ui_elements.nested.images"), path: "/images", },
-        { name: "Tabs", path: "/tabs", },
+        { name: t("navigation.sidebar.other.ui_elements.nested.tabs"), path: "/tabs", },
         { name: t("navigation.sidebar.other.ui_elements.nested.videos"), path: "/videos", },
       ],
     },
@@ -316,40 +320,41 @@ const AppSidebar: React.FC = () => {
       name: t("navigation.sidebar.other.authentication.title"),
       subItems: [
         { name: t("navigation.sidebar.other.authentication.nested.sign_in"), path: "/signin", },
-        { name: t("navigation.sidebar.other.authentication.nested.sing_up"), path: "/signup", },
-        { name: "Authenticate Inspector", path: "/authenticate", },
+        { name: t("navigation.sidebar.other.authentication.nested.sign_up"), path: "/signup", },
+        { name: t("navigation.sidebar.other.authentication.nested.authenticate_inspector"), path: "/authenticate", },
       ],
     },
     {
       icon: <LockIcon />,
-      name: "Security & Error",
+      name: t("navigation.sidebar.other.security.title"),
       subItems: [
-        { name: "Error Boundaries", path: "/security/error-boundaries", },
-        { name: "Loading & Skeletons", path: "/security/loading-system", },
-        { name: "Security Alert", path: "/security/security-alerts", },
-        { name: "Offline Handling", path: "/security/offline-state", },
+        { name: t("navigation.sidebar.other.security.nested.error_boundaries"), path: "/security/error-boundaries", },
+        { name: t("navigation.sidebar.other.security.nested.loading"), path: "/security/loading-system", },
+        { name: t("navigation.sidebar.other.security.nested.security_alert"), path: "/security/security-alerts", },
+        { name: t("navigation.sidebar.other.security.nested.offline"), path: "/security/offline-state", },
       ],
     },
     {
       icon: <BoxCubeIcon />,
-      name: "Theme Debugger",
+      name: t("navigation.sidebar.other.theme_debugger.title"),
       path: "/theme-debugger",
     },
   ], [t]);
 
+  // Archives
   const archivesItems: NavItem[] = [
     {
       icon: <BoxCubeIcon />,
-      name: "Case Management",
+      name: t("navigation.sidebar.archives.case_management.title"),
       subItems: [
-        { name: "Case History", path: "/kanban", },
+        { name: t("navigation.sidebar.archives.case_management.nested.case_history"), path: "/kanban", },
       ],
     },
     {
       icon: <BoxCubeIcon />,
-      name: "Workflow",
+      name: t("navigation.sidebar.archives.workflow.title"),
       subItems: [
-        { name: "Workflow Builder v0.1.0", path: "/workflow/editor/v1", },
+        { name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v1"), path: "/workflow/editor/v1", },
       ],
     },
   ];
