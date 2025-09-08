@@ -138,51 +138,51 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             </div>
 
             <ProgressStepPreview progressSteps={stepsToDisplay} />
+            
+            {/* START: Responsive Button Grid Container */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+                {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                    {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Comment
+                </Button>}
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
-                <div className="flex flex-wrap gap-2">
-                    {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                        {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Comment
-                    </Button>}
+                {onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                    {editFormData ? "Cancel Edit" : "Edit"}
+                </Button>}
 
-                    {onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                        {editFormData ? "Cancel Edit" : "Edit"}
-                    </Button>}
+                {showAttachButton && <div>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 w-full"
+                        onClick={handleButtonClick}
+                    >
+                        <Paperclip className="w-4 h-4 mr-2" />
+                        Attach File
+                    </Button>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        multiple
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                    />
+                </div>}
 
-                    {showAttachButton && <div>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
-                            onClick={handleButtonClick}
-                        >
-                            <Paperclip className="w-4 h-4 mr-2" />
-                            Attach File
-                        </Button>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            multiple
-                            onChange={handleFileChange}
-                            style={{ display: "none" }}
-                        />
-                    </div>}
-
-                </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 gap-2">
-                    {/* {onAddSubCase &&
-                        <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
-                            <span>Add WO</span>
-                        </Button>} */}
-                    {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-1">
-                        <User_Icon className="w-4 h-4" />
-                        <span>Assign Officer</span>
-                    </Button>}
-                </div>
+                {/* {onAddSubCase &&
+                    <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
+                        <span>Add WO</span>
+                    </Button>} */}
+                    
+                {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+                    <User_Icon className="w-4 h-4" />
+                    <span>Assign Officer</span>
+                </Button>}
             </div>
+            {/* END: Responsive Button Grid Container */}
+
             {showComment && <Comments caseId={caseData.caseId} comment={comment} />}
         </div>
     );

@@ -65,6 +65,8 @@ interface CaseTypeFormSectionProps {
     caseTypeSupTypeData: CaseTypeSubType[];
     disableCaseTypeSelect: boolean;
     className?: string;
+    caseState: CaseDetails
+    handleContactMethodChange: (contact: { id: string, name: string }) => void;
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -76,6 +78,8 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     caseTypeSupTypeData,
     disableCaseTypeSelect,
     className,
+    caseState,
+    handleContactMethodChange,
 }) => {
     const caseTypeOptions = useMemo(() => {
         if (!caseTypeSupTypeData?.length) return [];
@@ -86,18 +90,34 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 
     return (
         <>
-            <div className="text-white dark:text-gray-300">
-                <div className="flex justify-between m-3 text-gray-900 dark:text-gray-400">
-                    <h3 className="mb-2 block text-gray-900 dark:text-gray-400">Case Type :{requireElements}</h3>
+            <div className="grid-cols-2 sm:grid">
+                <div className="text-white dark:text-gray-300">
+                    <div className="flex justify-between mx-3 text-gray-900 dark:text-gray-400">
+                        <h3 className="mb-3 block text-gray-900 dark:text-gray-400">Case Type :{requireElements}</h3>
+                    </div>
+                    <SearchableSelect
+                        options={caseTypeOptions}
+                        value={caseType}
+                        onChange={handleCaseTypeChange}
+                        placeholder={"Select CaseType"}
+                        className={`2xsm:mx-3 mb-2 ${className}`}
+                        disabled={disableCaseTypeSelect}
+                    />
                 </div>
-                <SearchableSelect
-                    options={caseTypeOptions}
-                    value={caseType}
-                    onChange={handleCaseTypeChange}
-                    placeholder={"Select CaseType"}
-                    className={`2xsm:mx-3 mb-2 ${className}`}
-                    disabled={disableCaseTypeSelect}
-                />
+                <div className="hidden md:block px-3 col-span-1">
+                    <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                        Contract Method : {requireElements}
+                    </h3>
+                    <SearchableSelect
+                        options={contractMethodMock.map(m => m.name)}
+                        className="sm:my-3 sm:mb-3"
+                        value={caseState?.customerData?.contractMethod?.name ?? ""}
+                        onChange={(selectedName) => {
+                            const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+                            if (selectedMethod) handleContactMethodChange(selectedMethod);
+                        }}
+                    />
+                </div>
             </div>
             {selectedCaseTypeForm?.formFieldJson && (
                 <>
@@ -419,6 +439,8 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             editFormData={editFormData}
             caseTypeSupTypeData={caseTypeSupTypeData ?? []}
             disableCaseTypeSelect={!isCreate}
+            handleContactMethodChange={handleContactMethodChange}
+            caseState={caseState}
         />
 
         <div className="xsm:grid grid-cols-2">
@@ -438,7 +460,20 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     disabled
                 />
             </div> */}
-
+            <div className="px-3 mb-3 md:hidden">
+                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                    Contract Method : {requireElements}
+                </h3>
+                <SearchableSelect
+                    options={contractMethodMock.map(m => m.name)}
+                    className="sm:my-3 sm:mb-3"
+                    value={caseState?.customerData?.contractMethod?.name ?? ""}
+                    onChange={(selectedName) => {
+                        const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+                        if (selectedMethod) handleContactMethodChange(selectedMethod);
+                    }}
+                />
+            </div>
             {/* Work Order Reference */}
             {caseData?.referCaseId ? (
                 <div className="px-3">
@@ -545,20 +580,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
 
             {/* Schedule Date */}
-            <div className="px-3 col-span-1">
-                <h3 className="text-gray-900 dark:text-gray-400 mb-3">
-                    Contract Method : {requireElements}
-                </h3>
-                <SearchableSelect
-                    options={contractMethodMock.map(m => m.name)}
-                    className="sm:my-3"
-                    value={caseState?.customerData?.contractMethod?.name ?? ""}
-                    onChange={(selectedName) => {
-                        const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
-                        if (selectedMethod) handleContactMethodChange(selectedMethod);
-                    }}
-                />
-            </div>
+
             {isCreate &&
                 <div className="px-3">
                     <div className="flex mb-3">

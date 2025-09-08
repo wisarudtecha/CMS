@@ -82,8 +82,11 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 {isCreate === false ? (
                     <div>
                         <span className="text-md text-gray-500 dark:text-gray-400">
-                            No # {caseData?.workOrderNummber || "-"}
+                            No # <span className="text-md font-medium text-gray-900 dark:text-white">
+                                {caseData?.workOrderNummber || "-"}
+                            </span>
                         </span>
+
                     </div>
                 ) : null}
 

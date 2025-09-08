@@ -1,6 +1,6 @@
 "use client"
 import { useState, useMemo, useEffect, useRef } from "react"
-import { Search, X, } from "lucide-react"
+import { ChevronDown, ChevronUp, Search, X, } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Input from "@/components/form/input/InputField"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog/dialog"
@@ -10,59 +10,66 @@ import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CaseSop, Unit } from "@/store/api/dispatch"
 import { unitStatus } from "../ui/status/status"
-import SkillModal from "./officerSkillModal"
 import { Area, mergeArea } from "@/store/api/area"
+import SkillModal from "./officerSkillModal"
 
-
-const SkillsDisplay = ({ skills }: { skills: Array<{ skillId: string, en: string, th: string }> }) => {
+const SkillsDisplay = ({
+  skills,
+  maxInitialItems = 1,
+  className = ""
+}: {
+  skills: Array<{ skillId: string, en: string, th: string }>
+  maxInitialItems?: number
+  className?: string
+}) => {
   const [expanded, setExpanded] = useState(false)
 
   if (!skills || skills.length === 0) {
     return <span className="text-gray-400 dark:text-gray-500 text-xs">No skills</span>
   }
 
-  if (skills.length === 1) {
-    return (
-      <Badge variant="outline" className="text-md">
-        {skills[0].th}
-      </Badge>
-    )
-  }
+  const visibleSkills = expanded ? skills : skills.slice(0, maxInitialItems)
+  const remainingCount = skills.length - maxInitialItems
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-center gap-1">
-        <Badge variant="outline" className="text-md">
-          {skills[0].th}
-        </Badge>
-        {skills.length > 1 && (
+    <div className={`space-y-1 w-full ${className}`}>
+      <div className="flex flex-wrap gap-1 items-center justify-start"> {/* Default to justify-start */}
+        {visibleSkills.map((skill) => (
+          <Badge
+            key={skill.skillId}
+            variant="outline"
+            className="text-xs max-w-[120px] truncate"
+          >
+            {skill.th}
+          </Badge>
+        ))}
+        {skills.length > maxInitialItems && (
           <button
             onClick={(e) => {
               e.stopPropagation()
               setExpanded(!expanded)
             }}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline px-1 py-0.5 rounded transition-colors"
           >
-            {expanded ? 'Show less' : `+${skills.length - 1} more`}
+            {expanded ? (
+              <>
+                <ChevronUp className="w-3 h-3" />
+                Less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3" />
+                +{remainingCount}
+              </>
+            )}
           </button>
         )}
       </div>
-      {expanded && (
-        <div className="flex flex-wrap gap-1 justify-center">
-          {skills.slice(1).map((skill) => (
-            <Badge
-              key={skill.skillId}
-              color="secondary"
-              className="text-xs"
-            >
-              {skill.th}
-            </Badge>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
+
+
 
 interface AssignOfficerModalProps {
   open: boolean
@@ -347,7 +354,7 @@ export default function AssignOfficerModal({
                               className="grid grid-cols-5 flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => setShowOFFicerData(officer)}
                             >
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-2 justify-center">
                                 <Avatar className="w-8 h-8">
                                   <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
                                     {officer.username
