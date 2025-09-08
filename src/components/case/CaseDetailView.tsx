@@ -936,7 +936,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         return {
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType),
-            formField: apiFormData?.data || ({} as FormField),
+            // formField: apiFormData?.data || ({} as FormField),
             isLoading: apiIsLoading && triggerFetch === newCaseType.sTypeId,
             error: error,
         } as formType & { isLoading: boolean; error: any };
