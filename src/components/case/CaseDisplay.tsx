@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { CalendarDays, Contact, Cpu, MapPin, Phone, Share2 } from "lucide-react";
 import DateStringToDateFormat from "../date/DateToString";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
@@ -142,57 +142,80 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div> */}
                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 mb-3">
                     {/* <div className="mb-2">
-                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
-                    </div> */}
+        <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
+    </div> */}
                     {/* <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.customerData?.name || "-"}
-                        </div>
-                    </div> */}
-                    <div className="flex mb-2 text-blue-500 dark:text-blue-400">
-                        <span className="text-md  " >Contact</span>
-                    </div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">Phone Number</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">
-                        {caseData?.customerData?.mobileNo || "-"}
+        <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
+        <div className="text-md font-medium text-gray-900 dark:text-white">
+            {caseData?.customerData?.name || "-"}
+        </div>
+    </div> */}
+
+                    <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
+                        <Contact className="h-5 w-5 mr-2" />
+                        <span className="text-md">Contact</span>
                     </div>
 
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Contact Method</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                    {/* Phone Number */}
+                    <div className="mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <Phone className="h-4 w-4 mr-2" />
+                            <span>Phone Number</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.customerData?.mobileNo || "-"}
+                        </div>
+                    </div>
+
+                    {/* Contact Method */}
+                    <div className="mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <Share2 className="h-4 w-4 mr-2" />
+                            <span>Contact Method</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.contractMethod?.name || "-"}
                         </div>
                         {/* {caseData?.customerData?.contractMethod.name == "Email" ?
-                            <>
-                                <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
-                                <div className="text-md font-medium text-gray-900 dark:text-white">
-                                    {caseData.customerData?.email || "-"}
-                                </div>
-                            </> : null} */}
+            <>
+                <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
+                <div className="text-md font-medium text-gray-900 dark:text-white">
+                    {caseData.customerData?.email || "-"}
+                </div>
+            </> : null} */}
                     </div>
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">IoT Device</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
+
+                    {/* IoT Device */}
+                    <div className="mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <Cpu className="h-4 w-4 mr-2" />
+                            <span>IoT Device</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.iotDevice || "-"}
                         </div>
                     </div>
-                    {
-                        caseData?.requireSchedule && <div className="mb-2">
-                            <span className="text-md text-gray-500 dark:text-gray-400">Request Schedule Date {requireElements}</span>
-                            <div className="text-md font-medium text-gray-900 dark:text-white">
+
+                    {/* Schedule Date */}
+                    {caseData?.requireSchedule && (
+                        <div className="mb-2">
+                            <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                                <CalendarDays className="h-4 w-4 mr-2" />
+                                <span>Request Schedule Date {requireElements}</span>
+                            </div>
+                            <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
                                     DateStringToDateFormat(caseData.scheduleDate) :
                                     "-"
                                 }
                             </div>
                         </div>
-                    }
+                    )}
                 </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
-                    <span className="flex mb-2 text-blue-500 dark:text-blue-400">Detail {requireElements}</span>
+                    <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>Detail <span>{requireElements}</span></span></span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
                         {caseData?.description || "-"}
                     </div>

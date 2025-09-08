@@ -351,7 +351,7 @@ export default function AssignOfficerModal({
                               />
                             </div>
                             <div
-                              className="grid grid-cols-5 flex-1 gap-4 py-3 pr-10 cursor-pointer"
+                              className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => setShowOFFicerData(officer)}
                             >
                               <div className="flex items-center space-x-2 justify-center">
