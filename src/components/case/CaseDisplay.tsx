@@ -64,7 +64,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
     const handleCloseCaseChange = (value: string) => {
         setCloseValue(value)
     }
-    const { t } = useTranslation();
+    const { t,language } = useTranslation();
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
 
@@ -105,7 +105,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div> */}
                 <div>
                     <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.service_center")}</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area) || "-"}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area,language) || "-"}</div>
                 </div>
             </div>
             <div className="col-span-2 sm:col-span-1">

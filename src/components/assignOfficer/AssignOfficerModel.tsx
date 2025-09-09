@@ -12,6 +12,7 @@ import { CaseSop, Unit } from "@/store/api/dispatch"
 import { unitStatus } from "../ui/status/status"
 import { Area, mergeArea } from "@/store/api/area"
 import SkillModal from "./officerSkillModal"
+import { useTranslation } from "@/hooks/useTranslation"
 
 const SkillsDisplay = ({
   skills,
@@ -185,7 +186,7 @@ export default function AssignOfficerModal({
       officer.deptId.toLowerCase().includes(searchLower)
     )
   }, [officers, searchTerm])
-
+  const { language } = useTranslation();
   // Sort the filtered officers
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
@@ -393,7 +394,7 @@ export default function AssignOfficerModal({
                                       caseData?.countryId === item.countryId &&
                                       caseData?.distId === item.distId
                                   );
-                                  return matchedArea ? mergeArea(matchedArea) : "-";
+                                  return matchedArea ? mergeArea(matchedArea,language) : "-";
                                 })()}
                               </div>
                               <div className="flex items-center justify-center">
