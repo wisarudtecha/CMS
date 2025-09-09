@@ -105,23 +105,23 @@ const AppSidebar: React.FC = () => {
         // { name: "Transaction Summary", path: "/transaction-summary", permission: permissions.hasPermission("dashboard.view"), },
         // { name: "Transaction Details", path: "/transaction-details", permission: permissions.hasPermission("dashboard.view"), },
         // { name: "Responder Performance", path: "/responder-performance", permission: permissions.hasPermission("dashboard.view"), },
+        // {
+        //   name: t("navigation.sidebar.main.dashboard.nested.analytics"),
+        //   path: "/dashboard/analytics",
+        //   permission: permissions.hasPermission("dashboard.view"),
+        // }, // Mockup
+        // {
+        //   name: t("navigation.sidebar.main.dashboard.nested.call_center"),
+        //   path: "/dashboard/callcenter",
+        //   permission: permissions.hasPermission("dashboard.view"),
+        // }, // Mockup
+        // {
+        //   name: t("navigation.sidebar.main.dashboard.nested.agent_status"),
+        //   path: "/dashboard/agent-status",
+        //   permission: permissions.hasPermission("dashboard.view"),
+        // }, // Mockup
         {
-          name: t("navigation.sidebar.main.dashboard.nested.analytics"),
-          path: "/dashboard/analytics",
-          permission: permissions.hasPermission("dashboard.view"),
-        }, // Mockup
-        {
-          name: t("navigation.sidebar.main.dashboard.nested.call_center"),
-          path: "/dashboard/callcenter",
-          permission: permissions.hasPermission("dashboard.view"),
-        }, // Mockup
-        {
-          name: t("navigation.sidebar.main.dashboard.nested.agent_status"),
-          path: "/dashboard/agent-status",
-          permission: permissions.hasPermission("dashboard.view"),
-        }, // Mockup
-        {
-          name: t("navigation.sidebar.main.dashboard.nested.service"),
+          name: t("navigation.sidebar.main.dashboard.nested.service.title"),
           path: "/dashboard/service",
           permission: permissions.hasPermission("dashboard.view"),
         }, // Mockup

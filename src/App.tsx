@@ -12,7 +12,7 @@ import Blank from "@/pages/Blank";
 import Calendar from "@/pages/Calendar";
 import LineChart from "@/pages/Charts/LineChart";
 import BarChart from "@/pages/Charts/BarChart";
-import Home from "@/pages/Dashboard/Home";
+// import Home from "@/pages/Dashboard/Home";
 import FormElements from "@/pages/Forms/FormElements";
 import NotFound from "@/pages/OtherPage/NotFound";
 import Alerts from "@/pages/UiElements/Alerts";
@@ -100,7 +100,8 @@ export default function App() {
         {/* Dashboard Layout */}
         <Route element={<AppLayout />}>
           {/* Home Page */}
-          <Route index path="/" element={<Home />} />
+          {/* <Route index path="/" element={<Home />} /> */}
+          <Route path="/" element={<ServiceDashboard />} />
 
           {/* Case Management (Latest) */}
           <Route path="/case/assignment" element={<CasesAssignment />} />

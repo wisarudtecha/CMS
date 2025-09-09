@@ -125,7 +125,8 @@ export const baseApi = createApi({
     "Dispatch",
     "Customer",
     "Area",
-    "Device Iot"
+    "Device Iot",
+    "Unit"
   ],
   endpoints: () => ({}),
 });

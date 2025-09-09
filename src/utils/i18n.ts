@@ -6,11 +6,11 @@ import {
   getTranslations,
   isTranslationsReady,
   type Language
-} from '../config/i18n';
+} from "../config/i18n";
 import type { TranslationKey, TranslationParams } from "../types/i18n";
 
 export function getNestedValue(obj: Record<string, unknown>, path: string): string {
-  const result = path.split('.').reduce<unknown>((current, key) => {
+  const result = path.split(".").reduce<unknown>((current, key) => {
     if (current && typeof current === "object") {
       return (current as Record<string, unknown>)[key];
     }
@@ -41,7 +41,7 @@ export function interpolate(text: string, params?: TranslationParams): string {
 //     return interpolate(translation, params);
 //   }
 //   catch (error) {
-//     console.error('Translation error:', error);
+//     console.error("Translation error:", error);
 //     return key; // Return key as fallback
 //   }
 // }
@@ -61,13 +61,13 @@ export function translate(
 
 export function getBrowserLanguage(): Language {
   const browserLang = navigator.language.slice(0, 2) as Language;
-  return ['th', 'en'].includes(browserLang) ? browserLang : 'th';
+  return ["th", "en", "cn"].includes(browserLang) ? browserLang : "th";
 }
 
 export function getStoredLanguage(): Language | null {
   try {
     const stored = localStorage.getItem("language") as Language;
-    return ['th', 'en'].includes(stored) ? stored : null;
+    return ["th", "en", "cn"].includes(stored) ? stored : null;
   }
   catch {
     return null;

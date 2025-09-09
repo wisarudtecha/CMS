@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Building, Eye, Filter, Search } from "lucide-react";
 import { PencilIcon, PieChartIcon } from "@/icons";
 import type { EnhancedUnit, DisplayMode } from "@/types/unit";
-import UnitCardContent from "@/components/admin/system-configuration/unit/UnitCard";
+import UnitCardContent from "@/components/admin/system-configuration/unit/v1/UnitCard";
 import UnitPreviewModalContent from "@/components/admin/system-configuration/unit/UnitPreviewModal";
 import UnitStatusBadgeContent from "@/components/admin/system-configuration/unit/UnitStatusBadge";
 
@@ -30,13 +30,13 @@ const UnitOverviewContent: React.FC<{
   const [showPreview, setShowPreview] = useState(false);
 
   // Selection handlers
-  const handleSelectAll = () => {
-    if (selectedUnits.size === filteredUnits.length) {
-      setSelectedUnits(new Set());
-    } else {
-      setSelectedUnits(new Set(filteredUnits.map(unit => unit.id)));
-    }
-  };
+  // const handleSelectAll = () => {
+  //   if (selectedUnits.size === filteredUnits.length) {
+  //     setSelectedUnits(new Set());
+  //   } else {
+  //     setSelectedUnits(new Set(filteredUnits.map(unit => unit.id)));
+  //   }
+  // };
 
   const handleSelectUnit = (unitId: string) => {
     const newSelection = new Set(selectedUnits);
@@ -125,6 +125,7 @@ const UnitOverviewContent: React.FC<{
           </div>
 
           {/* Bulk Actions */}
+          {/*
           {selectedUnits.size > 0 && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
@@ -148,6 +149,7 @@ const UnitOverviewContent: React.FC<{
               </div>
             </div>
           )}
+          */}
         </div>
 
         {/* Content Area */}
@@ -156,12 +158,15 @@ const UnitOverviewContent: React.FC<{
           {displayMode === "table" && (
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
+                {/*
                 <input
                   type="checkbox"
                   checked={selectedUnits.size === filteredUnits.length && filteredUnits.length > 0}
                   onChange={handleSelectAll}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-4"
                 />
+                */}
+                
                 <div className="grid grid-cols-6 gap-4 flex-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <div>Unit</div>
                   <div>Type</div>
@@ -189,12 +194,15 @@ const UnitOverviewContent: React.FC<{
               ) : (
                 <div key={unit.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <div className="flex items-center">
+                    {/*
                     <input
                       type="checkbox"
                       checked={selectedUnits.has(unit.id)}
                       onChange={() => handleSelectUnit(unit.id)}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-4"
                     />
+                    */}
+
                     <div className="grid grid-cols-6 gap-4 flex-1 items-center">
                       {/* Unit Info */}
                       <div className="flex items-center gap-3">

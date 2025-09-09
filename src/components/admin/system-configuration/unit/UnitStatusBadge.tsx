@@ -28,7 +28,7 @@ const UnitStatusBadgeContent: React.FC<{
   const IconComponent = config.icon;
 
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.color} ${className}`}>
+    <span className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium capitalize ${config.color} ${className}`}>
       <IconComponent className="w-3 h-3 mr-1" />
       {status}
     </span>

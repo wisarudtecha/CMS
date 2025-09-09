@@ -10,8 +10,7 @@ const UnitHierarchyContent: React.FC<{ units: EnhancedUnit[] }> = ({ units }) =>
     <div className="bg-white dark:bg-gray-800 py-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Organization Hierarchy</h3>
       <div className="space-y-4">
-        {units
-          .filter(unit => !unit.unitStructure?.parentUnitId)
+        {units.filter(unit => !unit.unitStructure?.parentUnitId)
           .map(parentUnit => (
             <div key={parentUnit.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center gap-3 mb-3">
@@ -22,8 +21,7 @@ const UnitHierarchyContent: React.FC<{ units: EnhancedUnit[] }> = ({ units }) =>
               
               {/* Sub-units */}
               <div className="ml-8 space-y-2">
-                {units
-                  .filter(unit => unit.unitStructure?.parentUnitId === parentUnit.id)
+                {units.filter(unit => unit.unitStructure?.parentUnitId === parentUnit.id)
                   .map(subUnit => (
                     <div key={subUnit.id} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                       <GroupIcon className="w-4 h-4 text-gray-400" />

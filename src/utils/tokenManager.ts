@@ -27,10 +27,17 @@ export class TokenManager {
     }
   }
   
-  static setTokens(accessToken: string, refreshToken: string, rememberMe: boolean = false, profile?: unknown) {
+  static setTokens(
+    accessToken: string,
+    refreshToken: string,
+    // rememberMe: boolean = false,
+    rememberMe: boolean = true,
+    profile?: unknown
+  ) {
     this.clearTokens();
 
-    const storage = rememberMe ? localStorage : sessionStorage;
+    // const storage = rememberMe ? localStorage : sessionStorage;
+    const storage = rememberMe && localStorage || sessionStorage;
 
     // Encrypt tokens for security
     storage.setItem(this.STORAGE_KEY, accessToken);

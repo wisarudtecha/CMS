@@ -7,7 +7,6 @@ import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
 import { caseApiSetup } from "@/components/case/CaseApiManager";
 
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const getInitialAuthState = (): AuthState => {
     // console.log("🔍 Initializing auth state...");
@@ -19,7 +18,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // If user doesn't have the new structure, create it with proper permissions
       if (!user.orgId || !user.roleId) {
         const updatedUser = AuthService.createMockUser(user.username);
-        TokenManager.setTokens(token, TokenManager.getRefreshToken() || '', false, updatedUser);
+        TokenManager.setTokens(
+          token,
+          TokenManager.getRefreshToken() || '',
+          // false,
+          true,
+          updatedUser
+        );
         return {
           user: updatedUser,
           token,
@@ -227,7 +232,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       TokenManager.setTokens(
         response.accessToken, 
         response.refreshToken || response.accessToken, 
-        credentials.rememberMe,
+        // credentials.rememberMe,
+        true,
         response.user
       );
 

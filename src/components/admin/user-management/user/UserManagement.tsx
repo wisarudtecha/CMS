@@ -339,17 +339,17 @@ const UserManagementComponent: React.FC<{
       }
     ],
     actions: [
-      {
-        key: "view",
-        label: "View",
-        // icon: EyeIcon,
-        variant: "primary",
-        onClick: (userItem: UserProfile, closePreview: () => void) => {
-          closePreview();
-          navigate(`/user/${userItem.id}`);
-        },
-        condition: () => (permissions.hasPermission("user.view") || isSystemAdmin) as boolean
-      },
+      // {
+      //   key: "view",
+      //   label: "View",
+      //   // icon: EyeIcon,
+      //   variant: "primary",
+      //   onClick: (userItem: UserProfile, closePreview: () => void) => {
+      //     closePreview();
+      //     navigate(`/user/${userItem.id}`);
+      //   },
+      //   condition: () => (permissions.hasPermission("user.view") || isSystemAdmin) as boolean
+      // },
       {
         key: "update",
         label: "Edit",

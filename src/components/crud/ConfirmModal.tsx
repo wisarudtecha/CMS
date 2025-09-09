@@ -63,7 +63,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       </p>
       
       <div className="flex items-center gap-3 justify-end">
-        <Button onClick={onCancel}>
+        <Button onClick={onCancel} variant="outline">
           Cancel
         </Button>
         <Button

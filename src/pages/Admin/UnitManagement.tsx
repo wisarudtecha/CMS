@@ -20,8 +20,8 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-// import { useGetListCaseQuery } from "@/store/api/caseApi";
-// import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
+import { useGetUnitsQuery } from "@/store/api/unitApi";
+import type { Unit } from "@/types/unit";
 import UnitManagementComponent from "@/components/admin/system-configuration/unit/UnitManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -30,14 +30,8 @@ const UnitManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  // const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
-  // const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
-
-  // const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
-  // const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
-
-  // const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
-  // const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+  const { data: unitsData } = useGetUnitsQuery({ start: 0, length: 100 });
+  const units = unitsData?.data as unknown as Unit[] || [];
 
   return (
     <>
@@ -49,7 +43,7 @@ const UnitManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["unit.view"]}>
         <PageBreadcrumb pageTitle="Unit Management" />
 
-        <UnitManagementComponent />
+        <UnitManagementComponent unit={units} />
       </ProtectedRoute>
     </>
   );

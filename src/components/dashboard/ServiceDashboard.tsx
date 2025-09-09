@@ -1,6 +1,7 @@
 // src/components/ServiceDashboard.tsx
 import React, { useState } from "react";
 import { Cctv, Info, LayoutGrid, OctagonMinus, RotateCcw, Settings } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ServiceData {
   month: string;
@@ -10,6 +11,8 @@ interface ServiceData {
 }
 
 const ServiceDashboard: React.FC = () => {
+  const { t } = useTranslation();
+  
   const [serviceData] = useState<ServiceData[]>([
     { month: "Jul", informationService: 1200, ticketingService: 500, onProcess: 50 },
     { month: "Aug", informationService: 900, ticketingService: 600, onProcess: 25 },
@@ -120,7 +123,7 @@ const ServiceDashboard: React.FC = () => {
     <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 cursor-default">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Service Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t("navigation.sidebar.main.dashboard.nested.service.header")}</h1>
         <div className="flex gap-2">
           <button className="p-2 text-gray-600 dark:text-gray-300 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 rounded border border-gray-400 dark:border-gray-500">
             <Settings size={20} />

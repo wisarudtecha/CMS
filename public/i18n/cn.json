@@ -147,7 +147,10 @@
             "analytics": "分析",
             "call_center": "呼叫中心",
             "agent_status": "座席状态",
-            "service": "服务"
+            "service": {
+              "title": "工作单",
+              "header": "工单仪表板"
+            }
           }
         },
         "report": {

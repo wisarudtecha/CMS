@@ -1,430 +1,393 @@
-// src/components/admin/system-configuration/unit/UnitManagement.tsx
-import React, { useState, useMemo } from "react";
-import { Building, Plus, Settings } from "lucide-react";
-import { CheckCircleIcon, CloseIcon, GroupIcon, PieChartIcon } from "@/icons";
-import type { EnhancedUnit, ViewMode } from "@/types/unit";
-import UnitOverviewContent from "@/components/admin/system-configuration/unit/UnitOverview";
-import UnitStatusBadgeContent from "@/components/admin/system-configuration/unit/UnitStatusBadge";
+// /src/components/admin/system-configuration/unit/UnitManagement.tsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import { CircleCheck, CircleX, MapPinCheck, MapPinX } from "lucide-react";
+import { CheckLineIcon, ListIcon, PieChartIcon, TimeIcon } from "@/icons";
+import { usePermissions } from "@/hooks/usePermissions";
+import { AuthService } from "@/utils/authService";
+import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Unit, UnitMetrics } from "@/types/unit";
+import MetricsView from "@/components/admin/MetricsView";
+import UnitCardContent from "@/components/admin/system-configuration/unit/UnitCard";
+import Badge from "@/components/ui/badge/Badge";
 
-// Mock data for demonstration
-const mockUnits: EnhancedUnit[] = [
-  {
-    id: "unit-001",
-    orgId: "org-001",
-    unitId: "U001",
-    unitName: "Emergency Response Team Alpha",
-    unitSourceId: "SRC001",
-    unitTypeId: "TYPE001",
-    priority: 1,
-    compId: "COMP001",
-    deptId: "DEPT001",
-    commId: "COMM001",
-    stnId: "STN001",
-    plateNo: "EMR-001",
-    provinceCode: "BKK",
-    active: true,
-    username: "ert_alpha",
-    isLogin: true,
-    isFreeze: false,
-    isOutArea: false,
-    locLat: 13.7563,
-    locLon: 100.5018,
-    locAlt: 0,
-    locBearing: 0,
-    locSpeed: 0,
-    locProvider: "GPS",
-    locGpsTime: "2025-08-27T10:30:00Z",
-    locSatellites: 12,
-    locAccuracy: 3.5,
-    locLastUpdateTime: "2025-08-27T10:30:00Z",
-    breakDuration: 0,
-    healthChk: "OK",
-    healthChkTime: "2025-08-27T10:30:00Z",
-    sttId: "STATUS_ACTIVE",
-    createdAt: "2025-01-15T08:00:00Z",
-    updatedAt: "2025-08-27T10:30:00Z",
-    createdBy: "system",
-    updatedBy: "admin",
-    unitStructure: {
-      subUnits: ["unit-002", "unit-003"],
-      organizationLevel: 1,
-      unitType: "department",
-      reportingStructure: ["supervisor-001"]
+const UnitLocation: React.FC<{
+  isOutArea: boolean;
+  isLogin: boolean;
+}> = ({
+  isOutArea,
+  isLogin
+}) => {
+  const isOutAreaIcon = isOutArea ? <MapPinX className="w-4 h-4" /> : <MapPinCheck className="w-4 h-4" />;
+  const isOutAreaLabel = isOutArea ? " Out of Area " : " In Area ";
+  const isOnlineIcon = isLogin ? <CircleCheck className="w-4 h-4" /> : <CircleX className="w-4 h-4" />;
+  const isOnlineLabel = isLogin ? " Online " : " Offline ";
+  return (
+    <div className="xl:flex items-center justify-start gap-2 text-gray-900 dark:text-white text-sm">
+      <span className="flex items-center justify-start gap-1">{isOutAreaIcon} {isOutAreaLabel}</span>
+      <span className="flex items-center justify-start gap-1">{isOnlineIcon} {isOnlineLabel}</span>
+    </div>
+  );
+}
+
+const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline" }> = ({ status }) => {
+  return (
+    <Badge className={`capitalize text-sm ${status === "active" || status === "online"
+      ? "bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200"
+      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+    }`}>
+      {status}
+    </Badge>
+  );
+}
+
+const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
+  const isSystemAdmin = AuthService.isSystemAdmin();
+  const navigate = useNavigate();
+  const permissions = usePermissions();
+
+  // ===================================================================
+  // Real Functionality Data
+  // ===================================================================
+
+  const mockMetrics: UnitMetrics = {
+    activeUnits: 0,
+    avgResponse: 0,
+    slaCompliance: 0,
+    totalCases: 0
+  };
+
+  const data: (Unit & { id: string })[] = unit.map(u => ({
+    ...u,
+    id: typeof u.id === "string" ? u.id : u.id?.toString?.() ?? u.id?.toString?.() ?? "",
+  }));
+
+  // ===================================================================
+  // CRUD Configuration
+  // ===================================================================
+
+  const config = {
+    entityName: "Unit",
+    entityNamePlural: "Units",
+    apiEndpoints: {
+      list: "/api/mdm/units",
+      create: "/api/mdm/units",
+      read: "/api/mdm/units/:id",
+      update: "/api/mdm/units/:id",
+      delete: "/api/mdm/units/:id",
+      // bulkDelete: "/api/mdm/units/bulk",
+      // export: "/api/mdm/units/export"
     },
-    operational: {
-      capacity: {
-        maxPersonnel: 12,
-        currentPersonnel: 10,
-        availablePersonnel: 8,
-        utilizationRate: 83.3
+    columns: [
+      {
+        key: "unitName",
+        label: "Unit",
+        sortable: true,
+        render: (unitItem: Unit) => {
+          return (
+            <div className={`flex items-center gap-3`}>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {unitItem?.unitName.trim()}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                  {unitItem?.unitId && unitItem?.unitId.trim()}{unitItem?.plateNo && ` • ${unitItem?.plateNo.trim()}`}
+                </div>
+              </div>
+            </div>
+          )
+        }
       },
-      availability: {
-        status: "available",
-        schedule: "24/7",
-        nextAvailable: "immediate"
+      {
+        key: "active",
+        label: "Status",
+        sortable: true,
+        render: (unitItem: Unit) => <UnitStatus status={unitItem.active ? "active" : "inactive"} />
       },
-      equipment: {
-        vehicles: ["Ambulance-A1", "Fire-Truck-F1"],
-        specializedEquipment: ["Defibrillator", "Rescue-Tools"],
-        maintenanceStatus: "good"
-      },
-      specializations: ["Emergency Medical", "Fire Rescue"],
-      responseArea: ["Zone-A", "Zone-B"]
-    },
-    performance: {
-      responseMetrics: {
-        averageResponseTime: 4.2,
-        slaCompliance: 94.5,
-        casesHandled: 156,
-        successRate: 98.1
-      },
-      workloadDistribution: {
-        currentCases: 3,
-        averageCaseLoad: 5.2,
-        peakCapacity: 15
-      },
-      efficiency: {
-        productivityScore: 92.0,
-        resourceUtilization: 87.5,
-        costEfficiency: 89.2
+      {
+        key: "location",
+        label: "Location",
+        sortable: true,
+        render: (unitItem: Unit) => <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
       }
-    }
-  },
-  {
-    id: "unit-002",
-    orgId: "org-001",
-    unitId: "U002",
-    unitName: "Medical Response Unit Beta",
-    unitSourceId: "SRC002",
-    unitTypeId: "TYPE002",
-    priority: 2,
-    compId: "COMP001",
-    deptId: "DEPT001",
-    commId: "COMM001",
-    stnId: "STN002",
-    plateNo: "MED-002",
-    provinceCode: "BKK",
-    active: true,
-    username: "med_beta",
-    isLogin: false,
-    isFreeze: false,
-    isOutArea: true,
-    locLat: 13.7661,
-    locLon: 100.5379,
-    locAlt: 0,
-    locBearing: 45,
-    locSpeed: 35,
-    locProvider: "GPS",
-    locGpsTime: "2025-08-27T10:25:00Z",
-    locSatellites: 8,
-    locAccuracy: 5.2,
-    locLastUpdateTime: "2025-08-27T10:25:00Z",
-    breakDuration: 0,
-    healthChk: "OK",
-    healthChkTime: "2025-08-27T10:25:00Z",
-    sttId: "STATUS_BUSY",
-    createdAt: "2025-02-01T08:00:00Z",
-    updatedAt: "2025-08-27T10:25:00Z",
-    createdBy: "admin",
-    updatedBy: "supervisor",
-    unitStructure: {
-      parentUnitId: "unit-001",
-      subUnits: [],
-      organizationLevel: 2,
-      unitType: "team",
-      reportingStructure: ["unit-001", "supervisor-001"]
-    },
-    operational: {
-      capacity: {
-        maxPersonnel: 4,
-        currentPersonnel: 4,
-        availablePersonnel: 0,
-        utilizationRate: 100
+    ],
+    actions: [
+      {
+        key: "view",
+        label: "View",
+        variant: "primary" as const,
+        // icon: EyeIcon,
+        onClick: (unitItem: Unit) => navigate(`/unit/${unitItem.id}`),
+        condition: () => (permissions.hasPermission("unit.view") || isSystemAdmin) as boolean
       },
-      availability: {
-        status: "busy",
-        schedule: "12h shifts",
-        nextAvailable: "14:30"
+      {
+        key: "update",
+        label: "Edit",
+        variant: "warning" as const,
+        // icon: PencilIcon,
+        onClick: (unitItem: Unit) => navigate(`/unit/${unitItem.id}/edit`),
+        condition: () => (permissions.hasPermission("unit.update") || isSystemAdmin) as boolean
       },
-      equipment: {
-        vehicles: ["Ambulance-B1"],
-        specializedEquipment: ["Advanced-Life-Support"],
-        maintenanceStatus: "good"
-      },
-      specializations: ["Emergency Medical", "Critical Care"],
-      responseArea: ["Zone-C", "Zone-D"]
-    },
-    performance: {
-      responseMetrics: {
-        averageResponseTime: 3.8,
-        slaCompliance: 96.2,
-        casesHandled: 89,
-        successRate: 99.1
-      },
-      workloadDistribution: {
-        currentCases: 1,
-        averageCaseLoad: 3.1,
-        peakCapacity: 8
-      },
-      efficiency: {
-        productivityScore: 95.5,
-        resourceUtilization: 92.0,
-        costEfficiency: 91.8
+      {
+        key: "delete",
+        label: "Delete",
+        variant: "outline" as const,
+        // icon: TrashBinIcon,
+        onClick: (unitItem: Unit) => {
+          console.log("Delete unit:", unitItem.id);
+        },
+        condition: () => (permissions.hasPermission("unit.delete") || isSystemAdmin) as boolean
       }
-    }
-  },
-  {
-    id: "unit-003",
-    orgId: "org-001",
-    unitId: "U003",
-    unitName: "Traffic Control Squad",
-    unitSourceId: "SRC003",
-    unitTypeId: "TYPE003",
-    priority: 3,
-    compId: "COMP001",
-    deptId: "DEPT002",
-    commId: "COMM001",
-    stnId: "STN003",
-    plateNo: "TFC-003",
-    provinceCode: "BKK",
-    active: false,
-    username: "traffic_squad",
-    isLogin: false,
-    isFreeze: true,
-    isOutArea: false,
-    locLat: 13.7308,
-    locLon: 100.5418,
-    locAlt: 0,
-    locBearing: 180,
-    locSpeed: 0,
-    locProvider: "GPS",
-    locGpsTime: "2025-08-27T09:45:00Z",
-    locSatellites: 6,
-    locAccuracy: 8.1,
-    locLastUpdateTime: "2025-08-27T09:45:00Z",
-    breakDuration: 30,
-    healthChk: "MAINTENANCE",
-    healthChkTime: "2025-08-27T09:45:00Z",
-    sttId: "STATUS_MAINTENANCE",
-    createdAt: "2025-03-10T08:00:00Z",
-    updatedAt: "2025-08-27T09:45:00Z",
-    createdBy: "admin", 
-    updatedBy: "maintenance",
-    unitStructure: {
-      parentUnitId: "unit-001",
-      subUnits: [],
-      organizationLevel: 3,
-      unitType: "squad",
-      reportingStructure: ["unit-001", "supervisor-002"]
-    },
-    operational: {
-      capacity: {
-        maxPersonnel: 6,
-        currentPersonnel: 4,
-        availablePersonnel: 0,
-        utilizationRate: 0
+    ]
+  };
+
+  // ===================================================================
+  // Preview Configuration
+  // ===================================================================
+
+  const previewConfig: PreviewConfig<Unit> = {
+    title: () => "Unit Information",
+    size: "xl",
+    enableNavigation: true,
+    tabs: [
+      {
+        key: "basicInfo",
+        label: "Basic Info",
+        // icon: InfoIcon,
+        render: (unitItem: Unit) => {
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Name</label>
+                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.unitName}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">ID</label>
+                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                  {unitItem.unitId}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Plate Number</label>
+                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                  {unitItem.plateNo}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Priority</label>
+                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.priority}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Active Status</label>
+                <div className="mt-1">
+                  <UnitStatus status={unitItem.active ? "active" : "inactive"} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Login Status</label>
+                <div className="mt-1">
+                  <UnitStatus status={unitItem.isLogin ? "online" : "offline"} />
+                </div>
+              </div>
+            </div>
+          )
+        }
       },
-      availability: {
-        status: "maintenance",
-        schedule: "8h shifts",
-        nextAvailable: "16:00"
-      },
-      equipment: {
-        vehicles: ["Motorcycle-M1", "Patrol-Car-P1"],
-        specializedEquipment: ["Traffic-Cones", "Speed-Radar"],
-        maintenanceStatus: "needs_attention"
-      },
-      specializations: ["Traffic Control", "Speed Enforcement"],
-      responseArea: ["Highway-1", "Downtown"]
-    },
-    performance: {
-      responseMetrics: {
-        averageResponseTime: 6.1,
-        slaCompliance: 87.3,
-        casesHandled: 234,
-        successRate: 96.4
-      },
-      workloadDistribution: {
-        currentCases: 0,
-        averageCaseLoad: 8.1,
-        peakCapacity: 20
-      },
-      efficiency: {
-        productivityScore: 78.2,
-        resourceUtilization: 65.4,
-        costEfficiency: 83.7
+      {
+        key: "location",
+        label: "Location",
+        // icon: MapPin,
+        render: (unitItem: Unit) => {
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Latitude</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    {unitItem.locLat.toFixed(6)}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Longitude</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    {unitItem.locLon.toFixed(6)}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">GPS Accuracy</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locAccuracy}m</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Satellites</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locSatellites}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Provider</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locProvider}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Last Update</label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    {new Date(unitItem.locLastUpdateTime).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">Location Status</h4>
+                  <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  Speed: {unitItem.locSpeed} km/h • Bearing: {unitItem.locBearing}°
+                </div>
+              </div>
+            </div>
+          )
+        }
       }
-    }
-  }
-];
+    ],
+    actions: [
+      // {
+      //   key: "view",
+      //   label: "View",
+      //   // icon: EyeIcon,
+      //   variant: "primary",
+      //   onClick: (unitItem: Unit, closePreview: () => void) => {
+      //     closePreview();
+      //     navigate(`/unit/${unitItem.id}`);
+      //   },
+      //   condition: () => (permissions.hasPermission("unit.view") || isSystemAdmin) as boolean
+      // },
+      {
+        key: "update",
+        label: "Edit",
+        // icon: PencilIcon,
+        variant: "warning",
+        onClick: (unitItem: Unit, closePreview: () => void) => {
+          closePreview();
+          navigate(`/unit/${unitItem.id}/edit`);
+        },
+        condition: () => (permissions.hasPermission("unit.update") || isSystemAdmin) as boolean
+      },
+      {
+        key: "delete",
+        label: "Delete",
+        // icon: CheckLineIcon,
+        variant: "outline",
+        onClick: (unitItem: Unit, closePreview: () => void) => {
+          closePreview();
+          console.log("Delete unit:", unitItem.id);
+        },
+        condition: () => (permissions.hasPermission("unit.delete") || isSystemAdmin) as boolean
+      }
+    ]
+  };
 
-const UnitManagementComponent: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("overview");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "maintenance">("all");
-  const [filterUnitType, setFilterUnitType] = useState<"all" | "department" | "team" | "squad" | "individual">("all");
+  // ===================================================================
+  // Advanced Filters
+  // ===================================================================
 
-  // Filter and search logic
-  const filteredUnits = useMemo(() => {
-    return mockUnits.filter(unit => {
-      const matchesSearch = unit.unitName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        unit.unitId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        unit.plateNo.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = filterStatus === "all" || 
-        (filterStatus === "active" && unit.active) ||
-        (filterStatus === "inactive" && !unit.active) ||
-        (filterStatus === "maintenance" && unit.healthChk === "MAINTENANCE");
-      
-      const matchesUnitType = filterUnitType === "all" || 
-        unit.unitStructure?.unitType === filterUnitType;
+  // const advancedFilters = [
+  //   {
+  //     key: "active",
+  //     label: "Status",
+  //     type: "select" as const,
+  //     options: [
+  //       { value: true, label: "Active" },
+  //       { value: false, label: "Inactive"}
+  //     ],
+  //     placeholder: "Select status",
+  //   },
+  // ];
 
-      return matchesSearch && matchesStatus && matchesUnitType;
-    });
-  }, [searchTerm, filterStatus, filterUnitType]);
+  // ===================================================================
+  // Bulk Actions
+  // ===================================================================
+
+  // ===================================================================
+  // Export Options
+  // ===================================================================
+
+  // ===================================================================
+  // Custom Card Rendering
+  // ===================================================================
+
+  const renderCard = (unitItem: Unit) => {
+    return <UnitCardContent unit={unitItem as Unit} UnitLocation={UnitLocation} UnitStatus={UnitStatus} />;
+  };
+
+  // ===================================================================
+  // Event Handlers
+  // ===================================================================
+
+  // Handle deletion and other actions
+  const handleAction = (actionKey: string, unitItem: Unit) => {
+    // Add custom unit-specific action handling
+    console.log(`Action ${actionKey} triggered for unit:`, unitItem.id);
+    
+  };
+
+  // Handle deletion
+  const handleDelete = (id: string) => {
+    // Handle unit delete
+    console.log("Unit deleted:", id);
+  };
+
+  // ===================================================================
+  // Render Component
+  // ===================================================================
+
+  const attrMetrics = [
+    { key: "activeUnits", title: "Active Units", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "avgResponse", title: "Avg. Response", icon: PieChartIcon, color: "yellow", className: "text-yellow-600" },
+    { key: "slaCompliance", title: "SLA Compliance", icon: TimeIcon, color: "red", className: "text-red-600" },
+    { key: "totalCases", title: "Total Cases", icon: ListIcon, color: "blue", className: "text-blue-600" },
+  ];
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
-      <div className="mx-auto w-full">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {/* View Mode Toggle */}
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              {[
-                { key: "overview", label: "Overview", icon: Building },
-                { key: "hierarchy", label: "Hierarchy", icon: GroupIcon },
-                { key: "performance", label: "Performance", icon: PieChartIcon },
-                { key: "matrix", label: "Matrix", icon: Settings }
-              ].map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => setViewMode(key as ViewMode)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === key 
-                      ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                </button>
-              ))}
-            </div>
-            
-            <button className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Unit
-            </button>
-          </div>
-        </div>
+    <>
+      <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} />
 
-        {viewMode === "overview" &&
-          <UnitOverviewContent
-            filteredUnits={filteredUnits}
-            filterStatus={filterStatus}
-            filterUnitType={filterUnitType}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            setFilterStatus={setFilterStatus}
-            setFilterUnitType={setFilterUnitType}
-          />
-        }
-
-        {/* Hierarchy View */}
-        {viewMode === "hierarchy" && (
-          <div className="bg-white dark:bg-gray-800 py-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Organization Hierarchy</h3>
-            <div className="space-y-4">
-              {mockUnits
-                .filter(unit => !unit.unitStructure?.parentUnitId)
-                .map(parentUnit => (
-                  <div key={parentUnit.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <span className="font-medium text-gray-900 dark:text-white">{parentUnit.unitName}</span>
-                      <UnitStatusBadgeContent status={parentUnit.active ? "active" : "inactive"} />
-                    </div>
-                    
-                    {/* Sub-units */}
-                    <div className="ml-8 space-y-2">
-                      {mockUnits
-                        .filter(unit => unit.unitStructure?.parentUnitId === parentUnit.id)
-                        .map(subUnit => (
-                          <div key={subUnit.id} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <GroupIcon className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">{subUnit.unitName}</span>
-                            <UnitStatusBadgeContent status={subUnit.operational?.availability.status || "offline"} />
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        )}
-
-        {/* Matrix View */}
-        {viewMode === "matrix" && (
-          <div className="bg-white dark:bg-gray-800 py-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Unit Capability Matrix</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left p-2 font-medium text-gray-900 dark:text-white">Unit</th>
-                    <th className="text-center p-2 font-medium text-gray-900 dark:text-white">Emergency Medical</th>
-                    <th className="text-center p-2 font-medium text-gray-900 dark:text-white">Fire Rescue</th>
-                    <th className="text-center p-2 font-medium text-gray-900 dark:text-white">Traffic Control</th>
-                    <th className="text-center p-2 font-medium text-gray-900 dark:text-white">Critical Care</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUnits.map(unit => (
-                    <tr key={unit.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <Building className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <span className="font-medium text-gray-900 dark:text-white">{unit.unitName}</span>
-                        </div>
-                      </td>
-                      <td className="text-center p-2">
-                        {unit.operational?.specializations.includes("Emergency Medical") ? 
-                          <CheckCircleIcon className="w-5 h-5 text-green-500 mx-auto" /> : 
-                          <CloseIcon className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
-                        }
-                      </td>
-                      <td className="text-center p-2">
-                        {unit.operational?.specializations.includes("Fire Rescue") ? 
-                          <CheckCircleIcon className="w-5 h-5 text-green-500 mx-auto" /> : 
-                          <CloseIcon className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
-                        }
-                      </td>
-                      <td className="text-center p-2">
-                        {unit.operational?.specializations.includes("Traffic Control") ? 
-                          <CheckCircleIcon className="w-5 h-5 text-green-500 mx-auto" /> : 
-                          <CloseIcon className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
-                        }
-                      </td>
-                      <td className="text-center p-2">
-                        {unit.operational?.specializations.includes("Critical Care") ? 
-                          <CheckCircleIcon className="w-5 h-5 text-green-500 mx-auto" /> : 
-                          <CloseIcon className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      <EnhancedCrudContainer
+        // advancedFilters={advancedFilters}
+        apiConfig={{
+          baseUrl: "/api",
+          endpoints: {
+            create: "/mdm/units",
+            read: "/mdm/units/:id",
+            list: "/mdm/units",
+            update: "/mdm/units/:id",
+            delete: "/mdm/units/:id"
+          }
+        }}
+        config={config}
+        data={data}
+        displayModes={["card", "table"]}
+        displayModeDefault="table"
+        enableDebug={true} // Enable debug mode to troubleshoot
+        features={{
+          bulkActions: false,
+          export: false,
+          filtering: true,
+          keyboardShortcuts: true,
+          pagination: true,
+          realTimeUpdates: false, // Disabled for demo
+          search: true,
+          sorting: true,
+        }}
+        loading={!unit}
+        module="unit"
+        previewConfig={previewConfig as PreviewConfig<Unit & { id: string }>}
+        searchFields={["unitName", "active", "isOutArea", "isLogin"]}
+        onCreate={() => navigate("/unit/create")}
+        onDelete={handleDelete}
+        onItemAction={handleAction as unknown as (action: string, item: { id: string }) => void}
+        onRefresh={() => window.location.reload()}
+        renderCard={renderCard as unknown as (item: { id: string }) => React.ReactNode}
+      />
+    </>
   );
 };
 

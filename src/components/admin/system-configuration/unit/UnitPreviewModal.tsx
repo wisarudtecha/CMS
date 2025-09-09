@@ -73,7 +73,7 @@ const UnitPreviewModalContent: React.FC<{
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Unit ID</label>
-                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono bg-gray-50 dark:bg-gray-900 p-2 rounded">
+                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono bg-white dark:bg-gray-900">
                   {previewUnit.unitId}
                 </div>
               </div>

@@ -19,7 +19,7 @@ import { formatDate } from "@/utils/crud";
 import type { CaseSop } from "@/store/api/dispatch"; 
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
-import CaseDetailView from "@/components/case/CaseDetailView";
+// import CaseDetailView from "@/components/case/CaseDetailView";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
@@ -32,9 +32,10 @@ const CaseHistoryComponent: React.FC<{
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
-  const [caseData, setCaseData] = useState<CaseEntity | null>(null);
-  const [crudOpen, setCrudOpen] = useState("block");
-  const [viewOpen, setViewOpen] = useState("hidden");
+  // const [caseData, setCaseData] = useState<CaseEntity | null>(null);
+  // const [crudOpen, setCrudOpen] = useState("block");
+  const [crudOpen, ] = useState("block");
+  // const [viewOpen, setViewOpen] = useState("hidden");
 
   const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
@@ -190,6 +191,7 @@ const CaseHistoryComponent: React.FC<{
   const data: (CaseEntity & { id: string })[] = caseHistories.map(c => ({
     ...c,
     id: typeof c.id === "string" ? c.id : c.caseId?.toString?.() ?? c.id?.toString?.() ?? "",
+    title: caseTitle(c),
   }));
 
   // ===================================================================
@@ -200,13 +202,13 @@ const CaseHistoryComponent: React.FC<{
     entityName: "Case",
     entityNamePlural: "Cases",
     apiEndpoints: {
-      list: "/api/cases",
-      create: "/api/cases",
-      read: "/api/cases/:id",
-      // update: "/api/cases/:id",
-      delete: "/api/cases/:id",
-      bulkDelete: "/api/cases/bulk",
-      export: "/api/cases/export"
+      list: "/api/case",
+      create: "/api/case",
+      read: "/api/case/:id",
+      // update: "/api/case/:id",
+      delete: "/api/case/:id",
+      // bulkDelete: "/api/case/bulk",
+      export: "/api/case/export"
     },
     columns: [
       {
@@ -310,7 +312,7 @@ const CaseHistoryComponent: React.FC<{
         label: "Edit",
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: () => {},
+        onClick: (caseItem: CaseEntity) => navigate(`/case/${caseItem.caseId}`),
         condition: () => (permissions.hasPermission("case.update") || isSystemAdmin) as boolean
       },
       {
@@ -321,7 +323,7 @@ const CaseHistoryComponent: React.FC<{
         onClick: (caseItem: CaseEntity) => {
           console.log("Delete case:", caseItem.id);
         },
-        condition: (caseItem: CaseEntity) => isCancelAvailable(caseItem)
+        condition: (caseItem: CaseEntity) => isCancelAvailable(caseItem) && (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean
       }
     ]
   };
@@ -701,7 +703,8 @@ const CaseHistoryComponent: React.FC<{
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           closePreview();
           // navigate(`/cases/${caseItem.id}/edit`);
-          handleAction("edit", caseItem);
+          navigate(`/case/${caseItem.caseId}`);
+          // handleAction("edit", caseItem);
         },
         condition: () => permissions.hasPermission("case.update")
       },
@@ -918,24 +921,27 @@ const CaseHistoryComponent: React.FC<{
   const handleAction = (actionKey: string, caseItem: CaseEntity) => {
     console.log(`Action ${actionKey} triggered for case:`, caseItem.id);
     // Add custom case-specific action handling
-    if (actionKey === "edit") {
-      setCaseData(caseItem);
-      setViewOpen("block");
-      setCrudOpen("hidden");
-    }
+    // if (actionKey === "edit") {
+    //   setCaseData(caseItem);
+    //   setViewOpen("block");
+    //   setCrudOpen("hidden");
+    // }
   };
 
   // Handle deletion
   const handleDelete = (caseId: string) => {
     console.log("Case canceled:", caseId);
     // Handle case cancel (update state, show notification, etc.)
+    setTimeout(() => {
+      window.location.replace(`/case/history`);
+    }, 1000);
   };
 
   // Handle view toggle
-  const handleViewToggle = () => {
-    setViewOpen((prev) => (prev === "hidden" ? "block" : "hidden"));
-    setCrudOpen("block");
-  };
+  // const handleViewToggle = () => {
+  //   setViewOpen((prev) => (prev === "hidden" ? "block" : "hidden"));
+  //   setCrudOpen("block");
+  // };
 
   // ===================================================================
   // Render Component
@@ -951,13 +957,13 @@ const CaseHistoryComponent: React.FC<{
           apiConfig={{
             baseUrl: "/api",
             endpoints: {
-              list: "/cases",
-              create: "/cases",
-              read: "/cases/:id",
-              // update: "/cases/:id",
-              delete: "/cases/:id",
-              bulkDelete: "/cases/bulk",
-              export: "/cases/export"
+              list: "/case",
+              create: "/case",
+              read: "/case/:id",
+              // update: "/case/:id",
+              delete: "/case/:id",
+              // bulkDelete: "/case/bulk",
+              export: "/case/export"
             }
           }}
           bulkActions={bulkActions}
@@ -997,9 +1003,9 @@ const CaseHistoryComponent: React.FC<{
         />
       </div>
 
-      <div className={viewOpen}>
+      {/* <div className={viewOpen}>
         <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} isCreate={false} />
-      </div>
+      </div> */}
     </>
   );
 };

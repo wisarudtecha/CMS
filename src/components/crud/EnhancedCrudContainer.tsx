@@ -125,6 +125,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // API functionality
   const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
   const deleteApi = useApi(((endpoint: string) => apiService.delete(endpoint)) as (...args: unknown[]) => Promise<unknown>);
+  // API functionality (custom)
+  const cancelApi = useApi(((endpoint: string, data: unknown) => apiService.patch(endpoint, data)) as (...args: unknown[]) => Promise<unknown>);
 
   // ===================================================================
   // Debug
@@ -218,17 +220,23 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     const newValue = (module === "case" && "caseId" in item) ? "Cancel" : "";
     const confirmDialogType = (module === "case" && "caseId" in item) ? "status" : "delete";
     const id = (module === "workflow" && "wfId" in item) ? (item as { wfId: string }).wfId : item.id;
+    const entityName = (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id;
 
     openConfirmDialog({
       type: confirmDialogType,
       entityId: id,
-      entityName: (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id,
+      entityName: entityName,
       newValue: newValue,
       onConfirm: async () => {
         console.log("Delete confirmed for item:", id);
         try {
           if (apiConfig?.endpoints?.delete) {
-            await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);
+            if (module === "case" && "caseId" in item) {
+              await cancelApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`, { statusId: "S014" });
+            }
+            else {
+              await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);
+            }
           }
           if (onDelete) {
             onDelete(id);
@@ -241,7 +249,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         }
       }
     });
-  }, [apiConfig, config, deleteApi, module, addToast, onDelete, openConfirmDialog]);
+  }, [apiConfig, cancelApi, config, deleteApi, module, addToast, onDelete, openConfirmDialog]);
 
   // Handle export
   const handleExport = useCallback(async (
@@ -303,7 +311,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     if (action) {
       console.log("Executing action from config:", action.key);
       
-      if (module === "case") {
+      if (actionKey === "view" && (module === "case" || module === "user" || module === "unit")) {
         handleItemClick(item);
       }
       else {
