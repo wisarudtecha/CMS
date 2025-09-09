@@ -58,7 +58,7 @@ export default function CasesView() {
     return savedCases
       ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
-  const { language} = useTranslation();
+  const { t,language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
@@ -70,18 +70,22 @@ export default function CasesView() {
     caseSubtype: "",
     createBy: "",
   })
-  const uniqueCategories = statusColumns.map(col => col.title);
+  const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
 
   const getStatusKey = (caseItem: CaseEntity): string => {
     const statusColumn = statusColumns.find(column =>
       column.group.includes((caseItem as any).statusId)
     );
-    return statusColumn ? statusColumn.title : "";
+    if (language === "th") {
+      return statusColumn ? statusColumn.title.th : "";
+    } else {
+      return statusColumn ? statusColumn.title.en : "";
+    }
   };
 
   const matchingSubTypesNames = (caseTypeId: string, caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
     const matchingSubType = caseTypeSupType.find(item => item.typeId === caseTypeId && item.sTypeId === caseSTypeId);
-    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType,language) : "Unknow";
+    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType, language) : "Unknow";
   }
 
 
@@ -206,7 +210,7 @@ export default function CasesView() {
     };
 
     const handleCaseTypeChange = (label: string) => {
-      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item,language) === label);
+      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item, language) === label);
 
       setLocalFilters(prev => ({
         ...prev,
@@ -219,7 +223,7 @@ export default function CasesView() {
     const caseTypeOptions = useMemo(() => {
       if (!caseTypeSupTypeData?.length) return [];
       return caseTypeSupTypeData.map(item =>
-        mergeCaseTypeAndSubType(item,language)
+        mergeCaseTypeAndSubType(item, language)
       );
     }, [caseTypeSupTypeData]);
 
@@ -235,7 +239,7 @@ export default function CasesView() {
               value={
                 (() => {
                   const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
-                  return found ? mergeCaseTypeAndSubType(found,language) : "";
+                  return found ? mergeCaseTypeAndSubType(found, language) : "";
                 })()
               }
               onChange={(e) => handleCaseTypeChange(e)}
@@ -302,8 +306,8 @@ export default function CasesView() {
           </div>
         </div>
         <div className="mt-6 flex justify-end space-x-3">
-          <Button variant="outline" onClick={handleClear}>Clear</Button>
-          <Button onClick={handleApply}>Apply Filters</Button>
+          <Button variant="outline" onClick={handleClear}>{t("case.assignment.clear")}</Button>
+          <Button onClick={handleApply}>{t("case.assignment.apply_filter")}</Button>
         </div>
       </div>
     </Modal>)
@@ -338,10 +342,10 @@ export default function CasesView() {
           </div> */}
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
-          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
+          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string,language)}</span>
           <Badge className="flex flex-col justify-center items-center text-center truncate">
-            { language==="th"?
-              caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th:
+            {language === "th" ?
+              caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th :
               caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
             }
           </Badge>
@@ -366,21 +370,24 @@ export default function CasesView() {
     }
 
     return (<div className="flex flex-wrap xl:grid xl:grid-cols-4 gap-3 pb-6">
-      {statusColumns.map((column) => (
-        (selectedStatus === null || selectedStatus === column.title) && (
-          <div key={column.title} className="flex-shrink-0 w-80 xl:w-full">
-            {!selectedStatus && <div className="flex items-center mb-4 px-2">
-              <h3 className="font-medium text-gray-700 dark:text-gray-200">{column.title}</h3>
-              <Badge color="primary" className="mx-2">{getCasesForColumn(column.title).length}</Badge>
-            </div>}
-            <div className="space-y-3 px-2 md:overflow-y-auto md:h-screen  custom-scrollbar ">
-              {getCasesForColumn(column.title).map((caseItem) => (
-                <CaseCard key={caseItem.id} caseItem={caseItem} />
-              ))}
+      {statusColumns.map((column) => {
+        const localizedTitle = language === "th" ? column.title.th : column.title.en;
+        return (
+          (selectedStatus === null || selectedStatus === localizedTitle) && (
+            <div key={localizedTitle} className="flex-shrink-0 w-80 xl:w-full">
+              {!selectedStatus && <div className="flex items-center mb-4 px-2">
+                <h3 className="font-medium text-gray-700 dark:text-gray-200">{localizedTitle}</h3>
+                <Badge color="primary" className="mx-2">{getCasesForColumn(localizedTitle).length}</Badge>
+              </div>}
+              <div className="space-y-3 px-2 md:overflow-y-auto md:h-screen  custom-scrollbar ">
+                {getCasesForColumn(localizedTitle).map((caseItem) => (
+                  <CaseCard key={caseItem.id} caseItem={caseItem} />
+                ))}
+              </div>
             </div>
-          </div>
+          )
         )
-      ))}
+      })}
     </div>)
   }
 
@@ -388,12 +395,12 @@ export default function CasesView() {
     <div className="space-y-3 ">
       {/* Desktop Header - Hidden on mobile */}
       <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
-        <div className="col-span-3">Case Type</div>
-        <div className="col-span-2">Location</div>
-        <div className="col-span-2">Status</div>
-        <div className="col-span-2">Priority</div>
-        <div className="col-span-2">Create By</div>
-        <div className="col-span-1">Create Date</div>
+        <div className="col-span-3">{t("case.assignment.case_type")}</div>
+        <div className="col-span-2">{t("case.assignment.area")}</div>
+        <div className="col-span-2">{t("case.assignment.status")}</div>
+        <div className="col-span-2">{t("case.assignment.piority")}</div>
+        <div className="col-span-2">{t("case.assignment.create_by")}</div>
+        <div className="col-span-1">{t("case.assignment.create_date")}</div>
       </div>
 
       {/* Cases */}
@@ -435,9 +442,9 @@ export default function CasesView() {
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                   >
                     {
-                      language==="th"?
-                      caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th:
-                      caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
+                      language === "th" ?
+                        caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th :
+                        caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
                     }
                   </Badge>
                 </div>
@@ -447,7 +454,7 @@ export default function CasesView() {
                   <div className="flex items-center space-x-2">
                     <div className={`w-3 h-3 rounded-full ${getPriorityColorClass(caseItem.priority)} shadow-sm`} />
                     <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                      Priority {getTextPriority(caseItem.priority).level}
+                      {t(`case.sop_card.${getTextPriority(caseItem.priority).level} Priority`)} 
                     </span>
                   </div>
                 </div>
@@ -482,7 +489,7 @@ export default function CasesView() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg> */}
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {DateStringToAgoFormat(caseItem.createdAt as string)}
+                      {DateStringToAgoFormat(caseItem.createdAt as string,language)}
                     </span>
                   </div>
                 </div>
@@ -507,7 +514,7 @@ export default function CasesView() {
                     color="primary"
                     className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                   >
-                    {statusIdToStatusTitle(caseItem.statusId)}
+                    {statusIdToStatusTitle(caseItem.statusId, language)}
                   </Badge>
                 </div>
 
@@ -552,7 +559,7 @@ export default function CasesView() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
+                    <span>{DateStringToAgoFormat(caseItem.createdAt as string,language)}</span>
                   </div>
                 </div>
               </div>
@@ -603,7 +610,7 @@ export default function CasesView() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
-      <PageBreadcrumb pageTitle="Cases" />
+      <PageBreadcrumb pageTitle={t("case.assignment.pageheader")} />
       <div className="relative px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-y-4 mb-6">
           {/* Top Section - Mobile Responsive */}
@@ -622,7 +629,7 @@ export default function CasesView() {
                     }`}
                 >
                   <LayoutGrid className="w-4 h-4 mr-2" />
-                  Kanban
+                  {t("case.assignment.kanban")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -634,7 +641,7 @@ export default function CasesView() {
                     }`}
                 >
                   <List className="w-4 h-4 mr-2" />
-                  List
+                  {t("case.assignment.list")}
                 </Button>
               </div>
 
@@ -643,7 +650,7 @@ export default function CasesView() {
                 <input
                   type="text"
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
-                  placeholder="Search cases..."
+                  placeholder={t("case.assignment.search_placeholder")}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
@@ -654,8 +661,8 @@ export default function CasesView() {
                   size="sm"
                 >
                   <Filter className="w-4 h-4 mr-2 sm:mr-1" />
-                  <span className="sm:hidden">Advanced Filters</span>
-                  <span className="hidden sm:inline">Advance Filtering</span>
+                  <span className="sm:hidden">{t("case.assignment.advance_filter")}</span>
+                  <span className="hidden sm:inline">{t("case.assignment.advance_filter")}</span>
                 </Button>
                 {hasActiveFilters() && (
                   <Button
@@ -664,7 +671,7 @@ export default function CasesView() {
                     className="w-full sm:w-auto whitespace-nowrap"
                     size="sm"
                   >
-                    <span>Clear</span>
+                    <span>{t("case.assignment.clear")}</span>
                   </Button>
                 )}
               </div>
@@ -677,7 +684,7 @@ export default function CasesView() {
               size="sm"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add New Case
+              {t("case.assignment.add_new_case")}
             </Button>
           </div>
 
@@ -691,24 +698,27 @@ export default function CasesView() {
                   }`}
                 onClick={() => setSelectedStatus(null)}
               >
-                <span className="text-sm">All Cases</span>
+                <span className="text-sm">{t("case.status_allcase")}</span>
                 <Badge color="primary">
                   {getFilteredCases().length}
                 </Badge>
               </div>
-              {statusColumns.map((col) => (
-                <div
-                  key={col.title}
-                  className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === col.title
-                    ? 'font-semibold text-blue-600 dark:text-blue-400'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                    }`}
-                  onClick={() => setSelectedStatus(col.title)}
-                >
-                  <span className="text-sm">{col.title}</span>
-                  <Badge color="primary">{getCasesForColumn(col.title).length}</Badge>
-                </div>
-              ))}
+              {statusColumns.map((col) => {
+                const localizedTitle = language === "th" ? col.title.th : col.title.en;
+                return (
+                  <div
+                    key={localizedTitle}
+                    className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === localizedTitle
+                      ? 'font-semibold text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    onClick={() => setSelectedStatus(localizedTitle)}
+                  >
+                    <span className="text-sm">{localizedTitle}</span>
+                    <Badge color="primary">{getCasesForColumn(localizedTitle).length}</Badge>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

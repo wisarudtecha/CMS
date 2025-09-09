@@ -1,6 +1,6 @@
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDistanceToNow } from 'date-fns';
-
+import { th } from 'date-fns/locale';
 const monthNames = {
     en: {
         full: ["January", "February", "March", "April", "May", "June",
@@ -57,13 +57,18 @@ export default function DateStringToDateFormat(
 
 
 
-export function DateStringToAgoFormat(dateString: string) {
+export function DateStringToAgoFormat(dateString: string, language: string) {
     const date = new Date(dateString);
 
     // Shift the date by -7 hours
     const shiftedDate = new Date(date.getTime() - 7 * 60 * 60 * 1000);
 
-    return formatDistanceToNow(shiftedDate, { addSuffix: true });
+    const locale = language === 'th' ? th : undefined;
+
+    return formatDistanceToNow(shiftedDate, { 
+        addSuffix: true,
+        locale: locale
+    });
 }
 
 export function TodayDate() {

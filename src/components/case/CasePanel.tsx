@@ -18,6 +18,7 @@ import { useGetDeviceIoTQuery } from "@/store/api/deviceIoT"
 import { Device } from "@/types/deviceIoT"
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { useNavigate } from "react-router"
+import { useTranslation } from "@/hooks/useTranslation"
 
 
 
@@ -31,8 +32,9 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeTab, setActiveTab] = useState("Device info");
     const [device, setDevice] = useState<Device>()
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
+    const { t} = useTranslation();
     const tabs = [
-        { id: "Device info", label: "Device info" }
+        { id: "Device info", label: t("case.panel.device_info") }
     ];
 
     const navigate=useNavigate()
@@ -42,6 +44,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
 
     }
+    
 
     useEffect(() => {
         if (referCaseList) {
@@ -110,7 +113,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
             {/* Mobile/Tablet Tabs for switching between Customer Info and Service History */}
             <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
                 <div className="flex">
-                    <button
+                    {/* <button
                         onClick={() => setActiveRightPanel("customer")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeRightPanel === "customer"
                             ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
@@ -118,7 +121,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                             }`}
                     >
                         Customer Info
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => setActiveRightPanel("cases")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeRightPanel === "cases"
@@ -126,7 +129,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
                     >
-                        Service History
+                       {t("case.panel.service_history")}
                     </button>
                 </div>
             </div>
@@ -282,27 +285,27 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                 <>
                                     <div className="flex items-center space-x-2">
                                         <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
-                                            Device info
+                                            {t("case.panel.device_info")}
                                         </span>
                                     </div>
 
                                     <div className="space-y-2 text-xs">
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <div className="text-blue-500 dark:text-blue-400 mb-1">IoT Device</div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.display.iot_device")}</div>
                                                 <div className="text-gray-900 dark:text-white">
                                                     {caseItem?.iotDevice || "-"}
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="text-blue-500 dark:text-blue-400 mb-1">Device Type</div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.panel.device_type")}</div>
                                                 <div className="text-gray-900 dark:text-white">
                                                     {device?.deviceType || "-"}
                                                 </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Model</div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.panel.device_model")}</div>
                                             <div className="text-gray-900 dark:text-white">
                                                 {device?.model || "-"}
                                             </div>
@@ -328,8 +331,8 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
             <div className={`${activeRightPanel === "cases" ? "flex" : "hidden"} md:flex flex-1 flex-col`}>
                 <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 px-4 py-3">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Service History</h3>
-                        <Button variant="ghost" size="sm" className="p-1 text-xs">Filter</Button>
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t("case.panel.service_history")}</h3>
+                        <Button variant="ghost" size="sm" className="p-1 text-xs">{t("case.assignment.advance_filter")}</Button>
                     </div>
                 </div>
                 <ScrollArea className="flex-1">

@@ -3,6 +3,7 @@ import { ChangeEvent } from "react";
 import Input from "../form/input/InputField";
 // import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/store/api/custommerApi";
+import { useTranslation } from "@/hooks/useTranslation";
 // import { contractMethodMock } from "./source";
 
 interface CustomerInputProps {
@@ -16,7 +17,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     listCustomerData,
     handleCustomerDataChange,
 }) => {
-
+    const { t} = useTranslation();
    
     // const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     //     handleCustomerDataChange({
@@ -78,12 +79,12 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 />
             </div> */}
             <div className="w-auto md:mr-2">
-                <h3 className="my-1 ">Phone Number :</h3>
+                <h3 className="my-1 ">{t("case.display.phone_number")} :</h3>
                 <Input
                     value={customerData.mobileNo ?? ""}
                     onChange={(e) => { handleCustomerDataPhoneChange(e) }}
                     className={`${commonInputCss}`}
-                    placeholder={"Phone Number"}
+                    placeholder={t("case.display.phone_number_placeholder")}
                 />
             </div>
             {/* <div className="w-auto md:mr-2">

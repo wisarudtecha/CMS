@@ -105,6 +105,7 @@ export default function App() {
           {/* Case Management (Latest) */}
           <Route path="/case/assignment" element={<CasesAssignment />} />
           <Route path="/case/creation" element={<CaseCreation/>} />
+          <Route path="/case/creation_schedule_date" element={<CaseDetailView caseData={undefined} isScheduleDate={true}/>}/>
           <Route path="/case/history" element={<CaseHistoryPage />} />
           {/* Case Management (Archived) */}
           <Route path="/case-assignment" element={<CasesAssignment />} />

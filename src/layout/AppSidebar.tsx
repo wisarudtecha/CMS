@@ -76,6 +76,11 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("case.create"),
         },
         {
+          name: t("navigation.sidebar.main.case_management.nested.creation_schedule_date"),
+          path: "/case/creation_schedule_date",
+          permission: permissions.hasPermission("case.create"),
+        },
+        {
           name: t("navigation.sidebar.main.case_management.nested.case_assignment"),
           path: "/case/assignment",
           permission: permissions.hasPermission("case.assign"),

@@ -3,6 +3,7 @@
 import React, { useCallback, useState, useRef } from 'react'
 import { Upload, X, FileText, Image as ImageIcon, File } from 'lucide-react'
 import Button from '@/components/ui/button/Button'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface DragDropFileUploadProps {
   files: File[]
@@ -24,7 +25,7 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
   const [isDragOver, setIsDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
+  const { t} = useTranslation();
   const validateFile = (file: File): boolean => {
     // Check file size
     if (file.size > maxSize * 1024 * 1024) {
@@ -161,10 +162,10 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
           <Upload className={`w-8 h-8 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`} />
           <div className="text-gray-600 dark:text-gray-300">
             <p className="text-sm font-medium">
-              {isDragOver ? 'Drop files here' : 'Drag and drop files here, or click to select'}
+              {isDragOver ? t("case.dnd_text_des_over") : t("case.dnd_text_des")}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Supports images, PDF, DOC, DOCX, TXT (max {maxSize}MB each)
+              {t("case.supports")} {t("case.images")}, PDF, DOC, DOCX, TXT ({t("case.max")} {maxSize}MB {t("case.each")} )
             </p>
           </div>
         </div>
@@ -181,7 +182,7 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
       {files.length > 0 && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Attached Files ({files.length})
+            {t("case.display.attach_file")} ({files.length})
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {files.map((file, index) => (
@@ -220,7 +221,7 @@ const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
   disabled = false
 }) => {
   const [preview, setPreview] = useState<string | null>(null)
-
+  const { t} = useTranslation();
   React.useEffect(() => {
     if (file.type.startsWith('image/')) {
       const objectUrl = URL.createObjectURL(file)
@@ -299,7 +300,7 @@ const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
           size="sm"
           className="w-full mt-2 text-xs py-1 h-7"
         >
-          Download
+          {t("case.download")}
         </Button>
       </div>
     </div>
