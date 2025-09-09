@@ -5,6 +5,7 @@ import { mapSopToOrderedProgress } from "./sopStepTranForm"
 import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import ProgressStepPreviewUnit from "../progress/ProgressSopUnitData"
+import { useTranslation } from "@/hooks/useTranslation"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -16,8 +17,9 @@ export default function OfficerDataModal({
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
+    const { language} = useTranslation();
     const progressSteps = useMemo(() => {
-        return mapSopToOrderedProgress(officer.Sop);
+        return mapSopToOrderedProgress(officer.Sop,language);
     }, [officer]);
 
     if (isLoading) {

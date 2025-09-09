@@ -528,5 +528,38 @@
     "org_id": "รหัสองค์กร",
     "function_name": "ชื่อฟังก์ชัน",
     "sub_function": "ฟังก์ชันย่อย"
+  },
+  "case": {
+    "display": {
+      "case_information": "รายละเอียดเคส",
+      "no":"เลขเคส",
+      "types":"ประเภทเหตุ",
+      "service_center":"พื้นที่รับผิดชอบ",
+      "area":"พื้นที่เกิดเหตุ",
+      "contact":"ข้อมูลติดต่อ",
+      "phone_number":"เลขโทรศัพท์",
+      "contact_method":"ช่องทางการติดต่อ",
+      "iot_device":"อุปกรณ์ IoT",
+      "detail":"รายละเอียด",
+      "result":"ปิดงาน",
+      "result_placeholder":"เลือกประเภทปิดงาน",
+      "result_detail_placeholder":"รายละเอียดปิดงาน",
+      "cancel_case":"ยกเลิกเหตุ",
+      "close_case":"ปิดเหตุ",
+      "request_schedule_date":"นัดหมายล่วงหน้า"
+    },
+    "sop_card":{
+      "comment":"ข้อความ",
+      "edit":"แก้ไข",
+      "cancel_edit":"ยกเลิกแก้ไข",
+      "attach_file":"แนบไฟล์",
+      "assign_officer":"มอบหมายให้เจ้าหน้าที่",
+      "created":"สร้างโดย",
+      "create_date":"วันที่ถูกสร้าง",
+      "High Priority":"ความสำคัญสูง",
+      "Medium Priority":"ความสำคัญปานกลาง",
+      "Low Priority":"ความสำคัญต่ำ"
+    },
+    "back":"กลับ"
   }
 }

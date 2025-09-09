@@ -24,6 +24,7 @@ import { CaseStatusInterface} from "../ui/status/status";
 import { CaseHistory } from "@/store/api/caseApi";
 import { CaseDetails } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
+import { useTranslation } from "@/hooks/useTranslation";
 
 
 interface CaseCardProps {
@@ -58,6 +59,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({
         setShowComment(!showComment);
     };
 
+    const { t, language } = useTranslation();
+
     // Fallback to static steps if no SOP data
     const defaultProgressSteps = [
         { id: "1", title: "Received", completed: true },
@@ -70,7 +73,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
     // Use the simpler ordered progress approach
     const progressSteps = useMemo(() => {
-        return mapSopToOrderedProgress(caseData);
+        return mapSopToOrderedProgress(caseData,language);
     }, [caseData]);
 
     // Use dynamic steps if available, otherwise use default
@@ -111,26 +114,29 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                                 caseTypeSupTypeData,
                                 caseData?.caseTypeId || "",
                                 caseData?.caseSTypeId || ""
-                            ) ?? ({} as CaseTypeSubType)
+                            ) ?? ({} as CaseTypeSubType),language
+                            
                         )
                     }</h2>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Create Date: {DateStringToDateFormat(caseData.createdAt)}</span>
+                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User_Icon className="w-4 h-4" />
-                            <span>Created: {caseData.createdBy}</span>
+                            <span>{t("case.sop_card.created")}: {caseData.createdBy}</span>
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
                     <Badge variant="outline" color={`${getTextPriority(caseData.priority).color}`}>
-                        {getTextPriority(caseData.priority).level} Priority
+                        {t(`case.sop_card.${getTextPriority(caseData.priority).level} Priority`)}
+                        {/* {getTextPriority(caseData.priority).level} Priority */}
                     </Badge>
                     <Badge variant="outline">
                         {
+                            language==="th"?caseStatus.find((item) => caseData?.statusId === item.statusId)?.th:
                             caseStatus.find((item) => caseData?.statusId === item.statusId)?.en
                         }
                     </Badge>
@@ -144,11 +150,11 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                 {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                     {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    Comment
+                    {t("case.sop_card.comment")}
                 </Button>}
 
                 {onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                    {editFormData ? "Cancel Edit" : "Edit"}
+                    {editFormData ? t("case.sop_card.cancel_edit") : t("case.sop_card.edit")}
                 </Button>}
 
                 {showAttachButton && <div>
@@ -159,7 +165,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         onClick={handleButtonClick}
                     >
                         <Paperclip className="w-4 h-4 mr-2" />
-                        Attach File
+                        {t("case.sop_card.attach_file")}
                     </Button>
                     <input
                         type="file"
@@ -178,7 +184,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     
                 {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
-                    <span>Assign Officer</span>
+                    <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}
             </div>
             {/* END: Responsive Button Grid Container */}

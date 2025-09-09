@@ -10,6 +10,7 @@ import { CaseDetails } from "@/types/case"
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { Modal } from "../ui/modal"
+import { useTranslation } from "@/hooks/useTranslation"
 
 
 interface PreviewDataBeforeSubmitProps {
@@ -29,7 +30,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
         () => JSON.parse(localStorage.getItem("profile") ?? "{}"),
         []
     )
-
+    const { language} = useTranslation();
     return (
         <Modal
             isOpen={isOpen}
@@ -48,7 +49,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                         <div>
                             {caseData?.caseType && (
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                    {mergeCaseTypeAndSubType(caseData.caseType)}
+                                    {mergeCaseTypeAndSubType(caseData.caseType,language)}
                                 </h2>
                             )}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">

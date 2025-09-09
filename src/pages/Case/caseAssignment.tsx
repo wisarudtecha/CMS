@@ -25,6 +25,7 @@ import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/c
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
 import { getNewCaseData } from "@/components/case/caseLocalStorage.tsx/caseListUpdate"
+import { useTranslation } from "@/hooks/useTranslation"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
@@ -57,6 +58,7 @@ export default function CasesView() {
     return savedCases
       ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
+  const { language} = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
@@ -79,7 +81,7 @@ export default function CasesView() {
 
   const matchingSubTypesNames = (caseTypeId: string, caseSTypeId: string, caseTypeSupType: CaseTypeSubType[]): string => {
     const matchingSubType = caseTypeSupType.find(item => item.typeId === caseTypeId && item.sTypeId === caseSTypeId);
-    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType) : "Unknow";
+    return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType,language) : "Unknow";
   }
 
 
@@ -204,7 +206,7 @@ export default function CasesView() {
     };
 
     const handleCaseTypeChange = (label: string) => {
-      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item) === label);
+      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item,language) === label);
 
       setLocalFilters(prev => ({
         ...prev,
@@ -217,7 +219,7 @@ export default function CasesView() {
     const caseTypeOptions = useMemo(() => {
       if (!caseTypeSupTypeData?.length) return [];
       return caseTypeSupTypeData.map(item =>
-        mergeCaseTypeAndSubType(item)
+        mergeCaseTypeAndSubType(item,language)
       );
     }, [caseTypeSupTypeData]);
 
@@ -233,7 +235,7 @@ export default function CasesView() {
               value={
                 (() => {
                   const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
-                  return found ? mergeCaseTypeAndSubType(found) : "";
+                  return found ? mergeCaseTypeAndSubType(found,language) : "";
                 })()
               }
               onChange={(e) => handleCaseTypeChange(e)}
@@ -338,7 +340,8 @@ export default function CasesView() {
         <div className="flex items-center justify-between pt-2 text-sm">
           <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string)}</span>
           <Badge className="flex flex-col justify-center items-center text-center truncate">
-            {
+            { language==="th"?
+              caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th:
               caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
             }
           </Badge>
@@ -432,6 +435,8 @@ export default function CasesView() {
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                   >
                     {
+                      language==="th"?
+                      caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th:
                       caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
                     }
                   </Badge>

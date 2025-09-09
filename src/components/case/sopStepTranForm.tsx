@@ -188,7 +188,7 @@ export const mapSopToSimpleProgress = (sopData: CaseSop): ProgressSteps[] => {
 };
 
 // Simplified version that just shows main workflow nodes in order
-export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
+export const mapSopToOrderedProgress = (sopData: CaseSop, language: string): ProgressSteps[] => {
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
@@ -297,11 +297,18 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
         const slaValue = node.data?.data?.config?.sla;
         const sla = slaValue ? parseInt(slaValue, 10) : undefined;
 
+        // Use language parameter instead of hook
+        const title = language === "th" 
+            ? caseStatus.find((item) => statusId === item.statusId)?.th ||
+              node.data?.data?.label ||
+              `Step ${index + 1}`
+            : caseStatus.find((item) => statusId === item.statusId)?.en ||
+              node.data?.data?.label ||
+              `Step ${index + 1}`;
+
         return {
             id: (index + 1).toString(),
-            title: caseStatus.find((item) => statusId === item.statusId)?.en ||
-                node.data?.data?.label ||
-                `Step ${index + 1}`,
+            title,
             completed: isCompleted,
             current: isCurrent,
             type: node.type,
@@ -318,16 +325,16 @@ export const mapSopToOrderedProgress = (sopData: CaseSop): ProgressSteps[] => {
 
 
 // Keep the other functions but update them to be more robust
-export const mapSopToProgressStepsWithBranching = (sopData: CaseSop): ProgressSteps[] => {
+export const mapSopToProgressStepsWithBranching = (sopData: CaseSop,language:string): ProgressSteps[] => {
     // Use the simpler ordered approach for now
-    return mapSopToOrderedProgress(sopData);
+    return mapSopToOrderedProgress(sopData,language);
 };
 
-export const buildProgressLanes = (sopData: CaseSop): ProgressLane[] => {
+export const buildProgressLanes = (sopData: CaseSop,language:string): ProgressLane[] => {
     return [{
         id: "main",
         name: "Main Flow",
-        steps: mapSopToOrderedProgress(sopData),
+        steps: mapSopToOrderedProgress(sopData,language),
         isActive: true
     }];
 };

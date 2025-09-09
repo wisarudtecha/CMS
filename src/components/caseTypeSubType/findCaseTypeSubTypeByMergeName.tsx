@@ -3,9 +3,10 @@ import { mergeCaseTypeAndSubType } from "./mergeCaseTypeAndSubType";
 
 export const findCaseTypeSubType = (
     list: CaseTypeSubType[],
-    targetKey: string
+    targetKey: string,
+    language:string,
 ): CaseTypeSubType | undefined => {
-    return list.find(item => mergeCaseTypeAndSubType(item) === targetKey);
+    return list.find(item => mergeCaseTypeAndSubType(item,language) === targetKey);
 };
 
 

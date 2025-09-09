@@ -45,6 +45,8 @@ import OfficerDataModal from "./OfficerDataModal"
 import { CaseStatusInterface } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/cancelUnitModal"
 import { useWebSocket } from "../websocket/websocket"
+import { useTranslation } from "@/hooks/useTranslation";
+import { TranslationParams } from "@/types/i18n";
 
 
 
@@ -67,6 +69,7 @@ interface CaseTypeFormSectionProps {
     className?: string;
     caseState: CaseDetails
     handleContactMethodChange: (contact: { id: string, name: string }) => void;
+    language:string
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
@@ -80,11 +83,12 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     className,
     caseState,
     handleContactMethodChange,
+    language
 }) => {
     const caseTypeOptions = useMemo(() => {
         if (!caseTypeSupTypeData?.length) return [];
         return caseTypeSupTypeData.map(item =>
-            mergeCaseTypeAndSubType(item)
+            mergeCaseTypeAndSubType(item,language)
         );
     }, [caseTypeSupTypeData]);
 
@@ -138,11 +142,12 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
 // ## START: Refactored Components ##
 
 // Memoized Header Component
-const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
+const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel ,t}: {
     disablePageMeta?: boolean;
     onBack?: () => void;
     onOpenCustomerPanel: () => void;
     isCreate: boolean;
+    t:(key: string, params?: TranslationParams | undefined) => string;
 }) => (
     <div className="flex-shrink-0">
         {/* {!disablePageMeta && <PageBreadcrumb pageTitle={isCreate ? "Create Case" : "Case"} />} */}
@@ -153,7 +158,7 @@ const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel }: {
                         {onBack && (
                             <Button variant="ghost" size="sm" onClick={onBack}>
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
+                                {t("case.back")}
                             </Button>
                         )}
                     </div>
@@ -403,6 +408,7 @@ interface CaseFormFieldsProps {
     handlePreviewShow: () => void;
     handleSaveDrafts: () => Promise<void>;
     handleExampleData: () => void;
+    language:string
 }
 
 
@@ -414,7 +420,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
     handleIotDateChangeDefault,
-    handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData
+    handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData,language
 }) => (
     <>
         {/* Priority Section */}
@@ -423,7 +429,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 <span className="mr-2 text-gray-900 dark:text-gray-400">Priority</span>
                 <div
                     className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
-                        caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data) === caseType.caseType)?.priority ?? -1
+                        caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data ,language) === caseType.caseType)?.priority ?? -1
                     )} rounded-lg`}
                 />
             </div>
@@ -441,6 +447,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             disableCaseTypeSelect={!isCreate}
             handleContactMethodChange={handleContactMethodChange}
             caseState={caseState}
+            language={language}
         />
 
         <div className="xsm:grid grid-cols-2">
@@ -662,6 +669,7 @@ CaseFormFields.displayName = 'CaseFormFields';
 
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean }) {
     // Initialize state with proper defaults
+    
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
     const navigate = useNavigate()
     const handleBack = useCallback(() => {
@@ -717,6 +725,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [isInitialized, setIsInitialized] = useState(false);
     const { subscribe, isConnected, connectionState, connect } = useWebSocket()
     // Memoize static data to prevent re-renders
+    const { t,language} = useTranslation();
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -787,7 +796,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     if (data.eventType === "Update") {
                         const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
                         if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
-                            console.log("wor")
                             await refetch();
                         }
                     }
@@ -926,7 +934,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             return undefined;
         }
 
-        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType);
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType ,language);
 
         if (!newCaseType?.sTypeId) {
             return undefined;
@@ -939,7 +947,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 const formField: FormField = JSON.parse(formFieldStr);
                 return {
                     ...newCaseType,
-                    caseType: mergeCaseTypeAndSubType(newCaseType),
+                    caseType: mergeCaseTypeAndSubType(newCaseType,language),
                     formField,
                     isLoading: false,
                     error: null,
@@ -953,13 +961,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         // Return data without formField if not found
         return {
             ...newCaseType,
-            caseType: mergeCaseTypeAndSubType(newCaseType),
+            caseType: mergeCaseTypeAndSubType(newCaseType ,language),
         } as formType;
     }, [caseState?.caseType?.caseType, caseTypeSupTypeData, editFormData, formDataUpdated]);
 
     const selectedCaseTypeForm = useMemo(() => {
         if (caseState?.caseType?.formField) {
-            const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType);
+            const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType,language);
             if (currentCaseType?.typeId === caseState.caseType.typeId &&
                 currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
                 return caseState.caseType;
@@ -983,7 +991,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 sopLocal.caseSTypeId
             ) ?? {} as CaseTypeSubType;
 
-            const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData);
+            const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData ,language);
             const newCaseState: CaseDetails = {
                 location: sopLocal?.caselocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
@@ -1421,7 +1429,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, []);
 
     const handleCaseTypeChange = useCallback((newValue: string) => {
-        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue);
+        const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue,language);
 
         if (!newCaseType) return;
 
@@ -1436,7 +1444,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 priority: newCaseType.priority,
                 caseType: {
                     ...newCaseType,
-                    caseType: mergeCaseTypeAndSubType(newCaseType)
+                    caseType: mergeCaseTypeAndSubType(newCaseType ,language)
                 } as formType
             } : prev);
         }
@@ -1692,6 +1700,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     onBack={handleBack}
                     onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
                     isCreate={isCreate}
+                    t={t}
                 />
 
                 {/* No Data Content */}
@@ -1882,6 +1891,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 onBack={handleBack}
                 onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
                 isCreate={isCreate}
+                t={t}
             />
 
             {/* Main Content */}
@@ -1960,6 +1970,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         handlePreviewShow={handlePreviewShow}
                                         handleSaveDrafts={handleSaveDrafts}
                                         handleExampleData={handleExampleData}
+                                        language={language}
                                     />
                                 ) : (
                                     <FormFieldValueDisplay

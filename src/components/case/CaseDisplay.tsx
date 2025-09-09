@@ -9,6 +9,7 @@ import Button from "../ui/button/Button";
 import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { useState } from "react";
 import { closeStatus } from "../ui/status/status";
+import { useTranslation } from "@/hooks/useTranslation";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -63,7 +64,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
     const handleCloseCaseChange = (value: string) => {
         setCloseValue(value)
     }
-
+    const { t } = useTranslation();
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
 
@@ -78,11 +79,11 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
             </div>}
             <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
-                <span className=" text-md text-blue-500 dark:text-blue-400 " >Case Information</span>
+                <span className=" text-md text-blue-500 dark:text-blue-400 " >{t("case.display.case_information")}</span>
                 {isCreate === false ? (
                     <div>
                         <span className="text-md text-gray-500 dark:text-gray-400">
-                            No # <span className="text-md font-medium text-gray-900 dark:text-white">
+                            {t("case.display.no")} # <span className="text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.workOrderNummber || "-"}
                             </span>
                         </span>
@@ -91,7 +92,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 ) : null}
 
                 <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">Types : {requireElements}</span>
+                    <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.types")} : {requireElements}</span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
                 </div>
                 {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
@@ -103,14 +104,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
                 </div> */}
                 <div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">Service Center</span>
+                    <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.service_center")}</span>
                     <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area) || "-"}</div>
                 </div>
             </div>
             <div className="col-span-2 sm:col-span-1">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
                     <div className="flex mb-2 text-blue-500 dark:text-blue-400">
-                        <MapPin /><span className=" mx-1 text-md  " >Event Area</span>
+                        <MapPin /><span className=" mx-1 text-md  " >{t("case.display.area")}</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex  gap-x-2 gap-y-1 ">
@@ -153,14 +154,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
                     <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
                         <Contact className="h-5 w-5 mr-2" />
-                        <span className="text-md">Contact</span>
+                        <span className="text-md">{t("case.display.contact")}</span>
                     </div>
 
                     {/* Phone Number */}
                     <div className="mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <Phone className="h-4 w-4 mr-2" />
-                            <span>Phone Number</span>
+                            <span>{t("case.display.phone_number")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.mobileNo || "-"}
@@ -171,7 +172,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <Share2 className="h-4 w-4 mr-2" />
-                            <span>Contact Method</span>
+                            <span>{t("case.display.contact_method")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.contractMethod?.name || "-"}
@@ -189,7 +190,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <Cpu className="h-4 w-4 mr-2" />
-                            <span>IoT Device</span>
+                            <span>{t("case.display.iot_device")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.iotDevice || "-"}
@@ -201,7 +202,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <div className="mb-2">
                             <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                                 <CalendarDays className="h-4 w-4 mr-2" />
-                                <span>Request Schedule Date {requireElements}</span>
+                                <span>{t("case.display.request_schedule_date")} {requireElements}</span>
                             </div>
                             <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
@@ -215,20 +216,20 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
-                    <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>Detail <span>{requireElements}</span></span></span>
+                    <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>{t("case.display.detail")} <span>{requireElements}</span></span></span>
                     <div className="text-md font-medium text-gray-900 dark:text-white">
                         {caseData?.description || "-"}
                     </div>
                 </div>
             </div>
             {showResult && <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                <h3 className="text-gray-900 dark:text-gray-300">Result</h3>
+                <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
                 <div className="">
                     <SearchableSelect
                         options={closeCaseOption}
                         value={closeValue}
                         onChange={handleCloseCaseChange}
-                        placeholder={"Select Result"}
+                        placeholder={t("case.display.result_placeholder")}
                         className="  mb-2 items-center"
                     />
 
@@ -237,18 +238,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <textarea
 
                             value={""}
-                            placeholder="Result Details"
+                            placeholder={t("case.display.result_detail_placeholder")}
                             className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}
                         />
                     </div>
                 </div>
                 <div className="flex justify-end items-end">
                     <div className="justify-end items-end flex">
-                        <Button size="sm" variant="outline">Cancel</Button>
+                        <Button size="sm" variant="outline">{t("case.display.cancel_case")}</Button>
                     </div>
 
                     <div className="ml-2">
-                        <Button size="sm" variant="outline" disabled={!isCloseStage}>Close Case</Button>
+                        <Button size="sm" variant="outline" disabled={!isCloseStage}>{t("case.display.close_case")}</Button>
                     </div>
 
                 </div>

@@ -515,5 +515,38 @@
     "click_to_expand": "Click to expand",
     "search_and_filter": "Search and filter system audit logs",
     "logs_found": "logs found"
+  },
+  "case": {
+    "display": {
+      "case_information":"Case Informantion",
+      "no":"No",
+      "types":"Types",
+      "service_center":"Service Center",
+      "area":"Event Area",
+      "contact":"Contact",
+      "phone_number":"Phone Number",
+      "contact_method":"Contact Method",
+      "iot_device":"IoT Device",
+      "detail":"Detail",
+      "result":"Result",
+      "result_placeholder":"Select Result",
+      "result_detail_placeholder":"Result Details",
+      "cancel_case":"Cancel",
+      "close_case":"Close Case",
+      "request_schedule_date":"Request Schedule Date"
+    },
+    "sop_card":{
+      "comment":"Comment",
+      "edit":"Edit",
+      "cancel_edit":"Cancel Edit",
+      "attach_file":"Attach File",
+      "assign_officer":"Assign Officer",
+      "created":"Created",
+      "create_date":"Create Date",
+      "High Priority":"High Priority",
+      "Medium Priority":"Medium Priority",
+      "Low Priority":"Low Priority"
+    },
+    "back":"Back"
   }
 }
