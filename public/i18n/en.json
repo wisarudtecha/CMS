@@ -546,10 +546,13 @@
       "result_placeholder":"Select Result",
       "result_detail_placeholder":"Result Details",
       "cancel_case":"Cancel",
+      "cancel":"Cancel",
       "close_case":"Close Case",
       "request_schedule_date":"Request Schedule Date",
       "save_as_draft":"Save As Draft",
-      "submit":"Submit"
+      "submit":"Submit",
+      "Assigned Officer":"Assigned Officer",
+      "Assigned Officers":"Assigned Officers"
     },
     "sop_card":{
       "comment":"Comment",
@@ -578,6 +581,31 @@
       "add_new_case":"Add New Case",
       "clear":"clear",
       "apply_filter":"Apply Filters"
+    },
+    "assign_officer_modal":{
+      "title":"Assign Officers to Case",
+      "search_placeholder":"Search officers by name, department, or service...",
+      "recommend_button":"Recommend By Skills",
+      "allofficer_button":"All Officers",
+      "area":"Area",
+      "status":"Status",
+      "name":"Name",
+      "skills":"Skills",
+      "workloads":"Work Loads",
+      "no_officer":"No officers available",
+      "not_match_officer":"No officers match your search",
+      "assign_button":"Assign Selected Officers"
+    },
+    "officer_detail":{
+      "personal_title":"Personal Details",
+      "fullname":"FULL NAME",
+      "username":"USERNAME",
+      "mobile_number":"Mobile Number",
+      "email":"EMAIL",
+      "service_title":"Service Details",
+      "vehicle":"Vehicle ID",
+      "address":"Address",
+      "service_progress_title":"Service Progress"
     },
     "back":"Back",
     "dnd_text_des":"Drag and drop files here, or click to select",

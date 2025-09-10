@@ -59,7 +59,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
             return `${diffSeconds}s`;
         }
     };
-    console.log(progressSteps)
+
     return (
         <div className="mb-6">
             <div className="flex flex-col">

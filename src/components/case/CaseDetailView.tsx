@@ -294,7 +294,7 @@ const OfficerItem = memo(({
     useEffect(() => {
         setDisableButton(false);
     }, [officer.Sop?.nextStage?.nodeId]);
-
+    const { t, language } = useTranslation();
     return (
         <div
             key={officer.unit.unitId + "-" + officer.Sop.currentStage.nodeId}
@@ -319,7 +319,9 @@ const OfficerItem = memo(({
                         variant="success"
                         disabled={disableButton || !hasAction}
                     >
-                        {caseStatus.find((item) => officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId)?.en || "End"}
+                        {caseStatus.find((item) =>
+                            officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
+                        )?.[language === "th" ? "th" : "en"] || "End"}
                     </Button>
                     <Button
                         className="ml-2"
@@ -328,7 +330,7 @@ const OfficerItem = memo(({
                         size="xxs"
                         onClick={() => handleCancel(officer)}
                     >
-                        Cancel
+                        {t("case.display.cancel")}
                     </Button>
                 </div>
             </div>
@@ -353,12 +355,12 @@ const AssignedOfficers = memo(({
     caseStatus: CaseStatusInterface[];
 }) => {
     if (!SopUnit?.length) return null;
-
+    const { t } = useTranslation();
     return (
         <div className="mb-4 gap-2 flex flex-wrap items-center">
             <div className="mb-2">
                 <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                    Assigned Officer{SopUnit.length > 1 ? "s" : ""}:
+                    {t("case.display.Assigned Officer" + (SopUnit.length > 1 ? "s" : ""))}:
                 </span>
             </div>
             {SopUnit.map(officer => (
@@ -593,8 +595,8 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             <div>
                 <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3">{t("case.display.service_center")} :</h3>
                 <SearchableSelect
-                    options={areaList.map(item => mergeArea(item,language))}
-                    value={caseState?.area ? mergeArea(caseState.area,language) : ""}
+                    options={areaList.map(item => mergeArea(item, language))}
+                    value={caseState?.area ? mergeArea(caseState.area, language) : ""}
                     onChange={handleSetArea}
                     placeholder={t("case.display.select_service_center")}
                     className="2xsm:m-3"
@@ -1554,7 +1556,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState?.caseType?.caseType, selectedCaseTypeForm, updateCaseState]);
 
     const handleSetArea = useCallback((selectedName: string) => {
-        const selected = areaList.find(item => mergeArea(item,language) === selectedName);
+        const selected = areaList.find(item => mergeArea(item, language) === selectedName);
         if (selected) {
             updateCaseState({ area: selected });
         }

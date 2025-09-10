@@ -17,7 +17,7 @@ export default function OfficerDataModal({
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
-    const { language} = useTranslation();
+    const { t,language} = useTranslation();
     const progressSteps = useMemo(() => {
         return mapSopToOrderedProgress(officer.Sop,language);
     }, [officer]);
@@ -66,12 +66,12 @@ export default function OfficerDataModal({
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2 ">
 
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">Personal Details</h3>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.personal_title")}</h3>
                                 </div>
 
                                 <div className="">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Full Name</label>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
                                             {userData?.data?.firstName && userData?.data?.lastName
                                                 ? `${userData.data.firstName} ${userData.data.lastName}`
@@ -80,21 +80,21 @@ export default function OfficerDataModal({
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Username</label>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
                                             {officer?.unit?.username || "N/A"}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Mobile Number</label>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
                                             {userData?.data?.mobileNo || "N/A"}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Email</label>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
                                             {userData?.data?.email || "N/A"}
                                         </p>
@@ -114,12 +114,12 @@ export default function OfficerDataModal({
                         <div className="space-y-4">
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">Service Details</h3>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_title")}</h3>
                                 </div>
 
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Vehicle ID</label>
+                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
                                             {officer?.unit?.unitId || "N/A"}
 
@@ -155,7 +155,7 @@ export default function OfficerDataModal({
                                 <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                                     <span className="text-purple-600 dark:text-purple-400 text-xs">📍</span>
                                 </div>
-                                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Address</label>
+                                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("case.officer_detail.address")}</label>
                             </div>
                             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-8">
                                 {userData.data.address}
@@ -169,7 +169,7 @@ export default function OfficerDataModal({
                 {/* Progress Steps Section */}
                 <div className="rounded-2xl">
                     <div className="flex items-center gap-2 mb-6">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Service Progress</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_progress_title")}</h3>
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg   p-6">

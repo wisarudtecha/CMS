@@ -186,7 +186,7 @@ export default function AssignOfficerModal({
       officer.deptId.toLowerCase().includes(searchLower)
     )
   }, [officers, searchTerm])
-  const { language } = useTranslation();
+  const { t,language } = useTranslation();
   // Sort the filtered officers
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
@@ -261,7 +261,7 @@ export default function AssignOfficerModal({
       <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
-            Assign Officers to Case
+            {t("case.assign_officer_modal.title")}
           </DialogTitle>
         </DialogHeader>
         <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
@@ -271,7 +271,7 @@ export default function AssignOfficerModal({
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400 dark:text-gray-200" />
               <Input
-                placeholder="Search officers by name, department, or service..."
+                placeholder={t("case.assign_officer_modal.search_placeholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 pl-10 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
@@ -284,14 +284,14 @@ export default function AssignOfficerModal({
               size="sm"
               className="bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
             >
-              Recommend By Skills
+              {t("case.assign_officer_modal.recommend_button")}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              All Officers
+              {t("case.assign_officer_modal.assign_button")}
             </Button>
           </div>
         </div>
@@ -314,11 +314,11 @@ export default function AssignOfficerModal({
                     />
                   </div>
                   <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
-                    <div className="flex items-center justify-center">Name</div>
-                    <div className="flex items-center justify-center">Status</div>
-                    <div className="flex items-center justify-center">Area</div>
-                    <div className="flex items-center justify-center">Skills</div>
-                    <div className="flex items-center justify-center">Work Loads</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.status")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.title")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.skills")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div>
                   </div>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function AssignOfficerModal({
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {sortedOfficers.length === 0 ? (
                       <div className="flex justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
-                        {officers.length === 0 ? "No officers available" : "No officers match your search"}
+                        {officers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
                       </div>
                     ) : (
                       sortedOfficers.map((officer) => {
@@ -447,7 +447,7 @@ export default function AssignOfficerModal({
             disabled={selectedOfficers.length === 0 || disableAssign}
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            Assign Selected Officers ({selectedOfficers.length})
+            {t("case.assign_officer_modal.assign_button")} ({selectedOfficers.length})
           </Button>}
         </DialogFooter>
       </DialogContent>
