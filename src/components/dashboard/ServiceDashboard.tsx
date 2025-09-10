@@ -203,7 +203,7 @@ const ServiceDashboard: React.FC = () => {
 
           {/* Progress Bars */}
           <div className="dark:bg-gray-700 rounded-lg space-y-4 flex-1">
-            <div>
+            {/* <div>
               <div className="flex justify-between items-center mb-2 text-gray-900 dark:text-white">
                 <span className="text-sm">Information Service</span>
                 <span className="text-sm font-semibold">50 %</span>
@@ -211,7 +211,7 @@ const ServiceDashboard: React.FC = () => {
               <div className="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2">
                 <div className="bg-blue-500 dark:bg-blue-400 h-2 rounded-full" style={{ width: "50%" }}></div>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <div className="flex justify-between items-center mb-2 text-gray-900 dark:text-white">
