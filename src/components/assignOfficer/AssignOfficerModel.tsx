@@ -17,11 +17,13 @@ import { useTranslation } from "@/hooks/useTranslation"
 const SkillsDisplay = ({
   skills,
   maxInitialItems = 1,
-  className = ""
+  className = "",
+  language="th"
 }: {
   skills: Array<{ skillId: string, en: string, th: string }>
   maxInitialItems?: number
   className?: string
+  language?:string
 }) => {
   const [expanded, setExpanded] = useState(false)
 
@@ -41,7 +43,7 @@ const SkillsDisplay = ({
             variant="outline"
             className="text-xs max-w-[120px] truncate"
           >
-            {skill.th}
+            {skill?.[language==="th"?"th":"en"]||skill.th}
           </Badge>
         ))}
         {skills.length > maxInitialItems && (
@@ -398,10 +400,10 @@ export default function AssignOfficerModal({
                                 })()}
                               </div>
                               <div className="flex items-center justify-center">
-                                <SkillsDisplay skills={officer.skillLists || []} />
+                                <SkillsDisplay skills={officer.skillLists || []} language={language} />
                               </div>
                               <div className="flex items-center justify-center">
-                                <SkillsDisplay skills={workLoadsMock || []} />
+                                <SkillsDisplay skills={workLoadsMock || []} language={language}/>
                               </div>
                             </div>
                           </div>

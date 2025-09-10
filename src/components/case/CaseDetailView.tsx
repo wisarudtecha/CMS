@@ -547,7 +547,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
 
             {/* IoT Device */}
-            <div className="px-3">
+            <div className="px-3 mb-3">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">{t("case.display.iot_device")} :</h3>
                 <Input
                     required
@@ -809,17 +809,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
 
     useEffect(() => {
-
-        if (connectionState === 'disconnected' || !isConnected) {
-            console.log("Connecting to WebSocket...");
-            const WEBSOCKET = import.meta.env.VITE_WEBSOCKET_BASE_URL;
-            connect({
-                url: `${WEBSOCKET}/api/v1/notifications/register`,
-                reconnectInterval: 5000,
-                maxReconnectAttempts: 10,
-                heartbeatInterval: 60000
-            });
-        }
 
 
         const listener = subscribe(async (message) => {

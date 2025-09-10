@@ -140,7 +140,7 @@ export const Comments: React.FC<CommentsProps> = ({
                     >
                         <div className="flex items-center justify-between mb-1">
                             <p className="text-sm font-semibold text-blue-500 dark:text-blue-500">
-                                {comment.username}
+                                {comment.createdBy}
                             </p>
                             <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
                                 {formatDate(comment.createdAt)}
