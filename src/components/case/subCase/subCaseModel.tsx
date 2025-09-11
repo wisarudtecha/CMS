@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog/dialog"
-import CaseDetailView from "../CaseDetailView"
+import CaseDetailView from "../main/CaseDetailView"
 import { CaseEntity } from "@/types/case"
 import {  genWordOrderID } from "@/components/genCaseId/genCaseId"
 

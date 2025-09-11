@@ -149,7 +149,7 @@ export default function OfficerDataModal({
                     </div>
 
                     {/* Address Section - Full Width */}
-                    {userData?.data?.address && (
+                    {/* {userData?.data?.address && (
                         <div className="mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
@@ -161,7 +161,7 @@ export default function OfficerDataModal({
                                 {userData.data.address}
                             </p>
                         </div>
-                    )}
+                    )} */}
 
 
                 </div>

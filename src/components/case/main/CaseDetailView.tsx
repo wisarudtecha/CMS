@@ -11,40 +11,40 @@ import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
-import { getPriorityColorClass } from "../function/Prioriy"
-import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import Toast from "../toast/Toast"
-import Input from "../form/input/InputField"
-import { getLocalISOString, TodayDate, TodayLocalDate } from "../date/DateToString"
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
+import { getPriorityColorClass } from "../../function/Prioriy"
+import { getAvatarIconFromString } from "../../avatar/createAvatarFromString"
+import Toast from "../../toast/Toast"
+import Input from "../../form/input/InputField"
+import { getLocalISOString, TodayDate, TodayLocalDate } from "../../date/DateToString"
+import { SearchableSelect } from "../../SearchSelectInput/SearchSelectInput"
 
-import { CaseTypeSubType } from "../interface/CaseType"
+import { CaseTypeSubType } from "../../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
-import CustomerInput from "./CaseCustomerInput"
-import FormFieldValueDisplay from "./CaseDisplay"
-import PreviewDataBeforeSubmit from "./PreviewCaseData"
+import CustomerInput from "../CaseCustomerInput"
+import FormFieldValueDisplay from "../CaseDisplay"
+import PreviewDataBeforeSubmit from "../PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
-import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
-import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
+import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndSubType"
+import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 import { CaseSop, CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useGetUnitQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
-import { contractMethodMock } from "./source"
+import { contractMethodMock } from "../source"
 import { Area, mergeArea } from "@/store/api/area"
 // import Checkbox from "../form/input/Checkbox"
 // import { data } from "react-router"
-import DragDropFileUpload from "../d&d upload/dndUpload"
-import { CaseCard } from "./sopCard"
+import DragDropFileUpload from "../../d&d upload/dndUpload"
+import { CaseCard } from "../sopCard"
 import { CaseDetails, CaseEntity } from "@/types/case"
-import { genCaseID } from "../genCaseId/genCaseId"
-import CreateSubCaseModel from "./subCase/subCaseModel"
-import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
+import { genCaseID } from "../../genCaseId/genCaseId"
+import CreateSubCaseModel from "../subCase/subCaseModel"
+import dispatchUpdateLocate from "../caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
-import Panel from "./CasePanel"
-import OfficerDataModal from "./OfficerDataModal"
-import { CaseStatusInterface } from "../ui/status/status"
-import { ConfirmationModal } from "./modal/cancelUnitModal"
-import { useWebSocket } from "../websocket/websocket"
+import Panel from "../CasePanel"
+import OfficerDataModal from "../OfficerDataModal"
+import { CaseStatusInterface } from "../../ui/status/status"
+import { ConfirmationModal } from "../modal/cancelUnitModal"
+import { useWebSocket } from "../../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
 import { TranslationParams } from "@/types/i18n";
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
@@ -53,73 +53,107 @@ const requireElements = <span className=" text-red-500 text-sm font-bold">*</spa
 
 
 
+// interface CaseTypeFormSectionProps {
+//     caseType: string;
+//     handleCaseTypeChange: (newValue: string) => void;
+//     handleGetTypeFormData: (getTypeData: FormField) => void;
+//     hadleIsFillGetType: (isFill: boolean) => void;
+//     selectedCaseTypeForm: FormField | undefined;
+//     editFormData: boolean;
+//     caseTypeSupTypeData: CaseTypeSubType[];
+//     disableCaseTypeSelect: boolean;
+//     className?: string;
+//     caseState: CaseDetails
+//     handleContactMethodChange: (contact: { id: string, name: string }) => void;
+//     language: string
+// }
+
+// const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
+//     caseType,
+//     handleCaseTypeChange,
+//     handleGetTypeFormData,
+//     hadleIsFillGetType,
+//     selectedCaseTypeForm,
+//     caseTypeSupTypeData,
+//     disableCaseTypeSelect,
+//     className,
+//     caseState,
+//     handleContactMethodChange,
+//     language
+// }) => {
+//     const caseTypeOptions = useMemo(() => {
+//         if (!caseTypeSupTypeData?.length) return [];
+//         return caseTypeSupTypeData.map(item =>
+//             mergeCaseTypeAndSubType(item, language)
+//         );
+//     }, [caseTypeSupTypeData]);
+//     const { t } = useTranslation()
+//     return (
+//         <>
+//             <div className="grid-cols-2 sm:grid">
+//                 <div className="text-white dark:text-gray-300">
+//                     <div className="flex justify-between mx-3 text-gray-900 dark:text-gray-400">
+//                         <h3 className="mb-3 block text-gray-900 dark:text-gray-400">{t("case.display.types")} :{requireElements}</h3>
+//                     </div>
+//                     <SearchableSelect
+//                         options={caseTypeOptions}
+//                         value={caseType}
+//                         onChange={handleCaseTypeChange}
+//                         placeholder={t("case.display.select_types_placeholder")}
+//                         className={`2xsm:mx-3 mb-2 ${className}`}
+//                         disabled={disableCaseTypeSelect}
+//                     />
+//                 </div>
+//                 <div className="hidden md:block px-3 col-span-1">
+//                     <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+//                         {t("case.display.contact_method")} : {requireElements}
+//                     </h3>
+//                     <SearchableSelect
+//                         options={contractMethodMock.map(m => m.name)}
+//                         className="sm:my-3 sm:mb-3"
+//                         value={caseState?.customerData?.contractMethod?.name ?? ""}
+//                         onChange={(selectedName) => {
+//                             const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+//                             if (selectedMethod) handleContactMethodChange(selectedMethod);
+//                         }}
+//                         placeholder={t("case.display.contact_method_placeholder")}
+//                     />
+//                 </div>
+//             </div>
+//             {selectedCaseTypeForm?.formFieldJson && (
+//                 <>
+//                     <DynamicForm
+//                         initialForm={selectedCaseTypeForm}
+//                         edit={false}
+//                         editFormData={true}
+//                         enableFormTitle={false}
+//                         onFormChange={handleGetTypeFormData}
+//                         returnFormAllFill={hadleIsFillGetType}
+//                     />
+//                 </>
+//             )}
+//         </>
+//     );
+// };
+
 interface CaseTypeFormSectionProps {
-    caseType: string;
-    handleCaseTypeChange: (newValue: string) => void;
     handleGetTypeFormData: (getTypeData: FormField) => void;
     hadleIsFillGetType: (isFill: boolean) => void;
     selectedCaseTypeForm: FormField | undefined;
-    editFormData: boolean;
-    caseTypeSupTypeData: CaseTypeSubType[];
-    disableCaseTypeSelect: boolean;
-    className?: string;
-    caseState: CaseDetails
-    handleContactMethodChange: (contact: { id: string, name: string }) => void;
-    language: string
+    children?: React.ReactNode;
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
-    caseType,
-    handleCaseTypeChange,
     handleGetTypeFormData,
     hadleIsFillGetType,
     selectedCaseTypeForm,
-    caseTypeSupTypeData,
-    disableCaseTypeSelect,
-    className,
-    caseState,
-    handleContactMethodChange,
-    language
+    children
 }) => {
-    const caseTypeOptions = useMemo(() => {
-        if (!caseTypeSupTypeData?.length) return [];
-        return caseTypeSupTypeData.map(item =>
-            mergeCaseTypeAndSubType(item, language)
-        );
-    }, [caseTypeSupTypeData]);
-    const { t } = useTranslation()
+
     return (
         <>
-            <div className="grid-cols-2 sm:grid">
-                <div className="text-white dark:text-gray-300">
-                    <div className="flex justify-between mx-3 text-gray-900 dark:text-gray-400">
-                        <h3 className="mb-3 block text-gray-900 dark:text-gray-400">{t("case.display.types")} :{requireElements}</h3>
-                    </div>
-                    <SearchableSelect
-                        options={caseTypeOptions}
-                        value={caseType}
-                        onChange={handleCaseTypeChange}
-                        placeholder={t("case.display.select_types_placeholder")}
-                        className={`2xsm:mx-3 mb-2 ${className}`}
-                        disabled={disableCaseTypeSelect}
-                    />
-                </div>
-                <div className="hidden md:block px-3 col-span-1">
-                    <h3 className="text-gray-900 dark:text-gray-400 mb-3">
-                        {t("case.display.contact_method")} : {requireElements}
-                    </h3>
-                    <SearchableSelect
-                        options={contractMethodMock.map(m => m.name)}
-                        className="sm:my-3 sm:mb-3"
-                        value={caseState?.customerData?.contractMethod?.name ?? ""}
-                        onChange={(selectedName) => {
-                            const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
-                            if (selectedMethod) handleContactMethodChange(selectedMethod);
-                        }}
-                        placeholder={t("case.display.contact_method_placeholder")}
-                    />
-                </div>
-            </div>
+
+            {children}
             {selectedCaseTypeForm?.formFieldJson && (
                 <>
                     <DynamicForm
@@ -386,7 +420,7 @@ interface CaseFormFieldsProps {
     listCustomerData: Customer[];
     isCreate: boolean;
     editFormData: boolean;
-    // Handlers
+    caseTypeOptions:string[]
     handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
     handleWorkOrderDate: (e: ChangeEvent<HTMLInputElement>) => void;
     handleContactMethodChange: (data: { name: string, id: string }) => void;
@@ -416,13 +450,13 @@ interface CaseFormFieldsProps {
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate, editFormData,
+    areaList, listCustomerData, isCreate, 
     handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
     handleIotDateChangeDefault,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
-    isScheduleDate = false
+    isScheduleDate = false,caseTypeOptions
 }) => (
     <>
         {/* Priority Section */}
@@ -455,18 +489,41 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
         {/* Form Grid */}
         {/* Case Type Form Section */}
         <CaseTypeFormSection
-            caseType={caseType.caseType}
-            handleCaseTypeChange={handleCaseTypeChange}
             handleGetTypeFormData={handleGetTypeFormData}
             hadleIsFillGetType={handleIsFillGetType}
             selectedCaseTypeForm={selectedCaseTypeForm?.formField}
-            editFormData={editFormData}
-            caseTypeSupTypeData={caseTypeSupTypeData ?? []}
-            disableCaseTypeSelect={!isCreate}
-            handleContactMethodChange={handleContactMethodChange}
-            caseState={caseState}
-            language={language}
-        />
+        >
+            <div className="grid-cols-2 sm:grid">
+                <div className="text-white dark:text-gray-300">
+                    <div className="flex justify-between mx-3 text-gray-900 dark:text-gray-400">
+                        <h3 className="mb-3 block text-gray-900 dark:text-gray-400">{t("case.display.types")} :{requireElements}</h3>
+                    </div>
+                    <SearchableSelect
+                        options={caseTypeOptions}
+                        value={caseType.caseType}
+                        onChange={handleCaseTypeChange}
+                        placeholder={t("case.display.select_types_placeholder")}
+                        className={`2xsm:mx-3 mb-2`}
+                        disabled={!isCreate}
+                    />
+                </div>
+                <div className="px-3 col-span-1">
+                    <h3 className="text-gray-900 dark:text-gray-400 mb-3">
+                        {t("case.display.contact_method")} : {requireElements}
+                    </h3>
+                    <SearchableSelect
+                        options={contractMethodMock.map(m => m.name)}
+                        className="sm:my-3 sm:mb-3"
+                        value={caseState?.customerData?.contractMethod?.name ?? ""}
+                        onChange={(selectedName) => {
+                            const selectedMethod = contractMethodMock.find(method => method.name === selectedName);
+                            if (selectedMethod) handleContactMethodChange(selectedMethod);
+                        }}
+                        placeholder={t("case.display.contact_method_placeholder")}
+                    />
+                </div>
+            </div>
+        </CaseTypeFormSection>
 
         <div className="xsm:grid grid-cols-2">
 
@@ -485,7 +542,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     disabled
                 />
             </div> */}
-            <div className="px-3 mb-3 md:hidden">
+            {/* <div className="px-3 mb-3 md:hidden">
                 <h3 className="text-gray-900 dark:text-gray-400 mb-3">
                     {t("case.display.contact_method")} : {requireElements}
                 </h3>
@@ -499,7 +556,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     }}
                     placeholder={t("case.display.contact_method_placeholder")}
                 />
-            </div>
+            </div> */}
             {/* Work Order Reference */}
             {caseData?.referCaseId ? (
                 <div className="px-3">
@@ -663,7 +720,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             <div className="flex justify-end mb-3 mr-3">
                 {!isCreate ? (
                     <Button variant="success" onClick={handlePreviewShow}>
-                        Save Changes
+                        {t("case.display.save_change")}
                     </Button>
                 ) : (
                     <div className="flex">
@@ -756,6 +813,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const profile = useMemo(() =>
         JSON.parse(localStorage.getItem("profile") ?? "{}"), []
     );
+
+    const caseTypeOptions = useMemo(() => {
+            if (!caseTypeSupTypeData?.length) return [];
+            return caseTypeSupTypeData.map(item =>
+                mergeCaseTypeAndSubType(item, language)
+            );
+    }, [caseTypeSupTypeData]);
 
     // Only make API calls if initialCaseData exists
     const { data: sopData, isError, isLoading, refetch } = useGetCaseSopQuery(
@@ -1981,6 +2045,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         language={language}
                                         t={t}
                                         isScheduleDate={isScheduleDate}
+                                        caseTypeOptions={caseTypeOptions}
                                     />
                                 ) : (
                                     <FormFieldValueDisplay

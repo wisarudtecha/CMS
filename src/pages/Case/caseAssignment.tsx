@@ -11,7 +11,7 @@ import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import CaseDetailView from "../../components/case/CaseDetailView"
+import CaseDetailView from "../../components/case/main/CaseDetailView"
 
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"

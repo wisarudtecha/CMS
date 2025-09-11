@@ -78,7 +78,8 @@ import OfflineState from "@/components/offline/OfflineManager";
 
 // Custom Theme Imports
 import ThemeDebugger from "@/components/debug/ThemeDebugger";
-import CaseDetailView from "@/components/case/CaseDetailView";
+import CaseDetailView from "@/components/case/main/CaseDetailView";
+import CaseDetailViewSchedule from "./components/case/main/CaseDetailViewSchedule";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -106,7 +107,7 @@ export default function App() {
           {/* Case Management (Latest) */}
           <Route path="/case/assignment" element={<CasesAssignment />} />
           <Route path="/case/creation" element={<CaseCreation/>} />
-          <Route path="/case/creation_schedule_date" element={<CaseDetailView caseData={undefined} isScheduleDate={true}/>}/>
+          <Route path="/case/creation_schedule_date" element={<CaseDetailViewSchedule caseData={undefined}/>}/>
           <Route path="/case/history" element={<CaseHistoryPage />} />
           {/* Case Management (Archived) */}
           <Route path="/case-assignment" element={<CasesAssignment />} />

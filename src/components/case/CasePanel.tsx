@@ -147,7 +147,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                     key={tab?.id}
                                     onClick={() => setActiveTab(tab?.id ?? '')}
                                     className={`relative px-2 md:px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors border-r border-gray-200 dark:border-gray-700 ${activeTab === tab?.id
-                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-900 border-b-2 border-b-blue-500"
+                                        ? "text-gray-900 dark:text-white bg-white dark:bg-gray-600 border-b-2 border-b-blue-500"
                                         : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-750"
                                         }`}
                                 >
