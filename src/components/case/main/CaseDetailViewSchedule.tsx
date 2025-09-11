@@ -643,14 +643,14 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 ...result,
                 name: `${result.firstName} ${result.lastName}`,
                 contractMethod: {
-                    id: sopLocal?.source || "",
-                    name: contractMethodMock.find((items) => items.id === sopLocal?.source)?.name || ""
+                    id: "06",
+                    name: contractMethodMock.find((items) => items.id === "06")?.name || ""
                 }
             } as Custommer : {
                 mobileNo: profile.mobileNo,
                 contractMethod: {
-                    id: sopLocal?.source || "",
-                    name: contractMethodMock.find((items) => items.id === sopLocal?.source)?.name || ""
+                    id: "06",
+                    name: contractMethodMock.find((items) => items.id === "06")?.name || ""
                 },
             } as Custommer;
             setCaseState(prev => prev ? {
@@ -1197,7 +1197,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
                         <div className="pr-0">
                             {/* Form Content */}
-                            <div className="px-4">
+                            <div className="px-4 mt-5">
                                 {caseState && (
                                     <CaseFormFields
                                         caseState={caseState}
