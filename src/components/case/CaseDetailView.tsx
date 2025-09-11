@@ -47,10 +47,6 @@ import { ConfirmationModal } from "./modal/cancelUnitModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
 import { TranslationParams } from "@/types/i18n";
-
-
-
-
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
@@ -419,7 +415,7 @@ interface CaseFormFieldsProps {
 
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
-    caseState, caseData, setCaseState, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
+    caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
     areaList, listCustomerData, isCreate, editFormData,
     handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
@@ -430,35 +426,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 }) => (
     <>
         {/* Priority Section */}
-        {isCreate && isScheduleDate &&
-            <div className="px-3 mb-3">
-                <div className="flex mb-3">
-                    <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
-                    <input
-                        type="checkbox"
-                        className="mx-3"
-                        checked={caseState?.requireSchedule || false}
-                        onChange={() => {
-                            setCaseState(prevState => ({
-                                ...prevState,
-                                requireSchedule: !prevState?.requireSchedule
-                            } as CaseDetails));
-                        }}
-                    />
-                </div>
-                <Input
-                    required
-                    type="datetime-local"
-                    disabled={!caseState?.requireSchedule}
-                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                    onChange={handleScheduleDate}
-                    value={caseState?.scheduleDate || ""}
-                    min={new Date().toISOString().slice(0, 16)}
-                />
-            </div>}
+        
         {selectedCaseTypeForm && (
             <div className="flex items-end justify-end">
-                <span className="mr-2 text-gray-900 dark:text-gray-400">Priority</span>
+                <span className="mr-2 text-gray-900 dark:text-gray-400">{t("case.assignment.piority")}</span>
                 <div
                     className={`w-5 h-5 mx-1 p-3 ${getPriorityColorClass(
                         caseTypeSupTypeData.find(data => mergeCaseTypeAndSubType(data, language) === caseType.caseType)?.priority ?? -1
@@ -466,6 +437,21 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
+        {isCreate && isScheduleDate &&
+            <div className="px-3 mb-3">
+                <div className="flex mb-3">
+                    <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
+                </div>
+                <Input
+                    required
+                    type="datetime-local"
+                    disabled={!isScheduleDate}
+                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    onChange={handleScheduleDate}
+                    value={caseState?.scheduleDate || ""}
+                    min={new Date().toISOString().slice(0, 16)}
+                />
+            </div>}
         {/* Form Grid */}
         {/* Case Type Form Section */}
         <CaseTypeFormSection
@@ -659,7 +645,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     files={caseState?.attachFile || []}
                     onFilesChange={handleFilesChange}
                     accept="image/*,.pdf,.doc,.docx,.txt"
-                    maxSize={10}
+                    maxSize={1}
                     className="mb-4"
                     disabled={false}
                 />
@@ -1181,7 +1167,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             nodeId: caseState?.caseType?.formField?.nextNodeId || "",
             wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField?.versions || "",
-            scheduleFlag: caseState.requireSchedule,
+            scheduleFlag: isScheduleDate,
             scheduleDate: caseState?.scheduleDate
                 ? new Date(caseState.scheduleDate).toISOString()
                 : undefined,
@@ -1393,7 +1379,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             deptId: caseState?.serviceCenter?.deptId || undefined,
             commId: caseState?.serviceCenter?.commId || undefined,
             stnId: caseState?.serviceCenter?.stnId || undefined,
-            scheduleFlag: caseState.requireSchedule,
+            scheduleFlag: isScheduleDate,
         } as CreateCase;
 
         try {

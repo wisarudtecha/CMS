@@ -18,7 +18,7 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
   files,
   onFilesChange,
   accept = "image/*,.pdf,.doc,.docx,.txt",
-  maxSize = 10,
+  maxSize = 1,
   className = "",
   disabled = false
 }) => {

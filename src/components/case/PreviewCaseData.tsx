@@ -30,7 +30,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
         () => JSON.parse(localStorage.getItem("profile") ?? "{}"),
         []
     )
-    const { language} = useTranslation();
+    const { t,language} = useTranslation();
     return (
         <Modal
             isOpen={isOpen}
@@ -55,7 +55,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                                 <div className="flex items-center space-x-1">
                                     <User className="w-4 h-4" />
-                                    <span>Created: {profile.username}</span>
+                                    <span>{t("case.assignment.create_by")}: {profile.username}</span>
                                 </div>
                             </div>
                         </div>
@@ -65,7 +65,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                                     variant="outline"
                                     color={`${getTextPriority(caseData.caseType?.priority).color}`}
                                 >
-                                    {getTextPriority(caseData.caseType?.priority).level} Priority
+                                    {t("case.sop_card."+getTextPriority(caseData.caseType?.priority).level+" Priority")}
                                 </Badge>
                             )}
                             {caseData?.status && (
@@ -80,7 +80,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                 {(caseData?.attachFileResult?.length !== 0 && caseData) && (
                     <>
                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                            Attach File :
+                            {t("case.display.attach_file")} :
                         </span>
 
                         {Array.isArray(caseData.attachFile) && caseData.attachFile.length > 0 && (
@@ -105,7 +105,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
 
                 {submitButton && (
                     <div className="flex justify-end">
-                        <Button onClick={submitButton}>Confirm</Button>
+                        <Button onClick={submitButton}>{t("common.confirm")}</Button>
                     </div>
                 )}
             </div>
