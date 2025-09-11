@@ -23,7 +23,7 @@ export const APP_CONFIG = {
     
     // Production: Use production API URL
     console.log("Production: Use production API URL:", import.meta.env.VITE_API_BASE_URL || "/api/v1");
-    return import.meta.env.VITE_API_BASE_URL + "/api/v1/" || "/api/v1";
+    return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
   WS_URL: import.meta.env.VITE_WS_URL || "ws://cms-api-1-production.up.railway.app",
