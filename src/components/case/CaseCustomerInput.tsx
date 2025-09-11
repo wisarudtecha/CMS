@@ -10,15 +10,17 @@ interface CustomerInputProps {
     customerData: Custommer
     listCustomerData: Customer[];
     handleCustomerDataChange: (newValue: Custommer) => void;
+    hidePhone?: boolean
 }
 const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const CustomerInput: React.FC<CustomerInputProps> = ({
     customerData,
     listCustomerData,
     handleCustomerDataChange,
+    hidePhone = false
 }) => {
-    const { t} = useTranslation();
-   
+    const { t } = useTranslation();
+
     // const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     //     handleCustomerDataChange({
     //         ...customerData,
@@ -78,15 +80,16 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     placeholder={"Enter Customer Name"}
                 />
             </div> */}
-            <div className="w-auto md:mr-2">
-                <h3 className="my-1 ">{t("case.display.phone_number")} :</h3>
-                <Input
-                    value={customerData.mobileNo ?? ""}
-                    onChange={(e) => { handleCustomerDataPhoneChange(e) }}
-                    className={`${commonInputCss}`}
-                    placeholder={t("case.display.phone_number_placeholder")}
-                />
-            </div>
+            {!hidePhone &&
+                <div className="w-auto md:mr-2">
+                    <h3 className="my-1 ">{t("case.display.phone_number")} :</h3>
+                    <Input
+                        value={customerData.mobileNo ?? ""}
+                        onChange={(e) => { handleCustomerDataPhoneChange(e) }}
+                        className={`${commonInputCss}`}
+                        placeholder={t("case.display.phone_number_placeholder")}
+                    />
+                </div>}
             {/* <div className="w-auto md:mr-2">
                 <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                 <SearchableSelect

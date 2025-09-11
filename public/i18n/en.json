@@ -553,7 +553,8 @@
       "save_as_draft":"Save As Draft",
       "submit":"Submit",
       "Assigned Officer":"Assigned Officer",
-      "Assigned Officers":"Assigned Officers"
+      "Assigned Officers":"Assigned Officers",
+      "schedule_placeholder":"Selcet Schedule Date"
     },
     "sop_card":{
       "comment":"Comment",

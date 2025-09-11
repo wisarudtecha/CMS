@@ -310,7 +310,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
         </div>
 
         {/* Service Center and Customer */}
-        <div className="sm:grid grid-cols-2">
+        <div className="sm:grid grid-cols-1">
             <div>
                 <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3">{t("case.display.service_center")} :</h3>
                 <SearchableSelect

@@ -1,6 +1,9 @@
 
 import { useEffect, useState } from "react"
 import {
+    Cpu,
+    Tag,
+    Wifi,
     X
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
@@ -32,19 +35,19 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeTab, setActiveTab] = useState("Device info");
     const [device, setDevice] = useState<Device>()
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
-    const { t} = useTranslation();
+    const { t } = useTranslation();
     const tabs = [
         { id: "Device info", label: t("case.panel.device_info") }
     ];
 
-    const navigate=useNavigate()
+    const navigate = useNavigate()
 
-    if (referCaseList && referCaseList.length !=0) {
+    if (referCaseList && referCaseList.length != 0) {
         tabs.push({ id: "Subcase", label: "Subcase" });
 
 
     }
-    
+
 
     useEffect(() => {
         if (referCaseList) {
@@ -129,7 +132,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
                     >
-                       {t("case.panel.service_history")}
+                        {t("case.panel.service_history")}
                     </button>
                 </div>
             </div>
@@ -243,7 +246,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                     referCase.map((SupCase) => (
                                         <div
                                             key={SupCase.caseId}
-                                            onClick={()=> navigate(`/case/${SupCase.caseId}`)}
+                                            onClick={() => navigate(`/case/${SupCase.caseId}`)}
                                             className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(SupCase.priority)} group`}
                                         >
                                             <div className="flex items-start justify-between">
@@ -292,36 +295,39 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                     <div className="space-y-2 text-xs">
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.display.iot_device")}</div>
+                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <Wifi className="w-3 h-3" />
+                                                    <span>{t("case.display.iot_device")}</span>
+                                                </div>
                                                 <div className="text-gray-900 dark:text-white">
                                                     {caseItem?.iotDevice || "-"}
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.panel.device_type")}</div>
+                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <Cpu className="w-3 h-3" />
+                                                    <span>{t("case.panel.device_type")}</span>
+                                                </div>
                                                 <div className="text-gray-900 dark:text-white">
                                                     {device?.deviceType || "-"}
                                                 </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">{t("case.panel.device_model")}</div>
+                                            <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                <Tag className="w-3 h-3" />
+                                                <span>{t("case.panel.device_model")}</span>
+                                            </div>
                                             <div className="text-gray-900 dark:text-white">
                                                 {device?.model || "-"}
                                             </div>
                                         </div>
-                                        {/* <div>
-                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
-                                        <div className="text-gray-900 dark:text-white">
-                                            {customerData?.address ? mergeAddress(customerData.address)  : "-"}
-                                        </div>
-                                    </div> */}
                                     </div>
                                 </>
-                            ) : (
-                                <div className="text-center py-4">
-                                    <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
-                                </div>
+                            ): (
+                        <div className="text-center py-4">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
+                        </div>
                             )}
                     </div>
                 </ScrollArea>

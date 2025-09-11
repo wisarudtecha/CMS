@@ -564,9 +564,10 @@
       "request_schedule_date": "นัดหมายล่วงหน้า",
       "save_change":"บันทึกการเปลี่ยนแปลง",
       "save_as_draft": "บันทึกแบบร่าง",
-      "submit": "ส่ง",
+      "submit": "สร้างใบงาน",
       "Assigned Officer":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
-      "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย"
+      "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
+      "schedule_placeholder":"เลือกวันที่นัดหมาย"
     },
     "sop_card": {
       "comment": "ข้อความ",
