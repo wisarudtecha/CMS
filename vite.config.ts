@@ -64,7 +64,7 @@ export default defineConfig({
     host: true, // Allow external connections
     allowedHosts: [
       "cms.welcomedcc.com"
-    ]
+    ],
     // Proxy configuration to handle CORS
     proxy: {
       "/api": {
