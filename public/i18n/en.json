@@ -594,7 +594,9 @@
       "workloads":"Work Loads",
       "no_officer":"No officers available",
       "not_match_officer":"No officers match your search",
-      "assign_button":"Assign Selected Officers"
+      "assign_button":"Assign Selected Officers",
+      "select":"Selected",
+      "officer":"officer"
     },
     "officer_detail":{
       "personal_title":"Personal Details",

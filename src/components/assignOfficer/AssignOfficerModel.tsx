@@ -293,7 +293,7 @@ export default function AssignOfficerModal({
               size="sm"
               className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              {t("case.assign_officer_modal.assign_button")}
+              {t("case.assign_officer_modal.allofficer_button")}
             </Button>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function AssignOfficerModal({
                   <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.status")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.title")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.area")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.skills")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div>
                   </div>
@@ -421,7 +421,7 @@ export default function AssignOfficerModal({
         {selectedOfficers.length > 0 && (
           <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              Selected {selectedOfficers.length} officer{selectedOfficers.length !== 1 ? "s" : ""}:
+              {t("case.assign_officer_modal.select")} {selectedOfficers.length} {t("case.assign_officer_modal.officer")}:
             </div>
             <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
               {selectedOfficerObjects.map((officer) => (
