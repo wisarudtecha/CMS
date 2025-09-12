@@ -110,7 +110,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 {caseData?.iotDate &&
                     <div>
                         <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.iot_alert_date")}</span>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white"> {DateStringToDateFormat(caseData?.iotDate) || "-"}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white"> {DateStringToDateFormat(caseData?.iotDate,false,language) || "-"}</div>
                     </div>
                 }
             </div>
@@ -212,7 +212,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             </div>
                             <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                    DateStringToDateFormat(caseData.scheduleDate) :
+                                    DateStringToDateFormat(caseData.scheduleDate,false,language) :
                                     "-"
                                 }
                             </div>

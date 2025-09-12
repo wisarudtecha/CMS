@@ -163,6 +163,22 @@ export interface CaseSop {
     unitLists: CaseSopUnit[];
     formAnswer: FormFieldWithNode;
     slaTimelines: SlaTimelineEntry[];
+    deviceMetaData:DeviceMetaData
+}
+
+interface DeviceLocation {
+  latitude: string;
+  longitude: string;
+}
+
+interface DeviceMetaData {
+  device_id: string;
+  device_name: string;
+  device_type: string;
+  device_serial_number: string;
+  device_model: string;
+  device_brand: string;
+  device_location: DeviceLocation;
 }
 
 export interface CaseSopUnit {

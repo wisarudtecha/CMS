@@ -121,7 +121,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt)}</span>
+                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt,false,language)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User_Icon className="w-4 h-4" />

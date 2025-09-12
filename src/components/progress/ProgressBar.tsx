@@ -2,6 +2,7 @@
 import React from 'react';
 import { CheckCircle, Circle } from 'lucide-react';
 import DateStringToDateFormat from '../date/DateToString';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProgressSteps {
     id: string;
@@ -34,7 +35,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
         const slaInSeconds = step.sla * 60;
         return step.timeline.duration > slaInSeconds;
     };
-
+    const {language} = useTranslation();
     const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
         if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
             return '';
@@ -114,7 +115,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                     <div className="flex flex-col space-y-1">
                                         {step.timeline?.completedAt && (
                                             <div className="text-xs text-gray-400 dark:text-gray-500">
-                                                {DateStringToDateFormat(step.timeline.completedAt, true)}
+                                                {DateStringToDateFormat(step.timeline.completedAt, true,language)}
                                             </div>
                                         )}
 
@@ -220,7 +221,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt, true)}
+                                        {DateStringToDateFormat(step.timeline.completedAt, true,language)}
                                     </div>
                                 )}
                             </div>

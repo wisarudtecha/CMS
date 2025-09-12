@@ -2,6 +2,7 @@
 import React from 'react';
 import { CheckCircle, Circle } from 'lucide-react';
 import DateStringToDateFormat from '../date/DateToString';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProgressSteps {
     id: string;
@@ -59,7 +60,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
             return `${diffSeconds}s`;
         }
     };
-
+    const {language} = useTranslation();
     return (
         <div className="mb-6">
             <div className="flex flex-col">
@@ -148,7 +149,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt, true)}
+                                        {DateStringToDateFormat(step.timeline.completedAt, true,language)}
                                     </div>
                                 )}
 

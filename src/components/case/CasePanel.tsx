@@ -35,7 +35,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeTab, setActiveTab] = useState("Device info");
     const [device, setDevice] = useState<Device>()
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
-    const { t } = useTranslation();
+    const { t,language } = useTranslation();
     const tabs = [
         { id: "Device info", label: t("case.panel.device_info") }
     ];
@@ -48,7 +48,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
     }
 
-
+    
     useEffect(() => {
         if (referCaseList) {
 
@@ -215,7 +215,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Date of birth</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {caseItem?.customerData?.dob ? DateStringToDateFormat(caseItem?.customerData.dob) : "-"}
+                                                {caseItem?.customerData?.dob ? DateStringToDateFormat(caseItem?.customerData.dob,false,language) : "-"}
                                             </div>
                                         </div>
                                         <div>

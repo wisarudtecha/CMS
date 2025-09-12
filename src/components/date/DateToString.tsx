@@ -1,4 +1,3 @@
-import { useTranslation } from '@/hooks/useTranslation';
 import { formatDistanceToNow } from 'date-fns';
 import { th } from 'date-fns/locale';
 const monthNames = {
@@ -21,9 +20,10 @@ type SupportedLanguage = keyof typeof monthNames;
 export default function DateStringToDateFormat(
     dateString: string,
     simplifiedMonth: boolean = false,
+    language:string="en"
 ): string {
     const date = new Date(dateString);
-    const { language } = useTranslation();
+    
     
     // Validate if date is valid
     if (isNaN(date.getTime())) {

@@ -28,8 +28,8 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSop, CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useGetUnitQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
-import { contractMethodMock } from "../source"
+import { CaseSop, CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
+import { contractMethodMock } from ".././source"
 import { Area, mergeArea } from "@/store/api/area"
 // import Checkbox from "../form/input/Checkbox"
 // import { data } from "react-router"
@@ -830,10 +830,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     );
 
-    const { data: unit, refetch: unitRefect } = useGetUnitQuery(
-        { caseId: initialCaseData?.caseId || "" },
-        { skip: !initialCaseData?.caseId || isCreate }
-    )
+    // const { data: unit, refetch: unitRefect } = useGetUnitQuery(
+    //     { caseId: initialCaseData?.caseId || "" },
+    //     { skip: !initialCaseData?.caseId || isCreate }
+    // )
 
 
 
@@ -1392,15 +1392,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [sopLocal, profile]);
 
-    const handleAssignOfficers = useCallback(async (selectedOfficerIds: string[]) => {
-        const selected = unit?.data?.filter(o => selectedOfficerIds.includes(o.unitId));
-        if (selected) {
-            for (const item of selected) {
-                await handleDispatch(item);
-            }
-        }
-        setShowAssignModal(false);
-    }, [unit?.data, sopLocal]);
+    
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1461,14 +1453,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 setEditFormData(false);
                 setShowToast(true);
             }
-            unitRefect()
+            // unitRefect()
         } catch (error: any) {
             setToastType("error");
             setToastMessage(`Failed to Update Case`);
             setShowToast(true);
             return;
         }
-    }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile, unitRefect]);
+    }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile]);
 
     const handleCreateCase = useCallback(async () => {
 
@@ -1717,6 +1709,16 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             return false
         }
     }, [initialCaseData, postDispatch, sopLocal, refetch]);
+
+    const handleAssignOfficers = useCallback(async (selectedOfficers: Unit[]) => {
+        // Now receives Unit objects directly instead of IDs
+        if (selectedOfficers.length > 0) {
+            for (const officer of selectedOfficers) {
+                await handleDispatch(officer);
+            }
+        }
+        setShowAssignModal(false);
+    }, [handleDispatch]);
 
     useEffect(() => {
         if (!caseState?.workOrderDate && !initialCaseData) {
@@ -2101,15 +2103,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             <AssignOfficerModal
                 open={showAssignModal}
                 onOpenChange={setShowAssignModal}
-                officers={unit?.data?.filter((officer) => {
-                    return !sopLocal?.unitLists?.some((assignedUnit) =>
-                        assignedUnit.unitId === officer.unitId
-                    );
-                }) || []}
+                caseId={initialCaseData?.caseId || ""}
                 caseData={sopLocal}
                 onAssign={handleAssignOfficers}
                 assignedOfficers={assignedOfficers}
                 canDispatch={sopData?.data?.dispatchStage.data ? true : false}
+                sopUnitLists={sopLocal?.unitLists || []}
             />
 
             <ConfirmationModal

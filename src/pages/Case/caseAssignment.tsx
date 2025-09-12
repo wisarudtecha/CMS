@@ -161,7 +161,7 @@ export default function CasesView() {
         c?.statusId?.toLowerCase().includes(generalSearchTerm) ||
         c?.caseId?.toLowerCase().includes(generalSearchTerm) ||
         assigneeName?.toLowerCase().includes(generalSearchTerm) ||
-        DateStringToDateFormat(c?.createdAt as string).toLowerCase().includes(generalSearchTerm)
+        DateStringToDateFormat(c?.createdAt as string,false,language).toLowerCase().includes(generalSearchTerm)
       );
     });
 

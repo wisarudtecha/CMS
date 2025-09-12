@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { CaseSop, Unit } from "@/store/api/dispatch"
+import { CaseSop, Unit, useGetUnitQuery } from "@/store/api/dispatch"
 import { unitStatus } from "../ui/status/status"
 import { Area, mergeArea } from "@/store/api/area"
 import SkillModal from "./officerSkillModal"
@@ -18,12 +18,12 @@ const SkillsDisplay = ({
   skills,
   maxInitialItems = 1,
   className = "",
-  language="th"
+  language = "th"
 }: {
   skills: Array<{ skillId: string, en: string, th: string }>
   maxInitialItems?: number
   className?: string
-  language?:string
+  language?: string
 }) => {
   const [expanded, setExpanded] = useState(false)
 
@@ -36,14 +36,14 @@ const SkillsDisplay = ({
 
   return (
     <div className={`space-y-1 w-full ${className}`}>
-      <div className="flex flex-wrap gap-1 items-center justify-start"> {/* Default to justify-start */}
+      <div className="flex flex-wrap gap-1 items-center justify-start">
         {visibleSkills.map((skill) => (
           <Badge
             key={skill.skillId}
             variant="outline"
             className="text-xs max-w-[120px] truncate"
           >
-            {skill?.[language==="th"?"th":"en"]||skill.th}
+            {skill?.[language === "th" ? "th" : "en"] || skill.th}
           </Badge>
         ))}
         {skills.length > maxInitialItems && (
@@ -71,20 +71,6 @@ const SkillsDisplay = ({
     </div>
   )
 }
-
-
-
-interface AssignOfficerModalProps {
-  open: boolean
-  onOpenChange: (isOpen: boolean) => void
-  officers: Unit[]
-  onAssign: (selectedOfficerIds: string[]) => void
-  assignedOfficers?: Unit[]
-  canDispatch?: boolean
-  caseData: CaseSop | undefined
-}
-
-type SortableColumns = keyof Omit<Unit, "id">
 
 const UnifiedCheckbox = ({
   checked,
@@ -145,14 +131,28 @@ const UnifiedCheckbox = ({
   )
 }
 
+interface AssignOfficerModalProps {
+  open: boolean
+  onOpenChange: (isOpen: boolean) => void
+  caseId: string
+  onAssign: (selectedOfficers: Unit[]) => void // Changed from string[] to Unit[]
+  assignedOfficers?: Unit[]
+  canDispatch?: boolean
+  caseData: CaseSop | undefined
+  sopUnitLists?: Array<{ unitId: string }>
+}
+
+type SortableColumns = keyof Omit<Unit, "id">
+
 export default function AssignOfficerModal({
   open,
   onOpenChange,
-  officers,
+  caseId, // Changed prop
   onAssign,
   caseData,
   assignedOfficers = [],
   canDispatch = true,
+  sopUnitLists = [], // New prop to filter assigned units
 }: AssignOfficerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
@@ -161,9 +161,47 @@ export default function AssignOfficerModal({
   const [showModel, setShowModel] = useState(false)
   const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
+  
+  const handleAssignOfficers = async () => {
+    if (selectedOfficers.length === 0 || disableAssign) return;
+    setDisableAssign(true);
+    try {
+      // Pass full officer objects instead of just IDs
+      const selectedOfficerObjects = availableOfficers.filter(officer =>
+        selectedOfficers.includes(officer.unitId)
+      );
+      await onAssign(selectedOfficerObjects); // Pass objects instead of IDs
+    } catch (error) {
+      console.error("Failed to assign officers:", error);
+    } finally {
+      setDisableAssign(false);
+    }
+  };
+  
+  // Fetch units inside the modal
+  const { data: unitData, isLoading: isLoadingUnits, error: unitError } = useGetUnitQuery(
+    { caseId },
+    {
+      skip: !open || !caseId, // Only fetch when modal is open and caseId exists
+      refetchOnMountOrArgChange: true
+    }
+  )
+
   const areaList = useMemo(() =>
     JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
   );
+
+  // Filter out already assigned officers
+  const availableOfficers = useMemo(() => {
+    if (!unitData?.data) return []
+
+    return unitData.data.filter((officer) => {
+      return !sopUnitLists.some((assignedUnit) =>
+        assignedUnit.unitId === officer.unitId
+      );
+    })
+  }, [unitData?.data, sopUnitLists])
+
   // Reset selection when modal opens and set initial assigned officers
   useEffect(() => {
     if (open) {
@@ -176,19 +214,24 @@ export default function AssignOfficerModal({
     }
     setDisableAssign(false)
   }, [open, assignedOfficers])
-  const workLoadsMock = [{ skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
-  { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }]
+
+  const workLoadsMock = [
+    { skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
+    { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
+  ]
 
   // Filter officers based on search term
   const filteredOfficers = useMemo(() => {
-    if (!searchTerm.trim()) return officers
+    if (!searchTerm.trim()) return availableOfficers
     const searchLower = searchTerm.toLowerCase()
-    return officers.filter((officer) =>
+    return availableOfficers.filter((officer) =>
       officer.username.toLowerCase().includes(searchLower) ||
       officer.deptId.toLowerCase().includes(searchLower)
     )
-  }, [officers, searchTerm])
-  const { t,language } = useTranslation();
+  }, [availableOfficers, searchTerm])
+
+  const { t, language } = useTranslation();
+
   // Sort the filtered officers
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
@@ -241,22 +284,55 @@ export default function AssignOfficerModal({
   }
 
 
-  const handleAssignOfficers = async () => {
-    if (selectedOfficers.length === 0 || disableAssign) return;
-    setDisableAssign(true);
-    try {
-      await onAssign(selectedOfficers);
-    } catch (error) {
-      console.error("Failed to assign officers:", error);
-    } finally {
-      setDisableAssign(false);
-    }
-  };
 
   // Get selected officer objects for display
   const selectedOfficerObjects = useMemo(() => {
-    return officers.filter(officer => selectedOfficers.includes(officer.unitId))
-  }, [officers, selectedOfficers])
+    return availableOfficers.filter(officer => selectedOfficers.includes(officer.unitId))
+  }, [availableOfficers, selectedOfficers])
+
+  // Loading state
+  if (isLoadingUnits) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
+              {t("case.assign_officer_modal.title")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+              <div className="text-gray-600 dark:text-gray-400">Loading officers...</div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Error state
+  if (unitError) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
+              {t("case.assign_officer_modal.title")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-red-600 dark:text-red-400 mb-2">Error loading officers</div>
+              <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+                Retry
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -267,7 +343,8 @@ export default function AssignOfficerModal({
           </DialogTitle>
         </DialogHeader>
         <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
-        {/* Search Bar and Buttons - Now responsive */}
+
+        {/* Search Bar and Buttons */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <div className="flex-grow">
             <div className="relative">
@@ -298,10 +375,10 @@ export default function AssignOfficerModal({
           </div>
         </div>
 
-        {/* Officers Table - Now with horizontal scrolling for small screens */}
+        {/* Officers Table */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
-          <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar"> {/* Added overflow-x-auto here */}
-            <div className="min-w-[768px]"> {/* Ensures minimum width for the table content */}
+          <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar">
+            <div className="min-w-[768px]">
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
@@ -331,7 +408,7 @@ export default function AssignOfficerModal({
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {sortedOfficers.length === 0 ? (
                       <div className="flex justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
-                        {officers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
+                        {availableOfficers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
                       </div>
                     ) : (
                       sortedOfficers.map((officer) => {
@@ -396,14 +473,14 @@ export default function AssignOfficerModal({
                                       caseData?.countryId === item.countryId &&
                                       caseData?.distId === item.distId
                                   );
-                                  return matchedArea ? mergeArea(matchedArea,language) : "-";
+                                  return matchedArea ? mergeArea(matchedArea, language) : "-";
                                 })()}
                               </div>
                               <div className="flex items-center justify-center">
                                 <SkillsDisplay skills={officer.skillLists || []} language={language} />
                               </div>
                               <div className="flex items-center justify-center">
-                                <SkillsDisplay skills={workLoadsMock || []} language={language}/>
+                                <SkillsDisplay skills={workLoadsMock || []} language={language} />
                               </div>
                             </div>
                           </div>
