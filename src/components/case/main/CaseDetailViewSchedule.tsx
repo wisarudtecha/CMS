@@ -13,7 +13,7 @@ import { formType, FormField, FormFieldWithNode } from "@/components/interface/F
 import { getPriorityColorClass } from "../../function/Prioriy"
 import Toast from "../../toast/Toast"
 import Input from "../../form/input/InputField"
-import { getLocalISOString, TodayDate } from "../../date/DateToString"
+import { convertFromThaiYear, getDisplayDate, getLocalISOString, getTodayDate, TodayDate } from "../../date/DateToString"
 import { SearchableSelect } from "../../SearchSelectInput/SearchSelectInput"
 
 import { CaseTypeSubType } from "../../interface/CaseType"
@@ -38,6 +38,15 @@ import Panel from "../CasePanel"
 import { useTranslation } from "@/hooks/useTranslation";
 import { TranslationParams } from "@/types/i18n";
 import CaseDetailView from "./CaseDetailView";
+import { registerLocale } from 'react-datepicker';
+import { th, enUS } from 'date-fns/locale';
+import "react-datepicker/dist/react-datepicker.css";
+import DatePickerLocal from "@/components/form/input/DatepicketLocal";
+
+
+
+
+
 const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
@@ -176,7 +185,7 @@ interface CaseFormFieldsProps {
     isCreate: boolean;
     editFormData: boolean;
     // Handlers
-    caseTypeOptions:string[]
+    caseTypeOptions: string[]
     handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
     handleWorkOrderDate: (e: ChangeEvent<HTMLInputElement>) => void;
     handleContactMethodChange: (data: { name: string, id: string }) => void;
@@ -189,7 +198,7 @@ interface CaseFormFieldsProps {
     handleSetArea: (selectedName: string) => void;
     handleCustomerDataChange: (data: Custommer) => void;
     handleLocationChange: (data: string) => void;
-    handleScheduleDate: (e: ChangeEvent<HTMLInputElement>) => void;
+    handleScheduleDate: (date: Date | null) => void;
     handleWorkOrderDateChangeDefault: (date: string) => string;
     handleIotDateChangeDefault: (date: string) => string;
     handleScheduleDateChangeDefault: (date: string) => string;
@@ -206,17 +215,15 @@ interface CaseFormFieldsProps {
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate, 
-    handleIotDevice, 
+    areaList, listCustomerData, isCreate,
+    handleIotDevice,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
     caseTypeOptions,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
-    isScheduleDate = false
 }) => (
-    <>
+    <>{console.log(caseState?.scheduleDate)}
         {/* Priority Section */}
-
         {selectedCaseTypeForm && (
             <div className="flex items-end justify-end">
                 <span className="mr-2 text-gray-900 dark:text-gray-400">{t("case.assignment.piority")}</span>
@@ -227,21 +234,29 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-        {isCreate && isScheduleDate &&
+        {isCreate &&
             <div className="px-3 mb-3">
                 <div className="flex mb-3">
                     <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
                 </div>
-                <Input
-                    required
-                    type="datetime-local"
-                    disabled={!isScheduleDate}
-                    className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                    onChange={handleScheduleDate}
-                    value={caseState?.scheduleDate || ""}
-                    min={new Date().toISOString().slice(0, 16)}
+                <DatePickerLocal
+                    selected={getDisplayDate(caseState?.scheduleDate, language)}
+                    onChange={(date: Date | null) => {
+                        const gregorianDate = language === 'th' ? convertFromThaiYear(date) : date;
+                        handleScheduleDate(gregorianDate);
+                    }}
+                    language={language}
+                    showTimeSelect
+                    dateFormat="Pp"
+                    minDate={getTodayDate(language)}
+                    popperClassName="z-50"
+                    wrapperClassName="w-full"
+                    className={`p-2 w-full dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                    placeholderText={t("case.display.schedule_placeholder")}
+                    locale={language === 'th' ? 'th' : 'en'}
                 />
-            </div>}
+            </div>
+        }
         {/* Form Grid */}
         {/* Case Type Form Section */}
         <CaseTypeFormSection
@@ -323,6 +338,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
             <CustomerInput
                 listCustomerData={listCustomerData}
+                hidePhone={true}
                 handleCustomerDataChange={handleCustomerDataChange}
                 customerData={caseState?.customerData || {} as Custommer}
             />
@@ -384,7 +400,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center m-3">
             {/* Left side: Example button */}
             <div>
                 <Button onClick={handleExampleData} size="sm">
@@ -416,7 +432,7 @@ CaseFormFields.displayName = 'CaseFormFields';
 
 export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean, isScheduleDate?: boolean }) {
     // Initialize state with proper defaults
-    
+
     const navigate = useNavigate()
     const handleBack = useCallback(() => {
         if (onBack) {
@@ -461,6 +477,12 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const [isInitialized, setIsInitialized] = useState(false);
     // Memoize static data to prevent re-renders
     const { t, language } = useTranslation();
+    if (language === "th") {
+        registerLocale("th", th);
+    } else {
+        registerLocale("en", enUS);
+    }
+
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -944,10 +966,25 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         });
     }, []);
 
-    const handleScheduleDate = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? "" : e.target.value;
-        updateCaseState({ scheduleDate: value });
-    }, [updateCaseState]);
+    const handleScheduleDate = useCallback(
+        (date: Date | null) => {
+            if (!date) {
+                updateCaseState({ scheduleDate: "" });
+                return;
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            updateCaseState({ scheduleDate: localDateTimeString });
+        },
+        [updateCaseState]
+    );
+
 
     const handleWorkOrderDateChangeDefault = useCallback((date: string) => {
         return date;

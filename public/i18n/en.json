@@ -554,7 +554,7 @@
       "submit":"Submit",
       "Assigned Officer":"Assigned Officer",
       "Assigned Officers":"Assigned Officers",
-      "schedule_placeholder":"Selcet Schedule Date"
+      "schedule_placeholder":"dd/hh/yyyy,hh:mm"
     },
     "sop_card":{
       "comment":"Comment",

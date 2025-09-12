@@ -104,3 +104,33 @@ export function getLocalISOString(utcTimestamp: string): string {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+
+export const convertToThaiYear = (date: Date | null): Date | null => {
+    if (!date) return null;
+    const thaiDate = new Date(date);
+    thaiDate.setFullYear(thaiDate.getFullYear() + 543);
+    return thaiDate;
+};
+
+export const convertFromThaiYear = (date: Date | null): Date | null => {
+    if (!date) return null;
+    const gregorianDate = new Date(date);
+    gregorianDate.setFullYear(gregorianDate.getFullYear() - 543);
+    return gregorianDate;
+};
+
+export const getDisplayDate = (dateString: string | undefined, language: string): Date | null => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return language === 'th' ? convertToThaiYear(date) : date;
+};
+
+export const getTodayDate = (language: string): Date => {
+    const today = new Date();
+    if (language === 'th') {
+        const thaiDate = new Date(today);
+        thaiDate.setFullYear(thaiDate.getFullYear() + 543);
+        return thaiDate;
+    }
+    return today;
+};

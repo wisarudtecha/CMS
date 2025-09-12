@@ -567,7 +567,7 @@
       "submit": "สร้างใบงาน",
       "Assigned Officer":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
-      "schedule_placeholder":"เลือกวันที่นัดหมาย"
+      "schedule_placeholder": "วว/มม/ปปปป,ชช:นน"
     },
     "sop_card": {
       "comment": "ข้อความ",
