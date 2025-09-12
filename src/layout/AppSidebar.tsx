@@ -86,7 +86,7 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("case.assign"),
         },
         {
-          name: t("navigation.sidebar.main.case_management.nested.case_history"),
+          name: t("navigation.sidebar.main.case_management.nested.case_history.title"),
           path: "/case/history",
           permission: permissions.hasPermission("case.view_history"),
         },
@@ -229,7 +229,7 @@ const AppSidebar: React.FC = () => {
           // ]
         },
         {
-          name: t("navigation.sidebar.main.system_configuration.nested.unit_management"),
+          name: t("navigation.sidebar.main.system_configuration.nested.unit_management.title"),
           path: "/unit",
           permission: permissions.hasPermission("unit.view"),
         },

@@ -1,5 +1,6 @@
 // /src/components/crud/Pagination.tsx
 import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import Button from "@/components/ui/button/Button";
 import Select from "@/components/form/Select";
 import type { PaginationConfig } from "@/types/crud";
@@ -28,6 +29,8 @@ export const Pagination: React.FC<PaginationProps> = ({
     { value: "100", label: "100" },
   ]
 }) => {
+  const { t } = useTranslation();
+
   // if (totalPages <= 1) {
   //   return null;
   // }
@@ -58,14 +61,24 @@ export const Pagination: React.FC<PaginationProps> = ({
     return pages;
   };
 
+  const info = t("crud.common.info")
+    .replace("_START_", `${startEntry}`)
+    .replace("_END_", `${endEntry}`)
+    .replace("_TOTAL_", `${pagination.total || 0}`);
+
+  const paginationInfo = t("crud.common.paginate.info")
+    .replace("_PAGE_", `${pagination.page}`)
+    .replace("_TOTAL_", `${totalPages}`);
+
   return (
     <div className="xl:flex items-center justify-between">
       <div className="xl:flex items-center gap-4">
         <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
-          Showing {startEntry}-{endEntry} of {pagination.total || 0} entries
+          {/* Showing {startEntry}-{endEntry} of {pagination.total || 0} entries */}
+          {info}
         </div>
         <div className="flex items-center gap-2 mb-2 xl:mb-0">
-          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">Show:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{t("crud.common.length_menu.show")}:</span>
           <span>
             <Select
               value={pagination.pageSize.toString()}
@@ -74,13 +87,14 @@ export const Pagination: React.FC<PaginationProps> = ({
               className="cursor-pointer"
             />
           </span>
-          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">entries</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{t("crud.common.length_menu.entries")}</span>
         </div>
       </div>
 
       <div className="xl:flex items-center gap-2">
         <div className="flex text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
-          Page {pagination.page} of {totalPages}
+          {/* Page {pagination.page} of {totalPages} */}
+          {paginationInfo}
         </div>
         
         <div className="flex items-center gap-1">
@@ -89,7 +103,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             disabled={pagination.page === 1}
             className="mb-2 xl:mb-0"
           >
-            Previous
+            {t("crud.common.paginate.previous")}
           </Button>
         </div>
         
@@ -102,7 +116,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             onClick={() => onPageChange(pagination.page + 1)}
             disabled={pagination.page === totalPages}
           >
-            Next
+            {t("crud.common.paginate.next")}
           </Button>
         </div>
       </div>

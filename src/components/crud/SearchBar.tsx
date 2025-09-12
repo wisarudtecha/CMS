@@ -1,5 +1,6 @@
 // /src/components/crud/SearchBar.tsx
 import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 import { CloseIcon } from "@/icons";
@@ -21,6 +22,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search...",
   className = ""
 }) => {
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = useState(value);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +78,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         variant="dark"
         className="h-11"
       >
-        Search
+        {t("crud.common.search")}
       </Button>
     </div>
   );

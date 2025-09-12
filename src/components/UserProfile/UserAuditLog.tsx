@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+// /src/components/UserProfile/UserAuditLog.tsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { 
   Activity, 
   CheckCircle, 
@@ -36,46 +37,16 @@ import {
   Info,
   FileText,
   Zap
-} from 'lucide-react';
-import { useTranslation } from '../../hooks/useTranslation';
-import React from 'react';
-
-interface AuditLog {
-  id: number;
-  orgId: string;
-  username: string;
-  txId: string;
-  uniqueId: string;
-  mainFunc: string;
-  subFunc: string;
-  nameFunc: string;
-  action: string;
-  status: number;
-  duration: number;
-  newData: any;
-  oldData: any;
-  resData: any;
-  message: string;
-  createdAt: string;
-}
-
-interface AuditFilter {
-  dateRange: {
-    start: string;
-    end: string;
-  };
-  mainFunc: string;
-  subFunc: string;
-  action: string;
-  status: string;
-  search: string;
-}
+} from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { APP_CONFIG } from "@/utils/constants";
+import type { AuditFilter, AuditLog } from "@/types/audit";
 
 // Helper component for rendering data objects
-const DataDisplay = ({ data }: { data: any }) => {
+const DataDisplay = ({ data }: { data: Record<string, unknown> }) => {
   const { t } = useTranslation();
   
-  if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+  if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
     return (
       <div className="text-center py-6">
         <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
@@ -94,13 +65,13 @@ const DataDisplay = ({ data }: { data: any }) => {
             {key}:
           </span>
           <span className="text-right break-all text-gray-800 dark:text-gray-200 min-w-0">
-            {typeof value === 'boolean' ? (
-              <span className={`px-1.5 py-0.5 rounded text-xs ${value ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-                {value ? 'true' : 'false'}
+            {typeof value === "boolean" ? (
+              <span className={`px-1.5 py-0.5 rounded text-xs ${value ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"}`}>
+                {value ? "true" : "false"}
               </span>
             ) : value === null ? (
               <span className="text-gray-400 italic">null</span>
-            ) : typeof value === 'object' ? (
+            ) : typeof value === "object" ? (
               <span className="text-purple-600 dark:text-purple-400">
                 {JSON.stringify(value, null, 2)}
               </span>
@@ -126,12 +97,12 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filter, setFilter] = useState<AuditFilter>({
-    dateRange: { start: '', end: '' },
-    mainFunc: '',
-    subFunc: '',
-    action: '',
-    status: '',
-    search: ''
+    dateRange: { start: "", end: "" },
+    mainFunc: "",
+    subFunc: "",
+    action: "",
+    status: "",
+    search: ""
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -145,8 +116,6 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
   }>({ message: "", type: "info", show: false });
   
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const API = import.meta.env.VITE_API_BASE_URL || 'https://cmsapi-production-488d.up.railway.app';
 
   // Show toast function - ensure only one toast at a time
   const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
@@ -167,10 +136,10 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
 
   // Get authentication headers
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     return {
-      'accept': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      "accept": "application/json",
+      "Authorization": `Bearer ${token}`,
     };
   };
 
@@ -182,13 +151,13 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
     setError(null);
     
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       if (!token) {
         throw new Error("Access token not found");
       }
 
-      const url = `${API}/audit_log/${targetUsername}?start=0&length=100`;
-      console.log('Fetching user audit logs from:', url);
+      const url = `${APP_CONFIG.API_BASE_URL}/audit_log/${targetUsername}?start=0&length=100`;
+      console.log("Fetching user audit logs from:", url);
       
       const response = await fetch(url, {
         headers: getAuthHeaders()
@@ -199,23 +168,23 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
       }
 
       const result = await response.json();
-      console.log('User Audit API Response:', result);
+      console.log("User Audit API Response:", result);
       
       if (result.status !== "0") {
-        throw new Error(result.msg || "API returned an error while fetching audit logs.");
+        throw new Error(result.msg || t("audit_log.api_error") || "API returned an error while fetching audit logs.");
       }
 
       // Process JSON strings safely
-      const processedLogs = result.data.map((log: any) => {
+      const processedLogs = result.data.map((log: AuditLog) => {
         try {
           return {
             ...log,
-            newData: log.newData && log.newData !== '{}' && log.newData !== '' ? JSON.parse(log.newData) : {},
-            oldData: log.oldData && log.oldData !== '{}' && log.oldData !== '' ? JSON.parse(log.oldData) : {},
-            resData: log.resData && log.resData !== '{}' && log.resData !== '' ? JSON.parse(log.resData) : {}
+            newData: (typeof log.newData === "string" && log.newData !== "{}" && log.newData !== "") ? JSON.parse(log.newData) : (log.newData ?? {}),
+            oldData: (typeof log.oldData === "string" && log.oldData !== "{}" && log.oldData !== "") ? JSON.parse(log.oldData) : (log.oldData ?? {}),
+            resData: (typeof log.resData === "string" && log.resData !== "{}" && log.resData !== "") ? JSON.parse(log.resData) : (log.resData ?? {}),
           };
         } catch (parseError) {
-          console.warn('Failed to parse JSON for log:', log.id, parseError);
+          console.warn("Failed to parse JSON for log:", log.id, parseError);
           return {
             ...log,
             newData: {},
@@ -228,12 +197,14 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
       setLogs(processedLogs);
       const message = t("audit_log.query_success", { count: processedLogs.length }) || `โหลดข้อมูลสำเร็จ ${processedLogs.length} รายการ`;
       showToast(message, "success");
-      
-    } catch (err: any) {
+
+    }
+    catch (err: unknown) {
       console.error("Error fetching user audit logs:", err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
       setLogs([]);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -243,6 +214,7 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
     if (username) {
       fetchUserAuditLogs(username);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
 
   // Cleanup toast timeout on unmount
@@ -275,7 +247,7 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
       if (filter.mainFunc && log.mainFunc !== filter.mainFunc) return false;
       if (filter.subFunc && log.subFunc !== filter.subFunc) return false;
       if (filter.action && log.action !== filter.action) return false;
-      if (filter.status !== '' && log.status !== parseInt(filter.status)) return false;
+      if (filter.status !== "" && log.status !== parseInt(filter.status)) return false;
 
       if (filter.search) {
         const searchLower = filter.search.toLowerCase();
@@ -307,87 +279,87 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
     const combined = `${mainFunc}.${subFunc}`.toLowerCase();
     
     // System functions
-    if (mainFunc.toLowerCase().includes('system') || mainFunc.toLowerCase().includes('auth')) {
-      if (combined.includes('login')) return { icon: LogIn, color: 'text-green-600 dark:text-green-400' };
-      if (combined.includes('logout')) return { icon: LogOut, color: 'text-red-600 dark:text-red-400' };
-      if (combined.includes('register')) return { icon: Users, color: 'text-blue-600 dark:text-blue-400' };
-      return { icon: Shield, color: 'text-purple-600 dark:text-purple-400' };
+    if (mainFunc.toLowerCase().includes("system") || mainFunc.toLowerCase().includes("auth")) {
+      if (combined.includes("login")) return { icon: LogIn, color: "text-green-600 dark:text-green-400" };
+      if (combined.includes("logout")) return { icon: LogOut, color: "text-red-600 dark:text-red-400" };
+      if (combined.includes("register")) return { icon: Users, color: "text-blue-600 dark:text-blue-400" };
+      return { icon: Shield, color: "text-purple-600 dark:text-purple-400" };
     }
     
     // User functions
-    if (mainFunc.toLowerCase().includes('user')) {
-      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
-      if (combined.includes('update') || combined.includes('edit')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
-      if (combined.includes('view') || combined.includes('read')) return { icon: Eye, color: 'text-blue-600 dark:text-blue-400' };
-      return { icon: User, color: 'text-indigo-600 dark:text-indigo-400' };
+    if (mainFunc.toLowerCase().includes("user")) {
+      if (combined.includes("create")) return { icon: Plus, color: "text-green-600 dark:text-green-400" };
+      if (combined.includes("update") || combined.includes("edit")) return { icon: Edit, color: "text-orange-600 dark:text-orange-400" };
+      if (combined.includes("delete")) return { icon: Trash2, color: "text-red-600 dark:text-red-400" };
+      if (combined.includes("view") || combined.includes("read")) return { icon: Eye, color: "text-blue-600 dark:text-blue-400" };
+      return { icon: User, color: "text-indigo-600 dark:text-indigo-400" };
     }
     
     // Case functions
-    if (mainFunc.toLowerCase().includes('case')) {
-      if (combined.includes('assign')) return { icon: Users, color: 'text-purple-600 dark:text-purple-400' };
-      if (combined.includes('create')) return { icon: Plus, color: 'text-green-600 dark:text-green-400' };
-      if (combined.includes('update')) return { icon: Edit, color: 'text-orange-600 dark:text-orange-400' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
-      return { icon: FolderOpen, color: 'text-amber-600 dark:text-amber-400' };
+    if (mainFunc.toLowerCase().includes("case")) {
+      if (combined.includes("assign")) return { icon: Users, color: "text-purple-600 dark:text-purple-400" };
+      if (combined.includes("create")) return { icon: Plus, color: "text-green-600 dark:text-green-400" };
+      if (combined.includes("update")) return { icon: Edit, color: "text-orange-600 dark:text-orange-400" };
+      if (combined.includes("delete")) return { icon: Trash2, color: "text-red-600 dark:text-red-400" };
+      return { icon: FolderOpen, color: "text-amber-600 dark:text-amber-400" };
     }
     
     // Report functions
-    if (mainFunc.toLowerCase().includes('report')) {
-      if (combined.includes('export')) return { icon: Download, color: 'text-teal-600 dark:text-teal-400' };
-      if (combined.includes('generate')) return { icon: BarChart3, color: 'text-blue-600 dark:text-blue-400' };
-      if (combined.includes('delete')) return { icon: Trash2, color: 'text-red-600 dark:text-red-400' };
-      return { icon: PieChart, color: 'text-emerald-600 dark:text-emerald-400' };
+    if (mainFunc.toLowerCase().includes("report")) {
+      if (combined.includes("export")) return { icon: Download, color: "text-teal-600 dark:text-teal-400" };
+      if (combined.includes("generate")) return { icon: BarChart3, color: "text-blue-600 dark:text-blue-400" };
+      if (combined.includes("delete")) return { icon: Trash2, color: "text-red-600 dark:text-red-400" };
+      return { icon: PieChart, color: "text-emerald-600 dark:text-emerald-400" };
     }
     
     // Notification functions
-    if (mainFunc.toLowerCase().includes('notification') || mainFunc.toLowerCase().includes('notify')) {
-      if (combined.includes('send')) return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
-      if (combined.includes('create')) return { icon: Bell, color: 'text-green-600 dark:text-green-400' };
-      if (combined.includes('email') || combined.includes('mail')) return { icon: Mail, color: 'text-blue-600 dark:text-blue-400' };
-      return { icon: Bell, color: 'text-yellow-600 dark:text-yellow-400' };
+    if (mainFunc.toLowerCase().includes("notification") || mainFunc.toLowerCase().includes("notify")) {
+      if (combined.includes("send")) return { icon: Bell, color: "text-yellow-600 dark:text-yellow-400" };
+      if (combined.includes("create")) return { icon: Bell, color: "text-green-600 dark:text-green-400" };
+      if (combined.includes("email") || combined.includes("mail")) return { icon: Mail, color: "text-blue-600 dark:text-blue-400" };
+      return { icon: Bell, color: "text-yellow-600 dark:text-yellow-400" };
     }
     
     // Settings functions
-    if (mainFunc.toLowerCase().includes('settings') || mainFunc.toLowerCase().includes('config')) {
-      return { icon: Settings, color: 'text-gray-600 dark:text-gray-400' };
+    if (mainFunc.toLowerCase().includes("settings") || mainFunc.toLowerCase().includes("config")) {
+      return { icon: Settings, color: "text-gray-600 dark:text-gray-400" };
     }
     
     // Database functions
-    if (mainFunc.toLowerCase().includes('database') || mainFunc.toLowerCase().includes('backup')) {
-      if (combined.includes('backup')) return { icon: Save, color: 'text-green-600 dark:text-green-400' };
-      if (combined.includes('restore')) return { icon: Upload, color: 'text-blue-600 dark:text-blue-400' };
-      return { icon: Database, color: 'text-indigo-600 dark:text-indigo-400' };
+    if (mainFunc.toLowerCase().includes("database") || mainFunc.toLowerCase().includes("backup")) {
+      if (combined.includes("backup")) return { icon: Save, color: "text-green-600 dark:text-green-400" };
+      if (combined.includes("restore")) return { icon: Upload, color: "text-blue-600 dark:text-blue-400" };
+      return { icon: Database, color: "text-indigo-600 dark:text-indigo-400" };
     }
     
     // Default based on action
-    return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
+    return { icon: Activity, color: "text-gray-500 dark:text-gray-400" };
   };
 
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 0: return { 
         icon: CheckCircle, 
-        color: 'text-green-500 dark:text-green-400', 
-        bg: 'bg-green-100 dark:bg-green-900/30', 
+        color: "text-green-500 dark:text-green-400", 
+        bg: "bg-green-100 dark:bg-green-900/30", 
         text: t("audit_log.success") || "สำเร็จ" 
       };
       case 1: return { 
         icon: XCircle, 
-        color: 'text-red-500 dark:text-red-400', 
-        bg: 'bg-red-100 dark:bg-red-900/30', 
+        color: "text-red-500 dark:text-red-400", 
+        bg: "bg-red-100 dark:bg-red-900/30", 
         text: t("audit_log.failed") || "ล้มเหลว" 
       };
       case 2: return { 
         icon: AlertCircle, 
-        color: 'text-yellow-500 dark:text-yellow-400', 
-        bg: 'bg-yellow-100 dark:bg-yellow-900/30', 
+        color: "text-yellow-500 dark:text-yellow-400", 
+        bg: "bg-yellow-100 dark:bg-yellow-900/30", 
         text: t("audit_log.warning") || "คำเตือน" 
       };
       default: return { 
         icon: AlertCircle, 
-        color: 'text-gray-500 dark:text-gray-400', 
-        bg: 'bg-gray-100 dark:bg-gray-700', 
+        color: "text-gray-500 dark:text-gray-400", 
+        bg: "bg-gray-100 dark:bg-gray-700", 
         text: t("audit_log.unknown") || "ไม่ทราบ" 
       };
     }
@@ -395,27 +367,27 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
 
   const getActionIcon = (action: string) => {
     switch (action.toLowerCase()) {
-      case 'create': return { icon: Plus, color: 'text-green-500 dark:text-green-400' };
-      case 'update': 
-      case 'edit': return { icon: Edit, color: 'text-orange-500 dark:text-orange-400' };
-      case 'delete': 
-      case 'remove': return { icon: Trash2, color: 'text-red-500 dark:text-red-400' };
-      case 'login': 
-      case 'signin': return { icon: LogIn, color: 'text-green-500 dark:text-green-400' };
-      case 'logout': 
-      case 'signout': return { icon: LogOut, color: 'text-red-500 dark:text-red-400' };
-      case 'view': 
-      case 'read': 
-      case 'get': return { icon: Eye, color: 'text-blue-500 dark:text-blue-400' };
-      case 'save': 
-      case 'store': return { icon: Save, color: 'text-green-500 dark:text-green-400' };
-      case 'upload': return { icon: Upload, color: 'text-blue-500 dark:text-blue-400' };
-      case 'download': 
-      case 'export': return { icon: Download, color: 'text-purple-500 dark:text-purple-400' };
-      case 'send': 
-      case 'notify': return { icon: Bell, color: 'text-yellow-500 dark:text-yellow-400' };
-      case 'assign': return { icon: Users, color: 'text-purple-500 dark:text-purple-400' };
-      default: return { icon: Activity, color: 'text-gray-500 dark:text-gray-400' };
+      case "create": return { icon: Plus, color: "text-green-500 dark:text-green-400" };
+      case "update": 
+      case "edit": return { icon: Edit, color: "text-orange-500 dark:text-orange-400" };
+      case "delete": 
+      case "remove": return { icon: Trash2, color: "text-red-500 dark:text-red-400" };
+      case "login": 
+      case "signin": return { icon: LogIn, color: "text-green-500 dark:text-green-400" };
+      case "logout": 
+      case "signout": return { icon: LogOut, color: "text-red-500 dark:text-red-400" };
+      case "view": 
+      case "read": 
+      case "get": return { icon: Eye, color: "text-blue-500 dark:text-blue-400" };
+      case "save": 
+      case "store": return { icon: Save, color: "text-green-500 dark:text-green-400" };
+      case "upload": return { icon: Upload, color: "text-blue-500 dark:text-blue-400" };
+      case "download": 
+      case "export": return { icon: Download, color: "text-purple-500 dark:text-purple-400" };
+      case "send": 
+      case "notify": return { icon: Bell, color: "text-yellow-500 dark:text-yellow-400" };
+      case "assign": return { icon: Users, color: "text-purple-500 dark:text-purple-400" };
+      default: return { icon: Activity, color: "text-gray-500 dark:text-gray-400" };
     }
   };
 
@@ -425,8 +397,8 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
 
   const clearFilters = () => {
     setFilter({
-      dateRange: { start: '', end: '' },
-      mainFunc: '', subFunc: '', action: '', status: '', search: ''
+      dateRange: { start: "", end: "" },
+      mainFunc: "", subFunc: "", action: "", status: "", search: ""
     });
   };
 
@@ -490,15 +462,15 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
               title={t("audit_log.refresh_data") || "รีเฟรชข้อมูล"}
               disabled={loading}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-300"}`} />
             </button>
           </div>
           <button 
             onClick={() => setShowFilters(!showFilters)} 
             className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium border-2 ${
               showFilters 
-                ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
-                : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800'
+                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" 
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
             }`}
           >
             <Filter className="w-4 h-4" />
@@ -687,7 +659,7 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
                             <div className="flex items-center gap-2">
                               <Clock className="w-3 h-3 text-gray-400" />
                               <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {new Date(log.createdAt).toLocaleString('th-TH')}
+                                {new Date(log.createdAt).toLocaleString("th-TH")}
                               </span>
                             </div>
                           </div>
@@ -854,8 +826,8 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-1 text-sm border rounded ${
                         currentPage === pageNum
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                       }`}
                     >
                       {pageNum}
@@ -880,8 +852,8 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
       {toast.show && (
         <div className="fixed top-4 right-4 z-50">
           <div className={`px-4 py-2 rounded-lg shadow-lg text-white text-sm ${
-            toast.type === 'success' ? 'bg-green-600' :
-            toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            toast.type === "success" ? "bg-green-600" :
+            toast.type === "error" ? "bg-red-600" : "bg-blue-600"
           }`}>
             {toast.message}
           </div>

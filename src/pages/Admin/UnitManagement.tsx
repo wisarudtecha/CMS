@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetUnitsQuery } from "@/store/api/unitApi";
 import type { Unit } from "@/types/unit";
 import UnitManagementComponent from "@/components/admin/system-configuration/unit/UnitManagement";
@@ -27,6 +28,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const UnitManagementPage: React.FC = () => {
+  const { t } = useTranslation();
   // ===================================================================
   // API Data
   // ===================================================================
@@ -41,7 +43,7 @@ const UnitManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["unit.view"]}>
-        <PageBreadcrumb pageTitle="Unit Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.unit_management.header")} />
 
         <UnitManagementComponent unit={units} />
       </ProtectedRoute>

@@ -2,6 +2,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@/icons";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { ClickableTableRow } from "@/components/crud/ClickableTableRow";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { TableViewProps } from "@/types/crud";
 import Checkbox from "@/components/form/input/Checkbox";
 
@@ -18,6 +19,7 @@ export function TableView<T extends { id: string }>({
   selectItem,
   toggleSelectAll,
 }: TableViewProps<T>) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden">
       <div className="overflow-x-auto">
@@ -59,7 +61,7 @@ export function TableView<T extends { id: string }>({
 
               {actions && actions.length > 0 && (
                 <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  {t("crud.common.action")}
                 </TableCell>
               )}
             </TableRow>

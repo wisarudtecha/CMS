@@ -54,7 +54,7 @@ const UserManagementPage: React.FC = () => {
   // API Data
   // ===================================================================
 
-  const { data: usersData } = useGetUsersQuery({ start: 0, length: 10 });
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 100 });
   const users: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
 
   const { data: departmentsData } = useGetDepartmentsQuery();

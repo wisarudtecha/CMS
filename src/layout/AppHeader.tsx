@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Link } from "react-router";
-import { useSidebar } from "../context/SidebarContext";
-import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-import NotificationDropdown from "../components/header/NotificationDropdown";
-import UserDropdown from "../components/header/UserDropdown";
-import LangDropdown from "../components/header/LangDropdown";
+import { useSidebar } from "@/context/SidebarContext";
+import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
+import NotificationDropdown from "@/components/header/NotificationDropdown";
+import UserDropdown from "@/components/header/UserDropdown";
+import LangDropdown from "@/components/header/LangDropdown";
 
 // import { Trans } from "@lingui/react/macro";
 // import { useLingui } from "@lingui/react/macro";
 
-import { useTranslation } from "../hooks/useTranslation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -19,7 +19,8 @@ const AppHeader: React.FC = () => {
 
   // const { t } = useLingui();
   // const { t } = useTranslation();
-  const { t, isLoading } = useTranslation();
+  // const { t, isLoading } = useTranslation();
+  const { isLoading } = useTranslation();
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -143,6 +144,7 @@ const AppHeader: React.FC = () => {
             </svg>
           </button>
 
+          {/*
           <div className="hidden lg:block">
             <form>
               <div className="relative">
@@ -180,6 +182,7 @@ const AppHeader: React.FC = () => {
               </div>
             </form>
           </div>
+          */}
         </div>
         <div
           className={`${

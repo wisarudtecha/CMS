@@ -1,6 +1,13 @@
 // /src/types/user.ts
 import type { Permission } from "@/types/role";
 
+export interface ChangePasswordModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userId?: string;
+  onSuccess?: () => void;
+}
+
 export interface EnhancedSkill {
   id: string;
   orgId: string;
@@ -53,6 +60,14 @@ export type Preferences = {
 export interface PreferencesModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+export interface ResetPasswordModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userId?: string;
+  username?: string;
+  onSuccess?: () => void;
 }
 
 export interface Role {
@@ -288,6 +303,37 @@ export interface UserProfile {
   updatedBy: string;
   meta?: Meta;
   permissions?: string[];
+}
+
+export interface UserInfoCardProps {
+  userData?: UserProfile | null;
+  loading?: boolean;
+  error?: string | null;
+}
+
+export interface UserMetaCardProps {
+  userData?: UserProfile | null;
+  loading?: boolean;
+  error?: string | null;
+}
+
+export interface DropdownData {
+  id: string;
+  name: string;
+  commId?: string;
+  deptId?: string;
+  stnId?: string;
+  roleName?: string;
+}
+
+export interface UserOrganizationCardProps {
+  userData?: UserProfile | null;
+  rolesData?: DropdownData[];
+  departmentsData?: DropdownData[];
+  commandsData?: DropdownData[];
+  stationsData?: DropdownData[];
+  loading?: boolean;
+  error?: string | null;
 }
 
 export interface Department {

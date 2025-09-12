@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface BreadcrumbItem {
   label: string;
@@ -10,9 +11,10 @@ interface BreadcrumbProps {
 }
 
 const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, items }) => {
+  const { t } = useTranslation();
   // If items are provided, use them; otherwise create single breadcrumb
   const breadcrumbItems: BreadcrumbItem[] = items || [
-    { label: "Home", href: "/" },
+    { label: t("common.home"), href: "/" },
     { label: pageTitle || "" }
   ];
 
@@ -21,7 +23,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, items }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
       <h2
-        className="text-xl font-semibold text-gray-800 dark:text-white/90"
+        className="text-xl font-semibold text-gray-800 dark:text-white/90 cursor-default"
         x-text="pageName"
       >
         {currentPageTitle}
@@ -58,7 +60,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, items }) => {
                     </svg>
                   </>
                 ) : (
-                  <span className="text-sm text-gray-800 dark:text-white/90">
+                  <span className="text-sm text-gray-800 dark:text-white/90 cursor-default">
                     {item.label}
                   </span>
                 )}

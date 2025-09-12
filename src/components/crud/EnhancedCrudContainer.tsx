@@ -1,7 +1,7 @@
 // /src/components/crud/EnhancedCrudContainer.tsx
 import React, { useState, useCallback, useMemo } from "react";
 import { InfoIcon } from "@/icons";
-import { PermissionGate } from "@/components/auth/PermissionGate";
+// import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
 import { BulkActionBar } from "@/components/crud/BulkActionBar";
 import { ClickableCard } from "@/components/crud/ClickableCard";
@@ -24,6 +24,7 @@ import { usePreview } from "@/hooks/usePreview";
 import { useRealTimeUpdates } from "@/hooks/useRealTimeUpdates";
 import { useSort } from "@/hooks/useSort";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { apiService } from "@/services/api";
 import { SYSTEM_ROLE } from "@/utils/constants";
 // import { exportToCSV, exportToJSON } from "@/utils/export";
@@ -88,6 +89,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   renderHierarchy,
   renderMatrix
 }: EnhancedCrudContainerProps<T>) => {
+  const { t } = useTranslation();
+
   const [displayMode, setDisplayMode] = useState<"card" | "table" | "matrix" | "hierarchy">(displayModeDefault);
   const [searchInput, setSearchInput] = useState<string>("");
 
@@ -416,6 +419,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   const allShortcuts = [...defaultShortcuts, ...keyboardShortcuts];
 
+  const createEntity = t("crud.common.create").replace("_ENTITY_", `${config.entityName}`);
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
       <div className="mx-auto w-full">
@@ -446,7 +451,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                         onChange={setSearchInput}
                         onSearch={handleSearch}
                         onClear={handleClearSearch}
-                        placeholder={`Search ${config.entityNamePlural.toLowerCase()}...`}
+                        placeholder={`${t("crud.common.search")} ${config.entityNamePlural.toLowerCase()}...`}
                       />
                     </div>
                   )}
@@ -494,12 +499,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             </div>
 
             {/* Create Button */}
-            {onCreate && displayMode != "matrix" && (
-              <PermissionGate module="workflow" action="create">
-                <Button onClick={onCreate} variant="primary" className="h-11">
-                  Create {config.entityName}
-                </Button>
-              </PermissionGate>
+            {onCreate && (
+              <Button onClick={onCreate} variant="primary" className="h-11">
+                {/* Create {config.entityName} */}
+                {createEntity}
+              </Button>
             )}
           </div>
         </div>
@@ -508,7 +512,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         {loading ? (
           // Loading State
           <div className="text-center py-12">
-            <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="text-gray-500 dark:text-gray-400">{t("crud.common.loading_records")}</div>
           </div>
         ) : error ? (
           // Error

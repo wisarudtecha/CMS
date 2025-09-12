@@ -1,28 +1,23 @@
+// /src/components/UserProfile/ChangePasswordModal.tsx
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog/dialog";
-import Button from "@/components/ui/button/Button";
+import { AlertIcon, CheckCircleIcon } from "@/icons";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog/dialog";
+import { useTranslation } from "@/hooks/useTranslation";
+import { APP_CONFIG } from "@/utils/constants";
+import { validatePassword, PasswordValidation } from "@/utils/passwordValidation";
+import type { ChangePasswordModalProps } from "@/types/user";
 import PasswordInput from "@/components/form/input/PasswordInput";
 import Label from "@/components/form/Label";
-import { useTranslation } from "@/hooks/useTranslation";
-import { AlertIcon, CheckCircleIcon } from "@/icons";
-import { validatePassword, PasswordValidation } from "@/utils/passwordValidation";
+import Button from "@/components/ui/button/Button";
 
-interface ChangePasswordModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  userId?: string;
-  onSuccess?: () => void;
-}
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cms-api-1-production.up.railway.app";
-
-export default function ChangePasswordModal({
+const ChangePasswordModal = ({
   isOpen,
   onClose,
   userId,
   onSuccess
-}: ChangePasswordModalProps) {
+}: ChangePasswordModalProps) => {
   const { t } = useTranslation();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,34 +33,34 @@ export default function ChangePasswordModal({
 
   const handleChangePassword = async () => {
     if (!currentPassword) {
-      setError(t('userform.currentPasswordRequired') || 'กรุณากรอกรหัสผ่านปัจจุบัน');
+      setError(t("userform.currentPasswordRequired") || "กรุณากรอกรหัสผ่านปัจจุบัน");
       return;
     }
 
     if (!newPassword) {
-      setError(t('userform.newPasswordRequired') || 'กรุณากรอกรหัสผ่านใหม่');
+      setError(t("userform.newPasswordRequired") || "กรุณากรอกรหัสผ่านใหม่");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(t('userform.passwordMismatch') || 'รหัสผ่านไม่ตรงกัน');
+      setError(t("userform.passwordMismatch") || "รหัสผ่านไม่ตรงกัน");
       return;
     }
 
     if (newPassword.length < 8) {
-      setError(t('userform.passwordTooShort') || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+      setError(t("userform.passwordTooShort") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
       return;
     }
 
     // Check password validation
     const validation = validatePassword(newPassword);
     if (!validation.isValid) {
-      setError(t('userform.pwdHint') || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว');
+      setError(t("userform.pwdHint") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว");
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError(t('userform.samePassword') || 'รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านปัจจุบัน');
+      setError(t("userform.samePassword") || "รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านปัจจุบัน");
       return;
     }
 
@@ -73,13 +68,13 @@ export default function ChangePasswordModal({
     setError("");
 
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_BASE_URL}/users/change_password/${userId}`, {
-        method: 'PATCH',
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}/users/change_password/${userId}`, {
+        method: "PATCH",
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          "accept": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           currentPassword: currentPassword,
@@ -89,11 +84,13 @@ export default function ChangePasswordModal({
 
       if (!response.ok) {
         if (response.status === 400) {
-          setError(t('userform.incorrectCurrentPassword') || 'รหัสผ่านปัจจุบันไม่ถูกต้อง');
-        } else if (response.status === 401) {
-          setError(t('userform.unauthorized') || 'ไม่มีสิทธิ์ในการดำเนินการ');
-        } else {
-          setError(t('userform.changePasswordError') || 'ไม่สามารถเปลี่ยนรหัสผ่านได้');
+          setError(t("userform.incorrectCurrentPassword") || "รหัสผ่านปัจจุบันไม่ถูกต้อง");
+        }
+        else if (response.status === 401) {
+          setError(t("userform.unauthorized") || "ไม่มีสิทธิ์ในการดำเนินการ");
+        }
+        else {
+          setError(t("userform.changePasswordError") || "ไม่สามารถเปลี่ยนรหัสผ่านได้");
         }
         return;
       }
@@ -105,11 +102,12 @@ export default function ChangePasswordModal({
       setTimeout(() => {
         handleClose();
       }, 2000);
-
-    } catch (err) {
-      console.error('Change password error:', err);
-      setError(t('userform.changePasswordError') || 'ไม่สามารถเปลี่ยนรหัสผ่านได้');
-    } finally {
+    }
+    catch (err) {
+      console.error("Change password error:", err);
+      setError(t("userform.changePasswordError") || "ไม่สามารถเปลี่ยนรหัสผ่านได้");
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -127,43 +125,46 @@ export default function ChangePasswordModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-md w-[90vw] rounded-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
-            {t('userform.changePassword') || 'เปลี่ยนรหัสผ่าน'}
+          <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+            {t("userform.changePassword") || "เปลี่ยนรหัสผ่าน"}
           </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {t("userform.changePasswordDescription") || "กรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านของคุณ"}
+          </DialogDescription>
         </DialogHeader>
 
         {success ? (
           <div className="flex flex-col items-center py-6 space-y-4">
-            <CheckCircleIcon className="w-16 h-16 text-green-500" />
-            <p className="text-center text-green-600 dark:text-green-400">
-              {t('userform.changePasswordSuccess') || 'เปลี่ยนรหัสผ่านสำเร็จ!'}
+            <CheckCircleIcon className="w-16 h-16 text-green-400 dark:text-green-500" />
+            <p className="text-center text-green-500 dark:text-green-400">
+              {t("userform.changePasswordSuccess") || "เปลี่ยนรหัสผ่านสำเร็จ!"}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {error && (
-              <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <AlertIcon className="w-5 h-5 text-red-500" />
-                <span className="text-red-600 dark:text-red-400 text-sm">{error}</span>
+              <div className="flex items-center space-x-2 p-3 bg-red-100 dark:bg-red-900 border border-red-100 dark:border-red-800 rounded-lg">
+                <AlertIcon className="w-5 h-5 text-red-400 dark:text-red-500" />
+                <span className="text-red-500 dark:text-red-400 text-sm">{error}</span>
               </div>
             )}
 
             <div className="space-y-2">
               <Label htmlFor="currentPassword">
-                {t('userform.currentPassword') || 'รหัสผ่านปัจจุบัน'}
+                {t("userform.currentPassword") || "รหัสผ่านปัจจุบัน"}
               </Label>
               <PasswordInput
                 id="currentPassword"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder={t('userform.enterCurrentPassword') || 'กรอกรหัสผ่านปัจจุบัน'}
+                placeholder={t("userform.enterCurrentPassword") || "กรอกรหัสผ่านปัจจุบัน"}
                 className="w-full"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="newPassword">
-                {t('userform.newPassword') || 'รหัสผ่านใหม่'}
+                {t("userform.newPassword") || "รหัสผ่านใหม่"}
               </Label>
               <PasswordInput
                 id="newPassword"
@@ -172,24 +173,24 @@ export default function ChangePasswordModal({
                   setNewPassword(e.target.value);
                   setPasswordValidation(validatePassword(e.target.value));
                 }}
-                placeholder={t('userform.enterNewPassword') || 'กรอกรหัสผ่านใหม่'}
+                placeholder={t("userform.enterNewPassword") || "กรอกรหัสผ่านใหม่"}
                 className="w-full"
               />
               
               {/* Password validation indicators */}
               {newPassword && (
                 <div className="space-y-1 text-xs">
-                  <div className={`flex items-center space-x-2 ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-red-600'}`}>
-                    <span>{passwordValidation.hasMinLength ? '✓' : '✗'}</span>
-                    <span>{t('userform.passwordValidation.minLength') || 'อย่างน้อย 8 ตัวอักษร'}</span>
+                  <div className={`flex items-center space-x-2 ${passwordValidation.hasMinLength ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+                    <span>{passwordValidation.hasMinLength ? "✓" : "✗"}</span>
+                    <span>{t("userform.passwordValidation.minLength") || "อย่างน้อย 8 ตัวอักษร"}</span>
                   </div>
-                  <div className={`flex items-center space-x-2 ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-red-600'}`}>
-                    <span>{passwordValidation.hasUppercase ? '✓' : '✗'}</span>
-                    <span>{t('userform.passwordValidation.uppercase') || 'อย่างน้อยตัวใหญ่ 1 ตัว'}</span>
+                  <div className={`flex items-center space-x-2 ${passwordValidation.hasUppercase ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+                    <span>{passwordValidation.hasUppercase ? "✓" : "✗"}</span>
+                    <span>{t("userform.passwordValidation.uppercase") || "อย่างน้อยตัวใหญ่ 1 ตัว"}</span>
                   </div>
-                  <div className={`flex items-center space-x-2 ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-red-600'}`}>
-                    <span>{passwordValidation.hasSpecialChar ? '✓' : '✗'}</span>
-                    <span>{t('userform.passwordValidation.specialChar') || 'อย่างน้อยอักขระพิเศษ 1 ตัว'}</span>
+                  <div className={`flex items-center space-x-2 ${passwordValidation.hasSpecialChar ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+                    <span>{passwordValidation.hasSpecialChar ? "✓" : "✗"}</span>
+                    <span>{t("userform.passwordValidation.specialChar") || "อย่างน้อยอักขระพิเศษ 1 ตัว"}</span>
                   </div>
                 </div>
               )}
@@ -197,19 +198,19 @@ export default function ChangePasswordModal({
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">
-                {t('userform.confirmPassword') || 'ยืนยันรหัสผ่าน'}
+                {t("userform.confirmPassword") || "ยืนยันรหัสผ่าน"}
               </Label>
               <PasswordInput
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t('userform.confirmNewPassword') || 'ยืนยันรหัสผ่านใหม่'}
+                placeholder={t("userform.confirmNewPassword") || "ยืนยันรหัสผ่านใหม่"}
                 className="w-full"
               />
             </div>
 
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              <p>{t('userform.passwordRequirements') || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว'}</p>
+              <p>{t("userform.passwordRequirements") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว"}</p>
             </div>
           </div>
         )}
@@ -221,7 +222,7 @@ export default function ChangePasswordModal({
               onClick={handleClose}
               disabled={loading}
             >
-              {t('common.cancel') || 'ยกเลิก'}
+              {t("common.cancel") || "ยกเลิก"}
             </Button>
             <Button
               variant="primary"
@@ -229,8 +230,8 @@ export default function ChangePasswordModal({
               disabled={loading}
             >
               {loading 
-                ? (t('common.loading') || 'กำลังดำเนินการ...')
-                : (t('userform.changePassword') || 'เปลี่ยนรหัสผ่าน')
+                ? (t("common.loading") || "กำลังดำเนินการ...")
+                : (t("userform.changePassword") || "เปลี่ยนรหัสผ่าน")
               }
             </Button>
           </DialogFooter>
@@ -239,3 +240,5 @@ export default function ChangePasswordModal({
     </Dialog>
   );
 }
+
+export default ChangePasswordModal;

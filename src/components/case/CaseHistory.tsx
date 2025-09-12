@@ -11,6 +11,7 @@ import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { AuthService } from "@/utils/authService";
@@ -29,6 +30,8 @@ const CaseHistoryComponent: React.FC<{
   caseStatuses: CaseStatus[];
   caseTypesSubTypes: CaseTypeSubType[];
 }> = ({ caseHistories, caseStatuses, caseTypesSubTypes }) => {
+  const { t, language } = useTranslation();
+
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -77,7 +80,8 @@ const CaseHistoryComponent: React.FC<{
     data.forEach(item => {
       configs[item.statusId] = {
         color: caseStatusesColorMap[item.color as keyof typeof caseStatusesColorMap] || caseStatusesColorMap.null,
-        label: item.th || item.en
+        // label: item?.th || item?.en
+        label: item[language as keyof CaseStatus] as string || item?.th || item?.en
       };
     });
     return configs;
@@ -91,7 +95,8 @@ const CaseHistoryComponent: React.FC<{
 
   const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
     value: caseStatus?.statusId || "",
-    label: caseStatus?.th || caseStatus?.en || ""
+    // label: caseStatus?.th || caseStatus?.en || ""
+    label: caseStatus[language as keyof CaseStatus] as string || caseStatus?.th || caseStatus?.en
   })) : [];
 
   // ===================================================================
@@ -154,7 +159,8 @@ const CaseHistoryComponent: React.FC<{
     // const sTypeCode = config.sTypeCode || "Loading...";
     const sTypeCode = config.sTypeCode || "";
     // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "Loading...";
-    const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "";
+    // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "";
+    const displayName = `${config.th || config.en || ""}-${config.subTypeTh || config.subTypeEn || ""}`;
     // return `${sTypeCode}-${displayName}`;
     return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
   };
@@ -174,7 +180,10 @@ const CaseHistoryComponent: React.FC<{
             caseTypeSubType?.subTypeTh ||
             caseTypeSubType?.subTypeEn ||
             "Unknown:Name"
-          } (${caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"})`,
+          } (${
+            // caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
+            caseTypeSubType[language as keyof CaseTypeSubType] as string || caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
+          })`,
         }))
     : [];
 
@@ -199,8 +208,8 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const config = {
-    entityName: "Case",
-    entityNamePlural: "Cases",
+    entityName: t("crud.case_history.name"),
+    entityNamePlural: t("crud.case_history.name"),
     apiEndpoints: {
       list: "/api/case",
       create: "/api/case",
@@ -213,14 +222,14 @@ const CaseHistoryComponent: React.FC<{
     columns: [
       {
         key: "caseNumber",
-        label: "Case #",
+        label: t("crud.case_history.list.header.case"),
         sortable: true,
         render: (caseItem: CaseEntity) => (
           <div className="flex items-center gap-3">
             {/* <FolderIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" /> */}
             <div>
-              <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {caseTitle(caseItem)}
+              <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                {caseTitle(caseItem) || ""}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-xs">
                 {caseItem.caseDetail || ""}
@@ -234,7 +243,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "status",
-        label: "Status",
+        label: t("crud.case_history.list.header.status"),
         sortable: true,
         render: (caseItem: CaseEntity) => {
           return (
@@ -246,7 +255,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "priority",
-        label: "Priority",
+        label: t("crud.case_history.list.header.priority"),
         sortable: true,
         render: (caseItem: CaseEntity) => {
           // const Icon = getPriorityConfig(caseItem).icon;
@@ -260,7 +269,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "createdBy",
-        label: "Created By",
+        label: t("crud.case_history.list.header.created_by"),
         sortable: true,
         render: (caseItem: CaseEntity) => (
           <div className="flex gap-1 items-center">
@@ -271,7 +280,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "createdAt",
-        label: "Created At",
+        label: t("crud.case_history.list.header.created_at"),
         sortable: true,
         render: (caseItem: CaseEntity) => (
           <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -285,7 +294,8 @@ const CaseHistoryComponent: React.FC<{
         key: "status",
         label: "Status",
         type: "select" as const,
-        options: caseStatusOptions
+        options: caseStatusOptions,
+        placeholder: t("crud.case_history.list.toolbar.filter.status")
       },
       {
         key: "priority",
@@ -295,13 +305,14 @@ const CaseHistoryComponent: React.FC<{
           { value: "low", label: "Low" },
           { value: "medium", label: "Medium" },
           { value: "high", label: "High" },
-        ]
+        ],
+        placeholder: t("crud.case_history.list.toolbar.filter.priority")
       }
     ],
     actions: [
       {
         key: "view",
-        label: "View",
+        label: t("crud.common.read"),
         variant: "primary" as const,
         // icon: EyeIcon,
         onClick: () => {},
@@ -309,7 +320,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "edit",
-        label: "Edit",
+        label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (caseItem: CaseEntity) => navigate(`/case/${caseItem.caseId}`),
@@ -317,7 +328,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "delete",
-        label: "Cancel",
+        label: t("crud.case_history.list.body.actions.cancel"),
         variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (caseItem: CaseEntity) => {
@@ -581,7 +592,8 @@ const CaseHistoryComponent: React.FC<{
   }
 
   const previewConfig: PreviewConfig<CaseEntity> = {
-    title: (caseItem: CaseEntity) => `${caseTitle(caseItem)} (${getTypeSubTypeConfig(caseItem).th || getTypeSubTypeConfig(caseItem).en || ""})`,
+    // title: (caseItem: CaseEntity) => `${caseTitle(caseItem)} (${getTypeSubTypeConfig(caseItem).th || getTypeSubTypeConfig(caseItem).en || ""})`,
+    title: (caseItem: CaseEntity) => `${caseTitle(caseItem)}`,
     subtitle: (caseItem: CaseEntity) => {
       return (
         <>
@@ -950,7 +962,7 @@ const CaseHistoryComponent: React.FC<{
   return (
     <>
       <div className={crudOpen}>
-        <PageBreadcrumb pageTitle="Case History" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.case_management.nested.case_history.header")} />
 
         <EnhancedCrudContainer
           advancedFilters={advancedFilters}

@@ -3,12 +3,16 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CircleCheck, CircleX, MapPinCheck, MapPinX } from "lucide-react";
-import { CheckLineIcon, ListIcon, PieChartIcon, TimeIcon } from "@/icons";
+// import { CheckLineIcon, ListIcon, PieChartIcon, TimeIcon } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { AuthService } from "@/utils/authService";
 import type { PreviewConfig } from "@/types/enhanced-crud";
-import type { Unit, UnitMetrics } from "@/types/unit";
-import MetricsView from "@/components/admin/MetricsView";
+import type {
+  Unit,
+  // UnitMetrics
+} from "@/types/unit";
+// import MetricsView from "@/components/admin/MetricsView";
 import UnitCardContent from "@/components/admin/system-configuration/unit/UnitCard";
 import Badge from "@/components/ui/badge/Badge";
 
@@ -43,6 +47,8 @@ const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline
 }
 
 const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
+  const { t } = useTranslation();
+
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -51,12 +57,12 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Real Functionality Data
   // ===================================================================
 
-  const mockMetrics: UnitMetrics = {
-    activeUnits: 0,
-    avgResponse: 0,
-    slaCompliance: 0,
-    totalCases: 0
-  };
+  // const mockMetrics: UnitMetrics = {
+  //   activeUnits: 0,
+  //   avgResponse: 0,
+  //   slaCompliance: 0,
+  //   totalCases: 0
+  // };
 
   const data: (Unit & { id: string })[] = unit.map(u => ({
     ...u,
@@ -68,8 +74,8 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // ===================================================================
 
   const config = {
-    entityName: "Unit",
-    entityNamePlural: "Units",
+    entityName: t("crud.unit.name"),
+    entityNamePlural: t("crud.unit.name"),
     apiEndpoints: {
       list: "/api/mdm/units",
       create: "/api/mdm/units",
@@ -82,7 +88,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     columns: [
       {
         key: "unitName",
-        label: "Unit",
+        label: t("crud.unit.list.header.unit"),
         sortable: true,
         render: (unitItem: Unit) => {
           return (
@@ -101,13 +107,13 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "active",
-        label: "Status",
+        label: t("crud.unit.list.header.status"),
         sortable: true,
         render: (unitItem: Unit) => <UnitStatus status={unitItem.active ? "active" : "inactive"} />
       },
       {
         key: "location",
-        label: "Location",
+        label: t("crud.unit.list.header.location"),
         sortable: true,
         render: (unitItem: Unit) => <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
       }
@@ -115,7 +121,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     actions: [
       {
         key: "view",
-        label: "View",
+        label: t("crud.common.read"),
         variant: "primary" as const,
         // icon: EyeIcon,
         onClick: (unitItem: Unit) => navigate(`/unit/${unitItem.id}`),
@@ -123,7 +129,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (unitItem: Unit) => navigate(`/unit/${unitItem.id}/edit`),
@@ -131,7 +137,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (unitItem: Unit) => {
@@ -339,16 +345,16 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Render Component
   // ===================================================================
 
-  const attrMetrics = [
-    { key: "activeUnits", title: "Active Units", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-    { key: "avgResponse", title: "Avg. Response", icon: PieChartIcon, color: "yellow", className: "text-yellow-600" },
-    { key: "slaCompliance", title: "SLA Compliance", icon: TimeIcon, color: "red", className: "text-red-600" },
-    { key: "totalCases", title: "Total Cases", icon: ListIcon, color: "blue", className: "text-blue-600" },
-  ];
+  // const attrMetrics = [
+  //   { key: "activeUnits", title: "Active Units", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+  //   { key: "avgResponse", title: "Avg. Response", icon: PieChartIcon, color: "yellow", className: "text-yellow-600" },
+  //   { key: "slaCompliance", title: "SLA Compliance", icon: TimeIcon, color: "red", className: "text-red-600" },
+  //   { key: "totalCases", title: "Total Cases", icon: ListIcon, color: "blue", className: "text-blue-600" },
+  // ];
 
   return (
     <>
-      <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} />
+      {/* <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} /> */}
 
       <EnhancedCrudContainer
         // advancedFilters={advancedFilters}

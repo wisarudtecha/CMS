@@ -27,7 +27,8 @@
     "start_date": "Start Date",
     "end_date": "End Date",
     "search_placeholder": "Search...",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "home": "Home"
   },
   "auth": {
     "signin": {
@@ -139,7 +140,10 @@
             "case_creation": "Creation",
             "creation_schedule_date":"Schedule Create",
             "case_assignment": "Assignment",
-            "case_history": "History"
+            "case_history": {
+              "title": "History",
+              "header": "Work Order History"
+            }
           }
         },
         "dashboard": {
@@ -184,7 +188,10 @@
           "title": "System Configuration",
           "nested": {
             "service_management": "Service Management",
-            "unit_management": "Unit Management",
+            "unit_management": {
+              "title": "Unit Management",
+              "header": "Unit Management"
+            },
             "skill_management": "Skill Management",
             "property_management": "Property Management",
             "area_management": "Area Management"
@@ -278,6 +285,81 @@
           "nested": {
             "workflow_builder_v1": "Workflow Builder v0.1.0"
           }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "Processing...",
+      "search": "Search",
+      "length_menu": {
+        "show": "Show",
+        "entries": "entries"
+      },
+      "info": "Showing _START_-_END_ of _TOTAL_ entries",
+      "info_empty": "Showing 0 of entries",
+      "info_filtered": "(filtered by _MAX_ entries in total)",
+      "info_postFix": "",
+      "loading_records": "Loading...",
+      "zero_records": "No entries to show",
+      "empty_table": "No data available",
+      "paginate": {
+        "info": "Page _PAGE_ of _TOTAL_",
+        "first": "First",
+        "previous": "Previous",
+        "next": "Next",
+        "last": "Last"
+      },
+      "aria": {
+        "sortAscending": ": enable to sort the column in ascending order",
+        "sortDescending": ": enable to sort the column in descending order"
+      },
+      "search_advanced": "Advanced Filters",
+      "action": "Action",
+      "create": "Create _ENTITY_",
+      "read": "View",
+      "update": "Edit",
+      "delete": "Delete"
+    },
+    "case_history": {
+      "name": "Work Order",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search Work Order..."
+          },
+          "filter": {
+            "status": "Select Status",
+            "priority": "Select Priority"
+          }
+        },
+        "header": {
+          "case": "Work Order #",
+          "status": "Status",
+          "priority": "Priority",
+          "created_by": "Created By",
+          "created_at": "Created At"
+        },
+        "body": {
+          "actions": {
+            "cancel": "Cancel"
+          }
+        }
+      }
+    },
+    "unit": {
+      "name": "Unit",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search Unit..."
+          }
+        },
+        "header": {
+          "unit": "Unit #",
+          "status": "Status",
+          "location": "Location"
         }
       }
     }

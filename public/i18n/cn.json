@@ -27,7 +27,8 @@
     "start_date": "开始日期",
     "end_date": "结束日期",
     "search_placeholder": "搜索...",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "home": "家"
   },
   "auth": {
     "signin": {
@@ -138,7 +139,10 @@
           "nested": {
             "case_creation": "案件创建",
             "case_assignment": "案件分配",
-            "case_history": "案件历史"
+            "case_history": {
+              "title": "历史记录",
+              "header": "工作订单历史记录"
+            }
           }
         },
         "dashboard": {
@@ -183,7 +187,10 @@
           "title": "系统配置",
           "nested": {
             "service_management": "服务管理",
-            "unit_management": "单位管理",
+            "unit_management": {
+              "title": "单位管理",
+              "header": "单位管理"
+            },
             "skill_management": "技能管理",
             "property_management": "属性管理",
             "area_management": "区域管理"
@@ -277,6 +284,81 @@
           "nested": {
             "workflow_builder_v1": "工作流构建 v0.1.0"
           }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "正在处理...",
+      "search": "搜索",
+      "length_menu": {
+        "show": "显示",
+        "entries": "条条目"
+      },
+      "info": "显示 _START_-_END_ of _TOTAL_ 条条目",
+      "info_empty": "显示 0 条条目",
+      "info_filtered": "（共筛选 _MAX_ 条条目）",
+      "info_postFix": "",
+      "loading_records": "正在加载...",
+      "zero_records": "没有可显示的条目",
+      "empty_table": "没有可用数据",
+      "paginate": {
+        "info": "页 _PAGE_ 的 _TOTAL_",
+        "first": "第一条",
+        "previous": "上一条",
+        "next": "下一条",
+        "last": "最后一条"
+      },
+      "aria": {
+        "sortAscending": "启用升序对列进行排序",
+        "sortDescending": "启用降序对列进行排序"
+      },
+      "search_advanced": "高级过滤器",
+      "action": "操作",
+      "create": "创建_ENTITY_",
+      "read": "查看",
+      "update": "编辑",
+      "delete": "删除"
+    },
+    "case_history": {
+      "name": "工作订单",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索工单..."
+          },
+          "filter": {
+            "status": "选择状态",
+            "priority": "选择优先级"
+          }
+        },
+        "header": {
+          "case": "案例编号",
+          "status": "状态",
+          "priority": "优先级",
+          "created_by": "创建者",
+          "created_at": "创建时间"
+        },
+        "body": {
+          "actions": {
+            "cancel": "取消"
+          }
+        }
+      }
+    },
+    "unit": {
+      "name": "单位",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索单位..."
+          }
+        },
+        "header": {
+          "unit": "单位编号",
+          "status": "状态",
+          "location": "位置"
         }
       }
     }

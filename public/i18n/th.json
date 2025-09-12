@@ -28,7 +28,8 @@
     "start_date": "วันที่เริ่ม",
     "end_date": "วันที่สิ้นสุด",
     "search_placeholder": "ค้นหา...",
-    "refresh": "รีเฟรช"
+    "refresh": "รีเฟรช",
+    "home": "หน้าหลัก"
   },
   "auth": {
     "signin": {
@@ -140,7 +141,10 @@
             "case_creation": "สร้างใบสั่งงาน",
             "creation_schedule_date":"สร้างใบสั่งงานแบบนัดหมาย",
             "case_assignment": "มอบหมายใบสั่งงาน",
-            "case_history": "ประวัติใบสั่งงาน"
+            "case_history": {
+              "title": "ประวัติใบสั่งงาน",
+              "header": "ประวัติใบสั่งงาน"
+            }
           }
         },
         "dashboard": {
@@ -151,7 +155,7 @@
             "agent_status": "สถานะเจ้าหน้าที่",
             "service": {
               "title": "ใบสั่งงาน",
-              "header": "แดชบอร์ดใบสั่งงาน"
+              "header": "สรุปใบสั่งงาน"
             }
           }
         },
@@ -185,7 +189,10 @@
           "title": "การกำหนดค่าระบบ",
           "nested": {
             "service_management": "การจัดการบริการ",
-            "unit_management": "การจัดการหน่วย",
+            "unit_management": {
+              "title": "การจัดการหน่วย",
+              "header": "การจัดการหน่วย"
+            },
             "skill_management": "การจัดการทักษะ",
             "property_management": "การจัดการคุณสมบัติ",
             "area_management": "การจัดการพื้นที่"
@@ -279,6 +286,81 @@
           "nested": {
             "workflow_builder_v1": "เวิร์กโฟลว์ Builder v0.1.0"
           }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "กำลังประมวลผล...",
+      "search": "ค้นหา",
+      "length_menu": {
+        "show": "แสดง",
+        "entries": "รายการ"
+      },
+      "info": "กำลังแสดง _START_-_END_ จาก _TOTAL_ รายการ",
+      "info_empty": "แสดง 0 รายการ",
+      "info_filtered": "(กรองตาม _MAX_ รายการทั้งหมด)",
+      "info_postFix": "",
+      "loading_records": "กำลังโหลด...",
+      "zero_records": "ไม่มีรายการที่จะแสดง",
+      "empty_table": "ไม่มีข้อมูล",
+      "paginate": {
+        "info": "หน้า _PAGE_ จาก _TOTAL_",
+        "first": "หน้าแรก",
+        "previous": "ก่อนหน้า",
+        "next": "ถัดไป",
+        "last": "หน้าสุดท้าย"
+      },
+      "aria": {
+        "sortAscending": ": เปิดใช้งาน เรียงลำดับคอลัมน์จากน้อยไปมาก",
+        "sortDescending": ": เปิดใช้งานเพื่อเรียงลำดับคอลัมน์จากมากไปน้อย"
+      },
+      "search_advanced": "ตัวกรองขั้นสูง",
+      "action": "การดำเนินการ",
+      "create": "สร้าง_ENTITY_",
+      "read": "ดู",
+      "update": "แก้ไข",
+      "delete": "ลบ"
+    },
+    "case_history": {
+      "name": "ใบสั่งงาน",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาใบสั่งงาน..."
+          },
+          "filter": {
+            "status": "เลือกสถานะ",
+            "priority": "เลือกลำดับความสำคัญ"
+          }
+        },
+        "header": {
+          "case": "หมายเลขใบสั่งงาน",
+          "status": "สถานะ",
+          "priority": "ลำดับความสำคัญ",
+          "created_by": "สร้างโดย",
+          "created_at": "สร้างเมื่อ"
+        },
+        "body": {
+          "actions": {
+            "cancel": "ยกเลิก"
+          }
+        }
+      }
+    },
+    "unit": {
+      "name": "หน่วย",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาหน่วย..."
+          }
+        },
+        "header": {
+          "unit": "หน่วย",
+          "status": "สถานะ",
+          "location": "สถานที่"
         }
       }
     }

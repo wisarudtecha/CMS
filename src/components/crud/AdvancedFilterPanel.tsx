@@ -1,5 +1,6 @@
 // /src/components/crud/AdvancedFilterPanel.tsx
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import Button from "@/components/ui/button/Button";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
@@ -33,6 +34,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   title = "Advanced Filters",
   className = ""
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [localValues, setLocalValues] = useState<FilterConfig>(values);
 
@@ -331,7 +333,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
         className="h-11 relative"
       >
         {/* <FilterIcon className="w-4 h-4" /> */}
-        {title}
+        {t("crud.common.search_advanced")}
         
         {/*
         {hasActiveFilters && (
