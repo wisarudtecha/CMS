@@ -21,7 +21,7 @@ import { getPriorityBorderColorClass, getTextPriority } from "../function/Priori
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "../progress/ProgressBar";
 import { CaseStatusInterface} from "../ui/status/status";
-import { CaseHistory } from "@/store/api/caseApi";
+// **REMOVED**: CaseHistory is no longer a direct prop
 import { CaseDetails } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -34,7 +34,7 @@ interface CaseCardProps {
     setCaseData?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
     caseData: CaseSop;
     editFormData: boolean;
-    comment?: CaseHistory[];
+    // **REMOVED**: comment prop is no longer passed down
     showCommentButton?: boolean;
     showAttachButton?: boolean;
 }
@@ -46,7 +46,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     caseData,
     editFormData,
     setCaseData,
-    comment,
+    // **REMOVED**: comment from destructuring
     showCommentButton = true,
     showAttachButton = true
 }) => {
@@ -190,7 +190,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             </div>
             {/* END: Responsive Button Grid Container */}
 
-            {showComment && <Comments caseId={caseData.caseId} comment={comment} />}
+            {/* **MODIFIED**: Pass isOpen prop, remove comment prop */}
+            {showComment && <Comments caseId={caseData.caseId} isOpen={showComment} />}
         </div>
     );
 };

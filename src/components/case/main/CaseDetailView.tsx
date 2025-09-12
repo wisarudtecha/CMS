@@ -1,3 +1,5 @@
+// CaseDetailView.tsx
+
 "use client"
 
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
@@ -25,7 +27,8 @@ import CustomerInput from "../CaseCustomerInput"
 import FormFieldValueDisplay from "../CaseDisplay"
 import PreviewDataBeforeSubmit from "../PreviewCaseData"
 import { Customer } from "@/store/api/custommerApi"
-import { CreateCase, useGetCaseHistoryQuery, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
+// **REMOVED**: useGetCaseHistoryQuery is no longer needed here
+import { CreateCase, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 import { CaseSop, CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
@@ -836,11 +839,11 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     // )
 
 
-
-    const { data: comments } = useGetCaseHistoryQuery(
-        { caseId: initialCaseData?.caseId || "" },
-        { skip: !initialCaseData?.caseId || isCreate }
-    )
+    // **REMOVED**: Comment fetching is now handled in Comments.tsx
+    // const { data: comments } = useGetCaseHistoryQuery(
+    //     { caseId: initialCaseData?.caseId || "" },
+    //     { skip: !initialCaseData?.caseId || isCreate }
+    // )
 
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
@@ -1988,7 +1991,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         caseData={sopLocal}
                                         editFormData={editFormData}
                                         setCaseData={setCaseState}
-                                        comment={comments?.data}
+                                        // **REMOVED**: comment prop
                                     />
                                 )}
 
