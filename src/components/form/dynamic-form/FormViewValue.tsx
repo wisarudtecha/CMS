@@ -118,7 +118,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
     return (
       <div className="mb-2">
         {field.showLabel && renderLabel(field.label, field.required)}
-        <div className={valueTextClasses}>{valueContent}</div>
+        <div className={valueTextClasses}>&nbsp;&nbsp;&nbsp;&nbsp;{valueContent}</div>
       </div>
     );
   };

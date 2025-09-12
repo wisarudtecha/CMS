@@ -1,4 +1,4 @@
-import { CalendarDays, Contact, Cpu, MapPin, Phone, Share2 } from "lucide-react";
+import { CalendarDays, ChartColumnStacked, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket } from "lucide-react";
 import DateStringToDateFormat from "../date/DateToString";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
@@ -81,21 +81,28 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >{t("case.display.case_information")}</span>
                 {isCreate === false ? (
-                    <div>
-                        <span className="text-md text-gray-500 dark:text-gray-400">
-                            {t("case.display.no")} # <span className="text-md font-medium text-gray-900 dark:text-white">
-                                {caseData?.workOrderNummber || "-"}
+                    <div className="flex mb-2 text-gray-500 dark:text-gray-400">
+                        <Ticket />
+                        <div className="ml-2">
+                            <span className="text-md text-gray-500 dark:text-gray-400">
+                                {t("case.display.no")} # <span className="text-md font-medium text-gray-900 dark:text-white">
+                                    {caseData?.workOrderNummber || "-"}
+                                </span>
                             </span>
-                        </span>
 
+                        </div>
                     </div>
                 ) : null}
+                <div className="flex mb-2 text-gray-500 dark:text-gray-400">
+                    <ChartColumnStacked />
+                    <div className="ml-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.types")} : {requireElements}</span>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
+                        {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
+                    </div>
 
-                <div className="mb-2">
-                    <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.types")} : {requireElements}</span>
-                    <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
                 </div>
-                {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
+
 
 
                 {/* <div>
@@ -103,14 +110,20 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{caseData?.caseType?.priority ? getTextPriority(caseData.caseType.priority).level : "-"}</div>
 
                 </div> */}
-                <div>
-                    <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.service_center")}</span>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area, language) || "-"}</div>
+                <div className="flex mb-2 text-gray-500 dark:text-gray-400">
+                    <MapPinHouse />
+                    <div className="ml-2">
+                        <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.service_center")}</span>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area, language) || "-"}</div>
+                    </div>
                 </div>
                 {caseData?.iotDate &&
-                    <div>
-                        <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.iot_alert_date")}</span>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white"> {DateStringToDateFormat(caseData?.iotDate,false,language) || "-"}</div>
+                    <div className="flex  text-gray-500 dark:text-gray-400">
+                        <Siren />
+                        <div className="ml-2">
+                            <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.iot_alert_date")}</span>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white"> {DateStringToDateFormat(caseData?.iotDate, false, language) || "-"}</div>
+                        </div>
                     </div>
                 }
             </div>
@@ -212,7 +225,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             </div>
                             <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                    DateStringToDateFormat(caseData.scheduleDate,false,language) :
+                                    DateStringToDateFormat(caseData.scheduleDate, false, language) :
                                     "-"
                                 }
                             </div>

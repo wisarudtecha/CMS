@@ -27,7 +27,7 @@ export default function DateStringToDateFormat(
     
     // Validate if date is valid
     if (isNaN(date.getTime())) {
-        throw new Error('Invalid date string provided');
+        console.warn("invail date format")
     }
 
     // Ensure language is supported, fallback to 'en' if not

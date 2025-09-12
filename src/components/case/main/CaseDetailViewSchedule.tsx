@@ -222,7 +222,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseTypeOptions,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
 }) => (
-    <>{console.log(caseState?.scheduleDate)}
+    <>
         {/* Priority Section */}
         {selectedCaseTypeForm && (
             <div className="flex items-end justify-end">

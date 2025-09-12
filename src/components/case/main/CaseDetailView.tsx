@@ -423,7 +423,7 @@ interface CaseFormFieldsProps {
     listCustomerData: Customer[];
     isCreate: boolean;
     editFormData: boolean;
-    caseTypeOptions:string[]
+    caseTypeOptions: string[]
     handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
     handleWorkOrderDate: (e: ChangeEvent<HTMLInputElement>) => void;
     handleContactMethodChange: (data: { name: string, id: string }) => void;
@@ -446,24 +446,25 @@ interface CaseFormFieldsProps {
     handleExampleData: () => void;
     language: string,
     t: (key: string, params?: TranslationParams | undefined) => string,
-    isScheduleDate?: boolean
+    isScheduleDate?: boolean;
+    handleSaveChanges: () => void;
 }
 
 
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate, 
+    areaList, listCustomerData, isCreate,
     handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
     handleIotDateChangeDefault,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
-    isScheduleDate = false,caseTypeOptions
+    isScheduleDate = false, caseTypeOptions, handleSaveChanges
 }) => (
     <>
         {/* Priority Section */}
-        
+
         {selectedCaseTypeForm && (
             <div className="flex items-end justify-end">
                 <span className="mr-2 text-gray-900 dark:text-gray-400">{t("case.assignment.piority")}</span>
@@ -727,7 +728,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     </Button>
                 ) : (
                     <div className="flex">
-                        <Button onClick={handleSaveDrafts} className="mx-3">
+                        <Button onClick={caseState.workOrderNummber ? handleSaveChanges : handleSaveDrafts} className="mx-3" >
                             {t("case.display.save_as_draft")}
                         </Button>
                         <Button variant="success" onClick={handlePreviewShow}>
@@ -775,7 +776,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 priority: 0,
                 description: "",
                 area: undefined,
-                workOrderNummber: genCaseID(),
+                workOrderNummber: undefined,
                 status: "",
                 scheduleDate: "",
                 customerData: {} as Custommer,
@@ -818,10 +819,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     );
 
     const caseTypeOptions = useMemo(() => {
-            if (!caseTypeSupTypeData?.length) return [];
-            return caseTypeSupTypeData.map(item =>
-                mergeCaseTypeAndSubType(item, language)
-            );
+        if (!caseTypeSupTypeData?.length) return [];
+        return caseTypeSupTypeData.map(item =>
+            mergeCaseTypeAndSubType(item, language)
+        );
     }, [caseTypeSupTypeData]);
 
     // Only make API calls if initialCaseData exists
@@ -1175,8 +1176,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         let errorMessage = "";
         if (!caseState?.caseType?.caseType) {
             errorMessage = "Please select a Case Type.";
-        } else if (!caseState?.workOrderNummber) {
-            errorMessage = "Please enter Work Order Number.";
         } else if (!caseState?.description?.trim()) {
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
@@ -1249,6 +1248,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             if (statusId === "S001") {
                 navigate(`/case/${data?.caseId}`)
             }
+            setCaseState(prev => prev ? {
+                ...prev,
+                workOrderNummber: data.caseId,
+                status: statusId
+            } : prev);
+
             const caseListData = localStorage.getItem("caseList") || "[]";
             if (caseListData) {
                 const caseList = JSON.parse(caseListData) as CaseEntity[];
@@ -1307,10 +1312,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             const caseListData = localStorage.getItem("caseList");
             const caseList: CaseEntity[] = caseListData ? JSON.parse(caseListData) : [];
 
-            const caseIdToUpdate = sopLocal?.id || sopLocal?.caseId;
+            const caseIdToUpdate = sopLocal?.caseId;
 
             if (!caseIdToUpdate) {
-                console.error("No case ID found to update");
+                console.warn("No case ID found to update");
                 return false;
             }
 
@@ -1395,7 +1400,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [sopLocal, profile]);
 
-    
+
 
     const handleSaveChanges = useCallback(async () => {
         if (!caseState) return;
@@ -1411,7 +1416,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseLon: "",
             caseSTypeId: caseState?.caseType?.sTypeId || "",
             caseTypeId: caseState?.caseType?.typeId || "",
-            caseVersion: sopLocal?.caseVersion,
+            caseVersion: caseState?.status === "S000" ? "publish" : sopLocal?.caseVersion,
             caselocAddr: caseState?.location || "",
             caselocAddrDecs: caseState?.location || "",
             countryId: caseState?.area?.countryId || "",
@@ -1426,7 +1431,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseSla: caseState?.caseType?.caseSla || "",
             deviceId: caseState?.iotDevice || "",
             source: caseState?.customerData?.contractMethod?.id || "",
-            statusId: sopLocal?.statusId,
+            statusId: caseState?.status === "S000" ? "S001" : sopLocal?.statusId,
             userarrive: "",
             userclose: "",
             usercommand: caseState?.serviceCenter?.commandTh || "",
@@ -1442,9 +1447,89 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         } as CreateCase;
 
         try {
-            await updateCase({ caseId: sopLocal?.id || "", updateCase: updateJson }).unwrap();
+            await updateCase({ caseId: caseState?.workOrderNummber || "", updateCase: updateJson }).unwrap();
             const updateSuccess = updateCaseInLocalStorage(updateJson);
 
+            if (caseState?.status === "S000") {
+                setCaseState(prev => prev ? {
+                    ...prev,
+                    status: "S001"
+                } : prev);
+                setSopLocal(prev => prev ? {
+                    ...prev,
+                    caseVersion: "publish"
+                } : undefined)
+                if (caseState?.workOrderNummber) {
+                    navigate("/case/" + caseState?.workOrderNummber)
+                }
+            }
+            if (updateSuccess) {
+                setEditFormData(false);
+                setToastMessage("Changes saved successfully!");
+                setToastType("success");
+                setShowToast(true);
+            } else {
+                setToastMessage("Changes saved to server");
+                setToastType("success");
+                setEditFormData(false);
+                setShowToast(true);
+            }
+            // unitRefect()
+        } catch (error: any) {
+            setToastType("error");
+            setToastMessage(`Failed to Update Case`);
+            setShowToast(true);
+            return;
+        }
+    }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile]);
+
+    const handleSaveChangesDraft = useCallback(async () => {
+        if (!caseState) return;
+
+        setShowPreviewData(false)
+        const updateJson = {
+            caseId: caseState?.workOrderNummber,
+            formData: caseState?.caseType?.formField,
+            customerName: caseState?.customerData?.name,
+            caseDetail: caseState?.description || "",
+            caseDuration: 0,
+            caseLat: "",
+            caseLon: "",
+            caseSTypeId: caseState?.caseType?.sTypeId || "",
+            caseTypeId: caseState?.caseType?.typeId || "",
+            caseVersion: "draft",
+            caselocAddr: caseState?.location || "",
+            caselocAddrDecs: caseState?.location || "",
+            countryId: caseState?.area?.countryId || "",
+            distId: caseState?.area?.distId,
+            extReceive: "",
+            phoneNoHide: true,
+            phoneNo: caseState?.customerData?.mobileNo || "",
+            priority: caseState?.caseType?.priority || 0,
+            provId: caseState?.area?.provId || "",
+            referCaseId: caseState?.workOrderRef || "",
+            resDetail: "",
+            caseSla: caseState?.caseType?.caseSla || "",
+            deviceId: caseState?.iotDevice || "",
+            source: caseState?.customerData?.contractMethod?.id || "",
+            statusId: caseState?.status === "S000" ? "S001" : sopLocal?.statusId,
+            userarrive: "",
+            userclose: "",
+            usercommand: caseState?.serviceCenter?.commandTh || "",
+            usercreate: profile?.username || "",
+            userreceive: "",
+            nodeId: caseState?.caseType?.formField?.nextNodeId || "",
+            wfId: caseState?.caseType?.wfId || "",
+            versions: caseState?.caseType?.formField.versions || "",
+            deptId: caseState?.serviceCenter?.deptId || undefined,
+            commId: caseState?.serviceCenter?.commId || undefined,
+            stnId: caseState?.serviceCenter?.stnId || undefined,
+            scheduleFlag: isScheduleDate,
+        } as CreateCase;
+
+        try {
+            await updateCase({ caseId: caseState?.workOrderNummber || "", updateCase: updateJson }).unwrap();
+            const updateSuccess = updateCaseInLocalStorage(updateJson);
             if (updateSuccess) {
                 setEditFormData(false);
                 setToastMessage("Changes saved successfully!");
@@ -1640,7 +1725,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw new Error("No data found in dispatch object");
             }
             const payload = await postDispatch(dispatchjson).unwrap();
-            if(payload.msg?.toLocaleLowerCase()!=="success"){
+            if (payload.msg?.toLocaleLowerCase() !== "success") {
                 throw Error
             }
             console.log('Dispatch successful:', payload);
@@ -1728,7 +1813,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             updateCaseState({ workOrderDate: TodayDate() });
         }
     }, [caseState?.workOrderDate, initialCaseData, updateCaseState]);
-
 
 
     // Loading state for existing cases
@@ -1939,7 +2023,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 countryTh: "ประเทศไทย",
                 countryActive: true
             },
-            workOrderNummber: genCaseID(),
             status: "",
             scheduleDate: "2025-08-27T16:40",
             attachFile: [],
@@ -1991,7 +2074,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         caseData={sopLocal}
                                         editFormData={editFormData}
                                         setCaseData={setCaseState}
-                                        // **REMOVED**: comment prop
+                                    // **REMOVED**: comment prop
                                     />
                                 )}
 
@@ -2053,6 +2136,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         t={t}
                                         isScheduleDate={isScheduleDate}
                                         caseTypeOptions={caseTypeOptions}
+                                        handleSaveChanges={handleSaveChangesDraft}
                                     />
                                 ) : (
                                     <FormFieldValueDisplay
@@ -2091,7 +2175,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             {/* Modals */}
             <PreviewDataBeforeSubmit
                 caseData={caseState}
-                submitButton={!isCreate ? handleSaveChanges : handleCreateCase}
+                submitButton={!isCreate || caseState?.workOrderNummber !== undefined ? handleSaveChanges : handleCreateCase}
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
             />
