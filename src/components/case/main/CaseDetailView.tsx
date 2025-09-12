@@ -1645,7 +1645,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw new Error("No data found in dispatch object");
             }
             const payload = await postDispatch(dispatchjson).unwrap();
-
+            if(payload.msg?.toLocaleLowerCase()!=="success"){
+                throw Error
+            }
             console.log('Dispatch successful:', payload);
             setToastMessage("Dispatch Successfully!");
             setToastType("success");

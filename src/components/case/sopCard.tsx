@@ -142,8 +142,9 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     </Badge>
                 </div>
             </div>
-
+            {caseData.caseVersion==="draft"?undefined:
             <ProgressStepPreview progressSteps={stepsToDisplay} />
+            }
             
             {/* START: Responsive Button Grid Container */}
             <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
@@ -182,7 +183,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         <span>Add WO</span>
                     </Button>} */}
                     
-                {onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+                {caseData.caseVersion!=="draft" && onAssignClick  && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}

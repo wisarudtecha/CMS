@@ -230,10 +230,10 @@ export default function CasesView() {
 
     return (<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
       <div>
-        <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">Advance Filtering</h3>
+        <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">{t("case.display.advance_filtering.title")}</h3>
         <div className="space-y-4">
           <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Case Type</label>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.types")}</label>
             <SearchableSelect
               options={caseTypeOptions}
               value={
@@ -244,24 +244,24 @@ export default function CasesView() {
               }
               onChange={(e) => handleCaseTypeChange(e)}
               className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder="Search by Case Type..."
+              placeholder={t("case.display.advance_filtering.search_case_type_place_holder")}
             />
           </div>
           <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Details Search</label>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.search_detail")}</label>
             <input
               id="description-search"
               type="texts"
               value={localFilters.descriptionSearch}
               onChange={(e) => setLocalFilters({ ...localFilters, descriptionSearch: e.target.value })}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder="Search by details..."
+              placeholder={t("case.display.advance_filtering.search_detail_placeholder")}
             />
           </div>
 
           <div className="grid grid-cols-2">
             <div className="mr-2">
-              <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+              <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.start_date_title")}</label>
               <input
                 id="start-date-search"
                 type="datetime-local"
@@ -271,7 +271,7 @@ export default function CasesView() {
               />
             </div>
             <div>
-              <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+              <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.end_date_title")}</label>
               <input
                 id="end-date-search"
                 type="datetime-local"
@@ -282,26 +282,26 @@ export default function CasesView() {
             </div>
           </div>
           <div>
-            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.status_title")}</label>
             <select
               id="category-filter"
               value={localFilters.category}
               onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
             >
-              <option value="">All Categories</option>
+              <option value="">{t("case.display.advance_filtering.status_placeholder_all")}</option>
               {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Create By</label>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.create_by_tilte")}</label>
             <input
               id="createBy"
               type="texts"
               value={localFilters.createBy}
               onChange={(e) => setLocalFilters({ ...localFilters, createBy: e.target.value })}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder="Create By..."
+              placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
             />
           </div>
         </div>

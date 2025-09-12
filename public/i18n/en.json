@@ -664,7 +664,19 @@
       "advance_filter":"Advacnce Filtering",
       "add_new_case":"Add New Case",
       "clear":"clear",
-      "apply_filter":"Apply Filters"
+      "apply_filter":"Apply Filters",
+      "advance_filtering":{
+        "title":"Advance Filtering",
+        "search_case_type_place_holder":"Search by Case Type...",
+        "search_detail":"Details",
+        "search_detail_placeholder":"Search by details...",
+        "start_date_title":"Start Date",
+        "end_date_title":"End Date",
+        "status_title":"Status",
+        "status_placeholder_all":"All Status",
+        "create_by_tilte":"Create By",
+        "create_by_tilte_placeholder":"Create By..."
+      }
     },
     "assign_officer_modal":{
       "title":"Assign Officers to Case",

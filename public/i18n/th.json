@@ -649,7 +649,19 @@
       "submit": "สร้างใบงาน",
       "Assigned Officer":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
-      "schedule_placeholder": "วว/มม/ปปปป,ชช:นน"
+      "schedule_placeholder": "วว/ดด/ปปปป,ชช:นน",
+      "advance_filtering":{
+        "title":"กรองขั้นสูง",
+        "search_case_type_place_holder":"ค้นหาโดยประเภทเหตุ...",
+        "search_detail":"ค้นหารายละเอียด",
+        "search_detail_placeholder":"ค้นหารายละเอียด...",
+        "start_date_title":"วันที่เริ่มต้น",
+        "end_date_title":"วันที่สิ้นสุด",
+        "status_title":"สถานะ",
+        "status_placeholder_all":"สถานะทั้งหมด",
+        "create_by_tilte":"สร้างโดย",
+        "create_by_tilte_placeholder":"สร้างโดย..."
+      }
     },
     "sop_card": {
       "comment": "ข้อความ",
