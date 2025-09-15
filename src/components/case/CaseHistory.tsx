@@ -5,17 +5,32 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import { AlertHexaIcon, CalenderIcon, ChatIcon, CheckCircleIcon, TimeIcon, UserIcon } from "@/icons";
+import {
+  // AlertHexaIcon,
+  CalenderIcon,
+  ChatIcon,
+  TimeIcon,
+  // CheckCircleIcon,
+  // TimeIcon,
+  UserIcon
+} from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+import { contractMethodMock } from "@/components/case/source";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Area } from "@/store/api/area";
 import { useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { AuthService } from "@/utils/authService";
-import { CASE_CANNOT_DELETE } from "@/utils/constants";
+import {
+  CASE_CANNOT_DELETE,
+  // PRIORITY_COLORS,
+  PRIORITY_LABELS,
+  PRIORITY_CONFIG
+} from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseSop } from "@/store/api/dispatch"; 
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
@@ -26,10 +41,11 @@ import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC<{
+  areas: Area[];
   caseHistories: CaseEntity[];
   caseStatuses: CaseStatus[];
   caseTypesSubTypes: CaseTypeSubType[];
-}> = ({ caseHistories, caseStatuses, caseTypesSubTypes }) => {
+}> = ({ areas, caseHistories, caseStatuses, caseTypesSubTypes }) => {
   const { t, language } = useTranslation();
 
   const isSystemAdmin = AuthService.isSystemAdmin();
@@ -104,18 +120,26 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const generatePriorityConfigs = () => {
-    return [
-      { color: "text-red-600 dark:text-red-300", icon: AlertHexaIcon, label: "High" },
-      { color: "text-red-600 dark:text-red-300", icon: AlertHexaIcon, label: "High" },
-      { color: "text-red-600 dark:text-red-300", icon: AlertHexaIcon, label: "High" },
-      { color: "text-red-600 dark:text-red-300", icon: AlertHexaIcon, label: "High" },
-      { color: "text-yellow-600 dark:text-yellow-300", icon: TimeIcon, label: "Medium" },
-      { color: "text-yellow-600 dark:text-yellow-300", icon: TimeIcon, label: "Medium" },
-      { color: "text-yellow-600 dark:text-yellow-300", icon: TimeIcon, label: "Medium" },
-      { color: "text-green-600 dark:text-green-300", icon: CheckCircleIcon, label: "Low" },
-      { color: "text-green-600 dark:text-green-300", icon: CheckCircleIcon, label: "Low" },
-      { color: "text-green-600 dark:text-green-300", icon: CheckCircleIcon, label: "Low" },
-    ];
+    // return [
+    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
+    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
+    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
+    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
+    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
+    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
+    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
+    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
+    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
+    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
+    // ];
+    const langKey = language as keyof typeof PRIORITY_LABELS.high;
+    return PRIORITY_CONFIG.flatMap(({ type, count, color, icon }) =>
+      Array(count).fill(null).map(() => ({
+        color,
+        icon,
+        label: PRIORITY_LABELS[type][langKey]
+      }))
+    );
   }
 
   const priorityConfigs = generatePriorityConfigs();
@@ -160,7 +184,7 @@ const CaseHistoryComponent: React.FC<{
     const sTypeCode = config.sTypeCode || "";
     // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "Loading...";
     // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "";
-    const displayName = `${config.th || config.en || ""}-${config.subTypeTh || config.subTypeEn || ""}`;
+    const displayName = `${(language === "th" && config.th) || config.en || ""}-${(language === "th" && config.subTypeTh) || config.subTypeEn || ""}`;
     // return `${sTypeCode}-${displayName}`;
     return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
   };
@@ -176,16 +200,41 @@ const CaseHistoryComponent: React.FC<{
         .sort((a, b) => (a.sTypeCode || "").localeCompare(b.sTypeCode || ""))
         .map((caseTypeSubType) => ({
           value: caseTypeSubType?.sTypeId || "",
-          label: `${caseTypeSubType.sTypeCode || "Unknown:Code"} - ${
-            caseTypeSubType?.subTypeTh ||
-            caseTypeSubType?.subTypeEn ||
-            "Unknown:Name"
-          } (${
+          label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${
             // caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
             caseTypeSubType[language as keyof CaseTypeSubType] as string || caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
-          })`,
+          }-${
+            (language === "th" && caseTypeSubType?.subTypeTh) || caseTypeSubType?.subTypeEn || "Unknown:Name"
+          }`,
         }))
     : [];
+
+  // ===================================================================
+  // Areas Properties
+  // ===================================================================
+
+  const generateAreaConfigs = (data: Area[]) => {
+    return Array.isArray(data) ? data.map((area) => ({
+      distId: area?.distId || "",
+      district: (language === "th" && area?.districtTh) || area?.districtEn || "",
+      province: (language === "th" && area?.provinceTh) || area?.provinceEn || "",
+      country: (language === "th" && area?.countryTh) || area?.countryEn || "",
+    })) : []
+  }
+
+  const areaConfigs = generateAreaConfigs(areas);
+
+  const getAreaConfig = (caseItem: CaseEntity) => {
+    const found = areaConfigs.find(config => 
+      config.distId === caseItem.distId
+    );
+    return found || {
+      distId: "",
+      district: "", 
+      province: "", 
+      country: ""
+    };
+  };
 
   // ===================================================================
   // Case History Mock Data
@@ -343,6 +392,15 @@ const CaseHistoryComponent: React.FC<{
   // Preview Configuration
   // ===================================================================
 
+  const PreviewTitle: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
+    return (
+      <div className="flex gap-2 items-center">
+        <TimeIcon className="w-4 h-4" /> {t("case.assignment.create_date")}: {formatDate(caseItem.createdAt)}
+        <UserIcon className="w-4 h-4" /> {t("case.assignment.create_by")}: {caseItem.createdBy}
+      </div>
+    );
+  };
+
   const getTimelineSteps = (caseItem: CaseEntity) => {
     const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
     const timelineSteps = CaseTimelineSteps(sopData);
@@ -353,6 +411,11 @@ const CaseHistoryComponent: React.FC<{
     useEffect(() => {
       setSelectedCaseForSop(caseItem.caseId);
     }, [caseItem.caseId]);
+
+    const dpcConfig = getAreaConfig(caseItem);
+    const dpcDisplay = `${dpcConfig.district || "Unknown:District"}-${dpcConfig.province || "Unknown:Province"}-${dpcConfig.country || "Unknown:Country"}`;
+
+    const contactMethod = contractMethodMock.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
 
     return (
       <>
@@ -391,9 +454,10 @@ const CaseHistoryComponent: React.FC<{
             {/* Case Information */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                Case Information
+                {t("case.display.case_information")}
               </h4>
               <div className="grid grid-cols-1 space-y-3">
+                {/*
                 <div className="xl:flex items-left justify-left">
                   <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created At:</span>
                   <span className="text-gray-600 dark:text-gray-300 text-sm mr-2">
@@ -404,14 +468,29 @@ const CaseHistoryComponent: React.FC<{
                     {caseItem.createdBy || ""}
                   </span>
                 </div>
+                */}
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Detail:</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.no")}:</span>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseDetail || ""}
+                    {caseItem.caseId || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Location:</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.service_center")}:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {dpcDisplay || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                {t("case.display.area")}
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left">
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.caselocAddrDecs || caseItem.caselocAddr || ""}
                   </div>
@@ -419,39 +498,46 @@ const CaseHistoryComponent: React.FC<{
               </div>
             </div>
 
-            {/* Customer / Device Information */}
-            {caseItem.deviceId && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                  Device Information
-                </h4>
-                <div className="grid grid-cols-1 space-y-3">
-                  <div className="xl:flex items-left justify-left">
-                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Device ID:</span>
-                    <div className="text-gray-600 dark:text-gray-300 text-sm">
-                      {caseItem.deviceId || ""}
-                    </div>
+            {/* Contact */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                {t("case.display.contact")}
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.phoneNo || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {contactMethod?.name || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left">
+                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.deviceId || ""}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Customer / Device Information */}
-            {caseItem.phoneNo && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                  Customer Information
-                </h4>
-                <div className="grid grid-cols-1 space-y-3">
-                  <div className="xl:flex items-left justify-left">
-                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Phone No.:</span>
-                    <div className="text-gray-600 dark:text-gray-300 text-sm">
-                      {caseItem.phoneNo || ""}
-                    </div>
+            {/* Detail */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                {t("case.display.detail")}
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left">
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {caseItem.caseDetail || ""}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Attachments Section */}
@@ -517,7 +603,7 @@ const CaseHistoryComponent: React.FC<{
           <div className="flex items-center gap-2 mb-4">
             <ChatIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             <h4 className="font-medium text-gray-900 dark:text-white">
-              Comments ({caseHistories?.length || 0})
+              {t("case.sop_card.comment")} ({caseHistories?.length || 0})
             </h4>
           </div>
           
@@ -549,7 +635,7 @@ const CaseHistoryComponent: React.FC<{
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t("crud.common.empty_table")}</p>
           )}
         </div>
 
@@ -594,29 +680,30 @@ const CaseHistoryComponent: React.FC<{
   const previewConfig: PreviewConfig<CaseEntity> = {
     // title: (caseItem: CaseEntity) => `${caseTitle(caseItem)} (${getTypeSubTypeConfig(caseItem).th || getTypeSubTypeConfig(caseItem).en || ""})`,
     title: (caseItem: CaseEntity) => `${caseTitle(caseItem)}`,
-    subtitle: (caseItem: CaseEntity) => {
-      return (
-        <>
-          <span className="mr-2">{caseItem.caseId || ""}</span>
-          <Badge className={`${getStatusConfig(caseItem)?.color} text-sm mr-2`}>{getStatusConfig(caseItem)?.label || ""}</Badge>
-          <span className={`${getPriorityConfig(caseItem).color} text-sm`}>{getPriorityConfig(caseItem).label || ""}</span>
-        </>
-      );
-    },
-    avatar: (caseItem: CaseEntity) => {
-      const Icon = getPriorityConfig(caseItem).icon;
-      return (
-        <div className={`w-12 h-12 flex items-center justify-center rounded-lg ${getPriorityConfig(caseItem).color}`}>
-          <Icon className="w-6 h-6" />  
-        </div>
-      );
-    },
+    // subtitle: (caseItem: CaseEntity) => {
+    //   return (
+    //     <>
+    //       <span className="mr-2">{caseItem.caseId || ""}</span>
+    //       <Badge className={`${getStatusConfig(caseItem)?.color} text-sm mr-2`}>{getStatusConfig(caseItem)?.label || ""}</Badge>
+    //       <span className={`${getPriorityConfig(caseItem).color} text-sm`}>{getPriorityConfig(caseItem).label || ""}</span>
+    //     </>
+    //   );
+    // },
+    subtitle: (caseItem: CaseEntity) => <PreviewTitle caseItem={caseItem} />,
+    // avatar: (caseItem: CaseEntity) => {
+    //   const Icon = getPriorityConfig(caseItem).icon;
+    //   return (
+    //     <div className={`w-12 h-12 flex items-center justify-center rounded-lg ${getPriorityConfig(caseItem).color}`}>
+    //       <Icon className="w-6 h-6" />  
+    //     </div>
+    //   );
+    // },
     enableNavigation: true,
     size: "xl",
     tabs: [
       {
         key: "overview",
-        label: "Overview",
+        label: t("crud.case_history.list.preview.tab.header.overview"),
         // icon: InfoIcon,
         render: (caseItem: CaseEntity) => {
           return (<OverviewTab caseItem={caseItem} />)
@@ -624,7 +711,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "activity",
-        label: "Activity",
+        label: t("crud.case_history.list.preview.tab.header.activity"),
         // icon: PieChartIcon,
         render: (caseItem: CaseEntity) => {
           return (<ActivityTab caseItem={caseItem} />)
@@ -709,7 +796,7 @@ const CaseHistoryComponent: React.FC<{
     actions: [
       {
         key: "edit",
-        label: "Edit Case",
+        label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "warning",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
@@ -722,7 +809,7 @@ const CaseHistoryComponent: React.FC<{
       },
       {
         key: "cancel",
-        label: "Cancel Case",
+        label: t("crud.case_history.list.body.actions.cancel"),
         // icon: TimeIcon,
         variant: "outline",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
@@ -757,9 +844,10 @@ const CaseHistoryComponent: React.FC<{
     // },
     {
       key: "caseSTypeId",
-      label: "Type",
+      label: t("crud.case_history.list.toolbar.advanced_filter.type.label"),
       type: "select" as const,
-      options: caseTypesSubTypesOptions
+      options: caseTypesSubTypesOptions,
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.type.placeholder"),
     }
   ];
 

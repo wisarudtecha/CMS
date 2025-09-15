@@ -1,19 +1,19 @@
 // /src/components/crud/AdvancedFilterPanel.tsx
 import React, { useEffect, useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import Button from "@/components/ui/button/Button";
-import Checkbox from "@/components/form/input/Checkbox";
-import Input from "@/components/form/input/InputField";
-import Radio from "@/components/form/input/Radio";
-// import CustomizableSelect from "@/components/form/CustomizableSelect";
-import Select from "@/components/form/Select";
-import { Modal } from "@/components/ui/modal";
 import {
   // FilterIcon,
   CloseIcon
 } from "@/icons";
+import { Modal } from "@/components/ui/modal";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { AdvancedFilter } from "@/types/enhanced-crud";
 import type { FilterConfig } from "@/types/crud";
+// import CustomizableSelect from "@/components/form/CustomizableSelect";
+import Checkbox from "@/components/form/input/Checkbox";
+import Input from "@/components/form/input/InputField";
+import Radio from "@/components/form/input/Radio";
+import Select from "@/components/form/Select";
+import Button from "@/components/ui/button/Button";
 
 interface AdvancedFilterPanelProps {
   filters: AdvancedFilter[];
@@ -21,7 +21,7 @@ interface AdvancedFilterPanelProps {
   onChange: (filters: FilterConfig) => void;
   onApply: () => void;
   onReset: () => void;
-  title?: string;
+  // title?: string;
   className?: string;
 }
 
@@ -31,7 +31,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
   onChange,
   onApply,
   onReset,
-  title = "Advanced Filters",
+  // title = "Advanced Filters",
   className = ""
 }) => {
   const { t } = useTranslation();
@@ -91,7 +91,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
       case "text":
         return (
           <Input
-            type="text"
+            // type="text"
             value={value as string || ""}
             onChange={(e) => handleFilterChange(filter.key, e.target.value)}
             placeholder={filter.placeholder}
@@ -357,7 +357,7 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {title}
+            {t("crud.common.search_advanced")}
           </h3>
           <Button
             onClick={() => setIsOpen(false)}
@@ -413,19 +413,20 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
         */}
 
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-500 dark:text-gray-400 mr-3">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mr-3 cursor-default">
             {activeFiltersCount > 0 ? (
-              `${activeFiltersCount} filter${activeFiltersCount !== 1 ? 's' : ''} active`
+              // `${activeFiltersCount} filter${activeFiltersCount !== 1 ? 's' : ''} active`
+              `${activeFiltersCount} ${t("crud.common.count_filters").replace("_S_", activeFiltersCount !== 1 ? "s" : "")}`
             ) : (
-              'No filters applied'
+              t("crud.common.no_filters")
             )}
           </div>
           <div className="flex gap-3">
             <Button onClick={handleReset} variant="outline">
-              Reset All
+              {t("crud.common.reset_all")}
             </Button>
             <Button onClick={handleApply} variant="primary">
-              Apply Filters ({activeFiltersCount})
+              {t("crud.common.apply_filters")} ({activeFiltersCount})
             </Button>
           </div>
         </div>

@@ -1,9 +1,10 @@
 // /src/components/crud/FilterBar.tsx
 import React from "react";
+import { CloseIcon } from "@/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { FilterConfig, FilterDefinition } from "@/types/crud";
 import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
-import { CloseIcon } from "@/icons";
-import type { FilterDefinition, FilterConfig } from "@/types/crud";
 
 interface FilterBarProps {
   filters: FilterDefinition[];
@@ -20,6 +21,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onClear,
   hasActiveFilters
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-wrap items-center gap-4">
       {filters.map((filter) => (
@@ -42,7 +45,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           className="h-11"
         >
           <CloseIcon className="w-4 h-4" />
-          Clear Filters
+          {t("common.clear_filters")}
         </Button>
       )}
     </div>

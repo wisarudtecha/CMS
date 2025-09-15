@@ -2,6 +2,7 @@
 /**
  * Application Constants
  */
+import { AlertHexaIcon, CheckCircleIcon, TimeIcon } from "@/icons";
 // import { CORSHandler } from "@/utils/corsHandler";
 
 export const APP_CONFIG = {
@@ -119,12 +120,44 @@ export const POPUP_AUTO_DISMISS_MS = 10000 as const; // แต่ละป็อ
 export const POPUP_GROUP_AUTO_CLOSE_MS = 8000 as const; // ปิดทั้งชุดใน 8 วิ
 export const POPUP_TRANSITION_MS = 300 as const; // animation 300ms (ต้องตรงกับ duration-300)
 
+// export const PRIORITY_COLORS = {
+//   low: "text-gray-600 bg-gray-50",
+//   medium: "text-blue-600 bg-blue-50",
+//   high: "text-orange-600 bg-orange-50",
+//   urgent: "text-red-600 bg-red-50",
+// } as const;
+
 export const PRIORITY_COLORS = {
-  low: "text-gray-600 bg-gray-50",
-  medium: "text-blue-600 bg-blue-50",
-  high: "text-orange-600 bg-orange-50",
-  urgent: "text-red-600 bg-red-50",
+  low: "text-green-600 dark:text-green-300",
+  medium: "text-yellow-600 dark:text-yellow-300",
+  high: "text-red-600 dark:text-red-300",
+  urgent: "text-red-600 dark:text-red-300",
 } as const;
+
+export const PRIORITY_LABELS = {
+  low: {
+    th: "ต่ำ",
+    en: "Low",
+  },
+  medium: {
+    th: "ปานกลาง",
+    en: "Medium",
+  },
+  high: {
+    th: "สูง",
+    en: "High",
+  },
+  urgent: {
+    th: "สูงสุด",
+    en: "Urgent",
+  }
+} as const;
+
+export const PRIORITY_CONFIG = [
+  { type: 'high', count: 4, color: PRIORITY_COLORS.high, icon: AlertHexaIcon },
+  { type: 'medium', count: 3, color: PRIORITY_COLORS.medium, icon: TimeIcon },
+  { type: 'low', count: 3, color: PRIORITY_COLORS.low, icon: CheckCircleIcon },
+] as const;
 
 export const ROUTES = {
   HOME: "/",
@@ -143,6 +176,8 @@ export const SLA_STATUS_COLORS = {
   warning: "text-yellow-600 bg-yellow-50",
   breached: "text-red-600 bg-red-50",
 } as const;
+
+export const SOP_TIMELINES_STATUS = ["S008", "S009", "S010", "S011", "S012", "S013", "S014"] as const;
 
 export const STATUS_COLORS = {
   open: "text-blue-600 bg-blue-50",

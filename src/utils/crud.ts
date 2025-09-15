@@ -1,11 +1,49 @@
 // /src/utils/crud.ts
-export const formatDate = (dateString: string | Date) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
+import { useTranslation as UseTranslation } from "@/hooks/useTranslation";
+
+// export const formatDate = (dateString: string | Date) => {
+//   return new Date(dateString).toLocaleDateString("en-US", {
+//     year: "numeric",
+//     month: "short",
+//     day: "numeric",
+//     hour: "2-digit",
+//     minute: "2-digit"
+//   });
+// };
+
+interface DateFormatOptions {
+  locale?: string;
+  includeTime?: boolean;
+  dateStyle?: "full" | "long" | "medium" | "short";
+}
+
+export const formatDate = (
+  dateString: string | Date,
+  options: DateFormatOptions = {}
+) => {
+  const { language } = UseTranslation();
+  const langLocale = { th: "th-TH", en: "en-US", cn: "zh-CN" };
+
+  const { 
+    locale = langLocale[language] || "en-US", 
+    includeTime = true,
+    dateStyle = "medium"
+  } = options;
+
+  const date = new Date(dateString);
+  
+  if (includeTime) {
+    return date.toLocaleString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric", 
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+  
+  return date.toLocaleDateString(locale, {
+    dateStyle
   });
 };
 
@@ -14,8 +52,8 @@ export const formatLastLogin = (dateString: string | Date) => {
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
   return `${Math.floor(diffDays / 30)} months ago`;

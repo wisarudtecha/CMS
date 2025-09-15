@@ -28,7 +28,8 @@
     "end_date": "End Date",
     "search_placeholder": "Search...",
     "refresh": "Refresh",
-    "home": "Home"
+    "home": "Home",
+    "retry": "Retry"
   },
   "auth": {
     "signin": {
@@ -316,11 +317,42 @@
         "sortDescending": ": enable to sort the column in descending order"
       },
       "search_advanced": "Advanced Filters",
+      "reset_all": "Reset All",
+      "apply_filters": "Apply Filters",
+      "count_filters": "filter_S_ active",
+      "no_filters": "No filters applied",
+      "no_filters_active": "Try adjusting your filters or search terms",
+      "no_records": "Create your first _ENTITY_ to get started",
       "action": "Action",
       "create": "Create _ENTITY_",
       "read": "View",
       "update": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "delete_success": "_ENTITY_ deleted successfully",
+      "delete_error": "Failed to delete _ENTITY_",
+      "confirm_modal": {
+        "dialog_title": {
+          "delete": "Delete Confirmation",
+          "status": "Status Change",
+          "other": "Confirmation"
+        },
+        "dialog_subtitle": {
+          "delete": "This action cannot be undone",
+          "status": "",
+          "other": "Please confirm your action"
+        },
+        "dialog_message": {
+          "delete": "Are you sure you want to delete _ENTITY_? This action cannot be undone.",
+          "status": "Change _ENTITY_ status to _NEW_?",
+          "other": "Are you sure you want to proceed?"
+        },
+        "dialog_button": {
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "status": "",
+          "other": "Confirm"
+        }
+      }
     },
     "case_history": {
       "name": "Work Order",
@@ -332,6 +364,12 @@
           "filter": {
             "status": "Select Status",
             "priority": "Select Priority"
+          },
+          "advanced_filter": {
+            "type": {
+              "label": "Type",
+              "placeholder": "Select Type"
+            }
           }
         },
         "header": {
@@ -344,6 +382,14 @@
         "body": {
           "actions": {
             "cancel": "Cancel"
+          }
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "overview": "Overview",
+              "activity": "Activity"
+            }
           }
         }
       }

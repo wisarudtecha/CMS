@@ -1,8 +1,9 @@
 // /src/components/crud/ConfirmModal.tsx
 import React from "react";
 import { Modal } from "@/components/ui/modal";
-import Button from "@/components/ui/button/Button";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ConfirmDialog } from "@/types/crud";
+import Button from "@/components/ui/button/Button";
 
 interface ConfirmModalProps {
   dialog: ConfirmDialog;
@@ -15,16 +16,20 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   onCancel
 }) => {
+  const { t } = useTranslation();
+  
   const getTitle = () => {
-    if (dialog.title) return dialog.title;
+    if (dialog.title) {
+      return dialog.title;
+    }
     
     switch (dialog.type) {
       case "delete":
-        return "Delete Confirmation";
+        return t("crud.common.confirm_modal.dialog_title.delete");
       case "status":
-        return "Status Change";
+        return t("crud.common.confirm_modal.dialog_title.status");
       default:
-        return "Confirmation";
+        return t("crud.common.confirm_modal.dialog_title.other");
     }
   };
 
@@ -35,18 +40,18 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     
     switch (dialog.type) {
       case "delete":
-        return `Are you sure you want to delete "${dialog.entityName}"? This action cannot be undone.`;
+        return t("crud.common.confirm_modal.dialog_message.delete").replace("_ENTITY_", dialog.entityName);
       case "status":
-        return `Change "${dialog.entityName}" status to ${dialog.newValue}?`;
+        return t("crud.common.confirm_modal.dialog_message.status").replace("_ENTITY_", dialog.entityName).replace("_NEW_", dialog.newValue as string);
       default:
-        return "Are you sure you want to proceed?";
+        return t("crud.common.confirm_modal.dialog_message.other");
     }
   };
 
   return (
     <Modal 
-      isOpen={dialog.isOpen} 
-      onClose={onCancel} 
+      isOpen={dialog.isOpen}
+      onClose={onCancel}
       className="max-w-md p-6"
     >
       <div className="mb-4">
@@ -54,7 +59,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           {getTitle()}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-          {dialog.type === "delete" ? "This action cannot be undone" : "Please confirm your action"}
+          {dialog.type === "delete" ? t("crud.common.confirm_modal.dialog_subtitle.delete") : t("crud.common.confirm_modal.dialog_subtitle.other")}
         </p>
       </div>
       
@@ -64,13 +69,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       
       <div className="flex items-center gap-3 justify-end">
         <Button onClick={onCancel} variant="outline">
-          Cancel
+          {t("crud.common.confirm_modal.dialog_button.cancel")}
         </Button>
         <Button
           onClick={onConfirm}
           variant={dialog.type === "delete" ? "error" : "primary"}
         >
-          {dialog.type === "delete" ? "Delete" : "Confirm"}
+          {dialog.type === "delete" ? t("crud.common.confirm_modal.dialog_button.delete") : t("crud.common.confirm_modal.dialog_button.other")}
         </Button>
       </div>
     </Modal>

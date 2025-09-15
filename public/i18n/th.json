@@ -29,7 +29,8 @@
     "end_date": "วันที่สิ้นสุด",
     "search_placeholder": "ค้นหา...",
     "refresh": "รีเฟรช",
-    "home": "หน้าหลัก"
+    "home": "หน้าหลัก",
+    "retry": "ลองใหม่อีกครั้ง"
   },
   "auth": {
     "signin": {
@@ -317,11 +318,42 @@
         "sortDescending": ": เปิดใช้งานเพื่อเรียงลำดับคอลัมน์จากมากไปน้อย"
       },
       "search_advanced": "ตัวกรองขั้นสูง",
+      "reset_all": "ล้างตัวกรอง",
+      "apply_filters": "ใช้ตัวกรอง",
+      "count_filters": "ตัวกรอง ทำงานอยู่",
+      "no_filters": "ไม่มีการใช้ตัวกรอง",
+      "no_filters_active": "ลองปรับตัวกรองหรือเงื่อนไขการค้นหาของคุณ",
+      "no_records": "สร้าง_ENTITY_แรกของคุณเพื่อเริ่มต้น",
       "action": "การดำเนินการ",
       "create": "สร้าง_ENTITY_",
       "read": "ดู",
       "update": "แก้ไข",
-      "delete": "ลบ"
+      "delete": "ลบ",
+      "delete_success": "ลบ_ENTITY_สำเร็จแล้ว",
+      "delete_error": "ลบ_ENTITY_ล้มเหลว",
+      "confirm_modal": {
+        "dialog_title": {
+          "delete": "ยืนยันการลบ",
+          "status": "เปลี่ยนสถานะ",
+          "other": "ยืนยัน"
+        },
+        "dialog_subtitle": {
+          "delete": "การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+          "status": "",
+          "other": "โปรดยืนยันการดำเนินการของคุณ"
+        },
+        "dialog_message": {
+          "delete": "คุณแน่ใจหรือไม่ว่าต้องการลบ _ENTITY_? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+          "status": "เปลี่ยนสถานะ _ENTITY_ เป็น_NEW_?",
+          "other": "คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?"
+        },
+        "dialog_button": {
+          "cancel": "ยกเลิก",
+          "delete": "ลบ",
+          "status": "",
+          "other": "ยืนยัน"
+        }
+      }
     },
     "case_history": {
       "name": "ใบสั่งงาน",
@@ -333,18 +365,32 @@
           "filter": {
             "status": "เลือกสถานะ",
             "priority": "เลือกลำดับความสำคัญ"
+          },
+          "advanced_filter": {
+            "type": {
+              "label": "ประเภทใบสั่งงาน",
+              "placeholder": "เลือกประเภทใบสั่งงาน"
+            }
           }
         },
         "header": {
           "case": "หมายเลขใบสั่งงาน",
           "status": "สถานะ",
-          "priority": "ลำดับความสำคัญ",
+          "priority": "ความสำคัญ",
           "created_by": "สร้างโดย",
           "created_at": "สร้างเมื่อ"
         },
         "body": {
           "actions": {
             "cancel": "ยกเลิก"
+          }
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "overview": "ภาพรวม",
+              "activity": "บันทึกกิจกรรม"
+            }
           }
         }
       }

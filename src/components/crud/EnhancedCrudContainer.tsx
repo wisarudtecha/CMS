@@ -3,7 +3,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { InfoIcon } from "@/icons";
 // import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
-import { BulkActionBar } from "@/components/crud/BulkActionBar";
+// import { BulkActionBar } from "@/components/crud/BulkActionBar";
 import { ClickableCard } from "@/components/crud/ClickableCard";
 import { ConfirmModal } from "@/components/crud/ConfirmModal";
 import { DisplayModeToggle } from "@/components/crud/DisplayModeToggle";
@@ -64,7 +64,7 @@ interface EnhancedCrudContainerProps<T> {
 export const EnhancedCrudContainer = <T extends { id: string }>({
   advancedFilters = [],
   apiConfig,
-  bulkActions = [],
+  // bulkActions = [],
   config,
   data,
   displayModes = ["card", "table", "matrix", "hierarchy"],
@@ -126,7 +126,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const { canGoNext, canGoPrev, previewState, closePreview, nextItem, openPreview, prevItem } = usePreview<T>();
 
   // API functionality
-  const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
+  // const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
   const deleteApi = useApi(((endpoint: string) => apiService.delete(endpoint)) as (...args: unknown[]) => Promise<unknown>);
   // API functionality (custom)
   const cancelApi = useApi(((endpoint: string, data: unknown) => apiService.patch(endpoint, data)) as (...args: unknown[]) => Promise<unknown>);
@@ -174,41 +174,41 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // ===================================================================
 
   // Handle bulk actions
-  const handleBulkAction = useCallback(async (action: BulkAction<T>) => {
-    if (action.confirmationRequired) {
-      openConfirmDialog({
-        type: "custom",
-        entityId: "",
-        entityName: "",
-        title: `${action.label} ${getSelectedCount()} items`,
-        message: action.confirmationMessage 
-          ? action.confirmationMessage(selectedItems)
-          : `Are you sure you want to ${action.label.toLowerCase()} ${getSelectedCount()} items?`,
-        onConfirm: async () => {
-          try {
-            await action.onClick(selectedItems);
-            deselectAll();
-            addToast("success", `${action.label} completed successfully`);
-          }
-          catch (error) {
-            addToast("error", `${action.label} failed`);
-            console.error(error);
-          }
-        }
-      });
-    }
-    else {
-      try {
-        await action.onClick(selectedItems);
-        deselectAll();
-        addToast("success", `${action.label} completed successfully`);
-      }
-      catch (error) {
-        addToast("error", `${action.label} failed`);
-        console.error(error);
-      }
-    }
-  }, [selectedItems, addToast, deselectAll, getSelectedCount, openConfirmDialog]);
+  // const handleBulkAction = useCallback(async (action: BulkAction<T>) => {
+  //   if (action.confirmationRequired) {
+  //     openConfirmDialog({
+  //       type: "custom",
+  //       entityId: "",
+  //       entityName: "",
+  //       title: `${action.label} ${getSelectedCount()} items`,
+  //       message: action.confirmationMessage 
+  //         ? action.confirmationMessage(selectedItems)
+  //         : `Are you sure you want to ${action.label.toLowerCase()} ${getSelectedCount()} items?`,
+  //       onConfirm: async () => {
+  //         try {
+  //           await action.onClick(selectedItems);
+  //           deselectAll();
+  //           addToast("success", `${action.label} completed successfully`);
+  //         }
+  //         catch (error) {
+  //           addToast("error", `${action.label} failed`);
+  //           console.error(error);
+  //         }
+  //       }
+  //     });
+  //   }
+  //   else {
+  //     try {
+  //       await action.onClick(selectedItems);
+  //       deselectAll();
+  //       addToast("success", `${action.label} completed successfully`);
+  //     }
+  //     catch (error) {
+  //       addToast("error", `${action.label} failed`);
+  //       console.error(error);
+  //     }
+  //   }
+  // }, [selectedItems, addToast, deselectAll, getSelectedCount, openConfirmDialog]);
 
   // Handle clear search
   const handleClearSearch = () => {
@@ -220,7 +220,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const handleDeleteItem = useCallback(async (item: T) => {
     console.log("handleDeleteItem called for item:", item);
 
-    const newValue = (module === "case" && "caseId" in item) ? "Cancel" : "";
+    const newValue = (module === "case" && "caseId" in item) ? t("crud.case_history.list.body.actions.cancel") : "";
     const confirmDialogType = (module === "case" && "caseId" in item) ? "status" : "delete";
     const id = (module === "workflow" && "wfId" in item) ? (item as { wfId: string }).wfId : item.id;
     const entityName = (item as Record<string, unknown>).name as string || (item as Record<string, unknown>).title as string || id;
@@ -244,15 +244,15 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           if (onDelete) {
             onDelete(id);
           }
-          addToast("success", `${config.entityName} deleted successfully`);
+          addToast("success", t("crud.common.delete_success").replace("_ENTITY_", config.entityName.toLowerCase()));
         }
         catch (error) {
           console.error("Delete failed:", error);
-          addToast("error", `Failed to delete ${config.entityName.toLowerCase()}`);
+          addToast("error", t("crud.common.delete_error").replace("_ENTITY_", config.entityName.toLowerCase()));
         }
       }
     });
-  }, [apiConfig, cancelApi, config, deleteApi, module, addToast, onDelete, openConfirmDialog]);
+  }, [apiConfig, cancelApi, config, deleteApi, module, addToast, onDelete, openConfirmDialog, t]);
 
   // Handle export
   const handleExport = useCallback(async (
@@ -355,24 +355,24 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   }, [config.actions, handleItemAction]);
 
   // Default bulk actions
-  const defaultBulkActions: BulkAction<T>[] = [
-    {
-      key: "delete",
-      label: "Delete Selected",
-      variant: "error",
-      onClick: async (items) => {
-        const ids = items.map(item => item.id);
-        if (apiConfig) {
-          await bulkDeleteApi.execute(apiConfig.endpoints.bulkDelete, ids);
-        }
-        ids.forEach(id => onDelete && onDelete(id));
-      },
-      confirmationRequired: true,
-      confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural}? This action cannot be undone.`
-    }
-  ];
+  // const defaultBulkActions: BulkAction<T>[] = [
+  //   {
+  //     key: "delete",
+  //     label: "Delete Selected",
+  //     variant: "error",
+  //     onClick: async (items) => {
+  //       const ids = items.map(item => item.id);
+  //       if (apiConfig) {
+  //         await bulkDeleteApi.execute(apiConfig.endpoints.bulkDelete, ids);
+  //       }
+  //       ids.forEach(id => onDelete && onDelete(id));
+  //     },
+  //     confirmationRequired: true,
+  //     confirmationMessage: (items) => `Are you sure you want to delete ${items.length} ${config.entityNamePlural}? This action cannot be undone.`
+  //   }
+  // ];
 
-  const allBulkActions = [...defaultBulkActions, ...bulkActions];
+  // const allBulkActions = [...defaultBulkActions, ...bulkActions];
 
   // Default export options
   const defaultExportOptions: ExportOption[] = [
@@ -520,24 +520,24 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             <div className="text-red-500 dark:text-red-400 mb-4">{error}</div>
             {onRefresh && (
               <Button onClick={onRefresh} variant="primary">
-                Retry
+                {t("common.retry")}
               </Button>
             )}
           </div>
         ) : paginatedData.length === 0 ? (
           // No Data
           <div className="text-center py-12">
-            <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">
-              No {config.entityNamePlural} found
+            <div className="text-gray-500 dark:text-gray-400 text-lg mb-2 cursor-default">
+              {t("crud.common.zero_records")}
             </div>
 
-            <p className="text-gray-400 dark:text-gray-500 mb-4">
-              {hasActiveFilters ? "Try adjusting your filters or search terms" : `Create your first ${config.entityName.toLowerCase()} to get started`}
+            <p className="text-gray-400 dark:text-gray-500 mb-4 cursor-default">
+              {hasActiveFilters ? t("crud.common.no_filters_active") : `${t("crud.common.no_records").replace("_ENTITY_", config.entityName.toLowerCase())}`}
             </p>
 
             {hasActiveFilters && (
               <Button onClick={clearFilters} variant="primary">
-                Clear Filters
+                {t("common.clear_filters")}
               </Button>
             )}
           </div>
@@ -587,7 +587,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-gray-500 dark:text-gray-400">No columns defined for this entity</div>
+              <div className="text-gray-500 dark:text-gray-400">{t("crud.common.empty_table")}</div>
             </div>
           )
         )}
@@ -605,6 +605,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         )}
 
         {/* Bulk Action Bar */}
+        {/*
         {enabledFeatures.bulkActions && (
           <BulkActionBar
             selectedCount={getSelectedCount()}
@@ -615,6 +616,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             onAction={handleBulkAction}
           />
         )}
+        */}
 
         {/* Confirmation Dialog */}
         <ConfirmModal

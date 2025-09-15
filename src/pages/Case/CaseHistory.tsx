@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Area, useGetAreaQuery } from "@/store/api/area";
 import { useGetListCaseQuery } from "@/store/api/caseApi";
 import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
 import type { CaseEntity, CaseStatus, CaseTypeSubType } from "@/types/case";
@@ -31,6 +32,9 @@ const CaseHistoryPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
+  const { data: areasData } = useGetAreaQuery(null);
+  const areas = areasData?.data as unknown as Area[] || [];
+
   const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
   const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
 
@@ -51,6 +55,7 @@ const CaseHistoryPage: React.FC = () => {
         {/* <PageBreadcrumb pageTitle="Case History" /> */}
 
         <CaseHistoryComponent
+          areas={areas}
           caseHistories={caseHistories}
           caseStatuses={caseStatuses}
           caseTypesSubTypes={caseTypesSubTypes}

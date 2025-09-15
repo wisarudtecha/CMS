@@ -1,8 +1,9 @@
 // /src/components/case/CaseTimelineSteps.tsx
 // import { useGetCaseSopQuery } from "@/store/api/dispatch";
-import type { CaseSop } from "@/store/api/dispatch"; 
+import type { CaseSop } from "@/store/api/dispatch";
 import type { TimelineStep } from "@/types/case";
-import type { Connection } from "@/types/workflow"; 
+import type { Connection } from "@/types/workflow";
+import { SOP_TIMELINES_STATUS } from "@/utils/constants";
 
 // Utility function to create timeline steps from case status
 export const CaseTimelineSteps = (
@@ -76,7 +77,7 @@ export const CaseTimelineSteps = (
       }
 
       // Handle error status for cancelled or delayed items
-      if (["S008", "S009", "S010", "S011", "S012", "S013", "S014"].includes(actionId)) {
+      if (SOP_TIMELINES_STATUS.includes(actionId)) {
         status = status === "active" ? "error" : status;
       }
 

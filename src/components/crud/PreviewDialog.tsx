@@ -11,7 +11,7 @@ import {
   // AngleRightIcon, 
   CopyIcon,
   CheckCircleIcon,
-  InfoIcon,
+  // InfoIcon,
   // SettingsIcon,
   // FileIcon
 } from "@/icons";
@@ -161,9 +161,12 @@ export const PreviewDialog = <T extends { id: string }>({
                 </h2>
               )}
               {config.subtitle && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                // <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                //   {config.subtitle(item)}
+                // </p>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {config.subtitle(item)}
-                </p>
+                </div>
               )}
             </div>
           </div>
@@ -301,16 +304,18 @@ export const PreviewDialog = <T extends { id: string }>({
         )}
       </div>
 
+      {/*
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 m-4 cursor-default">
         <div className="flex items-center gap-2 mb-2">
           <InfoIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h3 className="font-medium text-blue-900 dark:text-blue-100">Preview Feature</h3>
         </div>
         <p className="text-sm text-blue-700 dark:text-blue-300">
-          Click on any workflow card or table row to open a detailed preview with tabs, navigation, and actions.
+          Click on any card or table row to open a detailed preview with tabs, navigation, and actions.
           Use keyboard shortcuts: ← → to navigate, Esc to close.
         </p>
       </div>
+      */}
     </Modal>
   );
 };
