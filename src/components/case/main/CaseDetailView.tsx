@@ -833,7 +833,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             skip: !initialCaseData?.caseId || isCreate
         }
     );
-
     // const { data: unit, refetch: unitRefect } = useGetUnitQuery(
     //     { caseId: initialCaseData?.caseId || "" },
     //     { skip: !initialCaseData?.caseId || isCreate }
@@ -861,19 +860,27 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [isInitialized]);
 
 
-
     useEffect(() => {
 
 
-        const listener = subscribe(async (message) => {
+        const listener = subscribe((message) => {
             try {
                 if (message?.data) {
                     const data = message.data;
                     if (data.eventType === "Update") {
-                        const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
-                        if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
-                            await refetch();
-                        }
+                        (async () => {
+                            const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
+                            if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
+                                await refetch();
+                            }
+                        })();
+                    } else if (data?.additionalJson?.event === "STATUS UPDATE") {
+                        
+                        (async () => {
+                            if (data?.additionalJson?.caseId && caseState?.workOrderNummber === data?.additionalJson?.caseId) {
+                                await refetch();
+                            }
+                        })();
                     }
                 }
             } catch (error) {
@@ -884,7 +891,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         return () => {
             listener();
         };
-    }, [subscribe, connect, connectionState, isConnected]);
+    }, [subscribe, connect, connectionState, isConnected,caseState]);
 
 
     // Initialize sopLocal from API data ONLY when sopData changes
@@ -894,6 +901,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             if (sopData.data.unitLists) {
                 setDispatchUnit(sopData.data.unitLists)
             }
+            
         }
     }, [sopData?.data, initialCaseData?.caseId]);
 
@@ -981,10 +989,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         const fetchFormData = async () => {
             if (!caseState?.caseType?.sTypeId) return;
 
-            // Check if data already exists in localStorage
             const existingData = localStorage.getItem("subTypeForm-" + caseState.caseType.sTypeId);
             if (existingData && existingData !== "undefined") {
-                return; // Data already exists, no need to fetch
+                return;
             }
 
             try {
@@ -1106,11 +1113,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     useEffect(() => {
         if (selectedCaseTypeForm === undefined ||
             selectedCaseTypeForm.formField === undefined ||
-            Object.keys(selectedCaseTypeForm.formField || {}).length === 0) {
-            setIsValueFill(prev => ({ ...prev, DynamicForm: true }));
+            selectedCaseTypeForm.formField.formFieldJson === undefined || selectedCaseTypeForm.formField.formFieldJson === null){
+            setIsValueFill(prev => ({ ...prev, dynamicForm: true }));
         }
     }, [selectedCaseTypeForm]);
-
 
     useEffect(() => {
         if (listCustomerData.length > 0) {
@@ -1180,7 +1186,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
-        } else if (((!isValueFill.dynamicForm && caseState?.formData) || (!isValueFill.getType && selectedCaseTypeForm)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
+        } else if (((!isValueFill.dynamicForm ) || (!isValueFill.getType)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
         return errorMessage;

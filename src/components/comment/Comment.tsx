@@ -7,8 +7,7 @@ import { CaseHistory, useGetCaseHistoryQuery } from "@/store/api/caseApi"; // **
 import { usePostAddCaseHistoryMutation } from "@/store/api/caseApi";
 
 interface CommentsProps {
-    // **REMOVED**: comment prop is no longer needed
-    isOpen: boolean; // **ADDED**: To control when data fetching occurs
+    isOpen: boolean;
     caseId: string;
     currentUsername?: string;
 }
@@ -16,14 +15,11 @@ interface CommentsProps {
 export const Comments: React.FC<CommentsProps> = ({
     isOpen,
     caseId,
-    currentUsername = "Current User"
 }) => {
     const [newCommentMessage, setNewCommentMessage] = useState<string>('');
     const commentsContainerRef = useRef<HTMLDivElement>(null);
     const [commentsData, setCommentsData] = useState<CaseHistory[]>([]);
-
-    // **ADDED**: RTK Query hook for fetching comment history
-    // The `skip` option prevents fetching until `isOpen` is true
+    const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
         { skip: !isOpen }
@@ -31,7 +27,6 @@ export const Comments: React.FC<CommentsProps> = ({
 
     const [addCaseHistory, { isLoading: isAddingComment, error: addCommentError }] = usePostAddCaseHistoryMutation();
 
-    // **MODIFIED**: Effect now listens for fetched data from the hook
     useEffect(() => {
         if (fetchedComments?.data) {
             setCommentsData(fetchedComments.data);
@@ -49,32 +44,28 @@ export const Comments: React.FC<CommentsProps> = ({
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 type: "comment",
-                username: currentUsername
+                username:  profile?.username
             };
 
-            // Call the mutation
             addCaseHistory(newCommentData).unwrap();
             
-            // Optimistically update the UI for a better user experience
             const optimisticComment: CaseHistory = {
                 id: Date.now(),
                 orgId: commentsData[0]?.orgId || "",
                 caseId: caseId,
-                username: currentUsername,
+                username: profile?.username,
                 type: "comment",
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 createdAt: new Date().toISOString(),
-                createdBy: currentUsername
+                createdBy:  profile?.username
             };
             setCommentsData((prevComments) => [...prevComments, optimisticComment]);
             
-            // Clear the input field
             setNewCommentMessage('');
 
         } catch (err) {
             console.error('Failed to add comment:', err);
-            // Optionally, remove the optimistic update on failure
         }
     };
 
@@ -101,7 +92,6 @@ export const Comments: React.FC<CommentsProps> = ({
         }
     };
 
-    // **ADDED**: Helper to render the main content area
     const renderContent = () => {
         if (isFetchingComments) {
             return (

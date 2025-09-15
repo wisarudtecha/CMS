@@ -682,7 +682,19 @@
       "submit":"Submit",
       "Assigned Officer":"Assigned Officer",
       "Assigned Officers":"Assigned Officers",
-      "schedule_placeholder":"dd/hh/yyyy,hh:mm"
+      "schedule_placeholder":"dd/hh/yyyy,hh:mm",
+      "advance_filtering":{
+        "title":"Advance Filtering",
+        "search_case_type_place_holder":"Search by Case Type...",
+        "search_detail":"Details",
+        "search_detail_placeholder":"Search by details...",
+        "start_date_title":"Start Date",
+        "end_date_title":"End Date",
+        "status_title":"Status",
+        "status_placeholder_all":"All Status",
+        "create_by_tilte":"Create By",
+        "create_by_tilte_placeholder":"Create By..."
+      }
     },
     "sop_card":{
       "comment":"Comment",

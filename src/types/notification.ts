@@ -23,6 +23,7 @@ export interface Notification {
   read: boolean;
   data: Data[];
   recipients: Recipient[];
+  additionalJson:any,
 }
 
 export type PopupItem = { id: string; noti: Notification };

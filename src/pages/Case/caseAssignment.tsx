@@ -92,7 +92,6 @@ export default function CasesView() {
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      // Only react to caseList changes
 
       if (e.key === 'caseList' && e.newValue) {
         console.log('Case list updated in localStorage');
@@ -107,7 +106,6 @@ export default function CasesView() {
       }
     };
 
-    // Listen to storage events
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
@@ -137,7 +135,7 @@ export default function CasesView() {
     setAdvancedFilters(clearedFilters);
     setSelectedStatus(null)
     await getNewCaseData();
-    const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+    const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
@@ -204,7 +202,7 @@ export default function CasesView() {
       } else {
         setSelectedStatus(null);
       }
-      const updatedCases = JSON.parse(localStorage.getItem("caseList") ?? "[]");
+      const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };

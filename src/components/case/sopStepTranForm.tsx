@@ -1,5 +1,5 @@
 import { CaseSop } from "@/store/api/dispatch";
-import { CaseStatusInterface } from "../ui/status/status";
+import { CaseStatusInterface, delayStatus } from "../ui/status/status";
 
 interface ProgressSteps {
     id: string;
@@ -20,8 +20,8 @@ interface ProgressLane {
 
 // Helper function to check if a node is a delay node
 const isDelayNode = (node: any): boolean => {
-    const label = node.data?.data?.label || '';
-    return label.toLowerCase().includes('delay');
+    const status = node.data?.data?.config?.action || '';
+    return delayStatus.includes(status);
 };
 
 // const mapSopToProgressSteps = (sopData: CaseSop): Array<{

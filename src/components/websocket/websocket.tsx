@@ -1,6 +1,7 @@
 // contexts/WebSocketContext.tsx
 import React, { createContext, useContext, useRef, useEffect, useState, ReactNode } from 'react';
-import { getNewCaseData } from '../case/caseLocalStorage.tsx/caseListUpdate';
+import { getNewCaseData, getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
+import { CaseEntity } from '@/types/case';
 
 export interface WebSocketMessage {
   type: string;
@@ -52,6 +53,54 @@ export const defalutWebsocketConfig = {
 
 } as WebSocketConfig;
 
+export const WebSocketCaseEvent = (message: WebSocketMessage) => {
+  if (message.data.eventType === "Create") {
+    (async () => {
+      await getNewCaseData();
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "caseList",
+        newValue: localStorage.getItem("caseList"),
+      }));
+    })();
+
+  } else if (message.data.eventType === "Update") {
+    (async () => {
+      const caseIdFromUrl = message.data.redirectUrl.split('/case/')[1];
+      await getNewCaseDataByCaseId(caseIdFromUrl)
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "caseList",
+        newValue: localStorage.getItem("caseList"),
+      }));
+    })();
+    
+  } else if (message?.data?.additionalJson?.event === "STATUS UPDATE") {
+    (() => {
+      try {
+        const caseList = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[];
+        const targetCaseId = message?.data?.additionalJson?.caseId;
+        const newStatus = message?.data?.additionalJson?.status;
+
+        if (targetCaseId && newStatus !== undefined) {
+          const updatedCaseList = caseList.map((item) =>
+            item.caseId === targetCaseId
+              ? { ...item, statusId: newStatus }
+              : item
+          );
+
+          localStorage.setItem("caseList", JSON.stringify(updatedCaseList));
+
+          // Dispatch storage event to notify other components
+          window.dispatchEvent(new StorageEvent("storage", {
+            key: "caseList",
+            newValue: localStorage.getItem("caseList"),
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to update case status:", error);
+      }
+    })();
+  }
+};
 
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   children,
@@ -158,7 +207,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         startHeartbeat();
       };
 
-      ws.onmessage = async (event) => {
+      ws.onmessage = (event) => {
         try {
           const parsed = JSON.parse(event.data);
           const message: WebSocketMessage = {
@@ -168,13 +217,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           };
 
           setLastMessage(message);
-          if (message.data.eventType === "Create") {
-            await getNewCaseData();
-            window.dispatchEvent(new StorageEvent("storage", {
-              key: "caseList",
-              newValue: localStorage.getItem("caseList"),
-            }));
-          }
+          WebSocketCaseEvent(message)
           // Notify all subscribers
           subscribersRef.current.forEach(callback => {
             try {

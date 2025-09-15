@@ -18,6 +18,7 @@ export const caseStatusGroup = [
   { title: {en:"Cancel",th:"ยกเลิก"}, group: ["S014"] ,show:false},
 ]
 
+export const delayStatus =["S008", "S009", "S010", "S011", "S012", "S013", "S014"]
 
 export interface CaseStatusInterface {
   id: string;
