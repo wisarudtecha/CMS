@@ -65,6 +65,12 @@ export default defineConfig({
     allowedHosts: [
       "cms.welcomedcc.com"
     ],
+    hmr: {
+      protocol: "wss", // use "ws" if not serving over HTTPS
+      host: "cms.welcomedcc.com", // the public host browser is loading from
+      clientPort: 443 // needed if the browser connects over HTTPS
+      // port: 5173 // if exposing the Vite port directly without proxy
+    },
     // Proxy configuration to handle CORS
     proxy: {
       "/api": {
