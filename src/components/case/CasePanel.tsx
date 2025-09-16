@@ -9,7 +9,6 @@ import {
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
-import locateImage from "../../../public/images/map/Location-image.jpeg"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "../function/Prioriy"
 import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
@@ -281,7 +280,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                             </div>
                         ) : activeTab === "Location" ? (
                             <div className="text-center py-4">
-                                <img src={locateImage} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
+                                <img src={"../../../public/images/map/Location-image.jpeg"} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
                             </div>
                         )
                             : activeTab === "Device info" ? (
