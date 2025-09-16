@@ -5,6 +5,7 @@ import Button from "../ui/button/Button";
 import { useEffect, useRef, useState } from "react";
 import { CaseHistory, useGetCaseHistoryQuery } from "@/store/api/caseApi"; // **MODIFIED**: Imported useGetCaseHistoryQuery
 import { usePostAddCaseHistoryMutation } from "@/store/api/caseApi";
+import { useWebSocket } from "../websocket/websocket";
 
 interface CommentsProps {
     isOpen: boolean;
@@ -22,10 +23,44 @@ export const Comments: React.FC<CommentsProps> = ({
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
-        { skip: !isOpen }
+        {   refetchOnMountOrArgChange: true,
+            skip: !isOpen 
+        }
     );
-
+    const { subscribe, isConnected, connectionState, connect } = useWebSocket()
     const [addCaseHistory, { isLoading: isAddingComment, error: addCommentError }] = usePostAddCaseHistoryMutation();
+
+    useEffect(() => {
+
+
+        const listener = subscribe((message) => {
+            try {
+                if (message?.data) {
+                    const data = message.data;
+                    if (data?.additionalJson?.type === "comment" && caseId===data?.additionalJson?.caseId) {
+                        const optimisticComment: CaseHistory = {
+                            id: Date.now(),
+                            orgId: data.additionalJson.org || "",
+                            caseId: data?.additionalJson?.caseId,
+                            username: data?.createdBy,
+                            type: "comment",
+                            fullMsg: data?.additionalJson?.fullMsg,
+                            jsonData: "",
+                            createdAt: data?.createdAt,
+                            createdBy: data?.createdBy,
+                        };
+                        setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+                    }
+                }
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        });
+
+        return () => {
+            listener();
+        };
+    }, [subscribe, connect, connectionState, isConnected]);
 
     useEffect(() => {
         if (fetchedComments?.data) {
@@ -44,11 +79,11 @@ export const Comments: React.FC<CommentsProps> = ({
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 type: "comment",
-                username:  profile?.username
+                username: profile?.username
             };
 
             addCaseHistory(newCommentData).unwrap();
-            
+
             const optimisticComment: CaseHistory = {
                 id: Date.now(),
                 orgId: commentsData[0]?.orgId || "",
@@ -58,10 +93,10 @@ export const Comments: React.FC<CommentsProps> = ({
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 createdAt: new Date().toISOString(),
-                createdBy:  profile?.username
+                createdBy: profile?.username
             };
             setCommentsData((prevComments) => [...prevComments, optimisticComment]);
-            
+
             setNewCommentMessage('');
 
         } catch (err) {

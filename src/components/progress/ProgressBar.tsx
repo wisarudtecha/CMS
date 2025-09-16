@@ -35,7 +35,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
         const slaInSeconds = step.sla * 60;
         return step.timeline.duration > slaInSeconds;
     };
-    const {language} = useTranslation();
+    const { language } = useTranslation();
     const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
         if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
             return '';
@@ -50,16 +50,30 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
         const diffSeconds = Math.floor(diffMs / 1000);
         const diffMinutes = Math.floor(diffSeconds / 60);
         const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffMonths = Math.floor(diffDays / 30);
+        const diffYears = Math.floor(diffDays / 365);
 
-        if (diffHours > 0) {
-            const remainingMinutes = diffMinutes % 60;
-            return `${diffHours}h ${remainingMinutes}m`;
-        } else if (diffMinutes > 0) {
-            const remainingSeconds = diffSeconds % 60;
-            return `${diffMinutes}m ${remainingSeconds}s`;
-        } else {
-            return `${diffSeconds}s`;
-        }
+
+        const years = diffYears;
+        const months = diffMonths % 12;
+        const days = diffDays % 30;
+        const hours = diffHours % 24;
+        const minutes = diffMinutes % 60;
+        const seconds = diffSeconds % 60;
+
+
+        const timeUnits = [];
+
+        if (years > 0) timeUnits.push(`${years}y`);
+        if (months > 0) timeUnits.push(`${months}mo`);
+        if (days > 0) timeUnits.push(`${days}d`);
+        if (hours > 0) timeUnits.push(`${hours}h`);
+        if (minutes > 0) timeUnits.push(`${minutes}m`);
+        if (seconds > 0) timeUnits.push(`${seconds}s`);
+
+
+        return timeUnits.slice(0, 2).join(' ') || '0s';
     };
     return (
         <div className="mb-4 sm:mb-6 w-full">
@@ -115,7 +129,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                     <div className="flex flex-col space-y-1">
                                         {step.timeline?.completedAt && (
                                             <div className="text-xs text-gray-400 dark:text-gray-500">
-                                                {DateStringToDateFormat(step.timeline.completedAt, true,language)}
+                                                {DateStringToDateFormat(step.timeline.completedAt, true, language)}
                                             </div>
                                         )}
 
@@ -124,7 +138,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                             (() => {
                                                 const timeDiff = getTimeDifference(progressSteps[index - 1], step);
                                                 return timeDiff && (
-                                                    <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium self-start`}>
+                                                    <div className={`${!violated ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" : "bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium self-start`}>
                                                         {timeDiff}
                                                     </div>
                                                 );
@@ -197,7 +211,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                                     {(() => {
                                         const timeDiff = getTimeDifference(progressSteps[index - 1], step);
                                         return timeDiff && (
-                                            <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
+                                            <div className={`${!violated ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" : "bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
                                                 {timeDiff}
                                             </div>
                                         );
@@ -221,7 +235,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt, true,language)}
+                                        {DateStringToDateFormat(step.timeline.completedAt, true, language)}
                                     </div>
                                 )}
                             </div>

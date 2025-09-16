@@ -324,7 +324,7 @@ const NotificationDropdown = () => {
         const data: Notification = message.data;
         const prefs = getPreferences();
 
-        if (data.eventType && data.message) {
+        if (data.eventType && data.message && data.eventType != "hidden") {
           setNotifications((prev) => {
             if (prev.some((n) => n.id === data.id)) return prev;
             const updated = [{ ...data, read: false }, ...prev];
