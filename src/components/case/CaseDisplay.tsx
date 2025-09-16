@@ -255,7 +255,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     <div className="">
                         {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
                         <textarea
-
+                            readOnly={true}
                             value={""}
                             placeholder={t("case.display.result_detail_placeholder")}
                             className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}

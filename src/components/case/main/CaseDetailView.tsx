@@ -1,5 +1,3 @@
-// CaseDetailView.tsx
-
 "use client"
 
 import { useCallback, useMemo, useState, useEffect, ChangeEvent, memo } from "react"
@@ -458,7 +456,6 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
     handleContactMethodChange, handleIotDevice, handleIotDeviceDate,
     handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
-    handleIotDateChangeDefault,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
     isScheduleDate = false, caseTypeOptions, handleSaveChanges
 }) => (
@@ -615,7 +612,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
                     onChange={handleIotDeviceDate}
                     disabled
-                    value={caseState?.iotDate || handleIotDateChangeDefault(TodayLocalDate())}
+                    value={caseState?.iotDate || ''}
                     placeholder="Work Order"
                 />
             </div>
@@ -1108,7 +1105,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
 
     }, [sopLocal, initialCaseData, areaList.length, caseTypeSupTypeData, isSubCase]);
-
+    
+    useEffect(() => {
+        if (isCreate && caseState && !caseState.iotDate) {
+            setCaseState(prev => prev ? {
+                ...prev,
+                iotDate: TodayLocalDate()
+            } : prev);
+        }
+    }, [isCreate, caseState]);
 
     useEffect(() => {
         if (selectedCaseTypeForm === undefined ||

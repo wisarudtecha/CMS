@@ -598,10 +598,16 @@ export default function CasesView() {
     return <CaseDetailView onBack={onBackDynamic} />
   }
 
-  if (selectedCase) {
-    navigate(`/case/${selectedCase.caseId}`)
-    // return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
-  }
+  // if (selectedCase) {
+  //   navigate(`/case/${selectedCase.caseId}`)
+  //   // return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
+  // }
+  useEffect(() => {
+    if (selectedCase) {
+      navigate(`/case/${selectedCase.caseId}`)
+    }
+  }, [selectedCase, navigate])
+  
   const hasActiveFilters = () => {
     return Object.values(advancedFilters).some(value => value !== "");
   };
