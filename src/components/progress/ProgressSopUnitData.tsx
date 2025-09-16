@@ -49,16 +49,30 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
         const diffSeconds = Math.floor(diffMs / 1000);
         const diffMinutes = Math.floor(diffSeconds / 60);
         const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffMonths = Math.floor(diffDays / 30);
+        const diffYears = Math.floor(diffDays / 365);
 
-        if (diffHours > 0) {
-            const remainingMinutes = diffMinutes % 60;
-            return `${diffHours}h ${remainingMinutes}m`;
-        } else if (diffMinutes > 0) {
-            const remainingSeconds = diffSeconds % 60;
-            return `${diffMinutes}m ${remainingSeconds}s`;
-        } else {
-            return `${diffSeconds}s`;
-        }
+
+        const years = diffYears;
+        const months = diffMonths % 12;
+        const days = diffDays % 30;
+        const hours = diffHours % 24;
+        const minutes = diffMinutes % 60;
+        const seconds = diffSeconds % 60;
+
+
+        const timeUnits = [];
+
+        if (years > 0) timeUnits.push(`${years}y`);
+        if (months > 0) timeUnits.push(`${months}mo`);
+        if (days > 0) timeUnits.push(`${days}d`);
+        if (hours > 0) timeUnits.push(`${hours}h`);
+        if (minutes > 0) timeUnits.push(`${minutes}m`);
+        if (seconds > 0) timeUnits.push(`${seconds}s`);
+
+
+        return timeUnits.slice(0, 2).join(' ') || '0s';
     };
     const {language} = useTranslation();
     return (
