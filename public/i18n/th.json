@@ -696,7 +696,7 @@
       "Assigned Officer":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "schedule_placeholder": "วว/ดด/ปปปป,ชช:นน",
-      "advance_filtering":{
+      "advance_filtering": {
         "title":"กรองขั้นสูง",
         "search_case_type_place_holder":"ค้นหาโดยประเภทเหตุ...",
         "search_detail":"ค้นหารายละเอียด",
@@ -721,7 +721,7 @@
       "Medium Priority": "ความสำคัญปานกลาง",
       "Low Priority": "ความสำคัญต่ำ"
     },
-    "assignment":{
+    "assignment": {
       "case_type":"ประเภทเหตุ",
       "area":"พื้นที่เกิดเหตุ",
       "status":"สถานะ",
@@ -737,7 +737,7 @@
       "clear":"ลบตัวกรอง",
       "apply_filter":"เพิ่มตัวกรอง"
     },
-    "assign_officer_modal":{
+    "assign_officer_modal": {
       "title":"มอบหมายงานให้เจ้าหน้าที่",
       "search_placeholder":"ค้นหาเจ้าหน้าที่โดยชื่อ,องค์กร,ทักษะ...",
       "recommend_button":"ตามทักษะ",
@@ -753,7 +753,7 @@
       "select":"มอบหมาย",
       "officer":"เจ้าหน้าที่"
     },
-    "officer_detail":{
+    "officer_detail": {
       "personal_title":"ข้อมูลเจ้าหน้าที่",
       "fullname":"ชื่อจริง-นามสกุล",
       "username":"ชื่อระบบ",
@@ -773,7 +773,7 @@
     "each": "ต่อไฟล์",
     "download":"ดาวน์โหลด",
     "status_allcase":"ทุกใบงาน",
-    "panel":{
+    "panel": {
       "device_info":"ข้อมูลอุปกรณ์",
       "device_type":"ประเภทอุปกรณ์",
       "device_model":"รุ่น",

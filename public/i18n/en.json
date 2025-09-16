@@ -15,6 +15,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "back": "Back",
     "previous": "Previous",
     "next": "Next",
     "no_data": "No data available",
@@ -438,7 +439,18 @@
     "unauthorized": "Unauthorized",
     "forbidden": "Forbidden",
     "server_error": "Server error",
-    "network_error": "Network error"
+    "network_error": "Network error",
+    "passwordsMismatch": "Passwords do not match!",
+    "readImageFailed": "Failed to read image file.",
+    "loadOrgData": "Failed to load required organization data. Please try again.",
+    "fetchUserFailed": "Failed to fetch user data.",
+    "unknownApi": "An unknown API error occurred.",
+    "submitFailed": "Failed to save data! Please try again.",
+    "invalidPassword": "Password must be at least 8 characters, 1 uppercase character, and 1 special character.",
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidMobile": "Mobile phone number must be 10 digits.",
+    "invalidCitizenId": "National ID card number must be 13 digits.",
+    "invalidAge": "Age must be between 1 and 115 years old."
   },
   "buttons": {
     "submit": "Submit",
@@ -458,8 +470,6 @@
     "home": "Home",
     "userMgmt": "User Management",
     "profile": "Profile",
-    "activity": "Activity",
-    "auditLog": "Audit Log",
     "profilePhoto": "Profile Photo",
     "changePhoto": "Change Photo",
     "allowedTypes": "Allowed: JPG, PNG, GIF",
@@ -492,6 +502,8 @@
     "genderMale": "Male",
     "genderFemale": "Female",
     "genderOther": "Other",
+    "activity": "Activity",
+    "auditLog": "Audit Log",
     "blood": "Blood Group",
     "address": "Address",
     "addressPlaceholderEn": "Enter full address",
@@ -616,24 +628,6 @@
     "rows_per_page": "Rows per page",
     "show": "Show",
     "showing": "Showing",
-    "entries": "entries",
-    "to": "to",
-    "records_found": "records found",
-    "user_activity_history": "User Activity History",
-    "total_activities": "Total Activities",
-    "avg_duration": "Average Duration",
-    "no_activities_found": "No activities found for this user",
-    "transaction_details": "Transaction Details",
-    "data_details": "Data Details",
-    "unique_id": "Unique ID",
-    "datetime": "Date & Time",
-    "main_function": "Main Function",
-    "all": "All",
-    "items": "items",
-    "basic_info": "Basic Information",
-    "org_id": "Organization ID",
-    "function_name": "Function Name",
-    "sub_function": "Sub Function",
     "of": "of",
     "logs": "logs",
     "previous": "Previous",
@@ -646,7 +640,26 @@
     "click_to_view_full": "Click to view full message",
     "click_to_expand": "Click to expand",
     "search_and_filter": "Search and filter system audit logs",
-    "logs_found": "logs found"
+    "logs_found": "logs found",
+    "records_found": "records found",
+    "entries": "entries",
+    "to": "to",
+    "user_activity_history": "User Activity History",
+    "total_activities": "Total Activities",
+    "avg_duration": "Average Duration",
+    "no_activities_found": "No activities found for this user",
+    "transaction_details": "Transaction Details",
+    "data_details": "Data Details",
+    "unique_id": "Unique ID",
+    "datetime": "Date & Time",
+    "main_function": "Main Function",
+    "all": "All",
+    "items": "items",
+    "result_data": "Result",
+    "basic_info": "Basic Information",
+    "org_id": "Organization ID",
+    "function_name": "Function Name",
+    "sub_function": "Sub Function"
   },
   "case": {
     "display": {
@@ -683,20 +696,20 @@
       "Assigned Officer":"Assigned Officer",
       "Assigned Officers":"Assigned Officers",
       "schedule_placeholder":"dd/hh/yyyy,hh:mm",
-      "advance_filtering":{
-        "title":"Advance Filtering",
-        "search_case_type_place_holder":"Search by Case Type...",
-        "search_detail":"Details",
-        "search_detail_placeholder":"Search by details...",
-        "start_date_title":"Start Date",
-        "end_date_title":"End Date",
+      "advance_filtering": {
+        "title":"Advanced filtering",
+        "search_case_type_place_holder":"Search by case type...",
+        "search_detail":"Search for details",
+        "search_detail_placeholder":"Search for details...",
+        "start_date_title":"Start date",
+        "end_date_title":"End date",
         "status_title":"Status",
-        "status_placeholder_all":"All Status",
-        "create_by_tilte":"Create By",
-        "create_by_tilte_placeholder":"Create By..."
+        "status_placeholder_all":"All statuses",
+        "create_by_tilte":"Created by",
+        "create_by_tilte_placeholder":"Created by..."
       }
     },
-    "sop_card":{
+    "sop_card": {
       "comment":"Comment",
       "edit":"Edit",
       "cancel_edit":"Cancel Edit",
@@ -722,19 +735,7 @@
       "advance_filter":"Advacnce Filtering",
       "add_new_case":"Add New Case",
       "clear":"clear",
-      "apply_filter":"Apply Filters",
-      "advance_filtering":{
-        "title":"Advance Filtering",
-        "search_case_type_place_holder":"Search by Case Type...",
-        "search_detail":"Details",
-        "search_detail_placeholder":"Search by details...",
-        "start_date_title":"Start Date",
-        "end_date_title":"End Date",
-        "status_title":"Status",
-        "status_placeholder_all":"All Status",
-        "create_by_tilte":"Create By",
-        "create_by_tilte_placeholder":"Create By..."
-      }
+      "apply_filter":"Apply Filters"
     },
     "assign_officer_modal":{
       "title":"Assign Officers to Case",
@@ -752,7 +753,7 @@
       "select":"Selected",
       "officer":"officer"
     },
-    "officer_detail":{
+    "officer_detail": {
       "personal_title":"Personal Details",
       "fullname":"FULL NAME",
       "username":"USERNAME",
@@ -772,7 +773,7 @@
     "each":"each",
     "download":"Download",
     "status_allcase":"All Cases",
-    "panel":{
+    "panel": {
       "device_info":"Device Info",
       "device_type":"Device Type",
       "device_model":"Model",

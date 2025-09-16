@@ -561,7 +561,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
           </div>
         ) : displayMode === "matrix" && renderMatrix ? (
           // Matrix View
-          <div className="mb-4">{renderMatrix()}</div>
+          <div>{renderMatrix()}</div>
         ) : displayMode === "hierarchy" && renderHierarchy ? (
           // Hierarchy View
           <></>

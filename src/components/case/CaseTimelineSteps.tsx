@@ -1,7 +1,8 @@
 // /src/components/case/CaseTimelineSteps.tsx
+import { useTranslation } from "@/hooks/useTranslation";
 // import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import type { CaseSop } from "@/store/api/dispatch";
-import type { TimelineStep } from "@/types/case";
+import type { CaseStatus, TimelineStep } from "@/types/case";
 import type { Connection } from "@/types/workflow";
 import { SOP_TIMELINES_STATUS } from "@/utils/constants";
 
@@ -12,7 +13,10 @@ export const CaseTimelineSteps = (
   // createdAt?: string,
   // resolvedAt?: string,
   sop?: CaseSop,
+  caseStatus?: CaseStatus[],
 ): TimelineStep[] => {
+  const { language } = useTranslation();
+
   const mapSOPToTimeline = (caseSop: CaseSop): TimelineStep[] => {
     const connections = caseSop.sop?.find(item => item.section === "connections")?.data || [];
 
@@ -26,7 +30,6 @@ export const CaseTimelineSteps = (
       ?.filter(node => node.type === "process"
         && !noConnectionTargets.has(node.nodeId)
       )
-      // .filter(node => !node.data?.data?.label?.includes("Delay"))
       .sort((a, b) => {
         return a.data?.position?.y - b.data?.position?.y;
       });
@@ -38,7 +41,7 @@ export const CaseTimelineSteps = (
       const isCurrentStage = node.nodeId === currentNodeId;
       const actionId = node.data?.data?.config?.action;
       
-      let status: TimelineStep['status'];
+      let status: TimelineStep["status"];
       if (isCurrentStage) {
         status = "active";
         currentStageFound = true;
@@ -81,9 +84,12 @@ export const CaseTimelineSteps = (
         status = status === "active" ? "error" : status;
       }
 
+      const label = caseStatus?.find(cs => cs.statusId === actionId)
+      const langLabel = label?.[language as keyof CaseStatus] as string || label?.th || label?.en;
+
       return {
         id: node.nodeId,
-        label: node.data?.data?.label || "Unknown Step",
+        label: langLabel || node.data?.data?.label || "Unknown Step",
         description: `Action: ${actionId}`,
         timestamp,
         status,

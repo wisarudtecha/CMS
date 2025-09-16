@@ -234,6 +234,7 @@ export interface TimelineStep {
   icon?: React.ComponentType<{ className?: string }>;
   metadata?: Record<string, unknown>;
   sop?: CaseSop;
+  caseStatus?: CaseStatus[];
 }
 
 export interface ProgressTimelineProps {

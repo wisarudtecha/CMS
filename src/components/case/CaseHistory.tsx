@@ -1,19 +1,8 @@
 // /src/components/case/CaseHistory.tsx
-import React, {
-  useEffect,
-  useState
-} from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import {
-  // AlertHexaIcon,
-  CalenderIcon,
-  ChatIcon,
-  TimeIcon,
-  // CheckCircleIcon,
-  // TimeIcon,
-  UserIcon
-} from "@/icons";
+import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
 import { contractMethodMock } from "@/components/case/source";
@@ -25,17 +14,11 @@ import { Area } from "@/store/api/area";
 import { useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { AuthService } from "@/utils/authService";
-import {
-  CASE_CANNOT_DELETE,
-  // PRIORITY_COLORS,
-  PRIORITY_LABELS,
-  PRIORITY_CONFIG
-} from "@/utils/constants";
+import { CASE_CANNOT_DELETE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseSop } from "@/store/api/dispatch"; 
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
-// import CaseDetailView from "@/components/case/CaseDetailView";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
@@ -51,10 +34,7 @@ const CaseHistoryComponent: React.FC<{
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
-  // const [caseData, setCaseData] = useState<CaseEntity | null>(null);
-  // const [crudOpen, setCrudOpen] = useState("block");
   const [crudOpen, ] = useState("block");
-  // const [viewOpen, setViewOpen] = useState("hidden");
 
   const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
@@ -96,7 +76,6 @@ const CaseHistoryComponent: React.FC<{
     data.forEach(item => {
       configs[item.statusId] = {
         color: caseStatusesColorMap[item.color as keyof typeof caseStatusesColorMap] || caseStatusesColorMap.null,
-        // label: item?.th || item?.en
         label: item[language as keyof CaseStatus] as string || item?.th || item?.en
       };
     });
@@ -111,7 +90,6 @@ const CaseHistoryComponent: React.FC<{
 
   const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
     value: caseStatus?.statusId || "",
-    // label: caseStatus?.th || caseStatus?.en || ""
     label: caseStatus[language as keyof CaseStatus] as string || caseStatus?.th || caseStatus?.en
   })) : [];
 
@@ -120,18 +98,6 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const generatePriorityConfigs = () => {
-    // return [
-    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
-    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
-    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
-    //   { color: PRIORITY_COLORS.high, icon: AlertHexaIcon, label: PRIORITY_LABELS.high[language as keyof typeof PRIORITY_LABELS.high] },
-    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
-    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
-    //   { color: PRIORITY_COLORS.medium, icon: TimeIcon, label: PRIORITY_LABELS.medium[language as keyof typeof PRIORITY_LABELS.medium] },
-    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
-    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
-    //   { color: PRIORITY_COLORS.low, icon: CheckCircleIcon, label: PRIORITY_LABELS.low[language as keyof typeof PRIORITY_LABELS.low] },
-    // ];
     const langKey = language as keyof typeof PRIORITY_LABELS.high;
     return PRIORITY_CONFIG.flatMap(({ type, count, color, icon }) =>
       Array(count).fill(null).map(() => ({
@@ -180,19 +146,10 @@ const CaseHistoryComponent: React.FC<{
 
   const caseTitle = (data: CaseEntity) => {
     const config = getTypeSubTypeConfig(data);
-    // const sTypeCode = config.sTypeCode || "Loading...";
     const sTypeCode = config.sTypeCode || "";
-    // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "Loading...";
-    // const displayName = config.subTypeTh || config.subTypeEn || data.caseId || "";
     const displayName = `${(language === "th" && config.th) || config.en || ""}-${(language === "th" && config.subTypeTh) || config.subTypeEn || ""}`;
-    // return `${sTypeCode}-${displayName}`;
     return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
   };
-
-  // const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes) ? caseTypesSubTypes.map((caseTypeSubType) => ({
-  //   value: caseTypeSubType?.sTypeId || "",
-  //   label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${caseTypeSubType?.subTypeTh || caseTypeSubType?.subTypeEn || "Unknown:Name"} (${caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"})`
-  // })) : [];
 
   const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes)
     ? caseTypesSubTypes
@@ -201,7 +158,6 @@ const CaseHistoryComponent: React.FC<{
         .map((caseTypeSubType) => ({
           value: caseTypeSubType?.sTypeId || "",
           label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${
-            // caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
             caseTypeSubType[language as keyof CaseTypeSubType] as string || caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
           }-${
             (language === "th" && caseTypeSubType?.subTypeTh) || caseTypeSubType?.subTypeEn || "Unknown:Name"
@@ -307,7 +263,6 @@ const CaseHistoryComponent: React.FC<{
         label: t("crud.case_history.list.header.priority"),
         sortable: true,
         render: (caseItem: CaseEntity) => {
-          // const Icon = getPriorityConfig(caseItem).icon;
           return (
             <div className={`flex gap-1 items-center ${getPriorityConfig(caseItem).color}`}>
               {/* <Icon className="w-4 h-4" /> */}
@@ -403,7 +358,7 @@ const CaseHistoryComponent: React.FC<{
 
   const getTimelineSteps = (caseItem: CaseEntity) => {
     const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
-    const timelineSteps = CaseTimelineSteps(sopData);
+    const timelineSteps = CaseTimelineSteps(sopData, caseStatuses);
     return timelineSteps;
   };
 
@@ -457,18 +412,6 @@ const CaseHistoryComponent: React.FC<{
                 {t("case.display.case_information")}
               </h4>
               <div className="grid grid-cols-1 space-y-3">
-                {/*
-                <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">Created At:</span>
-                  <span className="text-gray-600 dark:text-gray-300 text-sm mr-2">
-                    {formatDate(caseItem.createdAt) || ""}
-                  </span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">By:</span>
-                  <span className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.createdBy || ""}
-                  </span>
-                </div>
-                */}
                 <div className="xl:flex items-left justify-left">
                   <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.no")}:</span>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
@@ -678,17 +621,7 @@ const CaseHistoryComponent: React.FC<{
   }
 
   const previewConfig: PreviewConfig<CaseEntity> = {
-    // title: (caseItem: CaseEntity) => `${caseTitle(caseItem)} (${getTypeSubTypeConfig(caseItem).th || getTypeSubTypeConfig(caseItem).en || ""})`,
     title: (caseItem: CaseEntity) => `${caseTitle(caseItem)}`,
-    // subtitle: (caseItem: CaseEntity) => {
-    //   return (
-    //     <>
-    //       <span className="mr-2">{caseItem.caseId || ""}</span>
-    //       <Badge className={`${getStatusConfig(caseItem)?.color} text-sm mr-2`}>{getStatusConfig(caseItem)?.label || ""}</Badge>
-    //       <span className={`${getPriorityConfig(caseItem).color} text-sm`}>{getPriorityConfig(caseItem).label || ""}</span>
-    //     </>
-    //   );
-    // },
     subtitle: (caseItem: CaseEntity) => <PreviewTitle caseItem={caseItem} />,
     // avatar: (caseItem: CaseEntity) => {
     //   const Icon = getPriorityConfig(caseItem).icon;
@@ -715,81 +648,6 @@ const CaseHistoryComponent: React.FC<{
         // icon: PieChartIcon,
         render: (caseItem: CaseEntity) => {
           return (<ActivityTab caseItem={caseItem} />)
-
-          // return (
-          //   <div className="space-y-6">
-          //     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          //       <div className="flex items-center gap-2 mb-4">
-          //         <ChatIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          //         <h4 className="font-medium text-gray-900 dark:text-white">
-          //           Comments ({caseItem.comments.length})
-          //         </h4>
-          //       </div>
-                
-          //       {caseItem.comments.length > 0 ? (
-          //         <div className="space-y-3">
-          //           {caseItem.comments.map(comment => (
-          //             <div key={comment.id} className="border-l-4 border-blue-500 pl-4">
-          //               <div className="flex items-center justify-between mb-1">
-          //                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-          //                   {comment.author}
-          //                 </span>
-          //                 <div className="flex items-center gap-2">
-          //                   {comment.isInternal && (
-          //                     <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 rounded text-xs">
-          //                       Internal
-          //                     </span>
-          //                   )}
-          //                   <span className="text-xs text-gray-500 dark:text-gray-400">
-          //                     {formatDate(comment.createdAt)}
-          //                   </span>
-          //                 </div>
-          //               </div>
-          //               <p className="text-sm text-gray-600 dark:text-gray-300">
-          //                 {comment.content}
-          //               </p>
-          //             </div>
-          //           ))}
-          //         </div>
-          //       ) : (
-          //         <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet</p>
-          //       )}
-          //     </div>
-
-          //     {caseItem.estimatedHours && caseItem.actualHours && (
-          //       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          //         <h4 className="font-medium text-gray-900 dark:text-white mb-4">Time Tracking</h4>
-          //         <div className="grid grid-cols-2 gap-4">
-          //           <div>
-          //             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-          //               {caseItem.estimatedHours || 0}h
-          //             </div>
-          //             <div className="text-sm text-gray-500 dark:text-gray-400">Estimated</div>
-          //           </div>
-          //           <div>
-          //             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          //               {caseItem.actualHours || 0}h
-          //             </div>
-          //             <div className="text-sm text-gray-500 dark:text-gray-400">Actual</div>
-          //           </div>
-          //         </div>
-
-          //         <div className="mt-4">
-          //           <div className="flex justify-between text-sm mb-1">
-          //             <span className="text-gray-900 dark:text-white">Progress</span>
-          //             <span className="text-gray-900 dark:text-white">{Math.round((caseItem.actualHours / caseItem.estimatedHours) * 100)}%</span>
-          //           </div>
-          //           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          //             <div 
-          //               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-          //               style={{ width: `${Math.min((caseItem.actualHours / caseItem.estimatedHours) * 100, 100)}%` }}
-          //             />
-          //           </div>
-          //         </div>
-          //       </div>
-          //     )}
-          //   </div>
-          // )
         }
       }
     ],
@@ -801,9 +659,7 @@ const CaseHistoryComponent: React.FC<{
         variant: "warning",
         onClick: (caseItem: CaseEntity, closePreview: () => void) => {
           closePreview();
-          // navigate(`/cases/${caseItem.id}/edit`);
           navigate(`/case/${caseItem.caseId}`);
-          // handleAction("edit", caseItem);
         },
         condition: () => permissions.hasPermission("case.update")
       },
@@ -826,22 +682,6 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const advancedFilters = [
-    // {
-    //   key: "status",
-    //   label: "Status",
-    //   type: "select" as const,
-    //   options: caseStatusOptions
-    // },
-    // {
-    //   key: "priority",
-    //   label: "Priority",
-    //   type: "select" as const,
-    //   options: [
-    //     { value: "low", label: "Low" },
-    //     { value: "medium", label: "Medium" },
-    //     { value: "high", label: "High" },
-    //   ]
-    // },
     {
       key: "caseSTypeId",
       label: t("crud.case_history.list.toolbar.advanced_filter.type.label"),
@@ -987,16 +827,6 @@ const CaseHistoryComponent: React.FC<{
               <span>{caseItem.caselocAddr || ""}</span>
             </div>
           </div>
-          
-          {/*
-          {caseItem.dueDate && (
-            <div className="flex items-center gap-1 text-xs">
-              <span className="text-orange-600 dark:text-orange-400">
-                Due {formatDate(caseItem.dueDate)}
-              </span>
-            </div>
-          )}
-          */}
         </div>
         
         <div className="xl:flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -1021,11 +851,6 @@ const CaseHistoryComponent: React.FC<{
   const handleAction = (actionKey: string, caseItem: CaseEntity) => {
     console.log(`Action ${actionKey} triggered for case:`, caseItem.id);
     // Add custom case-specific action handling
-    // if (actionKey === "edit") {
-    //   setCaseData(caseItem);
-    //   setViewOpen("block");
-    //   setCrudOpen("hidden");
-    // }
   };
 
   // Handle deletion
@@ -1088,24 +913,18 @@ const CaseHistoryComponent: React.FC<{
           // keyboardShortcuts={[]}
           // loading={false}
           module="case"
-          // previewConfig={previewConfig}
           previewConfig={previewConfig as PreviewConfig<CaseEntity & { id: string }>}
           searchFields={["caseId", "caseDetail", "createdBy", "createdAt"]}
           // customFilterFunction={() => true}
           onCreate={() => navigate("/case/creation")}
           onDelete={handleDelete}
           onItemAction={handleAction}
-          // onItemAction={handleAction as (action: string, item: { id: string }) => void}
           // onItemClick={(item) => navigate(`/role/${item.id}`)}
           onRefresh={() => window.location.reload()}
           // onUpdate={() => {}}
           renderCard={renderCard}
         />
       </div>
-
-      {/* <div className={viewOpen}>
-        <CaseDetailView onBack={handleViewToggle} caseData={caseData as CaseEntity} isCreate={false} />
-      </div> */}
     </>
   );
 };
