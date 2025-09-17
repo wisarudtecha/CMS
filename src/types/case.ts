@@ -284,4 +284,6 @@ export interface CaseDetails {
   iotDevice?:string
   iotDate?:string
   attachFileResult?:File[]
+  updateBy?:string
+  lastUpdate?:string
 }

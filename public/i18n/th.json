@@ -696,6 +696,9 @@
       "Assigned Officer":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "Assigned Officers":"เจ้าหน้าที่ ที่ได้รับมอบหมาย",
       "schedule_placeholder": "วว/ดด/ปปปป,ชช:นน",
+      "updateAt":"แก้ไขเมื่อ",
+      "updateBy":"แก้ไขโดย",
+      "edit":"การแก้ไข",
       "advance_filtering": {
         "title":"กรองขั้นสูง",
         "search_case_type_place_holder":"ค้นหาโดยประเภทเหตุ...",

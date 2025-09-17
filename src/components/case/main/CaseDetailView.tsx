@@ -641,6 +641,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 <SearchableSelect
                     options={areaList.map(item => mergeArea(item, language))}
                     value={caseState?.area ? mergeArea(caseState.area, language) : ""}
+                    disabled={!isCreate}
                     onChange={handleSetArea}
                     placeholder={t("case.display.select_service_center")}
                     className="2xsm:m-3"
@@ -1088,6 +1089,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 iotDate: getLocalISOString(sopLocal?.startedDate) || "",
                 area: area,
                 status: sopLocal?.statusId || "",
+                lastUpdate:sopLocal?.updatedAt,
+                updateBy:sopLocal?.updatedBy,
                 attachFile: [] as File[], // For new cases (edit mode)
                 attachFileResult: [] as File[] // Initialize as empty array for view mode
             } as CaseDetails;

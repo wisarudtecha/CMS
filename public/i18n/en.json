@@ -696,6 +696,9 @@
       "Assigned Officer":"Assigned Officer",
       "Assigned Officers":"Assigned Officers",
       "schedule_placeholder":"dd/hh/yyyy,hh:mm",
+      "updateAt":"Update At",
+      "updateBy":"Update By",
+      "edit":"Edit",
       "advance_filtering": {
         "title":"Advanced filtering",
         "search_case_type_place_holder":"Search by case type...",

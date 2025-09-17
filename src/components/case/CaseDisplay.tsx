@@ -1,4 +1,4 @@
-import { CalendarDays, ChartColumnStacked, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket } from "lucide-react";
+import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, SquarePen, Ticket, UserPen } from "lucide-react";
 import DateStringToDateFormat from "../date/DateToString";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
@@ -233,6 +233,48 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     )}
                 </div>
             </div>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
+                    <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
+                        <SquarePen className="h-5 w-5 mr-2" />
+                        <span className="text-md">{t("case.display.edit")}</span>
+                    </div>
+                    <div className=" grid grid-cols-2">
+                    <div className=" col-span-1 mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <UserPen className="h-4 w-4 mr-2" />
+                            <span>{t("case.display.updateBy")}</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.updateBy || "-"}
+                        </div>
+                    </div>
+
+                    <div className=" col-span-1 mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <ClockArrowUp className="h-4 w-4 mr-2" />
+                            <span>{t("case.display.updateAt")}</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.lastUpdate? DateStringToDateFormat(caseData?.lastUpdate,false,language) : "-"}
+                        </div>
+                    </div>
+                    </div>
+                    
+                    {caseData?.requireSchedule && (
+                        <div className="mb-2">
+                            <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                                <CalendarDays className="h-4 w-4 mr-2" />
+                                <span>{t("case.display.request_schedule_date")} {requireElements}</span>
+                            </div>
+                            <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                                {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
+                                    DateStringToDateFormat(caseData.scheduleDate, false, language) :
+                                    "-"
+                                }
+                            </div>
+                        </div>
+                    )}
+                </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
                     <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>{t("case.display.detail")} <span>{requireElements}</span></span></span>
