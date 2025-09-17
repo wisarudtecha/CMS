@@ -127,50 +127,21 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 }
             </div>
-            <div className="col-span-2 sm:col-span-1">
-                <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg h-fit  ">
+            <div className="col-span-2 sm:col-span-1 flex flex-col h-full">
+                <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1">
                     <div className="flex mb-2 text-blue-500 dark:text-blue-400">
                         <MapPin /><span className=" mx-1 text-md  " >{t("case.display.area")}</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex  gap-x-2 gap-y-1 ">
-
                             <div>
                                 {caseData?.location ? caseData.location : "-"}
                             </div>
                         </div>
-
                     </div>
-
                 </div>
-                {/* <div className=" bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ">
-                    <div className="mb-2">
-                        <span className=" text-md text-blue-500 dark:text-blue-400 " >Vehicle & Assembly</span>
-                    </div>
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Vehicle Information</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {vehicleInformation}
-                        </div>
-                    </div>
-                    <div className="mb-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">Assembly Information</span>
-                        <div className="text-md font-medium text-gray-900 dark:text-white">
-                            {assemblyInformation}
-                        </div>
-                    </div>
-                </div> */}
-                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 mb-3">
-                    {/* <div className="mb-2">
-        <span className=" text-md text-blue-500 dark:text-blue-400 " >Customer Information</span>
-    </div> */}
-                    {/* <div className="mb-2">
-        <span className="text-md text-gray-500 dark:text-gray-400">Customer Name</span>
-        <div className="text-md font-medium text-gray-900 dark:text-white">
-            {caseData?.customerData?.name || "-"}
-        </div>
-    </div> */}
 
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                     <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
                         <Contact className="h-5 w-5 mr-2" />
                         <span className="text-md">{t("case.display.contact")}</span>
@@ -196,13 +167,6 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.customerData?.contractMethod?.name || "-"}
                         </div>
-                        {/* {caseData?.customerData?.contractMethod.name == "Email" ?
-            <>
-                <span className="text-md text-gray-500 dark:text-gray-400">Customer Email</span>
-                <div className="text-md font-medium text-gray-900 dark:text-white">
-                    {caseData.customerData?.email || "-"}
-                </div>
-            </> : null} */}
                     </div>
 
                     {/* IoT Device */}
@@ -234,11 +198,11 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
-                    <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
-                        <SquarePen className="h-5 w-5 mr-2" />
-                        <span className="text-md">{t("case.display.edit")}</span>
-                    </div>
-                    <div className=" grid grid-cols-2">
+                <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
+                    <SquarePen className="h-5 w-5 mr-2" />
+                    <span className="text-md">{t("case.display.edit")}</span>
+                </div>
+                <div className=" grid grid-cols-2">
                     <div className=" col-span-1 mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <UserPen className="h-4 w-4 mr-2" />
@@ -255,26 +219,26 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             <span>{t("case.display.updateAt")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.lastUpdate? DateStringToDateFormat(caseData?.lastUpdate,false,language) : "-"}
+                            {caseData?.lastUpdate ? DateStringToDateFormat(caseData?.lastUpdate, false, language) : "-"}
                         </div>
                     </div>
-                    </div>
-                    
-                    {caseData?.requireSchedule && (
-                        <div className="mb-2">
-                            <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
-                                <CalendarDays className="h-4 w-4 mr-2" />
-                                <span>{t("case.display.request_schedule_date")} {requireElements}</span>
-                            </div>
-                            <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
-                                {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                    DateStringToDateFormat(caseData.scheduleDate, false, language) :
-                                    "-"
-                                }
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                {caseData?.requireSchedule && (
+                    <div className="mb-2">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <CalendarDays className="h-4 w-4 mr-2" />
+                            <span>{t("case.display.request_schedule_date")} {requireElements}</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
+                                DateStringToDateFormat(caseData.scheduleDate, false, language) :
+                                "-"
+                            }
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
                     <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>{t("case.display.detail")} <span>{requireElements}</span></span></span>

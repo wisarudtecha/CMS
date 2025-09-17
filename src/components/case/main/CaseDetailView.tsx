@@ -712,11 +712,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
         )}
         <div className="flex justify-between items-center">
             {/* Left side: Example button */}
-            <div>
-                <Button onClick={handleExampleData} size="sm">
-                    <FileText className=" h-4 w-4" />
-                </Button>
-            </div>
+
 
             {/* Right side: Action Buttons */}
             <div className="flex justify-end mb-3 mr-3">
@@ -725,13 +721,24 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                         {t("case.display.save_change")}
                     </Button>
                 ) : (
-                    <div className="flex">
-                        <Button onClick={caseState.workOrderNummber ? handleSaveChanges : handleSaveDrafts} className="mx-3" >
-                            {t("case.display.save_as_draft")}
-                        </Button>
-                        <Button variant="success" onClick={handlePreviewShow}>
-                            {t("case.display.submit")}
-                        </Button>
+                    <div className="flex justify-between items-center m-3">
+                        {/* Left side: Example button */}
+                        <div>
+                            <Button onClick={handleExampleData} size="sm">
+                                <FileText className=" h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        {/* Right side: Action Buttons */}
+
+                        <div className="flex">
+                            <Button onClick={caseState.workOrderNummber ? handleSaveChanges : handleSaveDrafts} className="mx-3" >
+                                {t("case.display.save_as_draft")}
+                            </Button>
+                            <Button variant="success" onClick={handlePreviewShow}>
+                                {t("case.display.submit")}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -873,7 +880,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             }
                         })();
                     } else if (data?.additionalJson?.event === "STATUS UPDATE") {
-                        
+
                         (async () => {
                             if (data?.additionalJson?.caseId && caseState?.workOrderNummber === data?.additionalJson?.caseId) {
                                 await refetch();
@@ -889,7 +896,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         return () => {
             listener();
         };
-    }, [subscribe, connect, connectionState, isConnected,caseState]);
+    }, [subscribe, connect, connectionState, isConnected, caseState]);
 
 
     // Initialize sopLocal from API data ONLY when sopData changes
@@ -899,7 +906,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             if (sopData.data.unitLists) {
                 setDispatchUnit(sopData.data.unitLists)
             }
-            
+
         }
     }, [sopData?.data, initialCaseData?.caseId]);
 
@@ -1089,8 +1096,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 iotDate: getLocalISOString(sopLocal?.startedDate) || "",
                 area: area,
                 status: sopLocal?.statusId || "",
-                lastUpdate:sopLocal?.updatedAt,
-                updateBy:sopLocal?.updatedBy,
+                lastUpdate: sopLocal?.updatedAt,
+                updateBy: sopLocal?.updatedBy,
                 attachFile: [] as File[], // For new cases (edit mode)
                 attachFileResult: [] as File[] // Initialize as empty array for view mode
             } as CaseDetails;
@@ -1108,7 +1115,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
 
     }, [sopLocal, initialCaseData, areaList.length, caseTypeSupTypeData, isSubCase]);
-    
+
     useEffect(() => {
         if (isCreate && caseState && !caseState.iotDate) {
             setCaseState(prev => prev ? {
@@ -1121,7 +1128,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     useEffect(() => {
         if (selectedCaseTypeForm === undefined ||
             selectedCaseTypeForm.formField === undefined ||
-            selectedCaseTypeForm.formField.formFieldJson === undefined || selectedCaseTypeForm.formField.formFieldJson === null){
+            selectedCaseTypeForm.formField.formFieldJson === undefined || selectedCaseTypeForm.formField.formFieldJson === null) {
             setIsValueFill(prev => ({ ...prev, dynamicForm: true }));
         }
     }, [selectedCaseTypeForm]);
@@ -1194,7 +1201,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             errorMessage = "Please enter Case Details.";
         } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
             errorMessage = "Please select a Contact Method.";
-        } else if (((!isValueFill.dynamicForm ) || (!isValueFill.getType)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
+        } else if (((!isValueFill.dynamicForm) || (!isValueFill.getType)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
             errorMessage = "Please ensure all dynamic form fields are filled.";
         }
         return errorMessage;
