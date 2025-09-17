@@ -696,6 +696,9 @@
       "Assigned Officer":"指派人员",
       "Assigned Officers":"指派人员",
       "schedule_placeholder":"dd/hh/yyyy,hh:mm",
+      "updateAt":"更新时间",
+      "updateBy":"更新者", 
+      "edit":"编辑",
       "advance_filtering": {
         "title":"高级过滤",
         "search_case_type_place_holder":"按案例类型搜索...",
