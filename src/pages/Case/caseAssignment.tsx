@@ -6,12 +6,13 @@ import {
   List,
   LayoutGrid,
   Filter,
+  RefreshCcw,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import CaseDetailView from "../../components/case/main/CaseDetailView"
+// import CaseDetailView from "../../components/case/main/CaseDetailView"
 
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
@@ -44,7 +45,7 @@ export default function CasesView() {
   const [selectedCase, setSelectedCase] = useState<CaseEntity | null>(null)
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
-  const [showDynamicForm, setShowDynamicForm] = useState(false)
+  // const [showDynamicForm, setShowDynamicForm] = useState(false)
   const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
   const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
   const [searchText, setSearchText] = useState("")
@@ -139,7 +140,12 @@ export default function CasesView() {
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
-  // Refactored to remove advanced filtering logic, which is now handled by the API
+  const handleRefreshCase=async ()=>{
+    await getNewCaseData();
+    const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+    setCaseData(updatedCases);
+  }
+
   const getFilteredCases = () => {
     let allCases: CaseEntity[] = caseData.map(c => ({
       ...c,
@@ -152,7 +158,6 @@ export default function CasesView() {
 
       const assigneeName = c.createdBy;
 
-      // General search condition remains on the client side for instant feedback
       return (
         matchingSubTypesNames(c.caseTypeId, c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
         c?.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
@@ -578,13 +583,13 @@ export default function CasesView() {
     </div>
   );
 
-  const onBackDynamic = () => {
-    setShowDynamicForm(false)
-    const savedCases = localStorage.getItem("caseList");
-    setCaseData(savedCases
-      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
-      : [])
-  }
+  // const onBackDynamic = () => {
+  //   setShowDynamicForm(false)
+  //   const savedCases = localStorage.getItem("caseList");
+  //   setCaseData(savedCases
+  //     ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
+  //     : [])
+  // }
 
   // const onBackSelectedCase = () => {
   //   setSelectedCase(null)
@@ -593,10 +598,6 @@ export default function CasesView() {
   //     ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
   //     : [])
   // }
-
-  if (showDynamicForm) {
-    return <CaseDetailView onBack={onBackDynamic} />
-  }
 
   // if (selectedCase) {
   //   navigate(`/case/${selectedCase.caseId}`)
@@ -607,7 +608,7 @@ export default function CasesView() {
       navigate(`/case/${selectedCase.caseId}`)
     }
   }, [selectedCase, navigate])
-  
+
   const hasActiveFilters = () => {
     return Object.values(advancedFilters).some(value => value !== "");
   };
@@ -680,16 +681,24 @@ export default function CasesView() {
                 )}
               </div>
             </div>
-
+            <div className="flex">
+            <Button
+              className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+              onClick={handleRefreshCase}
+              size="sm"
+            >
+              <RefreshCcw className="w-4 h-4" />
+            </Button>
             {/* Add New Case Button */}
             <Button
               className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-              onClick={() => setShowDynamicForm(true)}
+              onClick={() => navigate("/case/creation")}
               size="sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("case.assignment.add_new_case")}
             </Button>
+            </div>
           </div>
 
           {/* Status Filter Tabs - Mobile Responsive */}
