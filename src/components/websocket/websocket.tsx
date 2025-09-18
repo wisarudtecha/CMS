@@ -54,7 +54,7 @@ export const defalutWebsocketConfig = {
 } as WebSocketConfig;
 
 export const WebSocketCaseEvent = (message: WebSocketMessage) => {
-  if (message.data.eventType === "Create") {
+  if (message.data?.additionalJson?.event === "Create") {
     (async () => {
       await getNewCaseData();
       window.dispatchEvent(new StorageEvent("storage", {
@@ -63,7 +63,7 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
       }));
     })();
 
-  } else if (message.data.eventType === "Update") {
+  } else if (message.data?.additionalJson?.event === "Update") {
     (async () => {
       const caseIdFromUrl = message.data.redirectUrl.split('/case/')[1];
       await getNewCaseDataByCaseId(caseIdFromUrl)

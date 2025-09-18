@@ -1,1 +1,0 @@
-export const contractMethodMock = [{ name: "CALL", id: "01" }, { name: "METTLINK", id: "02" }, { name: "METTRIQ", id: "04" }, { name: "IOT-Alert", id: "05" }, { name: "Other", id: "06" }];

@@ -5,7 +5,6 @@ import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
-import { contractMethodMock } from "@/components/case/source";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -21,6 +20,7 @@ import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/typ
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Badge from "@/components/ui/badge/Badge";
+import { source } from "./constants/caseConstants";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC<{
@@ -370,7 +370,7 @@ const CaseHistoryComponent: React.FC<{
     const dpcConfig = getAreaConfig(caseItem);
     const dpcDisplay = `${dpcConfig.district || "Unknown:District"}-${dpcConfig.province || "Unknown:Province"}-${dpcConfig.country || "Unknown:Country"}`;
 
-    const contactMethod = contractMethodMock.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+    const contactMethod = source.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
 
     return (
       <>

@@ -19,8 +19,8 @@ import { Comments } from "../comment/Comment";
 import DateStringToDateFormat from "../date/DateToString";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
-import ProgressStepPreview from "../progress/ProgressBar";
-import { CaseStatusInterface} from "../ui/status/status";
+import ProgressStepPreview from "./activityTimeline/caseActivityTimeline";
+import { CaseStatusInterface } from "../ui/status/status";
 // **REMOVED**: CaseHistory is no longer a direct prop
 import { CaseDetails } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
@@ -73,7 +73,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
     // Use the simpler ordered progress approach
     const progressSteps = useMemo(() => {
-        return mapSopToOrderedProgress(caseData,language);
+        return mapSopToOrderedProgress(caseData, language);
     }, [caseData]);
 
     // Use dynamic steps if available, otherwise use default
@@ -114,14 +114,14 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                                 caseTypeSupTypeData,
                                 caseData?.caseTypeId || "",
                                 caseData?.caseSTypeId || ""
-                            ) ?? ({} as CaseTypeSubType),language
-                            
+                            ) ?? ({} as CaseTypeSubType), language
+
                         )
                     }</h2>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt,false,language)}</span>
+                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt, false, language)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User_Icon className="w-4 h-4" />
@@ -136,16 +136,16 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     </Badge>
                     <Badge variant="outline">
                         {
-                            language==="th"?caseStatus.find((item) => caseData?.statusId === item.statusId)?.th:
-                            caseStatus.find((item) => caseData?.statusId === item.statusId)?.en
+                            language === "th" ? caseStatus.find((item) => caseData?.statusId === item.statusId)?.th :
+                                caseStatus.find((item) => caseData?.statusId === item.statusId)?.en
                         }
                     </Badge>
                 </div>
             </div>
-            {caseData.caseVersion==="draft"?undefined:
-            <ProgressStepPreview progressSteps={stepsToDisplay} />
+            {caseData.caseVersion === "draft" ? undefined :
+                <ProgressStepPreview progressSteps={stepsToDisplay} />
             }
-            
+
             {/* START: Responsive Button Grid Container */}
             <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
                 {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
@@ -182,8 +182,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
                         <span>Add WO</span>
                     </Button>} */}
-                    
-                {caseData.caseVersion!=="draft" && onAssignClick  && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+
+                {caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}

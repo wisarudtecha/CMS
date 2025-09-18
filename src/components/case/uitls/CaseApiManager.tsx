@@ -2,7 +2,7 @@ import store from "@/store";
 import { caseApi, CaseListParams } from "@/store/api/caseApi";
 import { customerApi } from "@/store/api/custommerApi";
 import { formApi } from "@/store/api/formApi";
-import { CaseTypeSubType } from "../interface/CaseType";
+import { CaseTypeSubType } from "../../interface/CaseType";
 import { areaApi } from "@/store/api/area";
 
 

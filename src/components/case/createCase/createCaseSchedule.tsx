@@ -8,14 +8,12 @@ import {
 import Button from "@/components/ui/button/Button"
 import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
-import PageMeta from "@/components/common/PageMeta"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import { getPriorityColorClass } from "../../function/Prioriy"
 import Toast from "../../toast/Toast"
 import Input from "../../form/input/InputField"
 import { convertFromThaiYear, getDisplayDate, getLocalISOString, getTodayDate, TodayDate } from "../../date/DateToString"
 import { SearchableSelect } from "../../SearchSelectInput/SearchSelectInput"
-
 import { CaseTypeSubType } from "../../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -26,36 +24,26 @@ import { CreateCase, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 import { CaseSop } from "@/store/api/dispatch"
-import { contractMethodMock } from "../source"
 import { Area, mergeArea } from "@/store/api/area"
-// import Checkbox from "../form/input/Checkbox"
-// import { data } from "react-router"
 import DragDropFileUpload from "../../d&d upload/dndUpload"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { genCaseID } from "../../genCaseId/genCaseId"
 import { useNavigate, useParams } from "react-router"
-import Panel from "../CasePanel"
 import { useTranslation } from "@/hooks/useTranslation";
 import { TranslationParams } from "@/types/i18n";
-import CaseDetailView from "./CaseDetailView";
 import { registerLocale } from 'react-datepicker';
 import { th, enUS } from 'date-fns/locale';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePickerLocal from "@/components/form/input/DatepicketLocal";
-
-
-
-
-
-const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
-
-const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
-
-
+import { exampleCaseState } from "../constants/exampleData";
+import { REQUIRED_ELEMENT as requireElements, source } from "../constants/caseConstants";
+import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataValidation/caseDataValidation";
+import { COMMON_INPUT_CSS as commonInputCss } from "../constants/caseConstants";
+import { CaseLayout } from "./layout";
+// const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 interface CaseTypeFormSectionProps {
     handleGetTypeFormData: (getTypeData: FormField) => void;
-    hadleIsFillGetType: (isFill: boolean) => void;
     selectedCaseTypeForm: FormField | undefined;
     children?: React.ReactNode;
 
@@ -63,7 +51,6 @@ interface CaseTypeFormSectionProps {
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     handleGetTypeFormData,
-    hadleIsFillGetType,
     selectedCaseTypeForm,
     children
 }) => {
@@ -80,7 +67,6 @@ const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
                         editFormData={true}
                         enableFormTitle={false}
                         onFormChange={handleGetTypeFormData}
-                        returnFormAllFill={hadleIsFillGetType}
                     />
                 </>
             )}
@@ -183,7 +169,6 @@ interface CaseFormFieldsProps {
     areaList: Area[];
     listCustomerData: Customer[];
     isCreate: boolean;
-    editFormData: boolean;
     // Handlers
     caseTypeOptions: string[]
     handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -193,7 +178,6 @@ interface CaseFormFieldsProps {
     handleIotDeviceDate: (e: ChangeEvent<HTMLInputElement>) => void;
     handleCaseTypeChange: (newValue: string) => void;
     handleGetTypeFormData: (getTypeData: FormField) => void;
-    handleIsFillGetType: (isFill: boolean) => void;
     handleDetailChange: (data: string) => void;
     handleSetArea: (selectedName: string) => void;
     handleCustomerDataChange: (data: Custommer) => void;
@@ -217,7 +201,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
     areaList, listCustomerData, isCreate,
     handleIotDevice,
-    handleCaseTypeChange, handleGetTypeFormData, handleIsFillGetType, handleDetailChange,
+    handleCaseTypeChange, handleGetTypeFormData, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
     caseTypeOptions,
     handleFilesChange, handlePreviewShow, handleSaveDrafts, handleExampleData, language, t,
@@ -261,7 +245,6 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
         {/* Case Type Form Section */}
         <CaseTypeFormSection
             handleGetTypeFormData={handleGetTypeFormData}
-            hadleIsFillGetType={handleIsFillGetType}
             selectedCaseTypeForm={selectedCaseTypeForm?.formField}
         >
             <div className="grid-cols-2 sm:grid">
@@ -431,8 +414,6 @@ CaseFormFields.displayName = 'CaseFormFields';
 
 
 export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMeta = false, isSubCase = false, isCreate = true }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isCreate?: boolean, isScheduleDate?: boolean }) {
-    // Initialize state with proper defaults
-
     const navigate = useNavigate()
     const handleBack = useCallback(() => {
         if (onBack) {
@@ -445,7 +426,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [formDataUpdated, setFormDataUpdated] = useState(0);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
-        // Only initialize if it's a new case (no caseData)
         if (!initialCaseData) {
             return {
                 location: "",
@@ -464,10 +444,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         }
         return undefined;
     });
-    const [showCreatedCase, setShowCreatedCase] = useState(false);
-    const [editFormData, setEditFormData] = useState<boolean>(!initialCaseData);
-    const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
-    const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
+    // const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showToast, setShowToast] = useState(false);
     const [showPreviewData, setShowPreviewData] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
@@ -475,7 +453,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const [sopLocal] = useState<CaseSop>();
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     const [isInitialized, setIsInitialized] = useState(false);
-    // Memoize static data to prevent re-renders
     const { t, language } = useTranslation();
     if (language === "th") {
         registerLocale("th", th);
@@ -500,15 +477,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         JSON.parse(localStorage.getItem("profile") ?? "{}"), []
     );
 
-    // Only make API calls if initialCaseData exists
-
-
-
-
-
-
-
-
     const [createCase] = usePostCreateCaseMutation();
     // Initialize customer data ONCE
     useEffect(() => {
@@ -518,8 +486,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             setIsInitialized(true);
         }
     }, [isInitialized]);
-
-
 
     const [getTypeSubType] = useLazyGetTypeSubTypeQuery();
 
@@ -585,7 +551,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType, language),
         } as formType;
-    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, editFormData, formDataUpdated]);
+    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, formDataUpdated]);
 
     const selectedCaseTypeForm = useMemo(() => {
         if (caseState?.caseType?.formField) {
@@ -627,7 +593,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 workOrderNummber: sopLocal?.caseId || "",
                 workOrderRef: sopLocal?.referCaseId || "",
                 iotDevice: sopLocal?.deviceId || "",
-                iotDate: getLocalISOString(sopLocal?.startedDate) || "",
+                iotDate: sopLocal?.startedDate || "",
                 area: area,
                 status: sopLocal?.statusId || "",
                 attachFile: [] as File[], // For new cases (edit mode)
@@ -649,13 +615,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     }, [sopLocal, initialCaseData, areaList.length, caseTypeSupTypeData, isSubCase]);
 
 
-    useEffect(() => {
-        if (selectedCaseTypeForm === undefined ||
-            selectedCaseTypeForm.formField === undefined ||
-            Object.keys(selectedCaseTypeForm.formField || {}).length === 0) {
-            setIsValueFill(prev => ({ ...prev, DynamicForm: true }));
-        }
-    }, [selectedCaseTypeForm]);
 
 
     useEffect(() => {
@@ -666,13 +625,13 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 name: `${result.firstName} ${result.lastName}`,
                 contractMethod: {
                     id: "06",
-                    name: contractMethodMock.find((items) => items.id === "06")?.name || ""
+                    name: source.find((items) => items.id === "06")?.name || ""
                 }
             } as Custommer : {
                 mobileNo: profile.mobileNo,
                 contractMethod: {
                     id: "06",
-                    name: contractMethodMock.find((items) => items.id === "06")?.name || ""
+                    name: source.find((items) => items.id === "06")?.name || ""
                 },
             } as Custommer;
             setCaseState(prev => prev ? {
@@ -692,29 +651,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     }, []);
 
 
-    const handleCheckRequiredFields = useCallback(() => {
-        let errorMessage = "";
-        if (!caseState?.caseType?.caseType) {
-            errorMessage = "Please select a Case Type.";
-        } else if (!caseState?.workOrderNummber) {
-            errorMessage = "Please enter Work Order Number.";
-        } else if (!caseState?.description?.trim()) {
-            errorMessage = "Please enter Case Details.";
-        } else if (!caseState?.customerData?.contractMethod?.name.trim()) {
-            errorMessage = "Please select a Contact Method.";
-        } else if (((!isValueFill.dynamicForm && caseState?.formData) || (!isValueFill.getType && selectedCaseTypeForm)) && Object.keys(selectedCaseTypeForm?.formField as object).length !== 0) {
-            errorMessage = "Please ensure all dynamic form fields are filled.";
-        }
-        return errorMessage;
-    }, [caseState, isValueFill, selectedCaseTypeForm]);
-
-    const handleCheckRequiredFieldsSaveDraft = useCallback(() => {
-        let errorMessage = "";
-        if (!caseState?.caseType?.caseType) {
-            errorMessage = "Please select a Service Type.";
-        }
-        return errorMessage;
-    }, [caseState?.caseType?.caseType]);
 
     const createCaseAction = useCallback(async (action: "draft" | "submit") => {
         if (!caseState) return false;
@@ -752,6 +688,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             usercommand: caseState?.serviceCenter?.commandTh || "",
             usercreate: profile?.username || "",
             userreceive: "",
+            startedDate:new Date(TodayDate()).toISOString(),
             nodeId: caseState?.caseType?.formField?.nextNodeId || "",
             wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField?.versions || "",
@@ -825,91 +762,16 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
 
 
 
-    // const handleSaveChanges = useCallback(async () => {
-    //     if (!caseState) return;
-
-    //     setShowPreviewData(false)
-    //     const updateJson = {
-    //         caseId: caseState?.workOrderNummber,
-    //         formData: caseState?.caseType?.formField,
-    //         customerName: caseState?.customerData?.name,
-    //         caseDetail: caseState?.description || "",
-    //         caseDuration: 0,
-    //         caseLat: "",
-    //         caseLon: "",
-    //         caseSTypeId: caseState?.caseType?.sTypeId || "",
-    //         caseTypeId: caseState?.caseType?.typeId || "",
-    //         caseVersion: sopLocal?.caseVersion,
-    //         caselocAddr: caseState?.location || "",
-    //         caselocAddrDecs: caseState?.location || "",
-    //         countryId: caseState?.area?.countryId || "",
-    //         distId: caseState?.area?.distId,
-    //         extReceive: "",
-    //         phoneNoHide: true,
-    //         phoneNo: caseState?.customerData?.mobileNo || "",
-    //         priority: caseState?.caseType?.priority || 0,
-    //         provId: caseState?.area?.provId || "",
-    //         referCaseId: caseState?.workOrderRef || "",
-    //         resDetail: "",
-    //         caseSla: caseState?.caseType?.caseSla || "",
-    //         deviceId: caseState?.iotDevice || "",
-    //         source: caseState?.customerData?.contractMethod?.id || "",
-    //         statusId: sopLocal?.statusId,
-    //         userarrive: "",
-    //         userclose: "",
-    //         usercommand: caseState?.serviceCenter?.commandTh || "",
-    //         usercreate: profile?.username || "",
-    //         userreceive: "",
-    //         nodeId: caseState?.caseType?.formField?.nextNodeId || "",
-    //         wfId: caseState?.caseType?.wfId || "",
-    //         versions: caseState?.caseType?.formField.versions || "",
-    //         deptId: caseState?.serviceCenter?.deptId || undefined,
-    //         commId: caseState?.serviceCenter?.commId || undefined,
-    //         stnId: caseState?.serviceCenter?.stnId || undefined,
-    //         scheduleFlag: true,
-    //     } as CreateCase;
-
-    //     try {
-    //         await updateCase({ caseId: sopLocal?.id || "", updateCase: updateJson }).unwrap();
-    //         const updateSuccess = updateCaseInLocalStorage(updateJson);
-
-    //         if (updateSuccess) {
-    //             setEditFormData(false);
-    //             setToastMessage("Changes saved successfully!");
-    //             setToastType("success");
-    //             setShowToast(true);
-    //         } else {
-    //             setToastMessage("Changes saved to server");
-    //             setToastType("success");
-    //             setEditFormData(false);
-    //             setShowToast(true);
-    //         }
-    //         unitRefect()
-    //     } catch (error: any) {
-    //         setToastType("error");
-    //         setToastMessage(`Failed to Update Case`);
-    //         setShowToast(true);
-    //         return;
-    //     }
-    // }, [caseState, sopLocal, updateCase, updateCaseInLocalStorage, profile, unitRefect]);
-
     const handleCreateCase = useCallback(async () => {
-
         const isNotError = await createCaseAction("submit");
         if (isNotError === false) {
             setShowPreviewData(false)
             return
         }
-        setEditFormData(false)
-        // setToastMessage("Create Case successfully!");
-        // setToastType("success");
-        // setShowToast(true);
-        setShowCreatedCase(true);
-        // navigate(`/case/${caseState?.workOrderNummber}`)
     }, [createCaseAction]);
 
     const handlePreviewShow = useCallback(() => {
-        const errorMessage = handleCheckRequiredFields();
+        const errorMessage = validateCaseForSubmission(caseState);
         if (errorMessage) {
             setToastMessage(errorMessage);
             setToastType("error");
@@ -917,7 +779,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             return;
         }
         setShowPreviewData(true)
-    }, [handleCheckRequiredFields]);
+    }, [validateCaseForSubmission, , caseState]);
 
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue, language);
@@ -1020,8 +882,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         return date;
     }, [updateCaseState]);
 
-    const handleIsFillGetType = useCallback((isFill: boolean) =>
-        setIsValueFill(prev => ({ ...prev, getType: isFill })), []);
+
 
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = { ...selectedCaseTypeForm, formField: getTypeData, caseType: caseState?.caseType?.caseType ?? "" } as formType;
@@ -1041,7 +902,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
 
     const handleSaveDrafts = useCallback(async () => {
         setShowPreviewData(false)
-        const errorMessage = handleCheckRequiredFieldsSaveDraft();
+        const errorMessage = validateCaseForDraft(caseState);
 
         if (errorMessage) {
             setToastMessage(errorMessage);
@@ -1054,11 +915,10 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             return
         }
         localStorage.setItem("Create Case", JSON.stringify(caseState));
-        setEditFormData(false)
         setToastMessage("Save As Draft successfully!");
         setToastType("success");
         setShowToast(true);
-    }, [handleCheckRequiredFieldsSaveDraft, createCaseAction, caseState]);
+    }, [validateCaseForDraft, createCaseAction, caseState]);
 
 
 
@@ -1068,250 +928,79 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         }
     }, [caseState?.workOrderDate, initialCaseData, updateCaseState]);
 
-
-
-    // Loading state for existing cases
-    // if (initialCaseData && (isLoading || isFetching)) {
-
-
-    if (showCreatedCase) {
-        return (
-            <CaseDetailView
-                caseData={{ caseId: caseState?.workOrderNummber } as CaseEntity}
-                onBack={() => {
-                    setShowCreatedCase(false);
-                    setCaseState(prev => {
-                        if (!prev) return prev;
-                        return {
-                            ...prev,
-                            workOrderNummber: genCaseID()
-                        };
-                    });
-                }}
-                isCreate={false}
-            />
-        );
-    }
-
-
-
-
     const handleExampleData = () => {
-        const exampleCaseState: Partial<CaseDetails> = {
-            location: "เลขที่ 78 ซอยสามเสน 3 (วัดสามพระยา) ถนนสามเสน แขวงวัดสามพระยา เขตพระนคร กรุงเทพมหานคร 10200",
-            date: "",
-            iotDevice: "CAM-001-XYZ123",
-            customerData: {
-                contractMethod: { name: "IOT-Alert", id: "05" },
-                mobileNo: "0991396777",
-                name: "",
-            } as Custommer,
-            caseType: {
-                typeId: "fe4215f5-7127-4f6b-bd7a-d6ed8ccaa29d",
-                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
-                en: "IOT Water Sensor",
-                th: "เซ็นเซอร์น้ำอัจฉริยะ",
-                active: true,
-                sTypeId: "b2c3d4e5-f6a7-8901-bc23-45678901def0",
-                sTypeCode: "200",
-                subTypeEn: "Water Sensor Malfunction",
-                subTypeTh: "เซ็นเซอร์น้ำทำงานผิดปกติ",
-                wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
-                caseSla: "45",
-                priority: 5,
-                userSkillList: [
-                    "fe6c8262-04a1-4f5c-8b48-c124cf0152b1"
-                ],
-                unitPropLists: [
-                    "4a56e3c2-1188-40ef-bf0a-4ec07f6a5933"
-                ],
-                subTypeActive: true,
-                caseType: "200-เซ็นเซอร์น้ำอัจฉริยะ-เซ็นเซอร์น้ำทำงานผิดปกติ",
-                formField: {
-                    nextNodeId: "node-1755508933488",
-                    versions: "draft",
-                    wfId: "f090eeb5-b63c-46ed-aaa9-72462234a070",
-                    formId: "da7f4b82-dd1f-4743-bea3-eee5d415fccc",
-                    formName: "เซ็นเซอร์น้ำอัจฉริยะ",
-                    formColSpan: 2,
-                    formFieldJson: [
-                        {
-                            colSpan: 1,
-                            id: "18a00f16-6f0d-436e-9a1e-fec5c12513ab",
-                            isChild: false,
-                            label: "เลขเซ็นเซอร์น้ำ",
-                            placeholder: "เลขเซ็นเซอร์น้ำ",
-                            required: false,
-                            showLabel: true,
-                            type: "textInput",
-                            value: "WS-001-ABC789"
-                        },
-                        {
-                            colSpan: 1,
-                            id: "48f15f2d-a3d6-4955-ab52-8138c780094e",
-                            isChild: false,
-                            label: "ระดับน้ำ",
-                            placeholder: "ระดับน้ำ",
-                            required: false,
-                            showLabel: true,
-                            type: "textInput",
-                            value: "200 เมตร"
-                        },
-                        {
-                            colSpan: 2,
-                            id: "35c9cfe7-2779-414a-a1e4-b6954b384981",
-                            isChild: false,
-                            label: "ข้อมูลจากเซ็นเซอร์",
-                            placeholder: "ข้อมูลจากเซ็นเซอร์",
-                            required: false,
-                            showLabel: true,
-                            type: "textAreaInput",
-                            value: "ลง   500 m"
-                        }
-                    ]
-                },
-
-
-
-            },
-            priority: 5,
-            description: "เซ็นเซอร์น้ำขัดข้อง",
-            area: {
-                id: "62",
-                orgId: "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
-                countryId: "TH",
-                provId: "10",
-                districtEn: "Phra Nakhon",
-                districtTh: "พระนคร",
-                districtActive: true,
-                distId: "101",
-                provinceEn: "Bangkok",
-                provinceTh: "กรุงเทพมหานคร",
-                provinceActive: true,
-                countryEn: "Thailand",
-                countryTh: "ประเทศไทย",
-                countryActive: true
-            },
-            workOrderNummber: genCaseID(),
-            status: "",
-            scheduleDate: "2025-08-27T16:40",
-            attachFile: [],
-            attachFileResult: [],
-            iotDate: "2025-08-27T16:40",
-            workOrderDate: "2025-08-27T16:40"
-        };
         setCaseState(exampleCaseState as CaseDetails)
     }
-    // Main component
+
     return (
-        <div className="flex flex-col h-screen">
-            {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
-
-            {/* Toast */}
-            {showToast && (
-                <Toast
-                    message={toastMessage}
-                    type={toastType}
-                    duration={3000}
-                    onClose={() => setShowToast(false)}
+        <CaseLayout
+            disablePageMeta={disablePageMeta}
+            onBack={handleBack}
+            isPanelOpen={isPanelOpen}
+            onPanelClose={() => setIsPanelOpen(false)}
+            onPanelOpen={() => setIsPanelOpen(true)}
+            isCreate={isCreate}
+            t={t}
+            title={isCreate ? "Create Case" : "Case Detail"}
+            caseItem={caseState || {} as CaseDetails}
+            referCaseList={sopLocal?.referCaseLists}
+            showToast={
+                showToast && (
+                    <Toast
+                        message={toastMessage}
+                        type={toastType}
+                        duration={3000}
+                        onClose={() => setShowToast(false)}
+                    />
+                )
+            }
+        >
+            {caseState && (
+                <CaseFormFields
+                    caseState={caseState}
+                    caseData={initialCaseData}
+                    setCaseState={setCaseState}
+                    caseType={{
+                        caseType: caseState?.caseType?.caseType ?? "",
+                        priority: caseState?.priority ?? 0
+                    }}
+                    selectedCaseTypeForm={selectedCaseTypeForm}
+                    caseTypeSupTypeData={caseTypeSupTypeData}
+                    areaList={areaList}
+                    listCustomerData={listCustomerData}
+                    isCreate={isCreate}
+                    caseTypeOptions={caseTypeOptions}
+                    handleWorkOrderNumber={handleWorkOrderNumber}
+                    handleWorkOrderDate={handleWorkOrderDate}
+                    handleContactMethodChange={handleContactMethodChange}
+                    handleIotDevice={handleIotDevice}
+                    handleIotDeviceDate={handleIotDeviceDate}
+                    handleCaseTypeChange={handleCaseTypeChange}
+                    handleGetTypeFormData={handleGetTypeFormData}
+                    handleDetailChange={handleDetailChange}
+                    handleSetArea={handleSetArea}
+                    handleCustomerDataChange={handleCustomerDataChange}
+                    handleLocationChange={handleLocationChange}
+                    handleScheduleDate={handleScheduleDate}
+                    handleWorkOrderDateChangeDefault={handleWorkOrderDateChangeDefault}
+                    handleIotDateChangeDefault={handleIotDateChangeDefault}
+                    handleScheduleDateChangeDefault={handleScheduleDateChangeDefault}
+                    handleFilesChange={handleFilesChange}
+                    handlePreviewShow={handlePreviewShow}
+                    handleSaveDrafts={handleSaveDrafts}
+                    handleExampleData={handleExampleData}
+                    language={language}
+                    t={t}
+                    isScheduleDate={true}
                 />
             )}
 
-            {/* Header */}
-            <CaseHeader
-                disablePageMeta={disablePageMeta}
-                onBack={handleBack}
-                onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
-                isCreate={isCreate}
-                t={t}
-            />
-
-            {/* Main Content */}
-            <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
-                <div className="flex flex-col md:flex-row h-full gap-1 w-full">
-
-                    {/* Left Panel */}
-                    <div className="overflow-y-auto w-full md:w-2/3 lg:w-3/4 custom-scrollbar">
-                        <div className="pr-0">
-                            {/* Form Content */}
-                            <div className="px-4 mt-5">
-                                {caseState && (
-                                    <CaseFormFields
-                                        caseState={caseState}
-                                        caseData={initialCaseData}
-                                        setCaseState={setCaseState}
-                                        caseType={{
-                                            caseType: caseState?.caseType?.caseType ?? "",
-                                            priority: caseState?.priority ?? 0
-                                        }}
-                                        selectedCaseTypeForm={selectedCaseTypeForm}
-                                        caseTypeSupTypeData={caseTypeSupTypeData}
-                                        areaList={areaList}
-                                        listCustomerData={listCustomerData}
-                                        isCreate={isCreate}
-                                        editFormData={editFormData}
-                                        handleWorkOrderNumber={handleWorkOrderNumber}
-                                        handleWorkOrderDate={handleWorkOrderDate}
-                                        handleContactMethodChange={handleContactMethodChange}
-                                        handleIotDevice={handleIotDevice}
-                                        handleIotDeviceDate={handleIotDeviceDate}
-                                        handleCaseTypeChange={handleCaseTypeChange}
-                                        handleGetTypeFormData={handleGetTypeFormData}
-                                        handleIsFillGetType={handleIsFillGetType}
-                                        handleDetailChange={handleDetailChange}
-                                        handleSetArea={handleSetArea}
-                                        handleCustomerDataChange={handleCustomerDataChange}
-                                        handleLocationChange={handleLocationChange}
-                                        handleScheduleDate={handleScheduleDate}
-                                        handleWorkOrderDateChangeDefault={handleWorkOrderDateChangeDefault}
-                                        handleIotDateChangeDefault={handleIotDateChangeDefault}
-                                        handleScheduleDateChangeDefault={handleScheduleDateChangeDefault}
-                                        handleFilesChange={handleFilesChange}
-                                        handlePreviewShow={handlePreviewShow}
-                                        handleSaveDrafts={handleSaveDrafts}
-                                        handleExampleData={handleExampleData}
-                                        language={language}
-                                        t={t}
-                                        isScheduleDate={true}
-                                        caseTypeOptions={caseTypeOptions}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div className={`
-                        fixed top-0 right-0 h-full w-[90%] max-w-md z-40
-                        transition-transform duration-300 ease-in-out
-                        md:relative md:h-auto md:w-1/3 lg:w-1/4 md:translate-x-0 md:z-auto
-                        md:border-l md:border-gray-200 md:dark:border-gray-800 px-1
-                        ${isCustomerPanelOpen ? 'translate-x-0' : 'translate-x-full'}
-                    `}>
-                        <Panel
-                            onClose={() => setIsCustomerPanelOpen(false)}
-                            caseItem={caseState || {} as CaseDetails}
-                            referCaseList={sopLocal?.referCaseLists}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Overlay for mobile */}
-            {isCustomerPanelOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 z-30 md:hidden"
-                    onClick={() => setIsCustomerPanelOpen(false)}
-                />
-            )}
-
-            {/* Modals */}
             <PreviewDataBeforeSubmit
                 caseData={caseState}
                 submitButton={handleCreateCase}
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
             />
-        </div>
+        </CaseLayout>
     );
 }

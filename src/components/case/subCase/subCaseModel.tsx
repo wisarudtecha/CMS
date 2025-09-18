@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog/dialog"
-import CaseDetailView from "../main/CaseDetailView"
+import CaseDetailView from "../CaseDetailView"
 import { CaseEntity } from "@/types/case"
 import {  genWordOrderID } from "@/components/genCaseId/genCaseId"
 
@@ -22,7 +22,7 @@ export default function SubCaseModel({
                 <CaseDetailView disablePageMeta={true} caseData={{
                     caseId: genWordOrderID(),
                     referCaseId: caseData?.caseId,
-                } as CaseEntity} isSubCase={true}  isCreate={true}/>
+                } as CaseEntity} isSubCase={true}/>
 
                 <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
 

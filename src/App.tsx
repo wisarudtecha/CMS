@@ -28,7 +28,6 @@ import UserProfiles from "@/pages/UserProfiles";
 
 // Case Management Imports
 import CasesAssignment from "@/pages/Case/caseAssignment";
-import CaseCreation from "@/components/case/CaseCreation";
 import CaseHistoryPage from "@/pages/Case/CaseHistory";
 // Case Management (No Longer Used) Imports
 // import CasesView from "@/pages/Case/caseView";
@@ -78,8 +77,9 @@ import OfflineState from "@/components/offline/OfflineManager";
 
 // Custom Theme Imports
 import ThemeDebugger from "@/components/debug/ThemeDebugger";
-import CaseDetailView from "@/components/case/main/CaseDetailView";
-import CaseDetailViewSchedule from "./components/case/main/CaseDetailViewSchedule";
+import CaseDetailView from "@/components/case/CaseDetailView";
+import CaseDetailViewSchedule from "./components/case/createCase/createCaseSchedule";
+import CaseCreation from "./components/case/createCase/createCase";
 
 // Lingui (No Longer Used) Imports
 // import { i18n } from "@lingui/core";
@@ -112,7 +112,7 @@ export default function App() {
           {/* Case Management (Archived) */}
           <Route path="/case-assignment" element={<CasesAssignment />} />
           <Route path="/case-creation" element={<CaseCreation/>} />
-          <Route path="/case/:caseId" element={<CaseDetailView isCreate={false} />} />
+          <Route path="/case/:caseId" element={<CaseDetailView />} />
           {/* Case Management (No Longer Used) */}
           {/* <Route path="/case-view" element={<CasesView />} /> */}
           {/* <Route path="/kanban" element={<Kanban />} /> */}

@@ -11,10 +11,10 @@ export const statusConfig = {
 export const caseStatusGroup = [
   { title:{en:"Draft",th:"แบบร่าง"}, group: ["S000"] ,show:false},
   { title: {en:"New",th:"เหตุใหม่"}, group: ["S001", "S008"] ,show:true},
-  { title: {en:"Assigned",th:"มอบหมาย"}, group: ["S002", "S009"] ,show:true},
-  { title: {en:"In-progress",th:"ดำเนินการ"}, group: ["S017","S003", "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
+  { title: {en:"Assigned",th:"มอบหมาย"}, group: ["S002", "S009","S003"] ,show:true},
+  { title: {en:"In-progress",th:"ดำเนินการ"}, group: [ "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
   { title: {en:"On-Hold",th:"หยุดไว้ชั่วคราว"}, group: [, "S018"] ,show:false},
-  { title: {en:"Done",th:"เสร็จสิ้น"}, group: ["S007", "S016"] ,show:true},
+  { title: {en:"Done",th:"เสร็จสิ้น"}, group: ["S007", "S016","S017"] ,show:true},
   { title: {en:"Cancel",th:"ยกเลิก"}, group: ["S014"] ,show:false},
 ]
 

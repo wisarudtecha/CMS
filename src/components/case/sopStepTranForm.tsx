@@ -1,16 +1,24 @@
 import { CaseSop } from "@/store/api/dispatch";
 import { CaseStatusInterface, delayStatus } from "../ui/status/status";
 
-interface ProgressSteps {
+export interface ProgressSteps {
     id: string;
     title: string;
     completed: boolean;
     current?: boolean;
     type?: string;
     description?: string;
-    sla?: number;
+    sla?: number; // SLA in minutes
+    timeline?: {
+        completedAt?: string;
+        duration?: number; // Duration in seconds
+        userOwner?: string;
+    };
 }
 
+export interface ProgressStepPreviewProps {
+    progressSteps: ProgressSteps[];
+}
 interface ProgressLane {
     id: string;
     name: string;
@@ -298,13 +306,13 @@ export const mapSopToOrderedProgress = (sopData: CaseSop, language: string): Pro
         const sla = slaValue ? parseInt(slaValue, 10) : undefined;
 
         // Use language parameter instead of hook
-        const title = language === "th" 
+        const title = language === "th"
             ? caseStatus.find((item) => statusId === item.statusId)?.th ||
-              node.data?.data?.label ||
-              `Step ${index + 1}`
+            node.data?.data?.label ||
+            `Step ${index + 1}`
             : caseStatus.find((item) => statusId === item.statusId)?.en ||
-              node.data?.data?.label ||
-              `Step ${index + 1}`;
+            node.data?.data?.label ||
+            `Step ${index + 1}`;
 
         return {
             id: (index + 1).toString(),
@@ -325,16 +333,16 @@ export const mapSopToOrderedProgress = (sopData: CaseSop, language: string): Pro
 
 
 // Keep the other functions but update them to be more robust
-export const mapSopToProgressStepsWithBranching = (sopData: CaseSop,language:string): ProgressSteps[] => {
+export const mapSopToProgressStepsWithBranching = (sopData: CaseSop, language: string): ProgressSteps[] => {
     // Use the simpler ordered approach for now
-    return mapSopToOrderedProgress(sopData,language);
+    return mapSopToOrderedProgress(sopData, language);
 };
 
-export const buildProgressLanes = (sopData: CaseSop,language:string): ProgressLane[] => {
+export const buildProgressLanes = (sopData: CaseSop, language: string): ProgressLane[] => {
     return [{
         id: "main",
         name: "Main Flow",
-        steps: mapSopToOrderedProgress(sopData,language),
+        steps: mapSopToOrderedProgress(sopData, language),
         isActive: true
     }];
 };
@@ -346,3 +354,54 @@ export const buildProgressLanes = (sopData: CaseSop,language:string): ProgressLa
 // const isNodeInCurrentPath = (nodeId: string, currentNodeId: string, connections: any[], _nodes: any[]): boolean => {
 //     return true; // Simplified for now
 // };
+
+
+export const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps): string => {
+    if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
+        return '';
+    }
+
+    const fromTime = new Date(fromStep.timeline.completedAt).getTime();
+    const toTime = new Date(toStep.timeline.completedAt).getTime();
+    const diffMs = toTime - fromTime;
+
+    if (diffMs <= 0) return '';
+
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+
+
+    const years = diffYears;
+    const months = diffMonths % 12;
+    const days = diffDays % 30;
+    const hours = diffHours % 24;
+    const minutes = diffMinutes % 60;
+    const seconds = diffSeconds % 60;
+
+
+    const timeUnits = [];
+
+    if (years > 0) timeUnits.push(`${years}y`);
+    if (months > 0) timeUnits.push(`${months}mo`);
+    if (days > 0) timeUnits.push(`${days}d`);
+    if (hours > 0) timeUnits.push(`${hours}h`);
+    if (minutes > 0) timeUnits.push(`${minutes}m`);
+    if (seconds > 0) timeUnits.push(`${seconds}s`);
+
+
+    return timeUnits.slice(0, 2).join(' ') || '0s';
+};
+
+
+export const isSlaViolated = (step: ProgressSteps): boolean => {
+    if (!step.sla || !step.timeline?.duration || step.sla === 0) {
+        return false;
+    }
+
+    const slaInSeconds = step.sla * 60;
+    return step.timeline.duration > slaInSeconds;
+};

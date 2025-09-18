@@ -265,10 +265,7 @@ export interface CaseDetails {
   title: string
   description: string
   date: string
-  comments: number
   category: string
-  categoryColor: string
-  priorityColor: string
   formData?: FormField
   caseType?: formType
   serviceCenter?:DepartmentCommandStationDataMerged

@@ -27,7 +27,7 @@ import { useTranslation } from "@/hooks/useTranslation"
 interface PanelProps {
     caseItem?: CaseDetails;
     referCaseList?: string[];
-    onClose: () => void; // Added onClose handler for mobile view
+    onClose: () => void;
 }
 const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");

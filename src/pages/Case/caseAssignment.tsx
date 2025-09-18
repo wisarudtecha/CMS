@@ -20,7 +20,7 @@ import DateStringToDateFormat, { DateStringToAgoFormat } from "@/components/date
 
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
-import { useFetchCase } from "@/components/case/CaseApiManager"
+import { useFetchCase } from "@/components/case/uitls/CaseApiManager"
 import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"

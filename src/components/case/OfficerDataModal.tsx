@@ -4,7 +4,7 @@ import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
 import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
-import ProgressStepPreviewUnit from "../progress/ProgressSopUnitData"
+import ProgressStepPreviewUnit from "./activityTimeline/unitActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
 
 interface OfficerDataModal {
@@ -111,7 +111,8 @@ export default function OfficerDataModal({
                         </div>
 
                         {/* Service Information */}
-                        <div className="space-y-4">
+                        <div className="">
+                        <div className="space-y-4 mb-3">
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2">
                                     <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_title")}</h3>
@@ -125,26 +126,26 @@ export default function OfficerDataModal({
 
                                         </p>
                                     </div>
-
-                                    
-
-                                    {/* <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-                                            <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-md text-xs">
-                                                Active
-                                            </span>
-                                        </p>
-                                    </div> */}
-
-                                    {/* <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Last Updated</label>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {new Date().toLocaleString()}
-                                        </p>
-                                    </div> */}
                                 </div>
                             </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("userform.orgInfo")}</h3>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        {/* <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label> */}
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                            {  "N/A"}
+
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
 

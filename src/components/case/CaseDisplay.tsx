@@ -80,7 +80,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
             </div>}
             <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >{t("case.display.case_information")}</span>
-                {isCreate === false ? (
+                {!isCreate? (
                     <div className="flex mb-2 text-gray-500 dark:text-gray-400">
                         <Ticket />
                         <div className="ml-2">
@@ -197,7 +197,8 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     )}
                 </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
+
+            {!isCreate && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
                 <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
                     <SquarePen className="h-5 w-5 mr-2" />
                     <span className="text-md">{t("case.display.edit")}</span>
@@ -238,7 +239,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                 )}
-            </div>
+            </div>}
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
                     <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>{t("case.display.detail")} <span>{requireElements}</span></span></span>

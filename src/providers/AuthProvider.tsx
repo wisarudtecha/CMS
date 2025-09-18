@@ -5,7 +5,7 @@ import { authReducer } from "@/hooks/useAuthContext";
 import { AuthService } from "@/utils/authService";
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
-import { caseApiSetup } from "@/components/case/CaseApiManager";
+import { caseApiSetup } from "@/components/case/uitls/CaseApiManager";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const getInitialAuthState = (): AuthState => {
