@@ -1,76 +1,46 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
-// import path from "path";
-
-// Import Lingui plugin for i18n support
-// import { lingui } from "@lingui/vite-plugin";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    // react({
-    //   // Enable React Fast Refresh
-    //   babel: {
-    //     // Use the Lingui macro for automatic message extraction
-    //     plugins: ["@lingui/babel-plugin-lingui-macro"],
-    //   },
-    // }),
     svgr({
       svgrOptions: {
         icon: true,
-        // This will transform your SVG to a React component
+
+        // This will transform SVG to a React component
         exportType: "named",
-        namedExport: "ReactComponent",
-      },
-    }),
-    // Add Lingui plugin for i18n support
-    // lingui(),
+        namedExport: "ReactComponent"
+      }
+    })
   ],
   resolve: {
     alias: {
       // Use "@" as an alias for the "src" directory
-      "@": "/src",
-    },
+      "@": "/src"
+    }
   },
-  
-  // assetsInclude: [
-  //   "**/*.json"
-  // ],
-  // // Configure Lingui plugin for i18n
-  // json: {
-  //   // Enable JSON support for Lingui
-  //   namedExports: false,
-  //   // Do not stringify JSON files
-  //   stringify: false,
-  // },
-
-  // build: {
-  //   rollupOptions: {
-  //     output: {
-  //       manualChunks: {
-  //         vendor: ["react", "react-dom"],
-  //         // arcgis: ["@arcgis/core"],
-  //         // charts: ["recharts", "d3"]
-  //       }
-  //     }
-  //   }
-  // }
 
   // CORS Solution: Proxy API requests to backend
   server: {
     port: 5173,
     host: true, // Allow external connections
     allowedHosts: [
-      "cms.welcomedcc.com"
+      "0.0.0.0",
+      "127.0.0.1",
+      "*.welcomedcc.com",
+      "cms.welcomedcc.com",
+      "localhost",
     ],
-    hmr: {
-      protocol: "wss", // use "ws" if not serving over HTTPS
-      host: "cms.welcomedcc.com", // the public host browser is loading from
-      clientPort: 443 // needed if the browser connects over HTTPS
-      // port: 5173 // if exposing the Vite port directly without proxy
-    },
+    hmr: process.env.NODE_ENV === "production" ? {
+      protocol: "wss", // Use "ws" if not serving over HTTPS
+      host: "cms.welcomedcc.com", // Public host browser is loading from
+      clientPort: 443 // Needed if the browser connects over HTTPS
+      // port: 5173 // If exposing the Vite port directly without proxy
+    } : undefined,
+
     // Proxy configuration to handle CORS
     proxy: {
       "/api": {
@@ -89,51 +59,77 @@ export default defineConfig({
           proxy.on("proxyRes", (proxyRes, req) => {
             console.log("Proxy response:", proxyRes.statusCode, req.url);
           });
-        },
+        }
       },
-      
+
       // WebSocket proxy
       "/ws": {
         target: "ws://localhost:8080",
         ws: true,
-        changeOrigin: true,
-      },
-    },
+        changeOrigin: true
+      }
+    }
   },
   
   build: {
+    chunkSizeWarningLimit: 2000,
+    cssMinify: false,
+    minify: "terser",
     outDir: "dist",
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'router': ['react-router', 'react-router-dom'],
-          'fullcalendar': [
-            '@fullcalendar/core',
-            '@fullcalendar/daygrid', 
-            '@fullcalendar/interaction',
-            '@fullcalendar/list',
-            '@fullcalendar/react',
-            '@fullcalendar/timegrid',
+          "charts": [
+            "apexcharts",
+            "react-apexcharts"
           ],
-          'charts': ['apexcharts', 'react-apexcharts'],
-          'maps': ['@react-jvectormap/core', '@react-jvectormap/world'],
-          'redux': ['@reduxjs/toolkit', 'react-redux'],
-          'dnd': [
-            '@dnd-kit/core', '@dnd-kit/modifiers', 
-            '@dnd-kit/sortable', '@dnd-kit/utilities',
-            '@hello-pangea/dnd', 'react-dnd', 'react-dnd-html5-backend',
+          "dnd": [
+            "@dnd-kit/core", "@dnd-kit/modifiers", 
+            "@dnd-kit/sortable", "@dnd-kit/utilities",
+            "@hello-pangea/dnd", "react-dnd", "react-dnd-html5-backend"
           ],
-          'ui': [
-            '@headlessui/react',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-dialog', 
-            '@radix-ui/react-scroll-area',
+          "fullcalendar": [
+            "@fullcalendar/core",
+            "@fullcalendar/daygrid", 
+            "@fullcalendar/interaction",
+            "@fullcalendar/list",
+            "@fullcalendar/react",
+            "@fullcalendar/timegrid"
           ],
-          'icons': ['lucide', 'lucide-react'],
-          'utils': ['flatpickr', 'react-grid-layout', 'axios', 'uuid'],
-        },
+          "icons": [
+            "lucide",
+            "lucide-react"
+          ],
+          "maps": [
+            "@react-jvectormap/core",
+            "@react-jvectormap/world"
+          ],
+          "react-vendor": [
+            "react",
+            "react-dom"
+          ],
+          "redux": [
+            "react-redux",
+            "@reduxjs/toolkit"
+          ],
+          "router": [
+            "react-router",
+            "react-router-dom"
+          ],
+          "ui": [
+            "@headlessui/react",
+            "@radix-ui/react-avatar",
+            "@radix-ui/react-dialog", 
+            "@radix-ui/react-scroll-area"
+          ],
+          "utils": [
+            "axios",
+            "flatpickr",
+            "react-grid-layout",
+            "uuid"
+          ]
+        }
       },
       onwarn(warning, warn) {
         // Suppress eval warnings from react-jvectormap
@@ -141,16 +137,13 @@ export default defineConfig({
           return
         }
         warn(warning)
-      },
-    },
-    minify: "terser",
-    cssMinify: false,
-    chunkSizeWarningLimit: 2000,
+      }
+    }
   },
   
   define: {
     // Define environment variables
     __DEV__: JSON.stringify(process.env.NODE_ENV === "development"),
-    __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL),
-  },
+    __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL)
+  }
 });

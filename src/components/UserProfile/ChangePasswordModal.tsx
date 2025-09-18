@@ -1,7 +1,7 @@
 // /src/components/UserProfile/ChangePasswordModal.tsx
 import { useState } from "react";
 import { AlertIcon, CheckCircleIcon } from "@/icons";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog/dialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { APP_CONFIG } from "@/utils/constants";
 import { validatePassword, PasswordValidation } from "@/utils/passwordValidation";
@@ -33,34 +33,34 @@ const ChangePasswordModal = ({
 
   const handleChangePassword = async () => {
     if (!currentPassword) {
-      setError(t("userform.currentPasswordRequired") || "กรุณากรอกรหัสผ่านปัจจุบัน");
+      setError(t("userform.currentPasswordRequired"));
       return;
     }
 
     if (!newPassword) {
-      setError(t("userform.newPasswordRequired") || "กรุณากรอกรหัสผ่านใหม่");
+      setError(t("userform.newPasswordRequired"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(t("userform.passwordMismatch") || "รหัสผ่านไม่ตรงกัน");
+      setError(t("userform.passwordMismatch"));
       return;
     }
 
     if (newPassword.length < 8) {
-      setError(t("userform.passwordTooShort") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+      setError(t("userform.passwordTooShort"));
       return;
     }
 
     // Check password validation
     const validation = validatePassword(newPassword);
     if (!validation.isValid) {
-      setError(t("userform.pwdHint") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว");
+      setError(t("userform.pwdHint"));
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError(t("userform.samePassword") || "รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านปัจจุบัน");
+      setError(t("userform.samePassword"));
       return;
     }
 
@@ -84,13 +84,13 @@ const ChangePasswordModal = ({
 
       if (!response.ok) {
         if (response.status === 400) {
-          setError(t("userform.incorrectCurrentPassword") || "รหัสผ่านปัจจุบันไม่ถูกต้อง");
+          setError(t("userform.incorrectCurrentPassword"));
         }
         else if (response.status === 401) {
-          setError(t("userform.unauthorized") || "ไม่มีสิทธิ์ในการดำเนินการ");
+          setError(t("userform.unauthorized"));
         }
         else {
-          setError(t("userform.changePasswordError") || "ไม่สามารถเปลี่ยนรหัสผ่านได้");
+          setError(t("userform.changePasswordError"));
         }
         return;
       }
@@ -105,7 +105,7 @@ const ChangePasswordModal = ({
     }
     catch (err) {
       console.error("Change password error:", err);
-      setError(t("userform.changePasswordError") || "ไม่สามารถเปลี่ยนรหัสผ่านได้");
+      setError(t("userform.changePasswordError"));
     }
     finally {
       setLoading(false);
@@ -126,10 +126,10 @@ const ChangePasswordModal = ({
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-md w-[90vw] rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t("userform.changePassword") || "เปลี่ยนรหัสผ่าน"}
+            {t("userform.changePassword")}
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t("userform.changePasswordDescription") || "กรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านของคุณ"}
+            {t("userform.changePasswordDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -137,7 +137,7 @@ const ChangePasswordModal = ({
           <div className="flex flex-col items-center py-6 space-y-4">
             <CheckCircleIcon className="w-16 h-16 text-green-400 dark:text-green-500" />
             <p className="text-center text-green-500 dark:text-green-400">
-              {t("userform.changePasswordSuccess") || "เปลี่ยนรหัสผ่านสำเร็จ!"}
+              {t("userform.changePasswordSuccess")}
             </p>
           </div>
         ) : (
@@ -151,20 +151,20 @@ const ChangePasswordModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="currentPassword">
-                {t("userform.currentPassword") || "รหัสผ่านปัจจุบัน"}
+                {t("userform.currentPassword")}
               </Label>
               <PasswordInput
                 id="currentPassword"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder={t("userform.enterCurrentPassword") || "กรอกรหัสผ่านปัจจุบัน"}
+                placeholder={t("userform.enterCurrentPassword")}
                 className="w-full"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="newPassword">
-                {t("userform.newPassword") || "รหัสผ่านใหม่"}
+                {t("userform.newPassword")}
               </Label>
               <PasswordInput
                 id="newPassword"
@@ -173,7 +173,7 @@ const ChangePasswordModal = ({
                   setNewPassword(e.target.value);
                   setPasswordValidation(validatePassword(e.target.value));
                 }}
-                placeholder={t("userform.enterNewPassword") || "กรอกรหัสผ่านใหม่"}
+                placeholder={t("userform.enterNewPassword")}
                 className="w-full"
               />
               
@@ -182,15 +182,15 @@ const ChangePasswordModal = ({
                 <div className="space-y-1 text-xs">
                   <div className={`flex items-center space-x-2 ${passwordValidation.hasMinLength ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
                     <span>{passwordValidation.hasMinLength ? "✓" : "✗"}</span>
-                    <span>{t("userform.passwordValidation.minLength") || "อย่างน้อย 8 ตัวอักษร"}</span>
+                    <span>{t("userform.passwordValidation.minLength")}</span>
                   </div>
                   <div className={`flex items-center space-x-2 ${passwordValidation.hasUppercase ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
                     <span>{passwordValidation.hasUppercase ? "✓" : "✗"}</span>
-                    <span>{t("userform.passwordValidation.uppercase") || "อย่างน้อยตัวใหญ่ 1 ตัว"}</span>
+                    <span>{t("userform.passwordValidation.uppercase")}</span>
                   </div>
                   <div className={`flex items-center space-x-2 ${passwordValidation.hasSpecialChar ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
                     <span>{passwordValidation.hasSpecialChar ? "✓" : "✗"}</span>
-                    <span>{t("userform.passwordValidation.specialChar") || "อย่างน้อยอักขระพิเศษ 1 ตัว"}</span>
+                    <span>{t("userform.passwordValidation.specialChar")}</span>
                   </div>
                 </div>
               )}
@@ -198,19 +198,19 @@ const ChangePasswordModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">
-                {t("userform.confirmPassword") || "ยืนยันรหัสผ่าน"}
+                {t("userform.confirmPassword")}
               </Label>
               <PasswordInput
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("userform.confirmNewPassword") || "ยืนยันรหัสผ่านใหม่"}
+                placeholder={t("userform.confirmNewPassword")}
                 className="w-full"
               />
             </div>
 
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              <p>{t("userform.passwordRequirements") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว"}</p>
+              <p>{t("userform.passwordRequirements")}</p>
             </div>
           </div>
         )}
@@ -222,7 +222,7 @@ const ChangePasswordModal = ({
               onClick={handleClose}
               disabled={loading}
             >
-              {t("common.cancel") || "ยกเลิก"}
+              {t("common.cancel")}
             </Button>
             <Button
               variant="primary"
@@ -230,8 +230,8 @@ const ChangePasswordModal = ({
               disabled={loading}
             >
               {loading 
-                ? (t("common.loading") || "กำลังดำเนินการ...")
-                : (t("userform.changePassword") || "เปลี่ยนรหัสผ่าน")
+                ? (t("common.loading"))
+                : (t("userform.changePassword"))
               }
             </Button>
           </DialogFooter>

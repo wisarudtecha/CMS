@@ -19,6 +19,8 @@ export const formatAddress = (address: Address): string => {
     address.district,
     `${address.province || ""} ${address.postalCode || ""}`,
     address.country,
+    address.lat,
+    address.lon
   ];
 
   return parts.filter(Boolean).join(", ");

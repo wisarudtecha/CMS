@@ -1,5 +1,6 @@
 // /src/components/UserProfile/UserInfoCard.tsx
-import { useUserProfile } from "@/context/UserProfileContext";
+// import { useUserProfile } from "@/context/UserProfileContext";
+import { useUserProfile } from "@/context/UserProfileContextObject";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UserInfoCardProps } from "@/types/user";
 
@@ -33,10 +34,22 @@ export default function UserInfoCard({ userData: propUserData, loading: propLoad
   const { t } = useTranslation();
 
   // Always call useUserProfile, then fallback to props if context is null/undefined
-  const contextProfile = useUserProfile();
-  const userData = contextProfile.userData || propUserData;
-  const loading = contextProfile.loading || propLoading;
-  const error = contextProfile.error || propError;
+  // const contextProfile = useUserProfile();
+  // const userData = contextProfile?.userData || propUserData;
+  // const loading = contextProfile?.loading || propLoading;
+  // const error = contextProfile?.error || propError;
+  let userData, loading, error;
+  try {
+    const contextProfile = useUserProfile();
+    userData = contextProfile.userData || propUserData;
+    loading = contextProfile.loading || propLoading;
+    error = contextProfile.error || propError;
+  }
+  catch {
+    userData = propUserData || null;
+    loading = propLoading || false;
+    error = propError || null;
+  }
   
   // // Try to use context first, fallback to props
   // let contextData;
@@ -66,7 +79,7 @@ export default function UserInfoCard({ userData: propUserData, loading: propLoad
   }
 
   return (
-    <div className="p-5 border border-gray-100 rounded-2xl dark:border-gray-800 lg:p-6">
+    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-700 lg:p-6 cursor-default">
       <div className="flex justify-between items-center mb-6">
         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t("userform.personal")}

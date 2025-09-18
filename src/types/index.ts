@@ -50,6 +50,11 @@ export interface Custommer extends Customer {
   name: string; 
 }
 
+export interface DropdownOption {
+  id: string;
+  name: string;
+}
+
 export interface NotificationPreferences {
   email: boolean;
   push: boolean;

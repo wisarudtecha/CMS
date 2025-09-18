@@ -543,6 +543,7 @@
     "resetPassword": "Reset Password",
     "changePassword": "Change Password",
     "currentPassword": "Current Password",
+    "changePasswordDescription": "Enter your current password and new password to change your password.",
     "newPassword": "New Password",
     "enterCurrentPassword": "Enter current password",
     "enterNewPassword": "Enter new password",
@@ -573,6 +574,12 @@
       "minLength": "At least 8 characters",
       "uppercase": "At least 1 uppercase letter",
       "specialChar": "At least 1 special character"
+    },
+    "blood_type": {
+      "A": "A",
+      "B": "B",
+      "AB": "AB",
+      "O": "O"
     }
   },
   "breadcrumb": {

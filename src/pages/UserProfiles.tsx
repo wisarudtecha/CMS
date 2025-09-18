@@ -1,24 +1,25 @@
-import PageBreadcrumb from "../components/common/PageBreadCrumb";
-import UserMetaCard from "../components/UserProfile/UserMetaCard";
-import UserInfoCard from "../components/UserProfile/UserInfoCard";
-import UserOrganizationCard from "../components/UserProfile/UserOrganizationCard";
-import UserAuditLog from "../components/UserProfile/UserAuditLog";
-import PageMeta from "../components/common/PageMeta";
-import { useState, useEffect } from "react";
-import { useTranslation } from "../hooks/useTranslation";
-import { UserProfileProvider } from "../context/UserProfileContext";
+// /src/pages/UserProfiles.tsx
+import { useEffect, useState } from "react";
+import { UserProfileProvider } from "@/context/UserProfileContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import PageMeta from "@/components/common/PageMeta";
+import UserAuditLog from "@/components/UserProfile/UserAuditLog";
+import UserInfoCard from "@/components/UserProfile/UserInfoCard";
+import UserMetaCard from "@/components/UserProfile/UserMetaCard";
+import UserOrganizationCard from "@/components/UserProfile/UserOrganizationCard";
 
-export default function UserProfiles() {
+const UserProfiles = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("profile");
   const [currentUsername, setCurrentUsername] = useState<string>("");
 
   // Debug translation
-  useEffect(() => {
-    console.log('Translation test:', t('navigation.home'));
-  }, [t]);
+  // useEffect(() => {
+  //   console.log("Translation test:", t("navigation.home"));
+  // }, [t]);
 
-  // Get current user's username from localStorage
+  // Get current user"s username from localStorage
   useEffect(() => {
     try {
       const profileString = localStorage.getItem("profile");
@@ -26,15 +27,16 @@ export default function UserProfiles() {
         const profile = JSON.parse(profileString);
         setCurrentUsername(profile?.username || "");
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error parsing profile from localStorage:", error);
     }
   }, []);
 
   const tabs = [
-    { key: "profile", label: t('userform.profile') || 'Profile' },
-    { key: "activity", label: t('userform.activity') || 'Activity' },
-    { key: "auditLog", label: t('userform.auditLog') || 'Audit Log' }
+    { key: "profile", label: t("userform.profile") || "Profile" },
+    // { key: "activity", label: t("userform.activity") || "Activity" },
+    { key: "auditLog", label: t("userform.auditLog") || "Audit Log" }
   ];
 
   const renderTabContent = () => {
@@ -47,18 +49,18 @@ export default function UserProfiles() {
             <UserOrganizationCard />
           </div>
         );
-      case "activity":
-        return (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            {'Activity data Here'}
-          </div>
-        );
+      // case "activity":
+      //   return (
+      //     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      //       {"Activity data Here"}
+      //     </div>
+      //   );
       case "auditLog":
         return currentUsername ? (
           <UserAuditLog username={currentUsername} />
         ) : (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            {t('userform.cannotLoadUserData') || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'}
+            {t("userform.cannotLoadUserData")}
           </div>
         );
       default:
@@ -74,14 +76,14 @@ export default function UserProfiles() {
       />
       <PageBreadcrumb 
         items={[
-          { label: t('navigation.home') || 'หน้าหลัก', href: '/' },
-          { label: t('navigation.sidebar.menu.user_profile') || 'โปรไฟล์ผู้ใช้' }
+          { label: t("navigation.home"), href: "/" },
+          { label: t("navigation.sidebar.menu.user_profile") }
         ]} 
       />
       
       <div className="space-y-6">
         {/* Tab Navigation and Content */}
-        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03]">
           {/* Tab Headers */}
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
@@ -91,8 +93,8 @@ export default function UserProfiles() {
                   onClick={() => setActiveTab(tab.key)}
                   className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.key
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                      ? "border-blue-500 text-blue-500 dark:text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                   }`}
                 >
                   {tab.label}
@@ -110,3 +112,5 @@ export default function UserProfiles() {
     </UserProfileProvider>
   );
 }
+
+export default UserProfiles;

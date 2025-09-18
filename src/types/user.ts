@@ -1,4 +1,5 @@
 // /src/types/user.ts
+import type { DropdownOption } from "@/types";
 import type { Permission } from "@/types/role";
 
 export interface ChangePasswordModalProps {
@@ -152,6 +153,86 @@ export interface UserEntity {
   roleId?: string;
   meta?: UserMeta;
   address?: UserAddress;
+}
+
+export interface UserFormData {
+  active: boolean;
+  address: string;
+  blood: string;
+  bod: string;
+  citizenId: string;
+  commId: string;
+  deptId: string;
+  displayName: string;
+  email: string;
+  empId: string;
+  firstName: string;
+  gender: number | null; 
+  lastName: string;
+  middleName: string;
+  mobileNo: string;
+  orgId: string;
+  password?: string;
+  confirmPassword?: string;
+  photo: File | string | null;
+  roleId: string;
+  stnId: string;
+  title: string;
+  userType: number | 1;
+  username: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  // [key: string]: any;
+  [key: string]: unknown;
+}
+
+export interface UserFormProfile {
+  id: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNo: string;
+  photo: string;
+  address: string | null;
+  title?: string;
+  middleName?: string;
+  citizenId?: string;
+  bod?: string;
+  gender?: number;
+  blood?: string;
+  bio?: string;
+  empId?: string;
+  commId?: string;
+  deptId?: string;
+  stnId?: string;
+  roleId?: string;
+  userType?: number;
+  active?: boolean;
+  facebook?: string;
+  twitter?: string;
+  linkedin?: string;
+  instagram?: string;
+}
+
+export interface DropdownData extends DropdownOption {
+  commId?: string;
+  deptId?: string;
+  stnId?: string;
+  roleName?: string;
+}
+
+export interface UserProfileContextType {
+  userData: UserFormProfile | null;
+  rolesData: DropdownData[];
+  departmentsData: DropdownData[];
+  commandsData: DropdownData[];
+  stationsData: DropdownData[];
+  loading: boolean;
+  error: string | null;
+  refetchUserData: () => Promise<void>;
 }
 
 export interface UserGroup {
@@ -315,15 +396,6 @@ export interface UserMetaCardProps {
   userData?: UserProfile | null;
   loading?: boolean;
   error?: string | null;
-}
-
-export interface DropdownData {
-  id: string;
-  name: string;
-  commId?: string;
-  deptId?: string;
-  stnId?: string;
-  roleName?: string;
 }
 
 export interface UserOrganizationCardProps {

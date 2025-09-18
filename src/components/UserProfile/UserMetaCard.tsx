@@ -1,12 +1,15 @@
-// /src/components/UserProfile/UserMetaCard.tsx - เก็บเฉพาะปุ่ม Edit ที่นำไปหน้า edit
+// /src/components/UserProfile/UserMetaCard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserProfile } from "@/context/UserProfileContext";
+// import { useUserProfile } from "@/context/UserProfileContext";
+import { useUserProfile } from "@/context/UserProfileContextObject";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { UserMetaCardProps } from "@/types/user";
+import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
+import type { Address, UserMetaCardProps } from "@/types/user";
 import Toast from "@/components/toast/Toast";
 import ChangePasswordModal from "@/components/UserProfile/ChangePasswordModal";
+
 
 export default function UserMetaCard({ userData: propUserData, loading: propLoading, error: propError }: UserMetaCardProps = {}) {
   const navigate = useNavigate();
@@ -14,10 +17,24 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
   const { t } = useTranslation();
 
   // Always call useUserProfile, then fallback to props if context is null/undefined
-  const contextProfile = useUserProfile();
-  const userData = contextProfile.userData || propUserData;
-  const loading = contextProfile.loading || propLoading;
-  const error = contextProfile.error || propError;
+  // const contextProfile = useUserProfile();
+  // const userData = contextProfile.userData || propUserData;
+  // const loading = contextProfile.loading || propLoading;
+  // const error = contextProfile.error || propError;
+  let userData, loading, error, selfProfile;
+  try {
+    const contextProfile = useUserProfile();
+    userData = contextProfile.userData || propUserData;
+    loading = contextProfile.loading || propLoading;
+    error = contextProfile.error || propError;
+    selfProfile = true;
+  }
+  catch {
+    userData = propUserData || null;
+    loading = propLoading || false;
+    error = propError || null;
+    selfProfile = false;
+  }
 
   // // Try to use context first, fallback to props
   // let contextData;
@@ -42,8 +59,12 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
   });
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
+  const rawAddress: string = userData?.address || "";
+  const location: Address = isValidJsonString(rawAddress) ? JSON.parse(rawAddress) : null;
+  const address: string = location ? formatAddress(location) : rawAddress;
+
   const handlePasswordChangeSuccess = () => {
-    addToast("success", t("userform.passwordChangeSuccessToast") || "เปลี่ยนรหัสผ่านสำเร็จ");
+    addToast("success", t("userform.passwordChangeSuccessToast"));
   };
 
   useEffect(() => {
@@ -93,7 +114,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
 
   return (
     <div
-      className="p-5 border border-gray-100 rounded-2xl dark:border-gray-800 lg:p-6"
+      className="p-5 border border-gray-200 rounded-2xl dark:border-gray-700 lg:p-6"
       // className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6"
     >
       <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -133,7 +154,8 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
                       // className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"
                     ></div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {userData.address}
+                      {/* {userData.address} */}
+                      {address}
                     </p>
                   </>
                 )}
@@ -194,8 +216,32 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
               )}
             </div>
           )}
+
+          {selfProfile && (
+            <div className="flex items-center order-3 gap-2 grow xl:order-4 xl:justify-end">
+              <button
+                onClick={handleEdit}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+              >
+                <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z" fill="currentColor"/>
+                </svg>
+                {t("common.edit")}
+              </button>
+              <button
+                onClick={() => setShowChangePasswordModal(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-blue-100 hover:text-blue-800 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 lg:inline-flex lg:w-auto"
+              >
+                <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 1C6.8925 1 6 1.8925 6 3V5H3C2.4475 5 2 5.4475 2 6V13C2 13.5525 2.4475 14 3 14H13C13.5525 14 14 13.5525 14 13V6C14 5.4475 13.5525 5 13 5H10V3C10 1.8925 9.1075 1 8 1ZM8 2C8.5525 2 9 2.4475 9 3V5H7V3C7 2.4475 7.4475 2 8 2ZM8 8.5C8.8284 8.5 9.5 9.1716 9.5 10C9.5 10.8284 8.8284 11.5 8 11.5C7.1716 11.5 6.5 10.8284 6.5 10C6.5 9.1716 7.1716 8.5 8 8.5Z" fill="currentColor"/>
+                </svg>
+                {t("userform.changePassword")}
+              </button>
+            </div>
+          )}
         </div>
         
+        {/*
         <button
           onClick={handleEdit}
           className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
@@ -205,9 +251,11 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
           </svg>
           {t("common.edit")}
         </button>
+        */}
       </div>
       
       {/* Password Management Buttons */}
+      {/*
       <div className="flex flex-col gap-2 mt-4 lg:flex-row lg:gap-3">
         <button
           onClick={() => setShowChangePasswordModal(true)}
@@ -219,6 +267,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
           {t("userform.changePassword") || "เปลี่ยนรหัสผ่าน"}
         </button>
       </div>
+      */}
 
       {/* Modals */}
       <ChangePasswordModal 

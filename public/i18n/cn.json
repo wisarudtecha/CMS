@@ -542,6 +542,7 @@
     "userTypeUnknown": "未知",
     "resetPassword": "重置密码",
     "changePassword": "修改密码",
+    "changePasswordDescription": "输入您的当前密码和新密码来更改您的密码。",
     "currentPassword": "当前密码",
     "newPassword": "新密码",
     "enterCurrentPassword": "输入当前密码",
@@ -573,6 +574,12 @@
       "minLength": "至少8个字符",
       "uppercase": "至少1个大写字母",
       "specialChar": "至少1个特殊字符"
+    },
+    "blood_type": {
+      "A": "A",
+      "B": "B",
+      "AB": "AB",
+      "O": "O"
     }
   },
   "breadcrumb": {

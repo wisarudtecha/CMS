@@ -25,12 +25,12 @@ import {
 
 // Types and Interfaces
 interface User {
-  id: string;
+  id: string | number;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
-  department: string;
+  role?: string;
+  department?: string;
 }
 
 interface AuditEvent {
@@ -180,7 +180,8 @@ const generateMockAuditEvents = (user: User): AuditEvent[] => {
     
     const event: AuditEvent = {
       id: `audit_${i + 1}`,
-      userId: user?.id,
+      // userId: user?.id,
+      userId: user?.id.toString(),
       timestamp: timestamp.toISOString(),
       action,
       resource: getResourceForAction(actionKey),

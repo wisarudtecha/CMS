@@ -542,6 +542,7 @@
     "userTypeUnknown": "ไม่ทราบ",
     "resetPassword": "รีเซ็ตรหัสผ่าน",
     "changePassword": "เปลี่ยนรหัสผ่าน",
+    "changePasswordDescription": "กรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านของคุณ",
     "currentPassword": "รหัสผ่านปัจจุบัน",
     "newPassword": "รหัสผ่านใหม่",
     "enterCurrentPassword": "กรอกรหัสผ่านปัจจุบัน",
@@ -573,6 +574,12 @@
       "minLength": "อย่างน้อย 8 ตัวอักษร",
       "uppercase": "อย่างน้อยตัวใหญ่ 1 ตัว",
       "specialChar": "อย่างน้อยอักขระพิเศษ 1 ตัว"
+    },
+    "blood_type": {
+      "A": "เอ",
+      "B": "บี",
+      "AB": "เอบี",
+      "O": "โอ"
     }
   },
   "breadcrumb": {

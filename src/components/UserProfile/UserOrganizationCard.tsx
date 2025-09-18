@@ -1,5 +1,6 @@
 // /src/components/UserProfile/UserOrganizationCard.tsx
-import { useUserProfile } from "@/context/UserProfileContext";
+// import { useUserProfile } from "@/context/UserProfileContext";
+import { useUserProfile } from "@/context/UserProfileContextObject";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UserOrganizationCardProps } from "@/types/user";
 
@@ -26,14 +27,34 @@ export default function UserOrganizationCard({
   const { t } = useTranslation();
 
   // Always call useUserProfile, then fallback to props if context is null/undefined
-  const contextProfile = useUserProfile();
-  const userData = contextProfile.userData || propUserData;
-  const rolesData = contextProfile.rolesData || propRolesData;
-  const departmentsData = contextProfile.departmentsData || propDepartmentsData;
-  const commandsData = contextProfile.commandsData || propCommandsData;
-  const stationsData = contextProfile.stationsData || propStationsData;
-  const loading = contextProfile.loading || propLoading;
-  const error = contextProfile.error || propError;
+  // const contextProfile = useUserProfile();
+  // const userData = contextProfile.userData || propUserData;
+  // const rolesData = contextProfile.rolesData || propRolesData;
+  // const departmentsData = contextProfile.departmentsData || propDepartmentsData;
+  // const commandsData = contextProfile.commandsData || propCommandsData;
+  // const stationsData = contextProfile.stationsData || propStationsData;
+  // const loading = contextProfile.loading || propLoading;
+  // const error = contextProfile.error || propError;
+  let userData, rolesData, departmentsData, commandsData, stationsData, loading, error;
+  try {
+    const contextProfile = useUserProfile();
+    userData = contextProfile.userData || propUserData;
+    rolesData = contextProfile.rolesData || propRolesData;
+    departmentsData = contextProfile.departmentsData || propDepartmentsData;
+    commandsData = contextProfile.commandsData || propCommandsData;
+    stationsData = contextProfile.stationsData || propStationsData;
+    loading = contextProfile.loading || propLoading;
+    error = contextProfile.error || propError;
+  }
+  catch {
+    userData = propUserData || null;
+    rolesData = propRolesData || [];
+    departmentsData = propDepartmentsData || [];
+    commandsData = propCommandsData || [];
+    stationsData = propStationsData || [];
+    loading = propLoading || false;
+    error = propError || null;
+  }
   
   // // Try to use context first, fallback to props
   // let contextData;
@@ -92,7 +113,7 @@ export default function UserOrganizationCard({
   }
 
   return (
-    <div className="p-5 border border-gray-100 rounded-2xl dark:border-gray-800 lg:p-6">
+    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-700 lg:p-6 cursor-default">
       <div className="flex flex-col gap-6">
         <div>
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white lg:mb-6">
@@ -149,8 +170,8 @@ export default function UserOrganizationCard({
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 {t("userform.role")}
               </p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {getRoleName(userData.roleId)}
+              <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                {getRoleName(userData.roleId).replace(/_/g, " ")}
               </p>
             </div>
 

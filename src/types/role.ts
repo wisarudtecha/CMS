@@ -36,11 +36,11 @@ export interface Role {
 export interface RoleAnalytics {
   totalRoles: number;
   activeRoles: number;
-  systemRoles: number;
-  customRoles: number;
+  // systemRoles: number;
+  // customRoles: number;
   averagePermissions: number;
-  mostUsedRole: string;
-  recentChanges?: number;
+  // mostUsedRole: string;
+  // recentChanges?: number;
 }
 
 export interface RoleHierarchy {

@@ -24,9 +24,10 @@ import type {
   UserMetrics,
   UserProfile
 } from "@/types/user";
-import AuditTrailViewer from "@/components/admin/user-management/audit-log/AuditTrailViewer";
+// import AuditTrailViewer from "@/components/admin/user-management/audit-log/AuditTrailViewer";
 import MetricsView from "@/components/admin/MetricsView";
 import UserCardContent from "@/components/admin/user-management/user/UserCard";
+import UserAuditLog from "@/components/UserProfile/UserAuditLog";
 import UserInfoCard from "@/components/UserProfile/UserInfoCard";
 import UserMetaCard from "@/components/UserProfile/UserMetaCard";
 import UserOrganizationCard from "@/components/UserProfile/UserOrganizationCard";
@@ -298,7 +299,7 @@ const UserManagementComponent: React.FC<{
         label: "Profile",
         // icon: InfoIcon,
         render: (
-          // userItem: UserProfile
+          userItem: UserProfile
         ) => {
           // const roleConfig: Role = role?.find(r => r.id === userItem.roleId) as Role;
           // const rawAddress: string = userItem?.address || "";
@@ -313,28 +314,29 @@ const UserManagementComponent: React.FC<{
           // const info: UserProfile = userItem || {};
           // const address: string = location ? formatAddress(location) : "";
           return (
-            <>
-              <UserMetaCard />
-              <UserInfoCard />
-              <UserOrganizationCard />
-            </>
+            <div className="space-y-6">
+              <UserMetaCard userData={userItem as UserProfile} />
+              <UserInfoCard userData={userItem as UserProfile} />
+              <UserOrganizationCard userData={userItem as UserProfile} />
+            </div>
           )
         }
       },
-      {
-        key: "activity",
-        label: "Activity",
-        // icon: PieChartIcon,
-        render: (userItem: UserProfile) => (
-          <pre>{JSON.stringify(userItem, null, 2)}</pre>
-        )
-      },
+      // {
+      //   key: "activity",
+      //   label: "Activity",
+      //   // icon: PieChartIcon,
+      //   render: (userItem: UserProfile) => (
+      //     <pre>{JSON.stringify(userItem, null, 2)}</pre>
+      //   )
+      // },
       {
         key: "auditLog",
         label: "Audit Log",
         // icon: FileIcon,
-        render: () => (
-          <AuditTrailViewer isOpen={true} />
+        render: (userItem: UserProfile) => (
+          // <AuditTrailViewer user={userItem as UserProfile} isOpen={true} />
+          <UserAuditLog username={userItem.username} />
         )
       }
     ],

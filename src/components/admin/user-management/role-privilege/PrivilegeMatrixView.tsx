@@ -117,7 +117,7 @@ const PrivilegeMatrixContent: React.FC<{
   const [maxHeight, setMaxHeight] = useState<number>(0);
   useEffect(() => {
     const updateHeight = () => {
-      const calculated = (window.innerHeight * 0.7) - 160;
+      const calculated = (window.innerHeight * 0.7) - 210;
       setMaxHeight(calculated);
     };
     updateHeight();
@@ -234,7 +234,7 @@ const PrivilegeMatrixContent: React.FC<{
                     {roles.map(role => {
                       const hasPermission = role?.permissions?.includes(permission.permId);
                       return (
-                        <td key={role.id} className="px-3 py-4">
+                        <td key={role.id} className="px-3 py-3">
                           <div className="flex items-center justify-center">
                             <button
                               onClick={() => SYSTEM_ROLE !== role.id && handlePermissionToggle(role.id, permission.permId)}

@@ -218,7 +218,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   // Handle delete item
   const handleDeleteItem = useCallback(async (item: T) => {
-    console.log("handleDeleteItem called for item:", item);
+    // console.log("handleDeleteItem called for item:", item);
 
     const newValue = (module === "case" && "caseId" in item) ? t("crud.case_history.list.body.actions.cancel") : "";
     const confirmDialogType = (module === "case" && "caseId" in item) ? "status" : "delete";
@@ -231,7 +231,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       entityName: entityName,
       newValue: newValue,
       onConfirm: async () => {
-        console.log("Delete confirmed for item:", id);
+        // console.log("Delete confirmed for item:", id);
         try {
           if (apiConfig?.endpoints?.delete) {
             if (module === "case" && "caseId" in item) {
@@ -301,10 +301,10 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
   // Handle item actions with special handling for delete
   const handleItemAction = useCallback((actionKey: string, item: T) => {
-    console.log("handleItemAction called:", { actionKey, itemId: item.id });
+    // console.log("handleItemAction called:", { actionKey, itemId: item.id });
     
     if (actionKey === "delete") {
-      console.log("Delete action detected, calling handleDeleteItem");
+      // console.log("Delete action detected, calling handleDeleteItem");
       handleDeleteItem(item);
       return;
     }
@@ -312,7 +312,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     // Find the action in config and execute it
     const action = config.actions?.find(a => a.key === actionKey);
     if (action) {
-      console.log("Executing action from config:", action.key);
+      // console.log("Executing action from config:", action.key);
       
       if (actionKey === "view" && (module === "case" || module === "user" || module === "unit")) {
         handleItemClick(item);
@@ -422,7 +422,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const createEntity = t("crud.common.create").replace("_ENTITY_", `${config.entityName}`);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
+    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
       <div className="mx-auto w-full">
         {/* Keyboard Shortcuts */}
         {enabledFeatures.keyboardShortcuts && (

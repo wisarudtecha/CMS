@@ -1,70 +1,21 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
-
-interface UserProfile {
-  id: string;
-  displayName: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  mobileNo: string;
-  photo: string;
-  address: string | null;
-  title?: string;
-  middleName?: string;
-  citizenId?: string;
-  bod?: string;
-  gender?: number;
-  blood?: string;
-  bio?: string;
-  empId?: string;
-  commId?: string;
-  deptId?: string;
-  stnId?: string;
-  roleId?: string;
-  userType?: number;
-  active?: boolean;
-  facebook?: string;
-  twitter?: string;
-  linkedin?: string;
-  instagram?: string;
-}
-
-interface DropdownData {
-  id: string;
-  name: string;
-  commId?: string;
-  deptId?: string;
-  stnId?: string;
-  roleName?: string;
-}
-
-interface UserProfileContextType {
-  userData: UserProfile | null;
-  rolesData: DropdownData[];
-  departmentsData: DropdownData[];
-  commandsData: DropdownData[];
-  stationsData: DropdownData[];
-  loading: boolean;
-  error: string | null;
-  refetchUserData: () => Promise<void>;
-}
-
-const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
+// /src/context/UserProfileContext.tsx
+import { useState, useEffect, ReactNode, useRef } from "react";
+import { UserProfileContext } from "@/context/UserProfileContextObject";
+import { APP_CONFIG } from "@/utils/constants";
+import type { DropdownData, UserFormProfile, UserProfileContextType } from "@/types/user";
 
 // Helper function for API calls with authentication
 const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   const headers = new Headers(options.headers);
 
   if (token) {
-    headers.append('Authorization', `Bearer ${token}`);
+    headers.append("Authorization", `Bearer ${token}`);
   }
 
   if (!(options.body instanceof FormData)) {
-    if (!headers.has('Content-Type')) {
-      headers.append('Content-Type', 'application/json');
+    if (!headers.has("Content-Type")) {
+      headers.append("Content-Type", "application/json");
     }
   }
 
@@ -73,14 +24,14 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
 };
 
 // Helper function to get current language
-const getCurrentLanguage = () => 'en';
+const getCurrentLanguage = () => "en";
 
 interface UserProfileProviderProps {
   children: ReactNode;
 }
 
 export function UserProfileProvider({ children }: UserProfileProviderProps) {
-  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [userData, setUserData] = useState<UserFormProfile | null>(null);
   const [rolesData, setRolesData] = useState<DropdownData[]>([]);
   const [departmentsData, setDepartmentsData] = useState<DropdownData[]>([]);
   const [commandsData, setCommandsData] = useState<DropdownData[]>([]);
@@ -92,14 +43,14 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
   const fetchData = async () => {
     // ป้องกันการ fetch ซ้ำ
     if (fetchRef.current) {
-      console.log('Fetch already in progress or completed, skipping...');
+      // console.log("Fetch already in progress or completed, skipping...");
       return;
     }
 
     try {
       fetchRef.current = true; // ตั้งค่าว่า fetch เริ่มแล้ว
       setLoading(true);
-      console.log('Starting fetch data...');
+      // console.log("Starting fetch data...");
       
       const profileString = localStorage.getItem("profile");
       const token = localStorage.getItem("access_token");
@@ -123,14 +74,14 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
 
       // Fetch dropdown data first
       const endpoints = [
-        '/role?start=0&length=100',
-        '/departments?start=0&length=100',
-        '/commands?start=0&length=100',
-        '/stations?start=0&length=100'
+        "/role?start=0&length=100",
+        "/departments?start=0&length=100",
+        "/commands?start=0&length=100",
+        "/stations?start=0&length=100"
       ];
 
       const responses = await Promise.all(
-        endpoints.map(ep => apiFetch(API_BASE_URL + ep).catch(() => ({ ok: false })))
+        endpoints.map(ep => apiFetch(APP_CONFIG.API_BASE_URL + ep).catch(() => ({ ok: false })))
       );
       
       const results = await Promise.all(
@@ -144,29 +95,49 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       );
       
       const lang = getCurrentLanguage();
-      setRolesData((results[0].data || []).map((r: any) => ({ 
+      // setRolesData((results[0].data || []).map((r: any) => ({ 
+      //   id: r.id, 
+      //   name: r[lang] ?? r.roleName,
+      //   roleName: r.roleName
+      // })));
+      setRolesData((results[0].data || []).map((r: { id: string; th?: string; en?: string; roleName: string }) => ({ 
         id: r.id, 
-        name: r[lang] ?? r.roleName,
+        name: r[lang as keyof typeof r] ?? r.roleName,
         roleName: r.roleName
       })));
-      setDepartmentsData((results[1].data || []).map((d: any) => ({ 
+      // setDepartmentsData((results[1].data || []).map((d: any) => ({ 
+      //   id: d.id, 
+      //   name: d[lang] ?? d.name, 
+      //   deptId: d.deptId 
+      // })));
+      setDepartmentsData((results[1].data || []).map((d: { id: string; th?: string; en?: string; name: string; deptId: string }) => ({ 
         id: d.id, 
-        name: d[lang] ?? d.name, 
+        name: d[lang as keyof typeof d] ?? d.name, 
         deptId: d.deptId 
       })));
-      setCommandsData((results[2].data || []).map((c: any) => ({ 
+      // setCommandsData((results[2].data || []).map((c: any) => ({ 
+      //   id: c.id, 
+      //   name: c[lang] ?? c.name, 
+      //   commId: c.commId 
+      // })));
+      setCommandsData((results[2].data || []).map((c: { id: string; th?: string; en?: string; name: string; commId: string }) => ({ 
         id: c.id, 
-        name: c[lang] ?? c.name, 
+        name: c[lang as keyof typeof c] ?? c.name, 
         commId: c.commId 
       })));
-      setStationsData((results[3].data || []).map((s: any) => ({ 
+      // setStationsData((results[3].data || []).map((s: any) => ({ 
+      //   id: s.id, 
+      //   name: s[lang] ?? s.name, 
+      //   stnId: s.stnId 
+      // })));
+      setStationsData((results[3].data || []).map((s: { id: string; th?: string; en?: string; name: string; stnId: string }) => ({ 
         id: s.id, 
-        name: s[lang] ?? s.name, 
+        name: s[lang  as keyof typeof s] ?? s.name, 
         stnId: s.stnId 
       })));
 
       // Fetch user data
-      const userResponse = await apiFetch(`${API_BASE_URL}/users/username/${username}`);
+      const userResponse = await apiFetch(`${APP_CONFIG.API_BASE_URL}/users/username/${username}`);
       
       if (!userResponse.ok) {
         setError("Failed to fetch user data");
@@ -178,8 +149,8 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       const result = await userResponse.json();
       let user = null;
       
-      if (result && typeof result === 'object') {
-        if ('data' in result && typeof result.data === 'object') {
+      if (result && typeof result === "object") {
+        if ("data" in result && typeof result.data === "object") {
           user = result.data;
         } else {
           user = result;
@@ -189,7 +160,7 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       if (user) {
         setUserData(user);
         setError(null);
-        console.log('Data fetched successfully!');
+        // console.log("Data fetched successfully!");
       } else {
         setError("No user data found");
         fetchRef.current = false;
@@ -235,12 +206,4 @@ export function UserProfileProvider({ children }: UserProfileProviderProps) {
       {children}
     </UserProfileContext.Provider>
   );
-}
-
-export function useUserProfile() {
-  const context = useContext(UserProfileContext);
-  if (context === undefined) {
-    throw new Error('useUserProfile must be used within a UserProfileProvider');
-  }
-  return context;
 }

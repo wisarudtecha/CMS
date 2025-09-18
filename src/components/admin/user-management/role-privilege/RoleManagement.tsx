@@ -3,7 +3,14 @@ import React, { useCallback, useEffect, useState }
 from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import { CheckLineIcon, GroupIcon, LockIcon, PencilIcon, PieChartIcon, ShootingStarIcon } from "@/icons";
+import {
+  CheckLineIcon,
+  GroupIcon,
+  // LockIcon,
+  // PencilIcon,
+  PieChartIcon,
+  // ShootingStarIcon
+} from "@/icons";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
@@ -129,18 +136,18 @@ const RoleManagementComponent: React.FC<{
     //   arr.reduce((acc, { roleName }) => ((acc[roleName] = (acc[roleName] || 0) + 1), acc), {} as Record<string, number>)
     // ).reduce((a, b) => (b[1] > a[1] ? b : a), ["", 0])[0];
 
-    const maxPermissions = Math.max(...role.map(r => r.permissions?.length || 0));
-    const roleWithMax = role.find(r => r.permissions?.length === maxPermissions);
+    // const maxPermissions = Math.max(...role.map(r => r.permissions?.length || 0));
+    // const roleWithMax = role.find(r => r.permissions?.length === maxPermissions);
 
     setRoleAnalytics({
       totalRoles: role.length,
       activeRoles: role.filter(r => r.active).length,
-      systemRoles: role.filter(r => r.id === SYSTEM_ROLE).length,
-      customRoles: role.filter(r => r.id !== SYSTEM_ROLE).length,
+      // systemRoles: role.filter(r => r.id === SYSTEM_ROLE).length,
+      // customRoles: role.filter(r => r.id !== SYSTEM_ROLE).length,
       averagePermissions: Math.round(role.reduce(sum => sum + perms.length, 0) / role.length),
       // mostUsedRole: mostUsedRole(role).replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
-      mostUsedRole: roleWithMax?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || "0",
-      recentChanges: 0
+      // mostUsedRole: roleWithMax?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || "0",
+      // recentChanges: 0
     });
   }, [perms.length, role]);
 
@@ -160,7 +167,20 @@ const RoleManagementComponent: React.FC<{
       bulkDelete: "/api/roles/bulk",
       export: "/api/roles/export"
     },
-    columns: [],
+    columns: [
+      {
+        key: "user",
+        label: "User",
+        sortable: true,
+        render: (roleItem: Role) => {
+          return (
+            <div className="flex items-center gap-3 capitalize">
+              {roleItem.roleName.replace(/_/g, " ")}
+            </div>
+          )
+        }
+      },
+    ],
     actions: [
       // {
       //   key: "view",
@@ -586,10 +606,10 @@ const RoleManagementComponent: React.FC<{
   const attrMetrics = [
     { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
     { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-    { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
-    { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
+    // { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
+    // { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
     { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
-    { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
+    // { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
   ];
 
   return (
@@ -615,7 +635,8 @@ const RoleManagementComponent: React.FC<{
         customFilterFunction={customCaseFilterFunction}
         data={role}
         // displayModes={["card", "matrix", "hierarchy"]}
-        displayModes={["card", "matrix"]}
+        // displayModes={["card", "matrix"]}
+        displayModes={["card", "table", "matrix"]}
         // displayModes={["matrix"]}
         displayModeDefault="matrix"
         enableDebug={true} // Enable debug mode to troubleshoot

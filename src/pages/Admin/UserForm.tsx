@@ -1,65 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import { loadTranslations, getTranslations, Language } from "../../config/i18n";
-import Toast from "../../components/toast/Toast";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://cmsapi-production-488d.up.railway.app";
-
-/* ---------------- Types ---------------- */
-interface UserFormData {
-  active: boolean;
-  address: string;
-  blood: string;
-  bod: string;
-  citizenId: string;
-  commId: string;
-  deptId: string;
-  displayName: string;
-  email: string;
-  empId: string;
-  firstName: string;
-  gender: number | null; 
-  lastName: string;
-  middleName: string;
-  mobileNo: string;
-  orgId: string;
-  password?: string;
-  confirmPassword?: string;
-  photo: File | string | null;
-  roleId: string;
-  stnId: string;
-  title: string;
-  userType: number | 1;
-  username: string;
-  createdAt?: string;
-  updatedAt?: string;
-  createdBy?: string;
-  updatedBy?: string;
-  [key: string]: any;
-}
-
-interface OrgStructureItem {
-  id: string;
-  orgId: string;
-  deptId: string;
-  commId: string;
-  stnId: string;
-  stationEn: string;
-  stationTh: string;
-  stationActive: boolean;
-  commandEn: string;
-  commandTh: string;
-  commandActive: boolean;
-  deptEn: string;
-  deptTh: string;
-  deptActive: boolean;
-}
-interface DropdownOption {
-  id: string;
-  name: string;
-}
+// /src/pages/Admin/UserForm.tsx
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { getTranslations, Language, loadTranslations } from "@/config/i18n";
+import { DropdownOption } from "@/types";
+import { OrgStructureItem } from "@/types/organization";
+import { UserFormData } from "@/types/user";
+import { APP_CONFIG } from "@/utils/constants";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import Toast from "@/components/toast/Toast";
 
 /* ---------------- i18n helpers ---------------- */
 const getCurrentLanguage = (): Language => {
@@ -67,15 +15,21 @@ const getCurrentLanguage = (): Language => {
   return (lang === "th" || lang === "en" ? lang : "en") as Language;
 };
 
-// ดึงข้อความจากอ็อบเจ็กต์ nested ด้วย path แบบ "a.b.c"
-const getByPath = (obj: any, path: string): string | undefined => {
+const getByPath = (
+  // obj: any,
+  obj: Record<string, unknown>,
+  path: string
+): string | undefined => {
   if (!obj) return undefined;
   const parts = path.split(".");
-  let cur: any = obj;
+  // let cur: any = obj;
+  let cur: unknown = obj;
   for (const p of parts) {
     if (cur && typeof cur === "object" && p in cur) {
-      cur = cur[p];
-    } else {
+      // cur = cur[p];
+      cur = (cur as Record<string, unknown>)[p];
+    }
+    else {
       return undefined;
     }
   }
@@ -88,9 +42,9 @@ const UserForm: React.FC = () => {
   const location = useLocation();
 
   const [lang, setLang] = useState<Language>(getCurrentLanguage());
-  const [trs, setTrs] = useState<any>({});
+  // const [trs, setTrs] = useState<any>({});
+  const [trs, setTrs] = useState<Record<string, unknown>>({});
 
-  // ตัวช่วยแปล: รองรับ key แบบ "userform.xxx" หรือ "common.cancel"
   const tt = useCallback(
     (key: string) => getByPath(trs, key) ?? key,
     [trs]
@@ -108,7 +62,7 @@ const UserForm: React.FC = () => {
     email: "",
     empId: "",
     firstName: "",
-    gender: null, // เปลี่ยนเป็น null แทนค่าว่าง
+    gender: null,
     lastName: "",
     middleName: "",
     mobileNo: "",
@@ -118,7 +72,7 @@ const UserForm: React.FC = () => {
     photo: null,
     roleId: "",
     stnId: "",
-    title: "", // ค่าว่างสำหรับ title
+    title: "",
     userType: 1,
     username: "",
   });
@@ -148,7 +102,6 @@ const UserForm: React.FC = () => {
   const isView = Boolean(id && !isEdit);
   const pageMode = isView ? "View" : isEdit ? "Edit" : "Create";
 
-  /* โหลดคำแปลตามภาษา + อัปเดตทันทีเมื่อ language ใน localStorage เปลี่ยน */
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === "language") setLang(getCurrentLanguage());
@@ -156,7 +109,6 @@ const UserForm: React.FC = () => {
     window.addEventListener("storage", onStorage);
     setLang(getCurrentLanguage());
 
-    // ตรวจสอบการเปลี่ยนภาษาทุก 100ms เพื่อให้เปลี่ยนทันที
     const langCheckInterval = setInterval(() => {
       const currentLang = getCurrentLanguage();
       if (currentLang !== lang) {
@@ -173,11 +125,11 @@ const UserForm: React.FC = () => {
   useEffect(() => {
     (async () => {
       await loadTranslations(lang);
-      setTrs(getTranslations(lang) as any);
+      // setTrs(getTranslations(lang) as any);
+      setTrs(getTranslations(lang) as Record<string, unknown>);
     })();
   }, [lang]);
 
-  /* จากหน้าโปรไฟล์หรือไม่ */
   useEffect(() => {
     setFromProfile(location.state?.from === "profile");
     
@@ -216,7 +168,6 @@ const UserForm: React.FC = () => {
     return fetch(url, newOptions);
   };
 
-  /* ฟอร์แมตเบอร์มือถือไทย (10 หลัก) -> 0XX-XXX-XXXX */
   const formatMobileDisplay = (digits: string): string => {
     const d = (digits || "").replace(/\D/g, "").slice(0, 10);
     if (d.length < 4) return d;
@@ -224,7 +175,6 @@ const UserForm: React.FC = () => {
     return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
   };
   
-  /* ฟอร์แมตบัตรประชาชนไทย 13 หลัก -> X-XXXX-XXXXX-XX-X */
   const formatCitizenIdDisplay = (digits: string): string => {
     const d = (digits || "").replace(/\D/g, "").slice(0, 13);
     const parts = [d.slice(0, 1), d.slice(1, 5), d.slice(5, 10), d.slice(10, 12), d.slice(12, 13)].filter(Boolean);
@@ -250,11 +200,10 @@ const UserForm: React.FC = () => {
     setCitizenIdDisplay(formatCitizenIdDisplay(formData.citizenId));
   }, [formData.mobileNo, formData.citizenId]);
 
-  /* คำนวณวันที่สำหรับ date of birth (วันปัจจุบัน - 115 ปี) */
   const getDateLimits = () => {
     const today = new Date();
-    const maxDate = today; // วันปัจจุบัน
-    const minDate = new Date(today.getFullYear() - 115, today.getMonth(), today.getDate()); // 115 ปีที่แล้ว
+    const maxDate = today;
+    const minDate = new Date(today.getFullYear() - 115, today.getMonth(), today.getDate());
     return {
       min: minDate.toISOString().split('T')[0],
       max: maxDate.toISOString().split('T')[0]
@@ -263,7 +212,6 @@ const UserForm: React.FC = () => {
 
   /* Validation functions */
   const validatePassword = (password: string): boolean => {
-    // อย่างน้อย 8 ตัวอักษร, ตัวใหญ่ 1 ตัว, อักขระพิเศษ 1 ตัว
     const minLength = password.length >= 8;
     const hasUppercase = /[A-Z]/.test(password);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
@@ -310,14 +258,13 @@ const UserForm: React.FC = () => {
     </svg>
   );
 
-  /* โหลด roles + โครงสร้างหน่วยงาน */
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
       setError(null);
       try {
         const endpoints = ["/role?start=0&length=100", "/department_command_stations"];
-        const responses = await Promise.all(endpoints.map((ep) => apiFetch(API_BASE_URL + ep)));
+        const responses = await Promise.all(endpoints.map((ep) => apiFetch(APP_CONFIG.API_BASE_URL + ep)));
         const results = await Promise.all(
           responses.map((res) => {
             if (!res.ok) throw new Error(`Failed to fetch from ${res.url}`);
@@ -325,30 +272,39 @@ const UserForm: React.FC = () => {
           })
         );
         setRolesData(
-          (results[0].data || []).map((r: any) => ({
+          (results[0].data || []).map((
+            // r: any
+            r: { id: string; th?: string; en?: string; roleName: string }
+          ) => ({
             id: r.id,
             name: lang === "th" ? r.th ?? r.roleName : r.en ?? r.roleName,
           }))
         );
         setOrgStructureData(results[1].data || []);
-      } catch (err: any) {
+      }
+      catch (
+        // err: any
+        err: unknown
+      ) {
         console.error("Failed to fetch initial data:", err);
         setError(tt("errors.loadOrgData"));
-      } finally {
+      }
+      finally {
         if (!id) setLoading(false);
       }
     };
     fetchInitialData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, lang]); // เพิ่ม lang dependency เพื่อให้โหลดใหม่เมื่อเปลี่ยนภาษา
+  }, [id, lang]);
 
-  /* โหลดข้อมูลผู้ใช้เมื่อมี id และ org พร้อม */
   useEffect(() => {
     if (id && orgStructureData.length > 0 && !isSubmitting) {
       const fetchUserData = async () => {
         try {
-          const response = await apiFetch(`${API_BASE_URL}/users/${id}`);
-          if (!response.ok) throw new Error("Failed to fetch user data.");
+          const response = await apiFetch(`${APP_CONFIG.API_BASE_URL}/users/${id}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch user data.");
+          }
           const result = await response.json();
           const data = result.data || {};
           const formattedBod = data.bod ? new Date(data.bod).toISOString().split("T")[0] : "";
@@ -364,10 +320,15 @@ const UserForm: React.FC = () => {
             confirmPassword: "",
           }));
           if (data.photo) setImagePreview(data.photo);
-        } catch (err: any) {
+        }
+        catch (
+          // err: any
+          err: unknown
+        ) {
           setError(tt("errors.fetchUserFailed"));
           console.error("Error fetching user data:", err);
-        } finally {
+        }
+        finally {
           setLoading(false);
         }
       };
@@ -413,13 +374,12 @@ const UserForm: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
-      const newState: any = { ...prev, [name]: value };
+      // const newState: any = { ...prev, [name]: value };
+      const newState: UserFormData = { ...prev, [name]: value };
       
-      // จัดการ gender field เป็นพิเศษ
       if (name === "gender") {
         newState.gender = value === "" ? null : Number(value);
       }
-      
       if (name === "deptId") {
         newState.commId = "";
         newState.stnId = "";
@@ -516,7 +476,8 @@ const UserForm: React.FC = () => {
     setIsSubmitting(true); // Set submitting state to prevent refetch
     setError(null);
 
-    const payload: Record<string, any> = { ...formData };
+    // const payload: Record<string, any> = { ...formData };
+    const payload: Record<string, unknown> = { ...formData };
 
     if (pageMode === "Create") {
       if (!payload.commId) payload.commId = null;
@@ -524,9 +485,12 @@ const UserForm: React.FC = () => {
       if (!payload.stnId) payload.stnId = null;
     }
     if (typeof payload.bod === "string") {
-      if (!payload.bod) payload.bod = null;
+      if (!payload.bod) {
+        payload.bod = null;
+      }
       else {
-        let dateStr = payload.bod.replace(/\//g, "-");
+        // let dateStr = payload.bod.replace(/\//g, "-");
+        const dateStr = payload.bod.replace(/\//g, "-");
         if (!dateStr.includes("T")) payload.bod = `${dateStr}T00:00:00Z`;
       }
     }
@@ -534,11 +498,11 @@ const UserForm: React.FC = () => {
     if (payload.gender === null || payload.gender === "") payload.gender = null;
     if (typeof payload.userType === "string" && payload.userType !== "") payload.userType = Number(payload.userType);
 
-    // ในโหมด Edit ถ้าไม่ได้กรอก password ใหม่ ให้ลบ password field ออกจาก payload
     if (isEdit) {
       if (!payload.password || 
           payload.password === "" || 
-          payload.password.trim() === "" ||
+          // payload.password.trim() === "" ||
+          (typeof payload.password === 'string' && payload.password.trim() === "") ||
           payload.password === undefined ||
           payload.password === null) {
         delete payload.password;
@@ -554,7 +518,8 @@ const UserForm: React.FC = () => {
           reader.onerror = (error) => reject(error);
           reader.readAsDataURL(payload.photo as File);
         });
-      } catch {
+      }
+      catch {
         const errorMessage = tt("errors.readImageFailed");
         setError(errorMessage);
         setToast({
@@ -567,7 +532,7 @@ const UserForm: React.FC = () => {
     }
 
     try {
-      const endpoint = isEdit ? `${API_BASE_URL}/users/${id}` : `${API_BASE_URL}/users/add`;
+      const endpoint = isEdit ? `${APP_CONFIG.API_BASE_URL}/users/${id}` : `${APP_CONFIG.API_BASE_URL}/users/add`;
       const method = isEdit ? "PATCH" : "POST";
       const response = await apiFetch(endpoint, { method, body: JSON.stringify(payload) });
       if (!response.ok) {
@@ -591,8 +556,17 @@ const UserForm: React.FC = () => {
       // Return early to prevent any further execution
       return;
       
-    } catch (err: any) {
-      const errorMessage = err.message || tt("errors.submitFailed") || "Submit failed!";
+    }
+    catch (
+      // err: any
+      err: unknown
+    ) {
+      let errorMessage = tt("errors.submitFailed") || "Submit failed!";
+      if (err && typeof err === "object" && "message" in err && typeof (err as { message?: string }).message === "string") {
+        errorMessage = (err as { message: string }).message;
+      }
+
+      // const errorMessage = err.message || tt("errors.submitFailed") || "Submit failed!";
       setError(errorMessage);
       setToast({
         message: errorMessage,
@@ -636,7 +610,6 @@ const UserForm: React.FC = () => {
           }
         />
 
-        {/* ลบหัวข้อ h2 "View Mode" ที่ซ้ำออก เหลือแต่ปุ่ม */}
         <div className="flex justify-end items-center mt-2">
           <div className="flex gap-2">
             <button
@@ -953,7 +926,6 @@ const UserForm: React.FC = () => {
                 {tt("userform.accountLogin")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                {/* username: Create mode ให้กรอกได้, Edit mode แสดงผลแทน input */}
                 <div>
                   <label htmlFor="username" className={labelClasses}>
                     {tt("userform.username")}
@@ -1103,7 +1075,6 @@ const UserForm: React.FC = () => {
                   />
                 </div>
 
-                {/* email: แก้ไขไม่ได้ใน Edit -> แสดงผลแทน input; สร้างใหม่ให้กรอกได้ */}
                 {pageMode === "Create" ? (
                   <div className="md:col-span-3">
                     <label htmlFor="email" className={labelClasses}>
