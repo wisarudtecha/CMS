@@ -83,16 +83,28 @@ export function TodayDate() {
 }
 
 export function TodayLocalDate() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = (now.getHours()+7).toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+  const now = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
 
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const parts = formatter.formatToParts(now);
+
+  const year = parts.find(part => part.type === 'year')?.value ?? '';
+  const month = parts.find(part => part.type === 'month')?.value ?? '';
+  const day = parts.find(part => part.type === 'day')?.value ?? '';
+  const hour = parts.find(part => part.type === 'hour')?.value ?? '';
+  const minute = parts.find(part => part.type === 'minute')?.value ?? '';
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 }
-
 
 
 export function getLocalISOString(utcTimestamp: string): string {
