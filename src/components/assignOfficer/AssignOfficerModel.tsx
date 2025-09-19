@@ -294,7 +294,7 @@ export default function AssignOfficerModal({
   if (isLoadingUnits) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
               {t("case.assign_officer_modal.title")}
@@ -315,7 +315,7 @@ export default function AssignOfficerModal({
   if (unitError) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
               {t("case.assign_officer_modal.title")}
@@ -336,7 +336,7 @@ export default function AssignOfficerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-99999 rounded-md">
+      <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             {t("case.assign_officer_modal.title")}

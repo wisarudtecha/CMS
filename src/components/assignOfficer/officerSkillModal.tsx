@@ -18,7 +18,7 @@ export default function SkillModal({
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-99999 rounded-lg shadow-2xl">
+            <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-999999 rounded-lg shadow-2xl">
                 <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
                     <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
                         {/* <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">

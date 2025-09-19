@@ -56,7 +56,7 @@ export default function OfficerDataModal({
 
                 </DialogTitle>
             </DialogHeader>
-            <DialogContent aria-describedby="" className=" dark:text-white bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar z-99999 rounded-xl shadow-2xl">
+            <DialogContent aria-describedby="" className=" dark:text-white bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar z-999999 rounded-xl shadow-2xl">
 
                 {/* Header */}
                 {/* <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 px-6 py-4  top-0  rounded-2xl">
