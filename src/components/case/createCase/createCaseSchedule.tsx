@@ -941,7 +941,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             onPanelOpen={() => setIsPanelOpen(true)}
             isCreate={isCreate}
             t={t}
-            title={isCreate ? "Create Case" : "Case Detail"}
+            // title={isCreate ? "Create Case" : "Case Detail"}
             caseItem={caseState || {} as CaseDetails}
             referCaseList={sopLocal?.referCaseLists}
             showToast={
