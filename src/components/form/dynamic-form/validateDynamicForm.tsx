@@ -5,18 +5,18 @@ export const validateFieldValue = (field: IndividualFormFieldWithChildren): stri
   const { value, formRule, required, label, type } = field;
 
   // Rule 1: Check if a required field is empty
-  // if (required) {
-  //   const isEmpty =
-  //     value === null ||
-  //     value === undefined ||
-  //     (typeof value === 'string' && value.trim() === '') ||
-  //     (Array.isArray(value) && value.length === 0);
+  if (required) {
+    const isEmpty =
+      value === null ||
+      value === undefined ||
+      (typeof value === 'string' && value.trim() === '') ||
+      (Array.isArray(value) && value.length === 0);
 
-  //   if (isEmpty) {
-  //     errors.push(`'${label}' is a required field.`);
-  //     return errors;
-  //   }
-  // }
+    if (isEmpty) {
+      errors.push(``);
+      return errors;
+    }
+  }
 
   const isEffectivelyEmpty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
   if (!required && isEffectivelyEmpty) {
