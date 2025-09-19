@@ -7,7 +7,7 @@ import { FormFieldWithNode } from "@/components/interface/FormField";
 export interface CreateCase {
     formData: FormFieldWithNode;
     customerName: string;
-    caseSla:string;
+    caseSla: string;
     arrivedDate: string;
     caseDetail: string;
     caseDuration: number;
@@ -96,9 +96,16 @@ export interface Case {
 }
 
 export const mergeDeptCommandStation = (data: DepartmentCommandStationData) => {
-    return `${data.deptTh ? `${data.deptTh}` : ""}` +
-        `${data.commandTh ? `-${data.commandTh}` : ""}` +
-        `${data.stationTh ? `-${data.stationTh}` : ""}`
+    const language = localStorage.getItem("language")
+    if (language != "th") {
+        return `${data.deptEn ? `${data.deptEn}` : ""}` +
+            `${data.commandEn ? `-${data.commandEn}` : ""}` +
+            `${data.stationEn ? `-${data.stationEn}` : ""}`
+    } else {
+        return `${data.deptTh ? `${data.deptTh}` : ""}` +
+            `${data.commandTh ? `-${data.commandTh}` : ""}` +
+            `${data.stationTh ? `-${data.stationTh}` : ""}`
+    }
 }
 
 export interface DepartmentCommandStationData {
@@ -131,11 +138,11 @@ export interface AddComment {
 }
 
 interface ApiResponseCreateCase<T> {
-  status: string
-  msg: string
-  data: T
-  desc?: string
-  caseId?: string
+    status: string
+    msg: string
+    data: T
+    desc?: string
+    caseId?: string
 }
 
 export interface CaseStatus {
@@ -158,7 +165,7 @@ export interface CaseListParams extends PaginationParams {
     category?: string;
     caseType?: string;
     caseSType?: string;
-    createBy?:string
+    createBy?: string
 }
 
 export interface CaseHistory {
@@ -233,7 +240,7 @@ export const caseApi = baseApi.injectEndpoints({
             invalidatesTags: ["Cases"],
         }),
 
-        getCaseByIdMutation: builder.mutation<ApiResponse<Case>, {caseId:string}>({
+        getCaseByIdMutation: builder.mutation<ApiResponse<Case>, { caseId: string }>({
             query: (params) => ({
                 url: `/caseId/${params.caseId}`,
                 params,
@@ -259,7 +266,7 @@ export const caseApi = baseApi.injectEndpoints({
         postAddCaseHistory: builder.mutation<ApiResponse<null>, AddComment>({
             query: (params) => ({
                 url: `/case_history/add`,
-                method: 'POST', 
+                method: 'POST',
                 body: params
             }),
             invalidatesTags: ["Cases"],

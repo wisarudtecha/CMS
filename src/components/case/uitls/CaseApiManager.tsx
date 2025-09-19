@@ -59,7 +59,7 @@ export const useFetchDeptCommandStations = async () => {
   const result = await store.dispatch(
     caseApi.endpoints.getDeptCommandStations.initiate(null)
   );
-  localStorage.setItem("DeptCommandStations_data", JSON.stringify(result.data?.data))
+  localStorage.setItem("DeptCommandStations", JSON.stringify(result.data?.data))
 
 };
 

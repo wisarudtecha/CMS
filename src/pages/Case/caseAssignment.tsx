@@ -59,7 +59,7 @@ export default function CasesView() {
     return savedCases
       ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
-  const { t,language } = useTranslation();
+  const { t, language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState({
     priority: "",
     category: "",
@@ -140,7 +140,7 @@ export default function CasesView() {
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
-  const handleRefreshCase=async ()=>{
+  const handleRefreshCase = async () => {
     await getNewCaseData();
     const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
@@ -164,7 +164,7 @@ export default function CasesView() {
         c?.statusId?.toLowerCase().includes(generalSearchTerm) ||
         c?.caseId?.toLowerCase().includes(generalSearchTerm) ||
         assigneeName?.toLowerCase().includes(generalSearchTerm) ||
-        DateStringToDateFormat(c?.createdAt as string,false,language).toLowerCase().includes(generalSearchTerm)
+        DateStringToDateFormat(c?.createdAt as string, false, language).toLowerCase().includes(generalSearchTerm)
       );
     });
 
@@ -187,6 +187,116 @@ export default function CasesView() {
       ;
   }
 
+  const SLACountdownBadge = ({ createdAt, sla }: { createdAt: string, sla: number }) => {
+    const [timeRemaining, setTimeRemaining] = useState<{
+      isOverdue: boolean;
+      days: number;
+      hours: number;
+      minutes: number;
+      seconds: number;
+      totalSeconds: number;
+    } | null>(null);
+    if (sla === 0) {
+      return
+    }
+    useEffect(() => {
+      const calculateTimeRemaining = () => {
+        const createdDate = new Date(createdAt);
+        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 60 * 1000)); // sla in hours
+        const now = new Date();
+        const diffMs = slaDeadline.getTime() - now.getTime();
+
+        if (diffMs <= 0) {
+          const overdueSeconds = Math.abs(Math.floor(diffMs / 1000));
+          const overdueDays = Math.floor(overdueSeconds / (24 * 60 * 60));
+          const overdueHours = Math.floor((overdueSeconds % (24 * 60 * 60)) / (60 * 60));
+          const overdueMinutes = Math.floor((overdueSeconds % (60 * 60)) / 60);
+
+          return {
+            isOverdue: true,
+            days: overdueDays,
+            hours: overdueHours,
+            minutes: overdueMinutes,
+            seconds: overdueSeconds % 60,
+            totalSeconds: overdueSeconds
+          };
+        }
+
+        const totalSeconds = Math.floor(diffMs / 1000);
+        const days = Math.floor(totalSeconds / (24 * 60 * 60));
+        const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+        const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+        const seconds = totalSeconds % 60;
+
+        return {
+          isOverdue: false,
+          days,
+          hours,
+          minutes,
+          seconds,
+          totalSeconds
+        };
+      };
+
+      setTimeRemaining(calculateTimeRemaining());
+
+      const interval = setInterval(() => {
+        setTimeRemaining(calculateTimeRemaining());
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [createdAt, sla]);
+
+    if (!timeRemaining) {
+      return <Badge variant="solid" size="xs">Loading...</Badge>;
+    }
+
+    if (timeRemaining.isOverdue) {
+      return (
+        <Badge variant="solid" color="error" size="xs" className="text-center animate-pulse">
+          Over SLA
+        </Badge>
+      );
+    }
+
+    const getVariantAndColor = () => {
+      if (timeRemaining.totalSeconds <= 3600) {
+        return { variant: "solid" as const, color: "error" as const };
+      } else if (timeRemaining.totalSeconds <= 10800) {
+        return { variant: "solid" as const, color: "warning" as const };
+      } else if (timeRemaining.totalSeconds <= 21600) {
+        return { variant: "solid" as const, color: "info" as const };
+      } else {
+        return { variant: "solid" as const, color: "success" as const };
+      }
+    };
+
+    const { variant, color } = getVariantAndColor();
+
+    const formatTimeRemaining = () => {
+      if (timeRemaining.days > 0) {
+        return `${timeRemaining.days}d ${timeRemaining.hours}h`;
+      } else if (timeRemaining.hours > 0) {
+        return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
+      } else if (timeRemaining.minutes > 0) {
+        return `${timeRemaining.minutes}m ${timeRemaining.seconds}s`;
+      } else {
+        return `${timeRemaining.seconds}s`;
+      }
+    };
+
+    const shouldPulse = timeRemaining.totalSeconds <= 600 && !timeRemaining.isOverdue;
+    return (
+      <Badge
+        variant={variant}
+        color={color}
+        size="xs"
+        className={`text-center ${shouldPulse ? 'animate-pulse' : ''}`}
+      >
+        {formatTimeRemaining()}
+      </Badge>
+    );
+  };
 
   // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
@@ -315,8 +425,6 @@ export default function CasesView() {
       </div>
     </Modal>)
   }
-  // ... Rest of the component remains the same (CaseCard, KanbanView, ListView, JSX return)
-  // No changes are needed below this line for the requested refactoring.
 
   const CaseCard = ({ caseItem }: { caseItem: CaseEntity }) => (
     <div className="space-y-2">
@@ -327,6 +435,7 @@ export default function CasesView() {
       >
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
+          <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
         </div>
         {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
         <p className="text-sm text-gray-400 leading-relaxed line-clamp-2">{caseItem.caselocAddr}</p>
@@ -345,7 +454,7 @@ export default function CasesView() {
           </div> */}
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
-          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string,language)}</span>
+          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string, language)}</span>
           <Badge className="flex flex-col justify-center items-center text-center truncate">
             {language === "th" ?
               caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th :
@@ -457,7 +566,7 @@ export default function CasesView() {
                   <div className="flex items-center space-x-2">
                     <div className={`w-3 h-3 rounded-full ${getPriorityColorClass(caseItem.priority)} shadow-sm`} />
                     <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                      {t(`case.sop_card.${getTextPriority(caseItem.priority).level} Priority`)} 
+                      {t(`case.sop_card.${getTextPriority(caseItem.priority).level} Priority`)}
                     </span>
                   </div>
                 </div>
@@ -492,7 +601,7 @@ export default function CasesView() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg> */}
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {DateStringToAgoFormat(caseItem.createdAt as string,language)}
+                      {DateStringToAgoFormat(caseItem.createdAt as string, language)}
                     </span>
                   </div>
                 </div>
@@ -562,7 +671,7 @@ export default function CasesView() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>{DateStringToAgoFormat(caseItem.createdAt as string,language)}</span>
+                    <span>{DateStringToAgoFormat(caseItem.createdAt as string, language)}</span>
                   </div>
                 </div>
               </div>
@@ -682,22 +791,22 @@ export default function CasesView() {
               </div>
             </div>
             <div className="flex">
-            <Button
-              className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-              onClick={handleRefreshCase}
-              size="sm"
-            >
-              <RefreshCcw className="w-4 h-4" />
-            </Button>
-            {/* Add New Case Button */}
-            <Button
-              className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-              onClick={() => navigate("/case/creation")}
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("case.assignment.add_new_case")}
-            </Button>
+              <Button
+                className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+                onClick={handleRefreshCase}
+                size="sm"
+              >
+                <RefreshCcw className="w-4 h-4" />
+              </Button>
+              {/* Add New Case Button */}
+              <Button
+                className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+                onClick={() => navigate("/case/creation")}
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t("case.assignment.add_new_case")}
+              </Button>
             </div>
           </div>
 

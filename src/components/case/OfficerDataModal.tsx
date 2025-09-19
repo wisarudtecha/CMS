@@ -6,6 +6,8 @@ import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import ProgressStepPreviewUnit from "./activityTimeline/unitActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
+import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
+import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -17,11 +19,16 @@ export default function OfficerDataModal({
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
-    const { t,language} = useTranslation();
+    const { t, language } = useTranslation();
     const progressSteps = useMemo(() => {
-        return mapSopToOrderedProgress(officer.Sop,language);
+        return mapSopToOrderedProgress(officer.Sop, language);
     }, [officer]);
-
+    const deptComStn = useMemo(() =>
+        JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
+    );
+    const userStation = deptComStn.find((items) => {
+    return items.commId === userData?.data?.commId && items.stnId === userData?.data?.stnId && items.deptId === userData.data.deptId;
+    });
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
@@ -60,42 +67,52 @@ export default function OfficerDataModal({
 
                 {/* Officer Details Section */}
                 <div className=" dark:border-gray-700 rounded-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
                         {/* Personal Information */}
                         <div className="space-y-4">
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                <div className="flex items-center gap-2 ">
-
+                                <div className="flex items-center gap-2 mb-3">
                                     <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.personal_title")}</h3>
                                 </div>
 
-                                <div className="">
+                                <div className="space-y-4">
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                                <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
                                             {userData?.data?.firstName && userData?.data?.lastName
                                                 ? `${userData.data.firstName} ${userData.data.lastName}`
                                                 : "N/A"
                                             }
                                         </p>
                                     </div>
+                                    
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
+                                        <div className="flex items-center gap-2 mb-1">
+                                                <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
                                             {officer?.unit?.username || "N/A"}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1 font-mono">
+                                        <div className="flex items-center gap-2 mb-1">                                                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
                                             {userData?.data?.mobileNo || "N/A"}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                                <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
                                             {userData?.data?.email || "N/A"}
                                         </p>
                                     </div>
@@ -111,41 +128,41 @@ export default function OfficerDataModal({
                         </div>
 
                         {/* Service Information */}
-                        <div className="">
-                        <div className="space-y-4 mb-3">
-                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_title")}</h3>
+                        <div className="flex flex-col h-full">
+                            <div className="space-y-4 mb-3">
+                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
+                                    <div className="flex items-center gap-2 mb-3">
+                                            <Truck className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_title")}</h3>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                    <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                                {officer?.unit?.unitId || "N/A"}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                            <div className="flex-1 flex flex-col">
+                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1 flex flex-col">
+                                    <div className="flex items-center gap-2 mb-3">
+                                            <Building className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <h3 className="font-semibold text-gray-900 dark:text-white">{t("userform.orgInfo")}</h3>
+                                    </div>
 
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
-                                            {officer?.unit?.unitId || "N/A"}
-
+                                    <div className="flex-1 flex ">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400">
+                                            {userStation && mergeDeptCommandStation(userStation) || "N/A"}
                                         </p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("userform.orgInfo")}</h3>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div>
-                                        {/* <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label> */}
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
-                                            {  "N/A"}
-
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         </div>
                     </div>
 
@@ -153,8 +170,8 @@ export default function OfficerDataModal({
                     {/* {userData?.data?.address && (
                         <div className="mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                                    <span className="text-purple-600 dark:text-purple-400 text-xs">📍</span>
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span className="text-gray-600 dark:text-gray-300 text-xs">📍</span>
                                 </div>
                                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("case.officer_detail.address")}</label>
                             </div>
@@ -170,6 +187,7 @@ export default function OfficerDataModal({
                 {/* Progress Steps Section */}
                 <div className="rounded-2xl">
                     <div className="flex items-center gap-2 mb-6">
+                            <CheckCircle className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                         <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_progress_title")}</h3>
                     </div>
 
