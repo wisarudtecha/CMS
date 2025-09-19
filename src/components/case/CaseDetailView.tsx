@@ -507,6 +507,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             const updatedCase = {
                 ...originalCase,
                 ...updateJson,
+                caseSla:Number(updateJson.caseSla),
                 id: originalCase.id,
                 caseId: originalCase.caseId,
                 createdAt: originalCase.createdAt,
