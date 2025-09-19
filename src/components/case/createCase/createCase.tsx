@@ -123,6 +123,7 @@ export default function CaseCreation() {
                 deptId: caseState?.serviceCenter?.deptId,
                 commId: caseState?.serviceCenter?.commId,
                 stnId: caseState?.serviceCenter?.stnId,
+                caseSla: caseState?.caseType?.caseSla,
                 scheduleFlag: false,
             } as CreateCase;
 

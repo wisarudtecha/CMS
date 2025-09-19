@@ -96,7 +96,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 <div className="flex mb-2 text-gray-500 dark:text-gray-400">
                     <ChartColumnStacked />
                     <div className="ml-2">
-                        <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.types")} : {requireElements}</span>
+                        <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.types")} : </span>
                         <div className="text-md font-medium text-gray-900 dark:text-white">{caseData?.caseType?.caseType || "-"}</div>
                         {caseData?.caseType && <FormViewer formData={caseData.caseType.formField} />}
                     </div>

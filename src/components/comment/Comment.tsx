@@ -1,9 +1,9 @@
-// Comment.tsx
+// Comment.tsx (Updated)
 
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
 import { useEffect, useRef, useState } from "react";
-import { CaseHistory, useGetCaseHistoryQuery } from "@/store/api/caseApi"; // **MODIFIED**: Imported useGetCaseHistoryQuery
+import { CaseHistory, useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { usePostAddCaseHistoryMutation } from "@/store/api/caseApi";
 import { useWebSocket } from "../websocket/websocket";
 
@@ -11,11 +11,13 @@ interface CommentsProps {
     isOpen: boolean;
     caseId: string;
     currentUsername?: string;
+    isModal?: boolean;
 }
 
 export const Comments: React.FC<CommentsProps> = ({
     isOpen,
     caseId,
+    isModal = false
 }) => {
     const [newCommentMessage, setNewCommentMessage] = useState<string>('');
     const commentsContainerRef = useRef<HTMLDivElement>(null);
@@ -31,8 +33,6 @@ export const Comments: React.FC<CommentsProps> = ({
     const [addCaseHistory, { isLoading: isAddingComment, error: addCommentError }] = usePostAddCaseHistoryMutation();
 
     useEffect(() => {
-
-
         const listener = subscribe((message) => {
             try {
                 if (message?.data) {
@@ -165,25 +165,26 @@ export const Comments: React.FC<CommentsProps> = ({
         return commentsData.map((comment: CaseHistory) => (
             <div
                 key={comment.id}
-                className="p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors duration-150"
+                className={`p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors duration-150 ${isModal ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
             >
-                <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-semibold text-blue-500 dark:text-blue-500">{comment.createdBy}</p>
+                <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-blue-500 dark:text-blue-400">{comment.createdBy}</p>
                     <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
                         {formatDate(comment.createdAt)}
                     </span>
                 </div>
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">{comment.fullMsg}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{comment.fullMsg}</p>
             </div>
         ));
     };
 
-
     return (
-        <div>
+        <div className={isModal ? "h-full flex flex-col" : ""}>
             <div
-                className="bg-gray-100 dark:bg-gray-800 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 shadow-inner"
-                style={{ height: '10em' }}
+                className={`bg-gray-100 dark:bg-gray-800 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 shadow-inner ${
+                    isModal ? 'flex-1 min-h-0' : ''
+                }`}
+                style={isModal ? {} : { height: '10em' }}
                 ref={commentsContainerRef}
             >
                 {renderContent()}
@@ -195,7 +196,7 @@ export const Comments: React.FC<CommentsProps> = ({
                 </div>
             )}
 
-            <div className="flex gap-3 mt-3">
+            <div className={`flex gap-3 ${isModal ? 'mt-4' : 'mt-3'}`}>
                 <div className="flex-1">
                     <Input
                         placeholder="Enter your comment..."

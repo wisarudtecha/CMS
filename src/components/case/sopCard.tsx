@@ -9,6 +9,7 @@ import {
     Paperclip,
     ChevronDown,
     ChevronUp,
+    Maximize2,
 } from "lucide-react"
 
 import { useMemo, useRef, useState } from "react";
@@ -21,11 +22,10 @@ import { getPriorityBorderColorClass, getTextPriority } from "../function/Priori
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "./activityTimeline/caseActivityTimeline";
 import { CaseStatusInterface } from "../ui/status/status";
-// **REMOVED**: CaseHistory is no longer a direct prop
 import { CaseDetails } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
 import { useTranslation } from "@/hooks/useTranslation";
-
+import { CommentModal } from "../comment/commentModal";
 
 interface CaseCardProps {
     onAddSubCase?: () => void;
@@ -34,34 +34,41 @@ interface CaseCardProps {
     setCaseData?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
     caseData: CaseSop;
     editFormData: boolean;
-    // **REMOVED**: comment prop is no longer passed down
     showCommentButton?: boolean;
     showAttachButton?: boolean;
 }
 
 export const CaseCard: React.FC<CaseCardProps> = ({
-    // onAddSubCase,
     onAssignClick,
     onEditClick,
     caseData,
     editFormData,
     setCaseData,
-    // **REMOVED**: comment from destructuring
     showCommentButton = true,
     showAttachButton = true
 }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // **NEW**: Modal state
+    
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
+    
     const handleCommentToggle = () => {
         setShowComment(!showComment);
     };
 
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
     const { t, language } = useTranslation();
 
-    // Fallback to static steps if no SOP data
     const defaultProgressSteps = [
         { id: "1", title: "Received", completed: true },
         { id: "2", title: "Assigned", completed: true },
@@ -132,7 +139,6 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                 <div className="flex items-center space-x-2 text-center mt-3 sm:mt-0">
                     <Badge variant="outline" color={`${getTextPriority(caseData.priority).color}`}>
                         {t(`case.sop_card.${getTextPriority(caseData.priority).level} Priority`)}
-                        {/* {getTextPriority(caseData.priority).level} Priority */}
                     </Badge>
                     <Badge variant="outline">
                         {
@@ -178,20 +184,33 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     />
                 </div>}
 
-                {/* {onAddSubCase &&
-                    <Button onClick={onAddSubCase} size="sm" className=" text-white  ">
-                        <span>Add WO</span>
-                    </Button>} */}
-
                 {caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}
             </div>
-            {/* END: Responsive Button Grid Container */}
 
-            {/* **MODIFIED**: Pass isOpen prop, remove comment prop */}
-            {showComment && <Comments caseId={caseData.caseId} isOpen={showComment} />}
+            {showComment && <div className="relative">
+                <Maximize2 
+                    className="absolute right-0 m-3 rounded-md opacity-70 hover:cursor-pointer hover:opacity-100 transition-opacity z-10 bg-white dark:bg-gray-800 p-1 shadow-sm" 
+                    onClick={handleOpenModal}
+                    size={24}
+                />
+                <Comments caseId={caseData.caseId} isOpen={showComment} />
+            </div>}
+
+            <CommentModal 
+                isOpen={isModalOpen} 
+                onClose={handleCloseModal} 
+                caseId={caseData.caseId}
+                caseTitle={mergeCaseTypeAndSubType(
+                    findCaseTypeSubTypeByTypeIdSubTypeId(
+                        caseTypeSupTypeData,
+                        caseData?.caseTypeId || "",
+                        caseData?.caseSTypeId || ""
+                    ) ?? ({} as CaseTypeSubType), language
+                )}
+            />
         </div>
     );
 };
