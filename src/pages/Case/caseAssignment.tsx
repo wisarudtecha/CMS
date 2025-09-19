@@ -196,7 +196,7 @@ export default function CasesView() {
       seconds: number;
       totalSeconds: number;
     } | null>(null);
-    if (sla === 0) {
+    if (sla === 0 || sla=== null) {
       return
     }
     useEffect(() => {

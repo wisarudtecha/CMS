@@ -1,3 +1,4 @@
+import { validateInput } from "@/components/form/dynamic-form/validateDynamicForm";
 import { CaseDetails } from "@/types/case";
 
 
@@ -14,7 +15,11 @@ export const validateCaseForSubmission = (caseState: CaseDetails | undefined): s
     if (!caseState.customerData?.contractMethod?.name?.trim()) {
         return "Please select a Contact Method.";
     }
-
+    if(caseState?.formData && validateInput(caseState?.formData)){
+        return "Please Enter dynamic Form.";
+    }if (caseState.customerData?.mobileNo && !/^\+?[0-9]{8,15}$/.test(caseState.customerData.mobileNo)) {
+    return "Invalid Phone Number.";
+    }   
     return "";
 };
 

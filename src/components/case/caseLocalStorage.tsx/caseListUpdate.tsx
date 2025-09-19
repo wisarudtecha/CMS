@@ -120,6 +120,7 @@ export function updateCaseInLocalStorage(
     const updatedCase: CaseEntity = {
       ...originalCase,
       ...updateJson,
+      caseSla:Number(updateJson.caseSla),
       id: originalCase.id,
       caseId: originalCase.caseId,
       createdAt: originalCase.createdAt,

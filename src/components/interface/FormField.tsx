@@ -28,6 +28,7 @@ export interface FormRule {
   minSelections?: number;
   maxFileSize?: number;
   allowedFileTypes?: string[];
+  allowedCountries?: string[];
   hasUppercase?: boolean;
   hasLowercase?: boolean;
   hasNumber?: boolean;

@@ -19,33 +19,31 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { JSX } from "react/jsx-runtime";
 import {
-  Hash,
-  AlignJustify,
-  Mail,
-  CheckSquare,
   ChevronsUpDown,
   Image as ImageIcon,
-  Lock,
-  CalendarDays,
-  Clock,
-  Circle,
-  LayoutGrid,
-  LetterText,
-  Slack,
   FileIcon,
   Settings,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import TextArea from "../input/TextArea";
 import { Modal } from "@/components/ui/modal";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren, FormRule } from "@/components/interface/FormField";
-// --- Interface Definitions ---
 import Toast from "@/components/toast/Toast";
 import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
 import { useNavigate } from "react-router";
+import { colSpanClasses, commonClasses, formConfigurations, formTypeIcons, gridColumnContainerClasses, maxGridCol } from "./constant";
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
+import { getCountries } from 'react-phone-number-input/input'
+import { validateInput, validateFieldValue } from "./validateDynamicForm";
+export type CountryCode = ReturnType<typeof getCountries>[number]
+
+
+
 
 interface DynamicFormProps {
   initialForm?: FormField;
@@ -57,41 +55,9 @@ interface DynamicFormProps {
   enableSelfBg?: boolean;
   saveDraftsLocalStoreName?: string;
   onFormChange?: (data: FormField) => void;
-  returnFormAllFill?: (isFill: boolean) => void;
   returnValidValue?: (isValid: boolean) => void;
   showValidationErrors?: boolean;
 }
-const maxGridCol = 5
-// --- Responsive Helper Functions & Maps ---
-const colSpanClasses: Record<string, string> = {
-  1: 'md:col-span-1',
-  2: 'md:col-span-2',
-  3: 'md:col-span-3',
-  4: 'md:col-span-4',
-  5: 'md:col-span-5',
-  6: 'md:col-span-6',
-  7: 'md:col-span-7',
-  8: 'md:col-span-8',
-  9: 'md:col-span-9',
-  10: 'md:col-span-10',
-  11: 'md:col-span-11',
-  12: 'md:col-span-12',
-};
-
-const gridColumnContainerClasses: Record<string, string> = {
-  1: 'md:grid-cols-1',
-  2: 'md:grid-cols-2',
-  3: 'md:grid-cols-3',
-  4: 'md:grid-cols-4',
-  5: 'md:grid-cols-5',
-  6: 'md:grid-cols-6',
-  7: 'md:grid-cols-7',
-  8: 'md:grid-cols-8',
-  9: 'md:grid-cols-9',
-  10: 'md:grid-cols-10',
-  11: 'md:grid-cols-11',
-  12: 'md:grid-cols-12',
-};
 
 const getResponsiveGridClass = (cols: number | undefined,) => {
 
@@ -240,7 +206,7 @@ interface MultiImageUploadProps {
   onFilesSelect: (files: File[]) => void;
 }
 
-const MultiImageUpload: React.FC<MultiImageUploadProps> = ({field, labelComponent, onFilesSelect }) => {
+const MultiImageUpload: React.FC<MultiImageUploadProps> = ({ field, labelComponent, onFilesSelect }) => {
   const [, setSelectedFileNames] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -399,47 +365,6 @@ const PageMeta: React.FC<{ title: string; description: string }> = ({ title, des
 
 
 
-
-
-const formConfigurations: FormConfigItem[] = [
-  { formType: "textInput", title: "Text", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
-  { formType: "Integer", title: "Number", canBeChild: true, property: ["maxnumber", "minnumber"] },
-  { formType: "textAreaInput", title: "Text Area", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
-  { formType: "emailInput", title: "Email", canBeChild: true, property: ["validEmailFormat"] },
-  { formType: "option", title: "Multi-Checkbox", options: [], canBeChild: true, property: ["maxSelections", "minSelections"] },
-  { formType: "select", title: "Single-Select", options: [], canBeChild: true },
-  { formType: "image", title: "Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
-  { formType: "dndImage", title: "DnD Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
-  { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
-  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
-  { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
-  { formType: "dateInput", title: "Date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
-  { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minLocalDate", "maxLocalDate", "futureDateOnly", "pastDateOnly"] },
-  { formType: "radio", title: "Radio", options: [], canBeChild: true },
-  { formType: "InputGroup", title: "Group", canBeChild: false },
-  { formType: "dynamicField", title: "Dynamic Field", canBeChild: false }
-];
-
-const formTypeIcons: Record<string, JSX.Element> = {
-  textInput: <LetterText size={16} />,
-  Integer: <Hash size={16} />,
-  textAreaInput: <AlignJustify size={16} />,
-  emailInput: <Mail size={16} />,
-  option: <CheckSquare size={16} />,
-  select: <ChevronsUpDown size={16} />,
-  image: <ImageIcon size={16} />,
-  dndImage: <FileIcon size={16} />,
-  multiImage: <ImageIcon size={16} />,
-  dndMultiImage: <ImageIcon size={16} />,
-  passwordInput: <Lock size={16} />,
-  dateInput: <CalendarDays size={16} />,
-  dateLocal: <Clock size={16} />,
-  radio: <Circle size={16} />,
-  InputGroup: <LayoutGrid size={16} />,
-  dynamicField: <Slack size={16} />,
-};
-
-
 function createDynamicFormField(
   config: FormConfigItem[],
   typeToInsert: string,
@@ -478,6 +403,8 @@ function createDynamicFormField(
     defaultValue = null;
   } else if (configItem.formType === "multiImage" || configItem.formType === "dndMultiImage") {
     defaultValue = [];
+  } else if (configItem.formType === "phoneNumber") {
+    defaultValue = ""
   } else if (configItem.formType === "image" || configItem.formType === "dndImage") {
     defaultValue = null;
   } else {
@@ -513,62 +440,7 @@ function createDynamicFormField(
   };
 }
 
-const renderHiddenFieldPreview = (field: IndividualFormFieldWithChildren) => {
-  const commonClasses = "appearance-none border rounded w-full py-1 px-2 text-gray-700 leading-tight border-gray-300 bg-gray-200 dark:bg-gray-900 dark:border-gray-700 pointer-events-none opacity-70 dark:text-gray-400 rounded-md ";
-
-  switch (field.type) {
-    case 'textInput':
-    case 'emailInput':
-    case 'passwordInput':
-    case 'Integer':
-    case 'dateInput':
-    case 'dateLocal':
-      return <Input type="text" className={commonClasses} disabled placeholder={field.placeholder} />;
-    case 'textAreaInput':
-      return <textarea className={`${commonClasses} `} disabled placeholder={field.placeholder} />;
-    case 'select':
-    case 'dynamicField':
-      return (
-        <select className={commonClasses} disabled>
-          <option>{field.options?.length ? `${field.options.length} options` : 'Select...'}</option>
-        </select>
-      );
-    case 'option':
-      return (
-        <div className="flex flex-col gap-1 text-xs text-gray-500 p-2 border rounded bg-gray-200 dark:bg-gray-700 dark:border-gray-600">
-          {(field.options && field.options.length > 0) ? field.options.slice(0, 3).map(opt => <div key={opt} className="truncate"><CheckSquare size={12} className="inline-block mr-1" />{opt}</div>) : <span className="italic">No options</span>}
-          {field.options && field.options.length > 3 && <span className="italic">...and more</span>}
-        </div>
-      );
-    case 'radio':
-      return (
-        <div className={commonClasses}>
-          {(field.options && field.options.length > 0) ? field.options.slice(0, 3).map(opt => <div key={opt} className="truncate"><Circle size={12} className="inline-block mr-1" />{opt}</div>) : <span className="italic">No options</span>}
-          {field.options && field.options.length > 3 && <span className="italic">...and more</span>}
-        </div>
-      );
-    case 'dndImage':
-    case 'image':
-    case 'dndMultiImage':
-    case 'multiImage':
-      return (
-        <div className={`${commonClasses} flex items-center justify-center h-20`}>
-          <ImageIcon className="w-8 h-8 text-gray-400" />
-        </div>
-      );
-    case 'InputGroup':
-      return (
-        <div className={`${commonClasses} flex items-center justify-center h-20`}>
-          <LayoutGrid className="w-8 h-8 text-gray-400" />
-        </div>
-      );
-    default:
-      return <div className="text-xs italic text-gray-400">No preview available</div>;
-  }
-};
-
-
-function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnFormAllFill, returnValidValue, showValidationErrors = true }: DynamicFormProps) {
+function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnValidValue, showValidationErrors = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -655,120 +527,6 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const [isImport, setImport] = useState(false);
   const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
 
-  const validateFieldValue = (field: IndividualFormFieldWithChildren): string[] => {
-    const errors: string[] = [];
-    const { value, formRule, required, label, type } = field;
-
-    // Rule 1: Check if a required field is empty
-    if (required) {
-      const isEmpty =
-        value === null ||
-        value === undefined ||
-        (typeof value === 'string' && value.trim() === '') ||
-        (Array.isArray(value) && value.length === 0);
-
-      if (isEmpty) {
-        errors.push(`'${label}' is a required field.`);
-        return errors;
-      }
-    }
-
-    const isEffectivelyEmpty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
-    if (!required && isEffectivelyEmpty) {
-      return [];
-    }
-
-    if (!formRule) {
-      return [];
-    }
-
-    if (typeof value === 'string' && value) {
-      if (formRule.minLength !== undefined && value.length < formRule.minLength) errors.push(`'${label}' must have at least ${formRule.minLength} characters.`);
-      if (formRule.maxLength !== undefined && value.length > formRule.maxLength) errors.push(`'${label}' must have at most ${formRule.maxLength} characters.`);
-      if (formRule.contain && !value.includes(formRule.contain)) errors.push(`'${label}' must contain the text "${formRule.contain}".`);
-      if (formRule.validEmailFormat && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) errors.push(`'${label}' must be a valid email address.`);
-      if (formRule.hasUppercase && !/[A-Z]/.test(value)) errors.push(`'${label}' must contain an uppercase letter.`);
-      if (formRule.hasLowercase && !/[a-z]/.test(value)) errors.push(`'${label}' must contain a lowercase letter.`);
-      if (formRule.hasNumber && !/\d/.test(value)) errors.push(`'${label}' must contain a number.`);
-      if (formRule.hasSpecialChar && !/[!@#$%^&*(),.?":{}|<>]/.test(value)) errors.push(`'${label}' must contain a special character.`);
-      if (formRule.noWhitespace && /\s/.test(value)) errors.push(`'${label}' must not contain whitespace.`);
-    }
-
-    if (typeof value === 'number') {
-      if (formRule.minnumber !== undefined && value < formRule.minnumber) errors.push(`'${label}' must be at least ${formRule.minnumber}.`);
-      if (formRule.maxnumber !== undefined && value > formRule.maxnumber) errors.push(`'${label}' must be at most ${formRule.maxnumber}.`);
-    }
-
-    if (Array.isArray(value) && type === 'option') {
-      if (formRule.minSelections !== undefined && value.length < formRule.minSelections) errors.push(`For '${label}', you must select at least ${formRule.minSelections} options.`);
-      if (formRule.maxSelections !== undefined && value.length > formRule.maxSelections) errors.push(`For '${label}', you can select at most ${formRule.maxSelections} options.`);
-    }
-
-    if ((type === 'dateInput' || type === 'dateLocal') && typeof value === 'string' && value) {
-      const selectedDate = new Date(value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (formRule.minDate && selectedDate < new Date(formRule.minDate)) errors.push(`'${label}' cannot be earlier than ${formRule.minDate}.`);
-      if (formRule.maxDate && selectedDate > new Date(formRule.maxDate)) errors.push(`'${label}' cannot be later than ${formRule.maxDate}.`);
-      if (formRule.pastDateOnly && selectedDate >= today) errors.push(`'${label}' must be a date in the past.`);
-      if (formRule.futureDateOnly && selectedDate <= today) errors.push(`'${label}' must be a date in the future.`);
-    }
-
-    if (value instanceof File) {
-      if (formRule.maxFileSize && (value.size / 1024 / 1024) > formRule.maxFileSize) errors.push(`File for '${label}' exceeds the max size of ${formRule.maxFileSize}MB.`);
-      if (formRule.allowedFileTypes?.length && !formRule.allowedFileTypes.includes(value.type)) errors.push(`Invalid file type for '${label}'.`);
-    }
-
-    if (Array.isArray(value) && (type === 'multiImage' || type === 'dndMultiImage')) {
-      if (formRule.minFiles !== undefined && value.length < formRule.minFiles) {
-        errors.push(`'${label}' requires at least ${formRule.minFiles} files.`);
-      }
-      if (formRule.maxFiles !== undefined && value.length > formRule.maxFiles) {
-        errors.push(`'${label}' allows at most ${formRule.maxFiles} files.`);
-      }
-
-      if (errors.length > 0) return errors;
-
-      for (const file of value) {
-        if (file instanceof File) {
-          if (formRule.maxFileSize && (file.size / 1024 / 1024) > formRule.maxFileSize) {
-            errors.push(`A file in '${label}' exceeds ${formRule.maxFileSize}MB.`);
-            break;
-          }
-          if (formRule.allowedFileTypes?.length && !formRule.allowedFileTypes.includes(file.type)) {
-            errors.push(`A file in '${label}' has an invalid type.`);
-            break;
-          }
-        }
-      }
-    }
-
-    return errors;
-  };
-
-  const validateForm = useCallback((fields: IndividualFormFieldWithChildren[]): boolean => {
-    for (const field of fields) {
-      const fieldErrors = validateFieldValue(field);
-      if (fieldErrors.length > 0) {
-        // You can enhance this to show specific error messages in the UI
-        console.warn(`Validation Error for field '${field.label}':`, fieldErrors.join('; '));
-        return false; // Found an invalid field
-      }
-
-      // Recursively validate nested structures
-      if (field.type === "InputGroup" && Array.isArray(field.value)) {
-        if (!validateForm(field.value)) return false;
-      } else if (field.type === "dynamicField") {
-        const selectedOption = field.options?.find(o => o.value === field.value);
-        if (selectedOption && Array.isArray(selectedOption.form)) {
-          if (!validateForm(selectedOption.form)) return false;
-        }
-      }
-    }
-    return true; // All fields passed validation
-  }, []);
-
   const toggleCardVisibility = useCallback((id: string) => {
     setHiddenCardIds(prev => {
       const newSet = new Set(prev);
@@ -817,6 +575,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     setHiddenCardIds(new Set());
   }, []);
   const isSyncingWithInitialFormRef = useRef(false);
+
   useEffect(() => {
     if (onFormChange && currentForm) {
       if (isSyncingWithInitialFormRef.current) {
@@ -825,56 +584,13 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         onFormChange(currentForm);
       }
     }
-  }, [currentForm, onFormChange]);
-  const checkAllRequiredFields = useCallback((fields: IndividualFormFieldWithChildren[]): boolean => {
-    for (const field of fields) {
-      if (field.required) {
-        if (field.type === "InputGroup" && Array.isArray(field.value)) {
-          if (!checkAllRequiredFields(field.value)) return false;
-        } else if (field.type === "dynamicField") {
-          const selectedOption = field.options?.find(o => o.value === field.value);
-          if (!field.value) {
-            return false;
-          }
-          if (selectedOption && Array.isArray(selectedOption.form) && !checkAllRequiredFields(selectedOption.form)) {
-            return false;
-          }
-        } else if (Array.isArray(field.value)) {
-          if (field.value.length === 0) return false;
-        } else if (typeof field.value === 'string') {
-          if (field.value.trim() === '') return false;
-        } else if (field.type === 'Integer') {
-          if (typeof field.value !== 'number' || isNaN(field.value) || field.value === null) return false;
-        } else if (field.value === null || field.value === undefined) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }, []);
 
-  useEffect(() => {
-    // 1. Notify parent component of any change in the form data
-    if (onFormChange && currentForm) {
-      if (isSyncingWithInitialFormRef.current) {
-        isSyncingWithInitialFormRef.current = false;
-      } else {
-        onFormChange(currentForm);
-      }
-    }
+    const isFormValid = validateInput(currentForm);
 
-    // 2. Run the validation engine on every change
-    const isFormValid = validateForm(currentForm.formFieldJson);
-
-    // 3. Update parent components with the current validation status
-    if (returnFormAllFill) {
-      returnFormAllFill(isFormValid);
-    }
     if (returnValidValue) {
       returnValidValue(isFormValid);
     }
-  }, [currentForm, onFormChange, returnFormAllFill, returnValidValue, validateForm]);
-
+  }, [currentForm, onFormChange, returnValidValue]);
 
 
   const sensors = useSensors(
@@ -1154,6 +870,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }
           return field;
         }
+        if (field.type === "phoneNumber") {
+          return { ...field, value: newValue ?? "" }
+        }
         if (field.type === "Integer") {
           const max = field.formRule?.maxnumber ?? Infinity;
           const min = field.formRule?.minnumber ?? -Infinity;
@@ -1269,7 +988,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     // Mark all fields as touched to show errors on attempt
     setTouchedFields(new Set(getAllFieldIds(currentForm.formFieldJson)));
 
-    const isFormValid = validateForm(currentForm.formFieldJson);
+    const isFormValid = validateInput(currentForm);
 
     if (isFormValid) {
       if (onFormSubmit) {
@@ -1280,13 +999,12 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         console.log("Sending Valid Form Data:", submitData);
         onFormSubmit(submitData);
       }
-      returnFormAllFill && returnFormAllFill(true);
     } else {
+      setToastMessage("Please correct the errors before submitting.");
       console.error("Form submission failed due to validation errors.");
       setShowToast(true); // Notify user of failure
-      returnFormAllFill && returnFormAllFill(false);
     }
-  }, [currentForm, onFormSubmit, transformFieldForSubmission, returnFormAllFill, validateForm, getAllFieldIds]);
+  }, [currentForm, onFormSubmit, transformFieldForSubmission]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
@@ -1673,7 +1391,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     return (
       <div
         ref={setNodeRef} style={style}
-        className={`mb-6 p-4 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'}`}
+        className={`mb-6 border rounded-lg bg-gray-50 relative dark:border-gray-600 dark:bg-white/[0.03] dark:text-gray-400 transition-all duration-300 ${isAnyDropdownOpen ? 'z-20' : 'z-auto'} ${isHidden ? 'p-2' : 'p-4'}`}
         {...attributes}
       >
         <div className="flex items-start justify-between flex-wrap gap-y-2">
@@ -1693,8 +1411,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             {hasSettings && (
               <Settings onClick={() => settingHandling(field)} className="cursor-pointer text-gray-400 hover:text-blue-500" size={18} />
             )}
-            <Button onClick={() => toggleCardVisibility(field.id)} size="xxs" className="px-2 py-1 bg-blue-400 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-xs">
-              {isHidden ? 'Show' : 'Hide'}
+            <Button onClick={() => toggleCardVisibility(field.id)} size="xxs" variant="ghost" className="p-1">
+              {isHidden ? <Eye size={18} /> : <EyeOff size={18} />}
             </Button>
             <Button onClick={() => removeField(field.id)} className="p-1 bg-red-500 text-white rounded-full text-xs leading-none w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-300" title="Remove field" disabled={!editFormData} size="xxs">
               ✕
@@ -1702,18 +1420,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           </div>
         </div>
 
-        {isHidden ? (
-          <div>
-            <div className="flex items-center justify-between gap-2 py-2">
-              <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold truncate">{field.label}</span>
-              <span className="text-blue-500 dark:text-blue-300 text-xl flex-shrink-0">{formTypeIcons[field.type] || <span className="text-sm">?</span>}</span>
-            </div>
-            <div className="mt-2">
-              {renderHiddenFieldPreview(field)}
-            </div>
-          </div>
-        ) : (
-          <div className="mt-2 space-y-4">
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isHidden ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100 mt-2'}`}>
+          <div className="space-y-4">
             <h1 className="my-px font-mono text-xs">({field.type})</h1>
 
             <div className="space-y-2">
@@ -1866,6 +1574,14 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               </div>
             )}
           </div>
+        </div>
+        {isHidden && (
+          <div className="flex items-center justify-between gap-2 py-2">
+            <div className="flex items-center gap-3">
+              <span className="text-blue-500 dark:text-blue-300 text-xl flex-shrink-0">{formTypeIcons[field.type] || <span className="text-sm">?</span>}</span>
+              <span className="text-gray-700 dark:text-gray-400 text-lg font-semibold truncate">{field.label}</span>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -1874,6 +1590,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
   const FormEdit = useCallback(() => {
     const [modalRules, setModalRules] = useState<FormRule>({});
+    const [countrySearch, setCountrySearch] = useState('');
+    const allCountries = useMemo(() => getCountries(), []);
 
     const commonImageTypes = [
       { name: 'JPEG', mime: 'image/jpeg' },
@@ -1953,6 +1671,40 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           </label>;
         case 'contain':
           return <label className="block text-sm font-medium">{label}:<Input type="text" value={value || ''} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.value)} className={commonInputClass} /></label>;
+        case 'allowedCountries':
+          const filteredCountries = allCountries.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase()));
+          return (
+            <div>
+              <label className="block text-sm font-medium">{label}:</label>
+              <Input
+                type="text"
+                placeholder="Search countries..."
+                value={countrySearch}
+                onChange={(e) => setCountrySearch(e.target.value)}
+                className={`${commonInputClass} mb-2`}
+              />
+              <div className="max-h-40 overflow-y-auto border rounded p-2">
+                {filteredCountries.map(countryCode => (
+                  <label key={countryCode} className="flex items-center text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      className={commonCheckboxClass}
+                      checked={(modalRules.allowedCountries || []).includes(countryCode)}
+                      onChange={e => {
+                        const isChecked = e.target.checked;
+                        const currentTypes = modalRules.allowedCountries || [];
+                        const newTypes = isChecked
+                          ? [...new Set([...currentTypes, countryCode])]
+                          : currentTypes.filter(t => t !== countryCode);
+                        handleRuleInputChange('allowedCountries', newTypes);
+                      }}
+                    />
+                    <span className="ml-2">{countryCode}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          );
         case 'allowedFileTypes':
           return (
             <div>
@@ -2177,7 +1929,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       return <p className="text-red-500 text-xs italic mt-1">{errors[0]}</p>;
     }
     return null;
-  }, [showValidationErrors, touchedFields, validateFieldValue]);
+  }, [showValidationErrors, touchedFields]);
 
 
   const renderFormField = useCallback((field: IndividualFormFieldWithChildren) => {
@@ -2248,7 +2000,19 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           <input type="radio" name={field.id} value={option} checked={field.value === option} onChange={(e) => handleFieldChange(field.id, e.target.value)} className="form-radio h-5 w-5 text-blue-600" required={field.required} disabled={!editFormData} />
           <span className="ml-2 text-gray-700 dark:text-gray-400">{option}</span>
         </label>))} </div> <FieldError field={field} /> </>);
-
+      case "phoneNumber":
+        return (
+          <> {labelComponent}
+            <PhoneInput
+              placeholder="Enter phone number"
+              countries={field.formRule?.allowedCountries as CountryCode[]}
+              value={field.value || ""}
+              onChange={(value) => handleFieldChange(field.id, value)}
+              onBlur={() => handleBlur(field.id)}
+              defaultCountry="TH"
+              className={commonClasses + " !p-3"}
+            /><FieldError field={field} /></>
+        );
       case "dndImage":
         return (
           <div onBlurCapture={() => handleBlur(field.id)}>
@@ -2273,17 +2037,17 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         </div><FieldError field={field} /></>);
 
       case "multiImage":
-        return (<> {labelComponent} <div> <MultiImageUpload
-        field={field}
-        labelComponent={null}
-        onFilesSelect={(files) => handleFieldChange(field.id, files)}
-      />
+        return (<div onBlurCapture={() => handleBlur(field.id)}> {labelComponent} <div> <MultiImageUpload
+          field={field}
+          labelComponent={null}
+          onFilesSelect={(files) => handleFieldChange(field.id, files)}
+        />
           {Array.isArray(field.value) && field.value.length > 0 && (<div className="mt-2">
             <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
             <div className="grid grid-cols-3 gap-2"> {field.value.map((file: File, index: number) => (<div key={file.name + index} className="relative group">
               <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className="w-full h-20 object-cover rounded border border-gray-600 " />
               <Button onClick={() => handleRemoveFile(field.id, index)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={!editFormData} size="sm" variant="error">×</Button>
-            </div>))} </div> </div>)} </div> <FieldError field={field} /> </>);
+            </div>))} </div> </div>)} </div> <FieldError field={field} /> </div>);
 
       case "dndMultiImage":
         return (
@@ -2452,3 +2216,5 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 }
 
 export default React.memo(DynamicForm)
+
+

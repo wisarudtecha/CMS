@@ -34,6 +34,7 @@ import { source } from "./constants/caseConstants";
 import { CaseFormFields } from "./caseFormFields";
 import { CaseTypeSubType } from "../interface/CaseType"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
+import { validateCaseForSubmission } from "./caseDataValidation/caseDataValidation"
 
 const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
     disablePageMeta?: boolean;
@@ -592,9 +593,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState, sopData?.data, updateCase, updateCaseInLocalStorage, profile, navigate, isScheduleDate]);
     
     const handlePreviewShow = useCallback(() => {
-        // Here you can add validation logic before showing the preview if needed
-        setShowPreviewData(true)
-    }, []);
+            const errorMessage = validateCaseForSubmission(caseState);
+            if (errorMessage) {
+                setToastMessage(errorMessage);
+                setToastType("error");
+                setShowToast(true);
+                return;
+            }
+            setShowPreviewData(true);
+    }, [validateCaseForSubmission, caseState]);
 
     const handleEditClick = useCallback(() => {
         setEditFormData(prev => !prev);
