@@ -192,7 +192,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
             {showComment && <div className="relative">
                 <Maximize2 
-                    className="absolute right-0 m-3 rounded-md opacity-70 hover:cursor-pointer hover:opacity-100 transition-opacity z-10 bg-white dark:bg-gray-800 p-1 shadow-sm" 
+                    className="absolute right-0 m-3 rounded-md opacity-70 hover:cursor-pointer hover:opacity-100 transition-opacity z-10 bg-white dark:bg-gray-900 dark:text-white p-1 shadow-sm" 
                     onClick={handleOpenModal}
                     size={24}
                 />
