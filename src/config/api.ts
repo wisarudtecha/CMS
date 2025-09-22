@@ -1,13 +1,12 @@
 // src/config/api.ts
 const getApiBaseUrl = (): string => {
   const envApi = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+  console.log("API_BASE_URL:", envApi);
   if (envApi) {
-    console.log("API_BASE_URL:", envApi);
     return envApi;
   }
   const allowedHosts = import.meta.env.VITE_ALLOWED_HOSTS.split(",");
   const isDevelopment = allowedHosts.includes(window.location.hostname);
-  console.log("API_BASE_URL: /api/v1");
   return isDevelopment && "/api/v1" || envApi;
 };
 
