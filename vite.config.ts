@@ -27,16 +27,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true, // Allow external connections
-    allowedHosts: [
-      "0.0.0.0",
-      "127.0.0.1",
-      "*.welcomedcc.com",
-      "cms.welcomedcc.com",
-      "localhost",
-    ],
+    allowedHosts: process.env.VITE_ALLOWED_HOSTS?.split(","),
     hmr: process.env.NODE_ENV === "production" ? {
       protocol: "wss", // Use "ws" if not serving over HTTPS
-      host: "cms.welcomedcc.com", // Public host browser is loading from
+      host: process.env.VITE_HMR_HOST, // Public host browser is loading from
       clientPort: 443 // Needed if the browser connects over HTTPS
       // port: 5173 // If exposing the Vite port directly without proxy
     } : undefined,
@@ -44,14 +38,14 @@ export default defineConfig({
     // Proxy configuration to handle CORS
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: process.env.VITE_BASE_URL,
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
         configure: (proxy) => {
           // Log proxy requests for debugging
           proxy.on("error", (err) => {
-            console.log("Proxy error:", err);
+            console.error("Proxy error:", err);
           });
           proxy.on("proxyReq", (_proxyReq, req) => {
             console.log("Proxying request:", req.method, req.url);
@@ -64,7 +58,7 @@ export default defineConfig({
 
       // WebSocket proxy
       "/ws": {
-        target: "ws://localhost:8080",
+        target: process.env.VITE_WEBSOCKET_BASE_URL,
         ws: true,
         changeOrigin: true
       }

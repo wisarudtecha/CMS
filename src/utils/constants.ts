@@ -3,31 +3,19 @@
  * Application Constants
  */
 import { AlertHexaIcon, CheckCircleIcon, TimeIcon } from "@/icons";
-// import { CORSHandler } from "@/utils/corsHandler";
 
 export const APP_CONFIG = {
   NAME: "CMS - Case Management System",
   VERSION: "1.0.0",
-  
   // Environment-based API configuration
   API_BASE_URL: (() => {
-    // Development: Use proxy or direct URL
-    if (import.meta.env.DEV) {
-      // Option 1: Use Vite proxy (recommended)
-      // console.log("Option 1: Use Vite proxy: /api/v1");
-      return "/api/v1";
-      
-      // Option 2: Direct URL (requires server CORS configuration)
-      // console.log("Option 2: Direct URL: http://localhost:8080/api/v1");
-      // return "http://localhost:8080/api/v1";
-    }
-    
-    // Production: Use production API URL
-    // console.log("Production: Use production API URL:", import.meta.env.VITE_API_BASE_URL || "/api/v1");
+    // if (import.meta.env.DEV) {
+    //   return "/api/v1";
+    // }
     return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
-  WS_URL: import.meta.env.VITE_WS_URL || "ws://103.212.39.77:8080/ws",
+  WS_URL: import.meta.env.VITE_WS_URL,
 } as const;
 
 export const API_ENDPOINTS = {

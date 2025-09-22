@@ -2,26 +2,11 @@
 const getApiBaseUrl = (): string => {
   const envApi = import.meta.env.VITE_API_BASE_URL;
   if (envApi) {
-    // console.log("Using env API base:", envApi);
     return envApi;
   }
-
-  // In a real app, would set this via environment variables during build
-  // For demo purposes, use a mock API or detect environment
-  const isDevelopment = window.location.hostname === "localhost"
-    || window.location.hostname === "127.0.0.1"
-    || window.location.hostname === "0.0.0.0";
-
-  return isDevelopment && "/api/v1" || "http://103.212.39.77:8080/api/v1";
-  
-  // if (isDevelopment) {
-  //   console.log("Local development API: /api/v1");
-  //   return "/api/v1"; // Local development API
-  // }
-  
-  // Production API - replace with actual API URL
-  // console.log("Production API: http://103.212.39.77:8080/api/v1");
-  // return "http://103.212.39.77:8080/api/v1"; // Local development API
+  const allowedHosts = import.meta.env.VITE_ALLOWED_HOSTS.split(",");
+  const isDevelopment = allowedHosts.includes(window.location.hostname);
+  return isDevelopment && "/api/v1" || envApi;
 };
 
 export const API_CONFIG = {
@@ -40,6 +25,5 @@ export const API_CONFIG = {
   TIMEOUT: 10000, // 10 seconds
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
-  // Demo mode - when true, uses mock responses instead of real API calls
   DEMO_MODE: false
 };
