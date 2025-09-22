@@ -2,15 +2,17 @@
 const getApiBaseUrl = (): string => {
   const envApi = import.meta.env.VITE_API_BASE_URL;
   if (envApi) {
-    console.log("Using env API base:", envApi);
+    // console.log("Using env API base:", envApi);
     return envApi;
   }
 
   // In a real app, would set this via environment variables during build
   // For demo purposes, use a mock API or detect environment
-  const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const isDevelopment = window.location.hostname === "localhost"
+    || window.location.hostname === "127.0.0.1"
+    || window.location.hostname === "0.0.0.0";
 
-  return isDevelopment ? "/api/v1" : "https://cms-api-1-production.up.railway.app/api/v1";
+  return isDevelopment && "/api/v1" || "http://103.212.39.77:8080/api/v1";
   
   // if (isDevelopment) {
   //   console.log("Local development API: /api/v1");
@@ -18,8 +20,8 @@ const getApiBaseUrl = (): string => {
   // }
   
   // Production API - replace with actual API URL
-  // console.log("Production API: https://cms-api-1-production.up.railway.app/api/v1");
-  // return "https://cms-api-1-production.up.railway.app/api/v1"; // Local development API
+  // console.log("Production API: http://103.212.39.77:8080/api/v1");
+  // return "http://103.212.39.77:8080/api/v1"; // Local development API
 };
 
 export const API_CONFIG = {

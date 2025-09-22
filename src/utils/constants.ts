@@ -14,7 +14,7 @@ export const APP_CONFIG = {
     // Development: Use proxy or direct URL
     if (import.meta.env.DEV) {
       // Option 1: Use Vite proxy (recommended)
-      console.log("Option 1: Use Vite proxy: /api/v1");
+      // console.log("Option 1: Use Vite proxy: /api/v1");
       return "/api/v1";
       
       // Option 2: Direct URL (requires server CORS configuration)
@@ -23,11 +23,11 @@ export const APP_CONFIG = {
     }
     
     // Production: Use production API URL
-    console.log("Production: Use production API URL:", import.meta.env.VITE_API_BASE_URL || "/api/v1");
+    // console.log("Production: Use production API URL:", import.meta.env.VITE_API_BASE_URL || "/api/v1");
     return import.meta.env.VITE_API_BASE_URL || "/api/v1";
   })(),
 
-  WS_URL: import.meta.env.VITE_WS_URL || "ws://cms-api-1-production.up.railway.app",
+  WS_URL: import.meta.env.VITE_WS_URL || "ws://103.212.39.77:8080/ws",
 } as const;
 
 export const API_ENDPOINTS = {
