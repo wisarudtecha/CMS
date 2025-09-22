@@ -161,6 +161,8 @@ export default function CasesView() {
       return (
         matchingSubTypesNames(c.caseTypeId, c.caseSTypeId, caseTypeSupTypeData).toLowerCase().includes(generalSearchTerm) ||
         c?.caseDetail?.toLowerCase().includes(generalSearchTerm) ||
+        c?.caselocAddr?.toLowerCase().includes(generalSearchTerm) ||
+        c?.caselocAddrDecs?.toLowerCase().includes(generalSearchTerm) ||
         c?.statusId?.toLowerCase().includes(generalSearchTerm) ||
         c?.caseId?.toLowerCase().includes(generalSearchTerm) ||
         assigneeName?.toLowerCase().includes(generalSearchTerm) ||
@@ -196,7 +198,7 @@ export default function CasesView() {
       seconds: number;
       totalSeconds: number;
     } | null>(null);
-    if (sla === 0 || sla=== null) {
+    if (sla === 0 || sla === null) {
       return
     }
     useEffect(() => {
@@ -261,27 +263,28 @@ export default function CasesView() {
 
     const getVariantAndColor = () => {
       if (timeRemaining.totalSeconds <= 3600) {
-        return { variant: "solid" as const, color: "error" as const };
+        return { variant: "outline" as const, color: "error" as const };
       } else if (timeRemaining.totalSeconds <= 10800) {
-        return { variant: "solid" as const, color: "warning" as const };
+        return { variant: "outline" as const, color: "warning" as const };
       } else if (timeRemaining.totalSeconds <= 21600) {
-        return { variant: "solid" as const, color: "info" as const };
+        return { variant: "outline" as const, color: "primary" as const };
       } else {
-        return { variant: "solid" as const, color: "success" as const };
+        return { variant: "outline" as const, color: "primary" as const };
       }
     };
 
     const { variant, color } = getVariantAndColor();
 
     const formatTimeRemaining = () => {
+      const paddedDay = timeRemaining.days.toString().padStart(2, '0');
+      const paddedHours = timeRemaining.hours.toString().padStart(2, '0');
+      const paddedMinutes = timeRemaining.minutes.toString().padStart(2, '0');
+      const paddedSeconds = timeRemaining.seconds.toString().padStart(2, '0');
+
       if (timeRemaining.days > 0) {
-        return `${timeRemaining.days}d ${timeRemaining.hours}h`;
-      } else if (timeRemaining.hours > 0) {
-        return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
-      } else if (timeRemaining.minutes > 0) {
-        return `${timeRemaining.minutes}m ${timeRemaining.seconds}s`;
+        return `${paddedDay}d:${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
       } else {
-        return `${timeRemaining.seconds}s`;
+        return `${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
       }
     };
 
@@ -291,7 +294,7 @@ export default function CasesView() {
         variant={variant}
         color={color}
         size="xs"
-        className={`text-center ${shouldPulse ? 'animate-pulse' : ''}`}
+        className={`text-center w-[32%] ${shouldPulse ? 'animate-pulse' : ''}`}
       >
         {formatTimeRemaining()}
       </Badge>
