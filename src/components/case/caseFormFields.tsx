@@ -389,7 +389,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                         disabled={!isCreate}
                         onChange={handleSetArea}
                         placeholder={t("case.display.select_service_center")}
-                        className="2xsm:m-3"
+                        className="2xsm:my-4 2xsm:mx-3"
                     />
                 </div>
                 <CustomerInput

@@ -6,16 +6,20 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getTimeDifference, isSlaViolated, ProgressStepPreviewProps } from '../sopStepTranForm';
 
 const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
-
-    const {language} = useTranslation();
+    const { language } = useTranslation();
+    
+    const filteredSteps = progressSteps.length === 6 
+        ? progressSteps.slice(1, -1) 
+        : progressSteps;
+    
     return (
         <div className="mb-6">
             <div className="flex flex-col">
-                {progressSteps.map((step, index) => {
-                    const isLastStep = index === progressSteps.length - 1;
-                    const nextStep = !isLastStep ? progressSteps[index + 1] : null;
+                {filteredSteps.map((step, index) => {
+                    const isLastStep = index === filteredSteps.length - 1;
+                    const nextStep = !isLastStep ? filteredSteps[index + 1] : null;
                     const violated = isSlaViolated(step);
-                    // Determine line color for this segment
+                    
                     const shouldShowActiveLine =
                         (step.completed && nextStep?.completed) ||
                         (step.completed && nextStep?.current) ||
@@ -23,9 +27,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
 
                     return (
                         <div key={step.id} className="flex items-start justify-between relative">
-                            {/* Left side - Circle and connecting line */}
                             <div className="flex flex-col items-center relative">
-                                {/* Step Circle */}
                                 <div className={`
                                 w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white dark:bg-gray-800 relative z-10 flex-shrink-0
                                 ${step.completed
@@ -45,14 +47,13 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                     )}
                                 </div>
 
-                                {/* Vertical Connecting Line to Next Step */}
                                 {!isLastStep && (
                                     <div className="relative">
                                         {step.current ? (
                                             <div className="flex flex-col w-0.5 h-16 relative z-0">
                                                 <div className={`
                                                     h-1/2 w-full
-                                                     bg-gray-300 dark:bg-gray-600
+                                                 bg-gray-300 dark:bg-gray-600
                                                 `}></div>
                                                 <div className="h-1/2 w-full bg-gray-300 dark:bg-gray-600"></div>
                                             </div>
@@ -63,13 +64,13 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                             `}></div>
                                         )}
 
-                                        {/* Time Difference Badge - Show time FROM previous step TO current step */}
-                                        {index < progressSteps.length - 1 && progressSteps[index + 1]?.timeline?.completedAt && (
+                                        {index < filteredSteps.length - 1 && filteredSteps[index + 1]?.timeline?.completedAt && (
                                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
                                                 {(() => {
-                                                    const timeDiff = getTimeDifference(step, progressSteps[index + 1]);
+                                                    const nextStepViolated = isSlaViolated(filteredSteps[index + 1]);
+                                                    const timeDiff = getTimeDifference(step, filteredSteps[index + 1]);
                                                     return timeDiff && (
-                                                        <div className={`${!violated?"bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300":"bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
+                                                        <div className={`${!nextStepViolated ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" : "bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
                                                             {timeDiff}
                                                         </div>
                                                     );
@@ -80,7 +81,6 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                 )}
                             </div>
 
-                            {/* Right side - Step Label and Time */}
                             <div className="ml-4 pb-8 flex-1">
                                 <div className={`
                                     text-sm font-medium mb-1 leading-tight
@@ -96,7 +96,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt, true,language)}
+                                        {DateStringToDateFormat(step.timeline.completedAt, true, language)}
                                     </div>
                                 )}
 

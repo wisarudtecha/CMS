@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { CaseHistory, useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { usePostAddCaseHistoryMutation } from "@/store/api/caseApi";
 import { useWebSocket } from "../websocket/websocket";
+import { formatDate } from "@/utils/crud";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CommentsProps {
     isOpen: boolean;
@@ -31,7 +33,7 @@ export const Comments: React.FC<CommentsProps> = ({
     );
     const { subscribe, isConnected, connectionState, connect } = useWebSocket()
     const [addCaseHistory, { isLoading: isAddingComment, error: addCommentError }] = usePostAddCaseHistoryMutation();
-
+    const { t } = useTranslation();
     useEffect(() => {
         const listener = subscribe((message) => {
             try {
@@ -110,16 +112,6 @@ export const Comments: React.FC<CommentsProps> = ({
         }
     }, [commentsData]);
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
 
     const handleKeyDownComment = (event: any) => {
         if (event.key === 'Enter') {
@@ -156,7 +148,6 @@ export const Comments: React.FC<CommentsProps> = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">No comment history available</p>
-                        <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Be the first to add a comment</p>
                     </div>
                 </div>
             );
@@ -192,14 +183,14 @@ export const Comments: React.FC<CommentsProps> = ({
 
             {addCommentError && (
                 <div className="text-red-500 text-sm mb-2">
-                    Failed to add comment. Please try again.
+                    {t("case.sop_data.fail_send_activity")}
                 </div>
             )}
 
             <div className={`flex gap-3 ${isModal ? 'mt-4' : 'mt-3'}`}>
                 <div className="flex-1">
                     <Input
-                        placeholder="Enter your comment..."
+                        placeholder={t("case.sop_card.comment")+"..."}
                         value={newCommentMessage}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCommentMessage(e.target.value)}
                         onKeyDown={handleKeyDownComment}
@@ -236,7 +227,7 @@ export const Comments: React.FC<CommentsProps> = ({
                                     d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                                 />
                             </svg>
-                            <span>Comment</span>
+                            <span>{t("case.sop_card.send_activity")}</span>
                         </div>
                     )}
                 </Button>

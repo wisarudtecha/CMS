@@ -729,7 +729,9 @@
       "create_date": "วันที่ถูกสร้าง",
       "High Priority": "ความสำคัญสูง",
       "Medium Priority": "ความสำคัญปานกลาง",
-      "Low Priority": "ความสำคัญต่ำ"
+      "Low Priority": "ความสำคัญต่ำ",
+      "send_activity":"ส่งข้อความ",
+      "fail_send_activity":"ส่งไม่สำเร็จ"
     },
     "assignment": {
       "case_type":"ประเภทเหตุ",

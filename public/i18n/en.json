@@ -729,7 +729,9 @@
       "create_date":"Create Date",
       "High Priority":"High Priority",
       "Medium Priority":"Medium Priority",
-      "Low Priority":"Low Priority"
+      "Low Priority":"Low Priority",
+      "send_activity":"Comment",
+      "fail_send_activity":"Failed to add comment. Please try again."
     },
     "assignment":{
       "case_type":"Case Type",

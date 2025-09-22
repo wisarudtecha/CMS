@@ -4,6 +4,7 @@ import Input from "../form/input/InputField";
 // import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/store/api/custommerApi";
 import { useTranslation } from "@/hooks/useTranslation";
+import { COMMON_INPUT_CSS } from "./constants/caseConstants";
 // import { contractMethodMock } from "./source";
 
 interface CustomerInputProps {
@@ -12,7 +13,6 @@ interface CustomerInputProps {
     handleCustomerDataChange: (newValue: Custommer) => void;
     hidePhone?: boolean
 }
-const commonInputCss = "shadow appearance-none border rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 const CustomerInput: React.FC<CustomerInputProps> = ({
     customerData,
     listCustomerData,
@@ -82,11 +82,11 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             </div> */}
             {!hidePhone &&
                 <div className="w-auto md:mr-2">
-                    <h3 className="my-1 ">{t("case.display.phone_number")} :</h3>
+                    <h3 className="my-2 ">{t("case.display.phone_number")} :</h3>
                     <Input
                         value={customerData.mobileNo ?? ""}
                         onChange={(e) => { handleCustomerDataPhoneChange(e) }}
-                        className={`${commonInputCss}`}
+                        className={`${COMMON_INPUT_CSS}`}
                         placeholder={t("case.display.phone_number_placeholder")}
                     />
                 </div>}
@@ -114,7 +114,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                         onChange={handleCustomerEmailChange}
                         value={customerData.email || ""}
                         placeholder="Enter Email"
-                        className={commonInputCss}
+                        className={COMMON_INPUT_CSS}
                         required={true}
                     />
                 </div>

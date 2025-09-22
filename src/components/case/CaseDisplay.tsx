@@ -1,5 +1,4 @@
-import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, SquarePen, Ticket, UserPen } from "lucide-react";
-import DateStringToDateFormat from "../date/DateToString";
+import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket, UserPen } from "lucide-react";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
 import { mergeArea } from "@/store/api/area";
@@ -9,6 +8,7 @@ import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { useState } from "react";
 import { closeStatus } from "../ui/status/status";
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatDate } from "@/utils/crud";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -79,14 +79,35 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 </div>
                 {caseData?.iotDate &&
-                    <div className="flex  text-gray-500 dark:text-gray-400">
+                    <div className="flex  text-gray-500 dark:text-gray-400 mb-2">
                         <Siren />
                         <div className="ml-2">
                             <span className="text-md text-gray-500 dark:text-gray-400">{t("case.display.iot_alert_date")}</span>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white"> {DateStringToDateFormat(caseData?.iotDate, false, language) || "-"}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white"> {formatDate(caseData?.iotDate) || "-"}</div>
                         </div>
                     </div>
                 }
+                <div className="">
+                    <div className=" col-span-1 mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <UserPen className="h-4 w-4 mr-2" />
+                            <span>{t("case.display.updateBy")}</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.updateBy || "-"}
+                        </div>
+                    </div>
+
+                    <div className=" col-span-1 mb-4">
+                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                            <ClockArrowUp className="h-4 w-4 mr-2" />
+                            <span className="text-red-400">{t("case.display.updateAt")}</span>
+                        </div>
+                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.lastUpdate ? formatDate(caseData?.lastUpdate) : "-"}
+                        </div>
+                    </div>
+                </div>
             </div>
             <div className="col-span-2 sm:col-span-1 flex flex-col h-full">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1">
@@ -150,7 +171,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             </div>
                             <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                                 {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                    DateStringToDateFormat(caseData.scheduleDate, false, language) :
+                                    formatDate(caseData.scheduleDate) :
                                     "-"
                                 }
                             </div>
@@ -159,8 +180,9 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                 </div>
             </div>
 
-            {!isCreate && <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
-                <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
+            {!isCreate && caseData?.requireSchedule &&
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2 mb-3">
+                {/* <div className="flex items-center mb-2 text-blue-500 dark:text-blue-400">
                     <SquarePen className="h-5 w-5 mr-2" />
                     <span className="text-md">{t("case.display.edit")}</span>
                 </div>
@@ -181,12 +203,12 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             <span>{t("case.display.updateAt")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.lastUpdate ? DateStringToDateFormat(caseData?.lastUpdate, false, language) : "-"}
+                            {caseData?.lastUpdate ? formatDate(caseData?.lastUpdate) : "-"}
                         </div>
                     </div>
-                </div>
+                </div> */}
 
-                {caseData?.requireSchedule && (
+                 (
                     <div className="mb-2">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <CalendarDays className="h-4 w-4 mr-2" />
@@ -194,12 +216,12 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                DateStringToDateFormat(caseData.scheduleDate, false, language) :
+                                formatDate(caseData.scheduleDate) :
                                 "-"
                             }
                         </div>
                     </div>
-                )}
+                )
             </div>}
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
                 <div className="mb-2">
