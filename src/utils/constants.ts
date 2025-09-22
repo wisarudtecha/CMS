@@ -12,7 +12,9 @@ export const APP_CONFIG = {
     // if (import.meta.env.DEV) {
     //   return "/api/v1";
     // }
-    return import.meta.env.VITE_API_BASE_URL || "/api/v1";
+    const envApi = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+    console.log("API_BASE_URL:", envApi);
+    return envApi;
   })(),
 
   WS_URL: import.meta.env.VITE_WS_URL,
