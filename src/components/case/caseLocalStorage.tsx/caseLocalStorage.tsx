@@ -9,7 +9,6 @@ export const dispatchUpdateLocate = (dispatch: dispatchInterface) => {
     if (caseListJSON) {
         const updateCaseList = caseList.map((items) => {
             if (items.caseId === dispatch.caseId) {
-                console.log({ ...items, statusId: dispatch.status })
                 return { ...items, statusId: dispatch.status };
             }
             return items; 
