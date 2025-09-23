@@ -198,9 +198,9 @@ export default function CasesView() {
       seconds: number;
       totalSeconds: number;
     } | null>(null);
-    if (sla === 0 || sla === null) {
-      return
-    }
+    // if (sla === 0 || sla === null) {
+    //   return
+    // }
     useEffect(() => {
       const calculateTimeRemaining = () => {
         const createdDate = new Date(createdAt);
@@ -253,52 +253,54 @@ export default function CasesView() {
     if(!timeRemaining||timeRemaining.days>0){
       return
     }
-    if (timeRemaining.isOverdue) {
+    if (timeRemaining.isOverdue===false) {
       return (
         <Badge variant="solid" color="error" size="xs" className="text-center animate-pulse">
           Over SLA
         </Badge>
       );
+    }else{
+      return null
     }
 
-    const getVariantAndColor = () => {
-      if (timeRemaining.totalSeconds <= 3600) {
-        return { variant: "outline" as const, color: "error" as const };
-      } else if (timeRemaining.totalSeconds <= 10800) {
-        return { variant: "outline" as const, color: "error" as const };
-      } else if (timeRemaining.totalSeconds <= 21600) {
-        return { variant: "outline" as const, color: "error" as const };
-      } else {
-        return { variant: "outline" as const, color: "error" as const };
-      }
-    };
+    // const getVariantAndColor = () => {
+    //   if (timeRemaining.totalSeconds <= 3600) {
+    //     return { variant: "outline" as const, color: "error" as const };
+    //   } else if (timeRemaining.totalSeconds <= 10800) {
+    //     return { variant: "outline" as const, color: "error" as const };
+    //   } else if (timeRemaining.totalSeconds <= 21600) {
+    //     return { variant: "outline" as const, color: "error" as const };
+    //   } else {
+    //     return { variant: "outline" as const, color: "error" as const };
+    //   }
+    // };
 
-    const { variant, color } = getVariantAndColor();
+    // const { variant, color } = getVariantAndColor();
 
-    const formatTimeRemaining = () => {
-      const paddedDay = timeRemaining.days.toString().padStart(2, '0');
-      const paddedHours = timeRemaining.hours.toString().padStart(2, '0');
-      const paddedMinutes = timeRemaining.minutes.toString().padStart(2, '0');
-      const paddedSeconds = timeRemaining.seconds.toString().padStart(2, '0');
+    // const formatTimeRemaining = () => {
+    //   const paddedDay = timeRemaining.days.toString().padStart(2, '0');
+    //   const paddedHours = timeRemaining.hours.toString().padStart(2, '0');
+    //   const paddedMinutes = timeRemaining.minutes.toString().padStart(2, '0');
+    //   const paddedSeconds = timeRemaining.seconds.toString().padStart(2, '0');
 
-      if (timeRemaining.days > 0) {
-        return `${paddedDay}d:${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
-      } else {
-        return `${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
-      }
-    };
+    //   if (timeRemaining.days > 0) {
+    //     return `${paddedDay}d:${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
+    //   } else {
+    //     return `${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
+    //   }
+    // };
 
-    const shouldPulse = timeRemaining.totalSeconds <= 600 && !timeRemaining.isOverdue;
-    return (
-      <Badge
-        variant={variant}
-        color={color}
-        size="xs"
-        className={`text-center w-[32%] ${shouldPulse ? 'animate-pulse' : ''}`}
-      >
-        {formatTimeRemaining()}
-      </Badge>
-    );
+    // const shouldPulse = timeRemaining.totalSeconds <= 600 && !timeRemaining.isOverdue;
+    // return (
+    //   <Badge
+    //     variant={variant}
+    //     color={color}
+    //     size="xs"
+    //     className={`text-center w-[32%] ${shouldPulse ? 'animate-pulse' : ''}`}
+    //   >
+    //     {formatTimeRemaining()}
+    //   </Badge>
+    // );
   };
 
   // AdvanceFilter component now triggers the API call
@@ -438,7 +440,7 @@ export default function CasesView() {
       >
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
-          <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
+          
         </div>
         {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
         <p className="text-sm text-gray-400 leading-relaxed line-clamp-2">{caseItem.caselocAddr}</p>
@@ -451,6 +453,7 @@ export default function CasesView() {
               <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
+          <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
           {/* <div className="flex items-center space-x-2">
             <MessageCircle className="w-3 h-3" />
             <span>{caseItem.comments ?? 0}</span>
