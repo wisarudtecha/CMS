@@ -72,7 +72,7 @@ export default function OfficerDataModal({
                         <div className="space-y-4">
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.personal_title")}</h3>
+                                    <h3 className="font-semibold text-blue-500 dark:text-blue-400">{t("case.officer_detail.personal_title")}</h3>
                                 </div>
 
                                 <div className="space-y-4">
@@ -131,9 +131,9 @@ export default function OfficerDataModal({
                         <div className="flex flex-col h-full">
                             <div className="space-y-4 mb-3">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                    <div className="flex items-center gap-2 mb-3">
-                                            <Truck className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_title")}</h3>
+                                    <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
+                                            <Truck className="w-4 h-4  " />
+                                        <h3 className="font-semibold ">{t("case.officer_detail.service_title")}</h3>
                                     </div>
 
                                     <div className="space-y-3">
@@ -151,9 +151,9 @@ export default function OfficerDataModal({
                             </div>
                             <div className="flex-1 flex flex-col">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1 flex flex-col">
-                                    <div className="flex items-center gap-2 mb-3">
-                                            <Building className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">{t("userform.orgInfo")}</h3>
+                                    <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
+                                            <Building className="w-4 h-4" />
+                                        <h3 className="font-semibold">{t("userform.orgInfo")}</h3>
                                     </div>
 
                                     <div className="flex-1 flex ">

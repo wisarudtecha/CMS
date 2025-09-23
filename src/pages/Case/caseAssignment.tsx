@@ -249,10 +249,10 @@ export default function CasesView() {
       return () => clearInterval(interval);
     }, [createdAt, sla]);
 
-    if (!timeRemaining) {
-      return <Badge variant="solid" size="xs">Loading...</Badge>;
+    
+    if(!timeRemaining||timeRemaining.days>0){
+      return
     }
-
     if (timeRemaining.isOverdue) {
       return (
         <Badge variant="solid" color="error" size="xs" className="text-center animate-pulse">
@@ -265,11 +265,11 @@ export default function CasesView() {
       if (timeRemaining.totalSeconds <= 3600) {
         return { variant: "outline" as const, color: "error" as const };
       } else if (timeRemaining.totalSeconds <= 10800) {
-        return { variant: "outline" as const, color: "warning" as const };
+        return { variant: "outline" as const, color: "error" as const };
       } else if (timeRemaining.totalSeconds <= 21600) {
-        return { variant: "outline" as const, color: "primary" as const };
+        return { variant: "outline" as const, color: "error" as const };
       } else {
-        return { variant: "outline" as const, color: "primary" as const };
+        return { variant: "outline" as const, color: "error" as const };
       }
     };
 

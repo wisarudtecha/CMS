@@ -1,86 +1,92 @@
 // components/progress/ProgressBar.tsx
-import React from 'react';
-import { CheckCircle, Circle } from 'lucide-react';
-import DateStringToDateFormat from '../../date/DateToString';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getTimeDifference, isSlaViolated, ProgressStepPreviewProps } from '../sopStepTranForm';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+    isSlaViolated,
+    ProgressStepPreviewProps,
+} from "../sopStepTranForm";
+import { CompactCountdownTimer } from "@/components/countDownSla/countDownSla";
+import { StepCircle, formatAdjustedDate, TimeBadge, formatDueDate } from "./StepCircleUnit";
 
 
 
-const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
-
-    // Check if a step violated its SLA
-    const { language } = useTranslation();
+const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({
+    progressSteps,
+}) => {
+    const { t } = useTranslation();
+    const currentStepIndex = progressSteps.findIndex((s) => s.current);
+    const currentStep =
+        currentStepIndex >= 0 ? progressSteps[currentStepIndex] : null;
     
     return (
         <div className="mb-4 sm:mb-6 w-full">
-            {/* Mobile Layout: Vertical Stack */}
+            {/* Mobile Layout */}
             <div className="block sm:hidden space-y-3">
                 {progressSteps.map((step, index) => {
                     const isLastStep = index === progressSteps.length - 1;
                     const violated = isSlaViolated(step);
+                    const previousStep = index > 0 ? progressSteps[index - 1] : null;
 
                     return (
-                        <div key={step.id} className="flex items-start space-x-3 relative">
-                            {/* Vertical Line for Mobile */}
+                        <div
+                            key={step.id}
+                            className="flex items-start space-x-3 relative"
+                        >
                             {!isLastStep && (
-                                <div className="absolute left-4 top-8 w-0.5 h-13 bg-gray-300 dark:bg-gray-600 z-0"></div>
+                                <div className="absolute left-4 top-8 w-0.5 h-13 bg-gray-300 dark:bg-gray-600 z-0" />
                             )}
 
-                            {/* Step Circle */}
-                            <div className={`
-                                w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white dark:bg-gray-800 relative z-10 flex-shrink-0
-                                ${step.completed
-                                    ? violated
-                                        ? 'border-red-500 text-red-500'
-                                        : 'border-blue-500 text-blue-500'
-                                    : step.current
-                                        ? violated ? 'border-red-500 text-red-500'
-                                            : 'border-blue-500 text-blue-500'
-                                        : 'border-gray-300 dark:border-gray-600 text-gray-400'
-                                }
-                            `}>
-                                {step.completed ? (
-                                    <CheckCircle className="w-5 h-5" />
-                                ) : (
-                                    <Circle className={`w-3 h-3 ${step.current ? 'fill-current' : ''}`} />
-                                )}
-                            </div>
+                            <StepCircle
+                                completed={step.completed}
+                                current={step.current as boolean}
+                                violated={violated}
+                                step={step}
+                                previousStep={previousStep}
+                            />
 
-                            {/* Content */}
                             <div className="flex-1 min-w-0 pt-1">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                    <div className={`
-                                        text-sm font-medium mb-1
-                                        ${step.completed
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : step.current
-                                                ? 'text-blue-600 dark:text-blue-400'
-                                                : 'text-gray-500 dark:text-gray-400'
-                                        }
-                                    `}>
+                                    <div
+                                        className={`text-sm font-medium mb-1 ${step.completed || step.current
+                                            ? "text-blue-600 dark:text-blue-400"
+                                            : "text-gray-500 dark:text-gray-400"
+                                            }`}
+                                    >
                                         {step.title}
                                     </div>
 
-                                    {/* Time and Duration */}
                                     <div className="flex flex-col space-y-1">
                                         {step.timeline?.completedAt && (
                                             <div className="text-xs text-gray-400 dark:text-gray-500">
-                                                {DateStringToDateFormat(step.timeline.completedAt, true, language)}
+                                                {formatAdjustedDate(step.timeline.completedAt)}
                                             </div>
                                         )}
 
-                                        {/* Time Difference */}
-                                        {index > 0 && progressSteps[index - 1] && step.timeline?.completedAt && (
-                                            (() => {
-                                                const timeDiff = getTimeDifference(progressSteps[index - 1], step);
-                                                return timeDiff && (
-                                                    <div className={`${!violated ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" : "bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium self-start`}>
-                                                        {timeDiff}
+                                        {index > 0 &&
+                                            progressSteps[index - 1] &&
+                                            step.timeline?.completedAt && (
+                                                <TimeBadge
+                                                    from={progressSteps[index - 1]}
+                                                    to={step}
+                                                    violated={violated}
+                                                />
+                                            )}
+
+                                        {step.nextStage &&
+                                            currentStep?.timeline?.completedAt &&
+                                            step.sla ? (
+                                                <>  
+                                                    <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+                                                        {t("case.sop_card.due")}:{" "} {formatDueDate(currentStep.timeline.completedAt, step.sla)}
                                                     </div>
-                                                );
-                                            })()
-                                        )}
+                                                    <CompactCountdownTimer
+                                                        createdAt={currentStep.timeline.completedAt}
+                                                        sla={step.sla}
+                                                        size="sm"
+                                                        className="px-2 py-1 rounded-md text-xs font-medium self-start"
+                                                    />
+                                                </>
+                                            ):null}
                                     </div>
                                 </div>
                             </div>
@@ -89,92 +95,109 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({ progressSteps
                 })}
             </div>
 
-            {/* Desktop Layout: Horizontal */}
-            <div className="hidden sm:flex items-start justify-between relative" style={{ minHeight: '120px' }}>
+            {/* Desktop Layout */}
+            <div
+                className="hidden sm:flex items-start justify-between relative"
+                style={{ minHeight: "120px" }}
+            >
                 {progressSteps.map((step, index) => {
                     const isLastStep = index === progressSteps.length - 1;
                     const nextStep = !isLastStep ? progressSteps[index + 1] : null;
                     const violated = isSlaViolated(step);
+                    const previousStep = index > 0 ? progressSteps[index - 1] : null;
 
-                    // Determine line color for this segment
-                    const shouldShowActiveLine =
+                    const activeLine =
                         (step.completed && nextStep?.completed) ||
                         (step.completed && nextStep?.current) ||
-                        (step.current);
+                        step.current;
 
                     return (
-                        <div key={step.id} className="flex flex-col items-center relative flex-1">
-                            {/* Connecting Line to Next Step */}
-                            {step.current ? (
-                                <div className="absolute flex top-4 left-0 w-full h-0.5 z-0" style={{ transform: 'translateY(-1px)' }}>
-                                    <div className={`
-                                        w-1/2 h-full
-                                        ${shouldShowActiveLine ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}
-                                    `}></div>
-                                    <div className="w-1/2 h-full bg-gray-300 dark:bg-gray-600"></div>
-                                </div>
-                            ) : (
-                                <div className="absolute top-4 left-0 w-full h-0.5 z-0" style={{ transform: 'translateY(-1px)' }}>
-                                    <div className={`
-                                        w-full h-full
-                                        ${shouldShowActiveLine ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}
-                                    `}></div>
-                                </div>
-                            )}
-
-                            {/* Step Circle */}
-                            <div className={`
-                                w-8 h-8 rounded-full flex items-center justify-center border-2 mb-2 bg-white dark:bg-gray-800 relative z-10
-                                ${step.completed
-                                    ? violated
-                                        ? 'border-red-500 text-red-500'
-                                        : 'border-blue-500 text-blue-500'
-                                    : step.current
-                                        ? violated ? 'border-red-500 text-red-500'
-                                            : 'border-blue-500 text-blue-500'
-                                        : 'border-gray-300 dark:border-gray-600 text-gray-400'
-                                }
-                            `}>
-                                {step.completed ? (
-                                    <CheckCircle className="w-5 h-5" />
+                        <div
+                            key={step.id}
+                            className="flex flex-col items-center relative flex-1"
+                        >
+                            {/* Line */}
+                            <div
+                                className="absolute top-4 left-0 w-full h-0.5 z-0 flex"
+                                style={{ transform: "translateY(-1px)" }}
+                            >
+                                {step.current ? (
+                                    <>
+                                        <div
+                                            className={`w-1/2 h-full ${activeLine
+                                                ? "bg-blue-500"
+                                                : "bg-gray-300 dark:bg-gray-600"
+                                                }`}
+                                        />
+                                        <div className="w-1/2 h-full bg-gray-300 dark:bg-gray-600" />
+                                    </>
                                 ) : (
-                                    <Circle className={`w-3 h-3 ${step.current ? 'fill-current' : ''}`} />
+                                    <div
+                                        className={`w-full h-full ${activeLine
+                                            ? "bg-blue-500"
+                                            : "bg-gray-300 dark:bg-gray-600"
+                                            }`}
+                                    />
                                 )}
                             </div>
 
-                            {/* Time Difference Badge - Show time FROM previous step TO current step */}
-                            {index > 0 && progressSteps[index - 1] && step.timeline?.completedAt && (
-                                <div className="absolute top-1 left-0 transform -translate-x-1/2 z-20">
-                                    {(() => {
-                                        const timeDiff = getTimeDifference(progressSteps[index - 1], step);
-                                        return timeDiff && (
-                                            <div className={`${!violated ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300" : "bg-red-100 dark:bg-red-900 border-red-500 text-red-500 dark:text-red-300"} px-2 py-1 rounded text-xs font-medium whitespace-nowrap`}>
-                                                {timeDiff}
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            )}
+                            <StepCircle
+                                completed={step.completed}
+                                current={step.current as boolean}
+                                violated={violated}
+                                step={step}
+                                previousStep={previousStep}
+                            />
 
-                            {/* Step Label and Time */}
+                            {index > 0 &&
+                                progressSteps[index - 1] &&
+                                step.timeline?.completedAt &&
+                                !step.nextStage && (
+                                    <div className="absolute top-1 left-0 transform -translate-x-1/2 z-20">
+                                        <TimeBadge
+                                            from={progressSteps[index - 1]}
+                                            to={step}
+                                            violated={violated}
+                                        />
+                                    </div>
+                                )}
+
+                            {step.nextStage &&
+                                currentStep?.timeline?.completedAt &&
+                                (
+                                    <div className="absolute top-1 left-0 transform -translate-x-1/2 z-20">
+                                        <CompactCountdownTimer
+                                            createdAt={currentStep.timeline.completedAt}
+                                            sla={step.sla}
+                                            size="sm"
+                                        />
+                                    </div>
+                                )}
+
                             <div className="text-center px-1 md:px-2 mt-6">
-                                <div className={`
-                                    text-xs md:text-sm font-medium mb-1 leading-tight
-                                    ${step.completed
-                                        ? 'text-blue-600 dark:text-blue-400'
-                                        : step.current
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : 'text-gray-500 dark:text-gray-400'
-                                    }
-                                `}>
+                                <div
+                                    className={`text-xs md:text-sm font-medium mb-1 leading-tight ${step.completed || step.current
+                                        ? "text-blue-600 dark:text-blue-400"
+                                        : "text-gray-500 dark:text-gray-400"
+                                        }`}
+                                >
                                     {step.title}
                                 </div>
 
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                        {DateStringToDateFormat(step.timeline.completedAt, true, language)}
+                                        {formatAdjustedDate(step.timeline.completedAt)}
                                     </div>
                                 )}
+
+                                {step.nextStage &&
+                                    currentStep?.timeline?.completedAt &&
+                                    step.sla ? (
+                                    <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+                                        {t("case.sop_card.due")}:{" "}
+                                        {formatDueDate(currentStep.timeline.completedAt, step.sla)}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                     );

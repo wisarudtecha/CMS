@@ -156,7 +156,7 @@ export const Comments: React.FC<CommentsProps> = ({
         return commentsData.map((comment: CaseHistory) => (
             <div
                 key={comment.id}
-                className={`p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors duration-150 ${isModal ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
+                className={`p-4 border border-gray-200 dark:border-gray-700  transition-colors duration-150 ${isModal ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
             >
                 <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-semibold text-blue-500 dark:text-blue-400">{comment.createdBy}</p>
