@@ -164,14 +164,14 @@ export default function AssignOfficerModal({
   const unitStatus = useMemo(() => {
     return JSON.parse(localStorage.getItem("unit_status") ?? "[]") as UnitStatus[];
   }, []);
-  const handleAssignOfficers = () => {
+  const handleAssignOfficers = async () => {
     if (selectedOfficers.length === 0 || disableAssign) return;
     setDisableAssign(true);
     try {
       const selectedOfficerObjects = availableOfficers.filter(officer =>
         selectedOfficers.includes(officer.unitId)
       );
-      onAssign(selectedOfficerObjects);
+      await onAssign(selectedOfficerObjects);
     } catch (error) {
       console.error("Failed to assign officers:", error);
     } finally {
