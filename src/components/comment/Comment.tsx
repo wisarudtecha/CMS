@@ -164,7 +164,7 @@ export const Comments: React.FC<CommentsProps> = ({
                         {formatDate(comment.createdAt)}
                     </span>
                 </div>
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{comment.fullMsg}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">{comment.fullMsg}</p>
             </div>
         ));
     };

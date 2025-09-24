@@ -87,8 +87,8 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                 }
-                <div className="">
-                    <div className=" col-span-1 mb-4">
+                <div className="grid grid-cols-2">
+                    <div className=" col-span-1">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <UserPen className="h-4 w-4 mr-2" />
                             <span>{t("case.display.updateBy")}</span>
@@ -98,7 +98,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
 
-                    <div className=" col-span-1 mb-4">
+                    <div className=" col-span-1">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <ClockArrowUp className="h-4 w-4 mr-2" />
                             <span className="text-red-400">{t("case.display.updateAt")}</span>

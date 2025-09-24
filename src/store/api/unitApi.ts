@@ -5,7 +5,7 @@
  */
 import { baseApi } from "@/store/api/baseApi";
 import type { ApiResponse } from "@/types";
-import type { Unit, UnitQueryParams, UnitUpdateData } from "@/types/unit";
+import type { Unit, UnitQueryParams, UnitStatus, UnitUpdateData } from "@/types/unit";
 
 export const unitApi = baseApi.injectEndpoints({
   endpoints: builder => ({
@@ -52,6 +52,15 @@ export const unitApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { id }) => [{ type: "Unit", id }],
     }),
+
+    getUnitStatus: builder.query<ApiResponse<UnitStatus>, { start: number; length: number }>({
+      query: ({ start, length }) => ({
+        url: `/mdm/status`,
+        method: "GET",
+        params: { start, length },
+      }),
+      providesTags: ["Unit"],
+    }),
   }),
 });
 
@@ -60,5 +69,6 @@ export const {
   useDeleteUnitsMutation,
   useGetUnitsByIdQuery,
   useGetUnitsQuery,
-  useUpdateUnitsMutation
+  useUpdateUnitsMutation,
+  useGetUnitStatusQuery
 } = unitApi;

@@ -4,6 +4,7 @@ import { customerApi } from "@/store/api/custommerApi";
 import { formApi } from "@/store/api/formApi";
 import { CaseTypeSubType } from "../../interface/CaseType";
 import { areaApi } from "@/store/api/area";
+import { unitApi } from "@/store/api/unitApi";
 
 
 export const useFetchCustomers = async () => {
@@ -11,6 +12,14 @@ export const useFetchCustomers = async () => {
     customerApi.endpoints.getCustommers.initiate({ start: 0, length: 100 })
   );
   localStorage.setItem("customer_data", JSON.stringify(customerDataResult.data?.data))
+
+};
+
+export const useFetchUnitStatus = async () => {
+  const unitStatusDataResult = await store.dispatch(
+    unitApi.endpoints.getUnitStatus.initiate({ start: 0, length: 100 })
+  );
+  localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data))
 
 };
 
@@ -87,5 +96,6 @@ export const caseApiSetup = async () => {
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();
   // await useFetchSubTypeAllForm();
+  await useFetchUnitStatus();
   await useFetchArea();
 }

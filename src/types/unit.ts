@@ -136,3 +136,14 @@ export type UnitUpdateData = Omit<Unit, keyof BaseEntity>;
 
 export type ViewMode = "overview" | "hierarchy" | "performance" | "matrix";
 export type DisplayMode = "cards" | "table";
+
+
+export interface UnitStatus {
+  id: string;
+  sttId: string;
+  sttName: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}

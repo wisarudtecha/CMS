@@ -200,6 +200,7 @@ export interface Unit {
     plateNo: string;
     provinceCode: string;
     active: boolean;
+    photo:string;
     username: string;
     isLogin: boolean;
     isFreeze: boolean;

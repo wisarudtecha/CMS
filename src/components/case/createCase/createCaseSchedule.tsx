@@ -316,7 +316,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                     value={caseState?.area ? mergeArea(caseState.area, language) : ""}
                     onChange={handleSetArea}
                     placeholder={t("case.display.select_service_center")}
-                    className="2xsm:m-3 w-full"
+                    className="2xsm:m-3 sm:w-full"
                 />
             </div>
             <CustomerInput

@@ -9,10 +9,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
 import { CaseSop, Unit, useGetUnitQuery } from "@/store/api/dispatch"
-import { unitStatus } from "../ui/status/status"
 import { Area, mergeArea } from "@/store/api/area"
-import SkillModal from "./officerSkillModal"
+import OfficerDetailModal from "./officerSkillModal"
 import { useTranslation } from "@/hooks/useTranslation"
+import { UnitStatus } from "@/types/unit"
+import { unitStatusConfig } from "../ui/status/status"
 
 const SkillsDisplay = ({
   skills,
@@ -33,7 +34,6 @@ const SkillsDisplay = ({
 
   const visibleSkills = expanded ? skills : skills.slice(0, maxInitialItems)
   const remainingCount = skills.length - maxInitialItems
-
   return (
     <div className={`space-y-1 w-full ${className}`}>
       <div className="flex flex-wrap gap-1 items-center justify-start">
@@ -135,7 +135,7 @@ interface AssignOfficerModalProps {
   open: boolean
   onOpenChange: (isOpen: boolean) => void
   caseId: string
-  onAssign: (selectedOfficers: Unit[]) => void // Changed from string[] to Unit[]
+  onAssign: (selectedOfficers: Unit[]) => void
   assignedOfficers?: Unit[]
   canDispatch?: boolean
   caseData: CaseSop | undefined
@@ -147,12 +147,12 @@ type SortableColumns = keyof Omit<Unit, "id">
 export default function AssignOfficerModal({
   open,
   onOpenChange,
-  caseId, // Changed prop
+  caseId,
   onAssign,
   caseData,
   assignedOfficers = [],
   canDispatch = true,
-  sopUnitLists = [], // New prop to filter assigned units
+  sopUnitLists = [],
 }: AssignOfficerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
@@ -161,28 +161,29 @@ export default function AssignOfficerModal({
   const [showModel, setShowModel] = useState(false)
   const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
-  
-  const handleAssignOfficers = async () => {
+  const unitStatus = useMemo(() => {
+    return JSON.parse(localStorage.getItem("unit_status") ?? "[]") as UnitStatus[];
+  }, []);
+  const handleAssignOfficers = () => {
     if (selectedOfficers.length === 0 || disableAssign) return;
     setDisableAssign(true);
     try {
-      // Pass full officer objects instead of just IDs
       const selectedOfficerObjects = availableOfficers.filter(officer =>
         selectedOfficers.includes(officer.unitId)
       );
-      await onAssign(selectedOfficerObjects); // Pass objects instead of IDs
+      onAssign(selectedOfficerObjects);
     } catch (error) {
       console.error("Failed to assign officers:", error);
     } finally {
       setDisableAssign(false);
     }
   };
-  
-  // Fetch units inside the modal
+
+
   const { data: unitData, isLoading: isLoadingUnits, error: unitError } = useGetUnitQuery(
     { caseId },
     {
-      skip: !open || !caseId, // Only fetch when modal is open and caseId exists
+      skip: !open || !caseId,
       refetchOnMountOrArgChange: true
     }
   )
@@ -191,7 +192,6 @@ export default function AssignOfficerModal({
     JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
   );
 
-  // Filter out already assigned officers
   const availableOfficers = useMemo(() => {
     if (!unitData?.data) return []
 
@@ -202,13 +202,11 @@ export default function AssignOfficerModal({
     })
   }, [unitData?.data, sopUnitLists])
 
-  // Reset selection when modal opens and set initial assigned officers
   useEffect(() => {
     if (open) {
       const assignedIds = assignedOfficers.map((o) => o.unitId)
       setSelectedOfficers(assignedIds)
     } else {
-      // Reset when modal closes
       setSelectedOfficers([])
       setSearchTerm("")
     }
@@ -220,7 +218,7 @@ export default function AssignOfficerModal({
     { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
   ]
 
-  // Filter officers based on search term
+
   const filteredOfficers = useMemo(() => {
     if (!searchTerm.trim()) return availableOfficers
     const searchLower = searchTerm.toLowerCase()
@@ -232,7 +230,7 @@ export default function AssignOfficerModal({
 
   const { t, language } = useTranslation();
 
-  // Sort the filtered officers
+
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
       const aValue = a[sortColumn]
@@ -244,7 +242,7 @@ export default function AssignOfficerModal({
     [filteredOfficers, sortColumn, sortDirection]
   )
 
-  // Handle individual officer selection
+
   const handleSelectOfficer = (officerId: string) => {
     setSelectedOfficers((prev) => {
       const isSelected = prev.includes(officerId)
@@ -256,26 +254,23 @@ export default function AssignOfficerModal({
     })
   }
 
-  // Check if all filtered officers are selected
+
   const isAllFilteredSelected = useMemo(() => {
     if (filteredOfficers.length === 0) return false
     return filteredOfficers.every(officer => selectedOfficers.includes(officer.unitId))
   }, [filteredOfficers, selectedOfficers])
 
-  // Check if some (but not all) filtered officers are selected
   const isSomeFilteredSelected = useMemo(() => {
     if (filteredOfficers.length === 0) return false
     return filteredOfficers.some(officer => selectedOfficers.includes(officer.unitId)) && !isAllFilteredSelected
   }, [filteredOfficers, selectedOfficers, isAllFilteredSelected])
 
-  // Handle "select all" checkbox for filtered officers
+
   const handleSelectAll = () => {
     const filteredIds = filteredOfficers.map(officer => officer.unitId)
     if (isAllFilteredSelected) {
-      // Unselect all filtered officers
       setSelectedOfficers(prev => prev.filter(id => !filteredIds.includes(id)))
     } else {
-      // Select all filtered officers (keep existing selections from other filters)
       setSelectedOfficers(prev => {
         const newSelections = new Set([...prev, ...filteredIds])
         return Array.from(newSelections)
@@ -285,16 +280,14 @@ export default function AssignOfficerModal({
 
 
 
-  // Get selected officer objects for display
   const selectedOfficerObjects = useMemo(() => {
     return availableOfficers.filter(officer => selectedOfficers.includes(officer.unitId))
   }, [availableOfficers, selectedOfficers])
 
-  // Loading state
   if (isLoadingUnits) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
+        <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
               {t("case.assign_officer_modal.title")}
@@ -311,11 +304,10 @@ export default function AssignOfficerModal({
     )
   }
 
-  // Error state
   if (unitError) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
+        <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
               {t("case.assign_officer_modal.title")}
@@ -336,13 +328,13 @@ export default function AssignOfficerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="modal-desc" className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
+      <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-7xl w-[95vw] h-[85vh] flex flex-col z-999999 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-white">
             {t("case.assign_officer_modal.title")}
           </DialogTitle>
         </DialogHeader>
-        <SkillModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
+        <OfficerDetailModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
 
         {/* Search Bar and Buttons */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
@@ -432,12 +424,16 @@ export default function AssignOfficerModal({
                             </div>
                             <div
                               className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
-                              onClick={() => setShowOFFicerData(officer)}
+                              onClick={() => {
+                                setShowOFFicerData(officer)
+                                setShowModel(true)}
+                              }
                             >
-                              <div className="flex items-center space-x-2 justify-center">
+                              <div className="flex items-center mx-4 space-x-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
-                                    {officer.username
+                                    {officer.photo?
+                                    <img src={officer.photo} alt="officer" className="w-full h-full object-cover" />:officer.unitName
                                       .split(" ")
                                       .map((n) => n[0])
                                       .join("")
@@ -445,12 +441,12 @@ export default function AssignOfficerModal({
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-gray-800 dark:text-white font-medium">
-                                  {officer.username}
+                                  {officer.unitName}
                                 </span>
                               </div>
                               <div className="flex items-center justify-center">
                                 {(() => {
-                                  const status = unitStatus.find(column => column.group.includes(officer.sttId));
+                                  const status = unitStatusConfig.find(column => column.group.includes(officer.sttId));
                                   return (
                                     <div className=" flex items-center ">
                                       <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
@@ -459,7 +455,7 @@ export default function AssignOfficerModal({
                                         color={status?.color || "secondary"}
                                         variant={status?.variant || "light"}
                                       >
-                                        {status?.title || "-"}
+                                        {unitStatus.find(column => column.sttId.includes(officer.sttId))?.sttName || "-"}
                                       </Badge>
                                     </div>
                                   );

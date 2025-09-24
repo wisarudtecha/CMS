@@ -35,7 +35,7 @@ export interface CaseStatusInterface {
 
 export const closeStatus =["S007", "S016", "S017", "S018"]
 
-export const unitStatus = [
+export const unitStatusConfig = [
   { 
     title: "ไม่พร้อมปฏิบัติการ", 
     group: ["000"], 
