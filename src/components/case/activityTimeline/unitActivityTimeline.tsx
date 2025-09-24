@@ -17,13 +17,13 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
 
     const formatDuration = (hours: number) => {
         if (hours < 1) {
-            const minutes = Math.round(hours * 60);
+            const minutes = Math.floor(hours * 60);
             return `${minutes} ${t("time.Minutes")}`;
         } else if (hours < 24) {
-            return `${Math.round(hours * 10) / 10} ${t("time.Hours")}`;
+            return `${Math.floor(hours * 10) / 10} ${t("time.Hours")}`;
         } else {
             const days = Math.floor(hours / 24);
-            const remainingHours = Math.round(((hours % 24) * 10) / 10);
+            const remainingHours = Math.floor(((hours % 24) * 10) / 10);
             return `${days}${t("time.Days")} ${remainingHours}${t("time.Hours")}`;
         }
     };

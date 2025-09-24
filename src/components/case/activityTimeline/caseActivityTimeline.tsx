@@ -45,7 +45,7 @@ const StepCircle: React.FC<{
             : "border-gray-300 dark:border-gray-600 text-gray-400";
 
     const calculateSlaPerformance = () => {
-        if (!step.sla || (!completed && !current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt ) {
+        if (!step.sla || (!completed && !current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt) {
             return null;
         }
 
@@ -54,10 +54,10 @@ const StepCircle: React.FC<{
         const actualDurationMs = endTime - startTime;
         const actualDurationHours = actualDurationMs / (1000 * 60 * 60);
         const slaDurationHours = step.sla;
-        
+
         const difference = actualDurationHours - slaDurationHours;
         const isOverdue = difference > 0;
-        
+
         return {
             actualDuration: actualDurationHours,
             slaDuration: slaDurationHours,
@@ -70,13 +70,14 @@ const StepCircle: React.FC<{
 
     const formatDuration = (hours: number) => {
         if (hours < 1) {
-            const minutes = Math.round(hours * 60);
+            const minutes = Math.floor(hours * 60 * 10) / 10;
             return `${minutes} ${t("time.Minutes")}`;
         } else if (hours < 24) {
-            return `${Math.round(hours * 10) / 10} ${t("time.Hours")}`;
+            const exactHours = Math.floor(hours * 10) / 10;
+            return `${exactHours} ${t("time.Hours")}`;
         } else {
             const days = Math.floor(hours / 24);
-            const remainingHours = Math.round((hours % 24) * 10) / 10;
+            const remainingHours = Math.floor((hours % 24) * 10) / 10;
             return `${days} ${t("time.Days")} ${remainingHours} ${t("time.Hours")}`;
         }
     };
@@ -96,7 +97,7 @@ const StepCircle: React.FC<{
                             {t("progress.actual")}: {formatDuration(slaPerformance.actualDuration)}
                         </div>
                         <div className={`font-medium ${slaPerformance.isOverdue ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                            {slaPerformance.isOverdue 
+                            {slaPerformance.isOverdue
                                 ? `${t("progress.overdue_by")}: ${formatDuration(slaPerformance.difference)}`
                                 : `${t("progress.faster_by")}: ${formatDuration(slaPerformance.difference)}`
                             }
@@ -135,7 +136,7 @@ const StepCircle: React.FC<{
     };
 
     return (
-        <div 
+        <div
             className="relative inline-block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -147,7 +148,7 @@ const StepCircle: React.FC<{
                     <Circle className={`w-3 h-3 ${current ? "fill-current" : ""}`} />
                 )}
             </div>
-            
+
             {isHovered && (
                 <div className="absolute z-50 bottom-1/2 left-1/2 transform  mb-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg whitespace-nowrap">
                     {renderTooltipContent()}
@@ -185,7 +186,7 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({
     const currentStepIndex = progressSteps.findIndex((s) => s.current);
     const currentStep =
         currentStepIndex >= 0 ? progressSteps[currentStepIndex] : null;
-    
+
     return (
         <div className="mb-4 sm:mb-6 w-full">
             {/* Mobile Layout */}
@@ -243,18 +244,18 @@ const ProgressStepPreview: React.FC<ProgressStepPreviewProps> = ({
                                         {step.nextStage &&
                                             currentStep?.timeline?.completedAt &&
                                             step.sla ? (
-                                                <>  
-                                                    <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                                                        {t("case.sop_card.due")}:{" "} {formatDueDate(currentStep.timeline.completedAt, step.sla)}
-                                                    </div>
-                                                    <CompactCountdownTimer
-                                                        createdAt={currentStep.timeline.completedAt}
-                                                        sla={step.sla}
-                                                        size="sm"
-                                                        className="px-2 py-1 rounded-md text-xs font-medium self-start"
-                                                    />
-                                                </>
-                                            ):null}
+                                            <>
+                                                <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+                                                    {t("case.sop_card.due")}:{" "} {formatDueDate(currentStep.timeline.completedAt, step.sla)}
+                                                </div>
+                                                <CompactCountdownTimer
+                                                    createdAt={currentStep.timeline.completedAt}
+                                                    sla={step.sla}
+                                                    size="sm"
+                                                    className="px-2 py-1 rounded-md text-xs font-medium self-start"
+                                                />
+                                            </>
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
