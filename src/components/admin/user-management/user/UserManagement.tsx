@@ -14,6 +14,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
 import { isValidImageUrl } from "@/utils/resourceValidators";
+// import { isEnglish } from "@/utils/stringFormatters";
 // import type { CrudConfig } from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Role } from "@/types/role";
@@ -142,6 +143,11 @@ const UserManagementComponent: React.FC<{
         label: "User",
         sortable: true,
         render: (userItem: UserProfile) => {
+          // let name = `${userItem.firstName[0]}${userItem.lastName[0]}`;
+          // if (!isEnglish(name)) {
+          //   const tmpName = userItem.email.split(".");
+          //   name = `${tmpName[0][0]}${tmpName[1][0]}`;
+          // }
           return (
             <div
               className={`flex items-center gap-3`}
@@ -153,7 +159,10 @@ const UserManagementComponent: React.FC<{
                 </div>
               ) : (
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-2xl">
-                  <span className="w-20 text-center capitalize">{userItem.firstName[0]}{userItem.lastName[0]}</span>
+                  <span className="w-20 text-center uppercase">
+                    {userItem.firstName[0]}{userItem.lastName[0]}
+                    {/* {name} */}
+                  </span>
                 </div>
               )}
               <div>

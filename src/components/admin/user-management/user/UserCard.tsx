@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CheckLineIcon, CloseLineIcon } from "@/icons";
 import { formatLastLogin } from "@/utils/crud";
 import { isValidImageUrl, isValidImageUrlByContentType } from "@/utils/resourceValidators";
+// import { isEnglish } from "@/utils/stringFormatters";
 import type { Role } from "@/types/role";
 import type { UserProfile } from "@/types/user";
 
@@ -16,15 +17,25 @@ const UserCardContent: React.FC<{
   const Icon = statusConfig.icon;
 
   const [photo, setPhoto] = useState<string | null>(null);
+  // const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     const checkImageValidity = async () => {
       if (user.photo && (isValidImageUrl(user.photo) || await isValidImageUrlByContentType(user.photo))) {
         setPhoto(user.photo);
       }
+      // else if (user.firstName[0] && user.lastName[0]) {
+      //   if (isEnglish(`${user.firstName[0]}${user.lastName[0]}`)) {
+      //     setName(`${user.firstName[0]}${user.lastName[0]}`);
+      //   }
+      //   else {
+      //     const tmpName = user.email.split(".");
+      //     setName(`${tmpName[0][0]}${tmpName[1][0]}`);
+      //   }
+      // }
     };
     checkImageValidity();
-  }, [user.photo]);
+  }, [user.photo, user.firstName, user.lastName, user.email]);
 
   return (
     <>
@@ -39,7 +50,10 @@ const UserCardContent: React.FC<{
             </div>
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-2xl">
-              <span className="w-20 text-center capitalize">{user.firstName[0]}{user.lastName[0]}</span>
+              <span className="w-20 text-center uppercase">
+                {user.firstName[0]}{user.lastName[0]}
+                {/* {name} */}
+              </span>
             </div>
           )}
           <div className="min-w-0 flex-1">

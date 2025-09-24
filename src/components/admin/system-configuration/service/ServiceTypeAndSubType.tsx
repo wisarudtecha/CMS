@@ -2,16 +2,20 @@
 import React, { useEffect, useState } from "react";
 import { Folder, Plus, RefreshCw } from "lucide-react";
 import { FolderIcon, ListIcon } from "@/icons";
-import ServiceHierarchyContent from "@/components/admin/system-configuration/service/ServiceHierarchyView";
+import ServiceHierarchyView from "@/components/admin/system-configuration/service/ServiceHierarchyView";
 // import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 // import Select from "@/components/form/Select";
-import type { CaseTypeManagementProps, EnhancedCaseSubType, EnhancedCaseType } from "@/types/case";
+import type {
+  CaseTypeManagementProps,
+  EnhancedCaseSubType,
+  // EnhancedCaseType
+} from "@/types/case";
 
 const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
-  analytics,
+  // analytics,
   caseSubTypes,
-  caseTypes,
+  // caseTypes,
   className,
   filteredTypes,
   searchQuery,
@@ -19,13 +23,15 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
 }) => {
   // State management
   const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
-  const [, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
+  // const [, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
   // const [searchQuery, setSearchQuery] = useState("");
   // const [filterCategory, setFilterCategory] = useState<string>("all");
   // const [showInactive, setShowInactive] = useState(false);
   const [showInactive, ] = useState(false);
-  const [viewMode, setViewMode] = useState<"hierarchy" | "list" | "analytics">("hierarchy");
-  const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"hierarchy" | "list">("hierarchy");
+  // const [viewMode, setViewMode] = useState<"hierarchy" | "list" | "analytics">("hierarchy");
+  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, ] = useState(false);
 
   // Modals and dialogs
   const [, setShowCreateTypeModal] = useState(false);
@@ -40,13 +46,14 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
 
   // Render functions
   const renderTypeHierarchy = () => (
-    <ServiceHierarchyContent
-      analytics={analytics || {}}
+    <ServiceHierarchyView
+      // analytics={analytics || {}}
       caseSubTypes={caseSubType || []}
-      filteredTypes={filteredTypes || []}
+      caseTypes={filteredTypes || []}
+      // filteredTypes={filteredTypes || []}
       showInactive={showInactive}
-      setCaseTypes={setCaseType}
-      setIsLoading={setIsLoading}
+      // setCaseTypes={setCaseType}
+      // setIsLoading={setIsLoading}
     />
   );
 
@@ -132,7 +139,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       )}
 
       {/* Content */}
-      {!isLoading && (
+      {!isLoading && filteredTypes?.length !== 0 && (
         <>
           {viewMode === "hierarchy" && renderTypeHierarchy()}
           {viewMode === "list" && (
@@ -147,10 +154,10 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       {!isLoading && filteredTypes?.length === 0 && (
         <div className="text-center py-12">
           <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
             No case types found
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-gray-500 dark:text-gray-400 mb-4 cursor-default">
             {searchQuery ? "Try adjusting your search criteria" : "Get started by creating your first case type"}
           </p>
           <button

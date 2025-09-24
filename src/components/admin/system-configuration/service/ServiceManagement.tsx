@@ -1,9 +1,9 @@
-// /src/components/case/CaseManagement.tsx
+// /src/components/admin/system-configuration/service/ServiceManagement.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import ServiceAnalyticsContent from "@/components/admin/system-configuration/service/ServiceAnalytic";
-import ServiceTypeAndSubType from "@/components/admin/system-configuration/service/ServiceTypeAndSubType";
-import Tab from "@/components/ui/tab/Tab";
-import type { TabItem } from "@/components/ui/tab/Tab";
+// import ServiceAnalyticsContent from "@/components/admin/system-configuration/service/ServiceAnalytic";
+import ServiceTypeAndSubTypeComponent from "@/components/admin/system-configuration/service/ServiceTypeAndSubType";
+// import Tab from "@/components/ui/tab/Tab";
+// import type { TabItem } from "@/components/ui/tab/Tab";
 import type { CaseTypeManagementProps, EnhancedCaseSubType, EnhancedCaseType, TypeAnalytics } from "@/types/case";
 
 const mockAnalytics: Record<string, TypeAnalytics> = {
@@ -64,28 +64,28 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({ caseSub
     return filtered.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   }, [caseType, searchQuery, filterCategory, showInactive]);
 
-  const tabItem: TabItem[] = [
-    {
-      id: "typesAndSubTypes",
-      label: "Types & Sub-Types",
-      content: <ServiceTypeAndSubType
-        analytics={mockAnalytics}
-        caseSubTypes={caseSubType}
-        caseTypes={caseType}
-        filteredTypes={filteredTypes}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-    },
-    {
-      id: "analytics",
-      label: "Analytics",
-      content: <ServiceAnalyticsContent
-        // analytics={mockAnalytics}
-        // filteredTypes={filteredTypes}
-      />
-    },
-  ];
+  // const tabItem: TabItem[] = [
+  //   {
+  //     id: "typesAndSubTypes",
+  //     label: "Types & Sub-Types",
+  //     content: <ServiceTypeAndSubType
+  //       analytics={mockAnalytics}
+  //       caseSubTypes={caseSubType}
+  //       caseTypes={caseType}
+  //       filteredTypes={filteredTypes}
+  //       searchQuery={searchQuery}
+  //       setSearchQuery={setSearchQuery}
+  //     />
+  //   },
+  //   {
+  //     id: "analytics",
+  //     label: "Analytics",
+  //     content: <ServiceAnalyticsContent
+  //       // analytics={mockAnalytics}
+  //       // filteredTypes={filteredTypes}
+  //     />
+  //   },
+  // ];
 
   useEffect(() => {
     setCaseSubType(caseSubTypes || []);
@@ -98,7 +98,16 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({ caseSub
   return (
     <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
       <div className={`mx-auto w-full ${className}`}>
-        <Tab items={tabItem} variant="underline" />
+        <ServiceTypeAndSubTypeComponent
+          analytics={mockAnalytics}
+          caseSubTypes={caseSubType}
+          caseTypes={caseType}
+          filteredTypes={filteredTypes}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+
+        {/* <Tab items={tabItem} variant="underline" /> */}
       </div>
     </div>
   );

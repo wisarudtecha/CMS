@@ -22,7 +22,7 @@ import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi";
 import type { EnhancedCaseSubType, EnhancedCaseType } from "@/types/case";
-import CaseManagementComponent from "@/components/admin/system-configuration/service/ServiceManagement"; 
+import ServiceManagementComponent from "@/components/admin/system-configuration/service/ServiceManagement"; 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
@@ -46,7 +46,7 @@ const CaseManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["service.view"]}>
         <PageBreadcrumb pageTitle="Service Management" />
 
-        <CaseManagementComponent caseSubTypes={caseSubTypes} caseTypes={caseTypes} />
+        <ServiceManagementComponent caseSubTypes={caseSubTypes} caseTypes={caseTypes} />
       </ProtectedRoute>
     </>
   );

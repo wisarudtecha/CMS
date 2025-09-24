@@ -30,7 +30,6 @@ const ServiceAnalyticsContent: React.FC
     //   {filteredTypes.map((type) => {
     //     const analytic = analytics[type.typeId];
     //     if (!analytic) return null;
-        
     //     return (
     //       <div key={type.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
     //         <div className="flex items-center justify-between mb-4">
@@ -43,30 +42,25 @@ const ServiceAnalyticsContent: React.FC
     //             style={{ backgroundColor: type.color }}
     //           />
     //         </div>
-            
     //         <div className="space-y-4">
     //           <div className="flex justify-between">
     //             <span className="text-sm text-gray-500 dark:text-gray-400">Usage Count</span>
     //             <span className="font-medium text-gray-600 dark:text-gray-300">{analytic.usageCount}</span>
-    //           </div>
-              
+    //           </div>           
     //           <div className="flex justify-between">
     //             <span className="text-sm text-gray-500 dark:text-gray-400">Avg Resolution</span>
     //             <span className="font-medium text-gray-600 dark:text-gray-300">{analytic.averageResolutionTime}min</span>
     //           </div>
-              
     //           <div className="flex justify-between">
     //             <span className="text-sm text-gray-500 dark:text-gray-400">SLA Compliance</span>
     //             <span className={`font-medium ${analytic.slaCompliance >= 95 ? "text-green-600 dark:text-green-300" : "text-orange-600 dark:text-orange-300"}`}>
     //               {analytic.slaCompliance}%
     //             </span>
-    //           </div>
-              
+    //           </div> 
     //           <div className="flex justify-between">
     //             <span className="text-sm text-gray-500 dark:text-gray-400">Efficiency</span>
     //             <span className="font-medium text-gray-600 dark:text-gray-300">{analytic.efficiency}%</span>
     //           </div>
-              
     //           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
     //             <div className="text-xs text-gray-500 dark:text-gray-400">
     //               Last used: {new Date(analytic.lastUsed).toLocaleDateString()}

@@ -26,6 +26,22 @@ export const formatAddress = (address: Address): string => {
   return parts.filter(Boolean).join(", ");
 }
 
+export const isEnglish = (text: string): boolean => {
+  if (!text || text.trim().length === 0) {
+    return false;
+  }
+  // Remove numbers, spaces, and common punctuation
+  const cleanText = text.replace(/[0-9\s.,!?;:'"()-]/g, "");
+  if (cleanText.length === 0) {
+    return true; // Only numbers and punctuation, assume English
+  }
+  // Check if the text contains mostly Latin characters (A-Z, a-z)
+  const englishCharacters = cleanText.match(/[A-Za-z]/g);
+  const englishRatio = englishCharacters ? englishCharacters.length / cleanText.length : 0;
+  // Consider it English if 80% or more characters are Latin
+  return englishRatio >= 0.8;
+};
+
 export const isValidJsonString = (str: string): boolean => {
   try {
     const parsed = JSON.parse(str);

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { getTranslations, Language, loadTranslations } from "@/config/i18n";
 import { DropdownOption } from "@/types";
-import { OrgStructureItem } from "@/types/organization";
+import { Organization } from "@/types/organization";
 import { UserFormData } from "@/types/user";
 import { APP_CONFIG } from "@/utils/constants";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -96,7 +96,7 @@ const UserForm: React.FC = () => {
   const [citizenIdDisplay, setCitizenIdDisplay] = useState("");
 
   const [rolesData, setRolesData] = useState<DropdownOption[]>([]);
-  const [orgStructureData, setOrgStructureData] = useState<OrgStructureItem[]>([]);
+  const [orgStructureData, setOrgStructureData] = useState<Organization[]>([]);
 
   const isEdit = Boolean(id && location.pathname.includes("/edit"));
   const isView = Boolean(id && !isEdit);

@@ -20,8 +20,8 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-// import { useGetListCaseQuery } from "@/store/api/caseApi";
-// import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
+import { useGetDepartmentsQuery, useGetCommandsQuery, useGetStationsQuery, useGetOrganizationsQuery } from "@/store/api/organizationApi";
+import type { Department, Command, Station, Organization } from "@/types/organization";
 import OrganizationManagementComponent from "@/components/admin/user-management/organization/OrganizationManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -30,14 +30,17 @@ const OrganizationManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  // const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
-  // const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
+  const { data: departmentsData } = useGetDepartmentsQuery({ start: 0, length: 100 });
+  const departments = departmentsData?.data as unknown as Department[] || [];
 
-  // const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
-  // const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
+  const { data: commandsData } = useGetCommandsQuery({ start: 0, length: 1000 });
+  const commands = commandsData?.data as unknown as Command[] || [];
 
-  // const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
-  // const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+  const { data: stationsData } = useGetStationsQuery({ start: 0, length: 10000 });
+  const stations = stationsData?.data as unknown as Station[] || [];
+
+  const { data: organizationsData } = useGetOrganizationsQuery(null);
+  const organizations = organizationsData?.data as unknown as Organization[] || [];
 
   return (
     <>
@@ -49,7 +52,12 @@ const OrganizationManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["organization.view"]}>
         <PageBreadcrumb pageTitle="Organization Management" />
 
-        <OrganizationManagementComponent />
+        <OrganizationManagementComponent
+          departments={departments}
+          commands={commands}
+          stations={stations}
+          organizations={organizations}
+        />
       </ProtectedRoute>
     </>
   );
