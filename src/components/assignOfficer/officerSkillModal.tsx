@@ -7,14 +7,12 @@ import { useMemo } from "react"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building } from "lucide-react"
 
 interface CreateSubCaseModel {
-    open: boolean
     officer: Unit
     onOpenChange: (isOpen: boolean) => void
 }
 
 export default function OfficerDetailModal({
     officer,
-    open,
     onOpenChange,
 }: CreateSubCaseModel) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer?.username })
@@ -28,13 +26,13 @@ export default function OfficerDetailModal({
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
-                <DialogContent aria-describedby="" className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
+                <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] z-1000001 rounded-lg shadow-2xl overflow-y-auto custom-scrollbar flex flex-col">
                     <DialogHeader>
                         <DialogTitle hidden={true}>
 
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="flex items-center justify-center py-20">
+                    <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                             <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading officer data...</p>
@@ -45,8 +43,8 @@ export default function OfficerDetailModal({
         )
     }
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-1000001 rounded-lg shadow-2xl">
+        <Dialog open={!!officer} onOpenChange={onOpenChange}>
+            <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-1000001 rounded-lg shadow-2xl">
                 <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
                     <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
                         {t("case.officer_detail.personal_title")}
@@ -64,7 +62,7 @@ export default function OfficerDetailModal({
                                 <div className="space-y-4">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -74,10 +72,10 @@ export default function OfficerDetailModal({
                                             }
                                         </p>
                                     </div>
-                                    
+
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
+                                            <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
                                             {officer?.username || "N/A"}
@@ -95,7 +93,7 @@ export default function OfficerDetailModal({
 
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -118,14 +116,14 @@ export default function OfficerDetailModal({
                             <div className="space-y-4 mb-3">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                     <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                            <Truck className="w-4 h-4  " />
+                                        <Truck className="w-4 h-4  " />
                                         <h3 className="font-semibold ">{t("case.officer_detail.service_title")}</h3>
                                     </div>
 
                                     <div className="space-y-3">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                    <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                                 <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
                                             </div>
                                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -138,7 +136,7 @@ export default function OfficerDetailModal({
                             <div className="flex-1 flex flex-col">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1 flex flex-col">
                                     <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                            <Building className="w-4 h-4" />
+                                        <Building className="w-4 h-4" />
                                         <h3 className="font-semibold">{t("userform.orgInfo")}</h3>
                                     </div>
 

@@ -158,7 +158,6 @@ export default function AssignOfficerModal({
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
   const [sortColumn] = useState<SortableColumns>("locAlt")
   const [sortDirection] = useState<"asc" | "desc">("asc")
-  const [showModel, setShowModel] = useState(false)
   const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
   const unitStatus = useMemo(() => {
@@ -334,7 +333,7 @@ export default function AssignOfficerModal({
             {t("case.assign_officer_modal.title")}
           </DialogTitle>
         </DialogHeader>
-        <OfficerDetailModal open={showModel} onOpenChange={setShowModel} officer={showOfficerData as Unit} />
+        {showOfficerData&& <OfficerDetailModal onOpenChange={()=>setShowOFFicerData(null)} officer={showOfficerData as Unit} />}
 
         {/* Search Bar and Buttons */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
@@ -425,8 +424,7 @@ export default function AssignOfficerModal({
                             <div
                               className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => {
-                                setShowOFFicerData(officer)
-                                setShowModel(true)}
+                                setShowOFFicerData(officer)}
                               }
                             >
                               <div className="flex items-center mx-4 space-x-2">
