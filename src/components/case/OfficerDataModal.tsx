@@ -2,15 +2,12 @@ import { UnitWithSop } from "@/store/api/dispatch"
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dialog"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import ProgressStepPreviewUnit from "./activityTimeline/unitActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
-import Button from "../ui/button/Button"
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
-import { closeStatus } from "../ui/status/status"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -32,12 +29,6 @@ export default function OfficerDataModal({
     const userStation = deptComStn.find((items) => {
         return items.commId === userData?.data?.commId && items.stnId === userData?.data?.stnId && items.deptId === userData.data.deptId;
     });
-    const [closeValue, setCloseValue] = useState<string>("")
-    const closeCaseOption = ["แก้ไขเสร็จสิ้น", "เปลี่ยนอุปกรณ์เสร์จสิ้น"]
-    const isCloseStage = closeStatus.find(status => status === officer?.Sop?.statusId);
-    const handleCloseCaseChange = (value: string) => {
-        setCloseValue(value)
-    }
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
@@ -205,40 +196,7 @@ export default function OfficerDataModal({
                     </div>
                 </div>
 
-                <div className="rounded-2xl">
-                    <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                        <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
-                        <div className="">
-                            <SearchableSelect
-                                options={closeCaseOption}
-                                value={closeValue}
-                                onChange={handleCloseCaseChange}
-                                placeholder={t("case.display.result_placeholder")}
-                                className="  mb-2 items-center"
-                            />
-
-                            <div className="">
-                                {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
-                                <textarea
-                                    readOnly={true}
-                                    value={""}
-                                    placeholder={t("case.display.result_detail_placeholder")}
-                                    className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end items-end">
-                            {/* <div className="justify-end items-end flex">
-                                <Button size="sm" variant="outline">{t("case.display.cancel_case")}</Button>
-                            </div> */}
-
-                            <div className="ml-2">
-                                <Button size="sm" variant="outline" disabled={!isCloseStage}>{t("case.display.close_case")}</Button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
+               
 
 
                 {/* Footer with additional details */}

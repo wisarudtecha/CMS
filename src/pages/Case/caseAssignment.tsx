@@ -207,10 +207,9 @@ export default function CasesView() {
     useEffect(() => {
       const calculateTimeRemaining = () => {
         const createdDate = new Date(createdAt);
-        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 60 * 1000)); // sla in hours
+        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000)- 7 * 3600 * 1000);
         const now = new Date();
-        const diffMs = slaDeadline.getTime() + 7 * 3600 * 1000 - now.getTime();
-
+        const diffMs = slaDeadline.getTime() - now.getTime();
         if (diffMs <= 0) {
           const overdueSeconds = Math.abs(Math.floor(diffMs / 1000));
           const overdueDays = Math.floor(overdueSeconds / (24 * 60 * 60));
@@ -227,7 +226,7 @@ export default function CasesView() {
           };
         }
 
-        // Not overdue - calculate time remaining
+
         const totalSeconds = Math.floor(diffMs / 1000);
         const days = Math.floor(totalSeconds / (24 * 60 * 60));
         const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));

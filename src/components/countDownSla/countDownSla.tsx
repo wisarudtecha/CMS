@@ -32,7 +32,7 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
   if ((sla !== undefined && (sla === null))||!createdAt || sla === undefined) {
     return null;
   }
-  const targetTime = new Date(createdAt).getTime() + (sla * 3600 * 1000) - (7 *3600*1000);
+  const targetTime = new Date(createdAt).getTime() + (sla * 60 * 1000) - (7 * 3600 * 1000);
 
   useEffect(() => {
     const calculateTimeRemaining = () => {

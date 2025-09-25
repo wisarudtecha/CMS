@@ -260,6 +260,6 @@ export const isSlaViolated = (step: ProgressSteps): boolean => {
         return false;
     }
 
-    const slaInSeconds = step.sla * 60 * 60;
+    const slaInSeconds = step.sla * 60;
     return step.timeline.duration > slaInSeconds;
 };

@@ -15,16 +15,27 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
     const currentStepIndex = filteredSteps.findIndex(step => step.current);
     const currentStep = currentStepIndex >= 0 ? filteredSteps[currentStepIndex] : null;
 
-    const formatDuration = (hours: number) => {
-        if (hours < 1) {
-            const minutes = Math.floor(hours * 60);
-            return `${minutes} ${t("time.Minutes")}`;
-        } else if (hours < 24) {
-            return `${Math.floor(hours * 10) / 10} ${t("time.Hours")}`;
+    const formatDuration = (minutes: number) => {
+        if (minutes < 60) {
+            return `${Math.floor(minutes)} ${t("time.Minutes")}`;
+        } else if (minutes < 1440) {
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = Math.floor(minutes % 60);
+            return remainingMinutes > 0
+                ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
+                : `${hours} ${t("time.Hours")}`;
         } else {
-            const days = Math.floor(hours / 24);
-            const remainingHours = Math.floor(((hours % 24) * 10) / 10);
-            return `${days} ${t("time.Days")} ${remainingHours} ${t("time.Hours")}`;
+            const days = Math.floor(minutes / 1440);
+            const remainingHours = Math.floor((minutes % 1440) / 60);
+            const remainingMinutes = Math.floor(minutes % 60);
+            let result = `${days} ${t("time.Days")}`;
+            if (remainingHours > 0) {
+                result += ` ${remainingHours} ${t("time.Hours")}`;
+            }
+            if (remainingMinutes > 0) {
+                result += ` ${remainingMinutes} ${t("time.Minutes")}`;
+            }
+            return result;
         }
     };
 
@@ -36,15 +47,15 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
         const startTime = new Date(previousStep.timeline.completedAt).getTime();
         const endTime = new Date(step.timeline.completedAt).getTime();
         const actualDurationMs = endTime - startTime;
-        const actualDurationHours = actualDurationMs / (1000 * 60 * 60);
-        const slaDurationHours = step.sla;
+        const actualDurationMinutes = actualDurationMs / (1000 * 60);
+        const slaDurationMinutes = step.sla;
 
-        const difference = actualDurationHours - slaDurationHours;
+        const difference = actualDurationMinutes - slaDurationMinutes;
         const isOverdue = difference > 0;
 
         return {
-            actualDuration: actualDurationHours,
-            slaDuration: slaDurationHours,
+            actualDuration: actualDurationMinutes,
+            slaDuration: slaDurationMinutes,
             difference: Math.abs(difference),
             isOverdue
         };
@@ -68,7 +79,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                         <div key={step.id} className="flex items-start relative min-h-[100px]">
                             {/* Left side - SLA Information */}
                             <div className="w-40 flex flex-col items-end pr-6 pt-3">
-                                {step.sla && step.sla != 0 ? (
+                                {step.sla || step.sla === 0 ? (
                                     <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
                                         {t("progress.sla")}:{" "} {formatDuration(step.sla)}
                                     </div>
@@ -163,7 +174,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
                                                 <CompactCountdownTimer
                                                     createdAt={currentStep?.timeline?.completedAt}
-                                                    sla={filteredSteps[index + 1].sla}
+                                                    sla={filteredSteps[index + 1].sla} // Now in minutes
                                                     size="sm"
                                                     className="px-2 py-1 rounded-md text-xs font-medium shadow-sm"
                                                 />
@@ -206,7 +217,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                 {step.nextStage && currentStep?.timeline?.completedAt && step.sla && step.sla != 0 ? (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight mt-1">
                                         {t("case.sop_card.due")}: {formatDate(
-                                            new Date(new Date(currentStep.timeline.completedAt).getTime() + (step.sla * 3600 * 1000) - (7 * 3600 * 1000)).toISOString()
+                                            new Date(new Date(currentStep.timeline.completedAt).getTime() + (step.sla * 60 * 1000) - (7 * 3600 * 1000)).toISOString()
                                         )}
                                     </div>
                                 ) : null}

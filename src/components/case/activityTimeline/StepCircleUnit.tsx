@@ -9,10 +9,11 @@ export const formatAdjustedDate = (date: string | Date) =>
         new Date(new Date(date).getTime() - 7 * 3600 * 1000).toISOString()
     );
 
+
 export const formatDueDate = (date: string | Date, sla: number) =>
     formatDate(
         new Date(
-            new Date(date).getTime() + sla * 3600 * 1000 - 7 * 3600 * 1000
+            new Date(date).getTime() + sla * 60 * 1000 - 7 * 3600 * 1000
         ).toISOString()
     );
 
@@ -46,15 +47,15 @@ export const StepCircle: React.FC<{
         const startTime = new Date(previousStep.timeline.completedAt).getTime();
         const endTime = new Date(step.timeline.completedAt).getTime();
         const actualDurationMs = endTime - startTime;
-        const actualDurationHours = actualDurationMs / (1000 * 60 * 60);
-        const slaDurationHours = step.sla;
+        const actualDurationMinutes = actualDurationMs / (1000 * 60);
+        const slaDurationMinutes = step.sla;
         
-        const difference = actualDurationHours - slaDurationHours;
+        const difference = actualDurationMinutes - slaDurationMinutes;
         const isOverdue = difference > 0;
         
         return {
-            actualDuration: actualDurationHours,
-            slaDuration: slaDurationHours,
+            actualDuration: actualDurationMinutes,
+            slaDuration: slaDurationMinutes,
             difference: Math.abs(difference),
             isOverdue
         };
@@ -62,16 +63,27 @@ export const StepCircle: React.FC<{
 
     const slaPerformance = calculateSlaPerformance();
 
-    const formatDuration = (hours: number) => {
-        if (hours < 1) {
-            const minutes = Math.round(hours * 60);
-            return `${minutes} ${t("time.Minutes")}`;
-        } else if (hours < 24) {
-            return `${Math.round(hours * 10) / 10} ${t("time.Hours")}`;
+    const formatDuration = (minutes: number) => {
+        if (minutes < 60) {
+            return `${Math.round(minutes)} ${t("time.Minutes")}`;
+        } else if (minutes < 1440) {
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = Math.round(minutes % 60);
+            return remainingMinutes > 0 
+                ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
+                : `${hours} ${t("time.Hours")}`;
         } else {
-            const days = Math.floor(hours / 24);
-            const remainingHours = Math.round((hours % 24) * 10) / 10;
-            return `${days} ${t("time.Days")} ${remainingHours} ${t("time.Hours")}`;
+            const days = Math.floor(minutes / 1440);
+            const remainingHours = Math.floor((minutes % 1440) / 60);
+            const remainingMinutes = Math.round(minutes % 60);
+            let result = `${days} ${t("time.Days")}`;
+            if (remainingHours > 0) {
+                result += ` ${remainingHours} ${t("time.Hours")}`;
+            }
+            if (remainingMinutes > 0) {
+                result += ` ${remainingMinutes} ${t("time.Minutes")}`;
+            }
+            return result;
         }
     };
 
@@ -98,7 +110,7 @@ export const StepCircle: React.FC<{
                     </div>
                 </div>
             );
-        } else if (step.sla) {
+        } else if (!step.sla) {
             return (
                 <div className="space-y-1">
                     <div className="font-semibold text-gray-700 dark:text-gray-300">
