@@ -256,7 +256,7 @@ export const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps
 };
 
 export const isSlaViolated = (step: ProgressSteps): boolean => {
-    if (!step.sla || !step.timeline?.duration || step.sla === 0) {
+    if (!step.sla || !step.timeline?.duration) {
         return false;
     }
 

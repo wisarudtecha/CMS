@@ -29,8 +29,7 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
   } | null>(null);
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
-
-  if ((sla !== undefined && (sla === 0 || sla === null))||!createdAt || !sla) {
+  if ((sla !== undefined && (sla === null))||!createdAt || sla === undefined) {
     return null;
   }
   const targetTime = new Date(createdAt).getTime() + (sla * 3600 * 1000) - (7 *3600*1000);
@@ -55,7 +54,7 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
       
       const minutes = Math.floor(remainingAfterHours / 60);
       const seconds = remainingAfterHours % 60;
-
+      
       return {
         isOverdue,
         years,

@@ -200,7 +200,7 @@ export default function CasesView() {
     } | null>(null);
     const { t } = useTranslation();
 
-    if (sla === 0 || sla === null) {
+    if (sla === null) {
       return null;
     }
 
@@ -209,7 +209,7 @@ export default function CasesView() {
         const createdDate = new Date(createdAt);
         const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 60 * 1000)); // sla in hours
         const now = new Date();
-        const diffMs = slaDeadline.getTime() - now.getTime();
+        const diffMs = slaDeadline.getTime() + 7 * 3600 * 1000 - now.getTime();
 
         if (diffMs <= 0) {
           const overdueSeconds = Math.abs(Math.floor(diffMs / 1000));
@@ -259,25 +259,25 @@ export default function CasesView() {
 
     const formatOverdueTime = () => {
       if (timeRemaining.days > 0) {
-        return `${timeRemaining.days}${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+        return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
       } else if (timeRemaining.hours > 0) {
-        return `${timeRemaining.hours}${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+        return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
       } else if (timeRemaining.minutes > 0) {
-        return `${timeRemaining.minutes}${t("time.m")}`;
+        return `${timeRemaining.minutes} ${t("time.m")}`;
       } else {
-        return `${timeRemaining.seconds}${t("time.s")}`;
+        return `${timeRemaining.seconds} ${t("time.s")}`;
       }
     };
 
     const formatRemainingTime = () => {
       if (timeRemaining.days > 0) {
-        return `${timeRemaining.days}${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+        return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
       } else if (timeRemaining.hours > 0) {
-        return `${timeRemaining.hours}${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+        return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
       } else if (timeRemaining.minutes > 0) {
-        return `${timeRemaining.minutes}${t("time.m")}`;
+        return `${timeRemaining.minutes} ${t("time.m")}`;
       } else {
-        return `${timeRemaining.seconds}${t("time.s")}`;
+        return `${timeRemaining.seconds} ${t("time.s")}`;
       }
     };
 
