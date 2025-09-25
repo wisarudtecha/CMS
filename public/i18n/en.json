@@ -814,7 +814,7 @@
   "progress": {
     "sla": "SLA",
     "actual": "Actual",
-    "overdue_by": "Overdue by",
+    "overdue_by": "Overdue",
     "faster_by": "Faster by", 
     "in_progress": "In Progress",
     "pending": "Pending",
