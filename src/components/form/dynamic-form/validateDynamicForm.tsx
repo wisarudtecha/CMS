@@ -95,6 +95,9 @@ export const validateFieldValue = (field: IndividualFormFieldWithChildren): stri
 
 export const validateInput = (form: FormField): boolean => {
   const validateFields = (fields: IndividualFormField[]): boolean => {
+    if(!fields){
+        return true
+    }
     for (const field of fields) {
       const fieldWithChildren = field as IndividualFormFieldWithChildren;
 
