@@ -24,7 +24,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
         } else {
             const days = Math.floor(hours / 24);
             const remainingHours = Math.floor(((hours % 24) * 10) / 10);
-            return `${days}${t("time.Days")} ${remainingHours}${t("time.Hours")}`;
+            return `${days} ${t("time.Days")} ${remainingHours} ${t("time.Hours")}`;
         }
     };
 
@@ -84,8 +84,8 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                         </div>
                                         <div className={`font-medium ${slaPerformance.isOverdue ? 'text-red-500' : 'text-green-500'}`}>
                                             {slaPerformance.isOverdue
-                                                ? `${t("progress.overdue_by")}${formatDuration(slaPerformance.difference)}`
-                                                : `${t("progress.faster_by")}${formatDuration(slaPerformance.difference)}`
+                                                ? `${t("progress.overdue_by")} ${formatDuration(slaPerformance.difference)}`
+                                                : `${t("progress.faster_by")} ${formatDuration(slaPerformance.difference)}`
                                             }
                                         </div>
                                     </div>

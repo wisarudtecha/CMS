@@ -2,12 +2,15 @@ import { UnitWithSop } from "@/store/api/dispatch"
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dialog"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import ProgressStepPreviewUnit from "./activityTimeline/unitActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
+import Button from "../ui/button/Button"
+import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput"
+import { closeStatus } from "../ui/status/status"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -27,8 +30,14 @@ export default function OfficerDataModal({
         JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
     );
     const userStation = deptComStn.find((items) => {
-    return items.commId === userData?.data?.commId && items.stnId === userData?.data?.stnId && items.deptId === userData.data.deptId;
+        return items.commId === userData?.data?.commId && items.stnId === userData?.data?.stnId && items.deptId === userData.data.deptId;
     });
+    const [closeValue, setCloseValue] = useState<string>("")
+    const closeCaseOption = ["แก้ไขเสร็จสิ้น", "เปลี่ยนอุปกรณ์เสร์จสิ้น"]
+    const isCloseStage = closeStatus.find(status => status === officer?.Sop?.statusId);
+    const handleCloseCaseChange = (value: string) => {
+        setCloseValue(value)
+    }
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
@@ -78,7 +87,7 @@ export default function OfficerDataModal({
                                 <div className="space-y-4">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -88,10 +97,10 @@ export default function OfficerDataModal({
                                             }
                                         </p>
                                     </div>
-                                    
+
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
+                                            <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
                                             {officer?.unit?.username || "N/A"}
@@ -109,7 +118,7 @@ export default function OfficerDataModal({
 
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                                <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -132,14 +141,14 @@ export default function OfficerDataModal({
                             <div className="space-y-4 mb-3">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                     <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                            <Truck className="w-4 h-4  " />
+                                        <Truck className="w-4 h-4  " />
                                         <h3 className="font-semibold ">{t("case.officer_detail.service_title")}</h3>
                                     </div>
 
                                     <div className="space-y-3">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                    <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                                 <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
                                             </div>
                                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
@@ -152,7 +161,7 @@ export default function OfficerDataModal({
                             <div className="flex-1 flex flex-col">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1 flex flex-col">
                                     <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                            <Building className="w-4 h-4" />
+                                        <Building className="w-4 h-4" />
                                         <h3 className="font-semibold">{t("userform.orgInfo")}</h3>
                                     </div>
 
@@ -187,7 +196,7 @@ export default function OfficerDataModal({
                 {/* Progress Steps Section */}
                 <div className="rounded-2xl">
                     <div className="flex items-center gap-2 mb-6">
-                            <CheckCircle className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                        <CheckCircle className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                         <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_progress_title")}</h3>
                     </div>
 
@@ -195,6 +204,42 @@ export default function OfficerDataModal({
                         <ProgressStepPreviewUnit progressSteps={progressSteps} />
                     </div>
                 </div>
+
+                <div className="rounded-2xl">
+                    <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
+                        <div className="">
+                            <SearchableSelect
+                                options={closeCaseOption}
+                                value={closeValue}
+                                onChange={handleCloseCaseChange}
+                                placeholder={t("case.display.result_placeholder")}
+                                className="  mb-2 items-center"
+                            />
+
+                            <div className="">
+                                {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
+                                <textarea
+                                    readOnly={true}
+                                    value={""}
+                                    placeholder={t("case.display.result_detail_placeholder")}
+                                    className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end items-end">
+                            {/* <div className="justify-end items-end flex">
+                                <Button size="sm" variant="outline">{t("case.display.cancel_case")}</Button>
+                            </div> */}
+
+                            <div className="ml-2">
+                                <Button size="sm" variant="outline" disabled={!isCloseStage}>{t("case.display.close_case")}</Button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
 
                 {/* Footer with additional details */}
                 {/* <div className="bg-gray-100 dark:bg-gray-900 p-6 border-t border-gray-200 dark:border-gray-700">

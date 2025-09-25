@@ -9,6 +9,7 @@ import { useWebSocket } from "../websocket/websocket";
 import { formatDate } from "@/utils/crud";
 import { useTranslation } from "@/hooks/useTranslation";
 
+
 interface CommentsProps {
     isOpen: boolean;
     caseId: string;
@@ -27,8 +28,9 @@ export const Comments: React.FC<CommentsProps> = ({
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
-        {   refetchOnMountOrArgChange: true,
-            skip: !isOpen 
+        {   
+            refetchOnMountOrArgChange: true,
+            skip: !isOpen
         }
     );
     const { subscribe, isConnected, connectionState, connect } = useWebSocket()
@@ -84,20 +86,20 @@ export const Comments: React.FC<CommentsProps> = ({
                 username: profile?.username
             };
 
-            addCaseHistory(newCommentData).unwrap();
+            await addCaseHistory(newCommentData).unwrap();
 
-            const optimisticComment: CaseHistory = {
-                id: Date.now(),
-                orgId: commentsData[0]?.orgId || "",
-                caseId: caseId,
-                username: profile?.username,
-                type: "comment",
-                fullMsg: newCommentMessage.trim(),
-                jsonData: "",
-                createdAt: new Date().toISOString(),
-                createdBy: profile?.username
-            };
-            setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+            // const optimisticComment: CaseHistory = {
+            //     id: Date.now(),
+            //     orgId: commentsData[0]?.orgId || "",
+            //     caseId: caseId,
+            //     username: profile?.username,
+            //     type: "comment",
+            //     fullMsg: newCommentMessage.trim(),
+            //     jsonData: "",
+            //     createdAt: new Date().toISOString(),
+            //     createdBy: profile?.username
+            // };
+            // setCommentsData((prevComments) => [...prevComments, optimisticComment]);
 
             setNewCommentMessage('');
 
@@ -161,7 +163,7 @@ export const Comments: React.FC<CommentsProps> = ({
                 <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-semibold text-blue-500 dark:text-blue-400">{comment.createdBy}</p>
                     <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
-                        {formatDate(comment.createdAt)}
+                        {formatDate(new Date(new Date(comment.createdAt).getTime() - 7*3600*1000))}
                     </span>
                 </div>
                 <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">{comment.fullMsg}</p>

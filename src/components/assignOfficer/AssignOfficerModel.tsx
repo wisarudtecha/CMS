@@ -217,17 +217,28 @@ export default function AssignOfficerModal({
     { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
   ]
 
+  const { t, language } = useTranslation();
 
   const filteredOfficers = useMemo(() => {
     if (!searchTerm.trim()) return availableOfficers
     const searchLower = searchTerm.toLowerCase()
     return availableOfficers.filter((officer) =>
       officer.username.toLowerCase().includes(searchLower) ||
-      officer.deptId.toLowerCase().includes(searchLower)
+      officer.deptId.toLowerCase().includes(searchLower) ||
+      officer.unitId.toLowerCase().includes(searchTerm) ||
+      officer.skillLists.find(item => item[language === "en" ? "en" : "th"]?.toLowerCase().includes(searchLower)) ||
+      (() => {
+        const matchedArea = areaList.find(
+          item =>
+            caseData?.provId === item.provId &&
+            caseData?.countryId === item.countryId &&
+            caseData?.distId === item.distId
+        );
+        return matchedArea ? mergeArea(matchedArea, language).toLocaleLowerCase().includes(searchTerm) : "";
+      })()
     )
   }, [availableOfficers, searchTerm])
 
-  const { t, language } = useTranslation();
 
 
   const sortedOfficers = useMemo(() =>
@@ -333,7 +344,7 @@ export default function AssignOfficerModal({
             {t("case.assign_officer_modal.title")}
           </DialogTitle>
         </DialogHeader>
-        {showOfficerData&& <OfficerDetailModal onOpenChange={()=>setShowOFFicerData(null)} officer={showOfficerData as Unit} />}
+        {showOfficerData && <OfficerDetailModal onOpenChange={() => setShowOFFicerData(null)} officer={showOfficerData as Unit} />}
 
         {/* Search Bar and Buttons */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
@@ -424,18 +435,19 @@ export default function AssignOfficerModal({
                             <div
                               className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => {
-                                setShowOFFicerData(officer)}
+                                setShowOFFicerData(officer)
+                              }
                               }
                             >
                               <div className="flex items-center mx-4 space-x-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
-                                    {officer.photo?
-                                    <img src={officer.photo} alt="officer" className="w-full h-full object-cover" />:officer.unitName
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .join("")
-                                      .toUpperCase()}
+                                    {officer.photo ?
+                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitName
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")
+                                        .toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-gray-800 dark:text-white font-medium">
