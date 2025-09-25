@@ -198,9 +198,12 @@ export default function CasesView() {
       seconds: number;
       totalSeconds: number;
     } | null>(null);
-    // if (sla === 0 || sla === null) {
-    //   return
-    // }
+    const { t } = useTranslation();
+
+    if (sla === 0 || sla === null) {
+      return null;
+    }
+
     useEffect(() => {
       const calculateTimeRemaining = () => {
         const createdDate = new Date(createdAt);
@@ -224,6 +227,7 @@ export default function CasesView() {
           };
         }
 
+        // Not overdue - calculate time remaining
         const totalSeconds = Math.floor(diffMs / 1000);
         const days = Math.floor(totalSeconds / (24 * 60 * 60));
         const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
@@ -249,66 +253,67 @@ export default function CasesView() {
       return () => clearInterval(interval);
     }, [createdAt, sla]);
 
-    
-    if(!timeRemaining||timeRemaining.days>0){
-      return
+    if (!timeRemaining) {
+      return null;
     }
-    if (timeRemaining.isOverdue===false) {
+
+    const formatOverdueTime = () => {
+      if (timeRemaining.days > 0) {
+        return `${timeRemaining.days}${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+      } else if (timeRemaining.hours > 0) {
+        return `${timeRemaining.hours}${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+      } else if (timeRemaining.minutes > 0) {
+        return `${timeRemaining.minutes}${t("time.m")}`;
+      } else {
+        return `${timeRemaining.seconds}${t("time.s")}`;
+      }
+    };
+
+    const formatRemainingTime = () => {
+      if (timeRemaining.days > 0) {
+        return `${timeRemaining.days}${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+      } else if (timeRemaining.hours > 0) {
+        return `${timeRemaining.hours}${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+      } else if (timeRemaining.minutes > 0) {
+        return `${timeRemaining.minutes}${t("time.m")}`;
+      } else {
+        return `${timeRemaining.seconds}${t("time.s")}`;
+      }
+    };
+
+    if (timeRemaining.isOverdue) {
       return (
-        <Badge variant="solid" color="error" size="xs" className="text-center animate-pulse">
-          Over SLA
+        <Badge
+          variant="solid"
+          color="error"
+          size="xs"
+          className="text-center animate-pulse"
+        >
+          {t("progress.overdue_by")} {formatOverdueTime()}
         </Badge>
       );
-    }else{
-      return null
     }
 
-    // const getVariantAndColor = () => {
-    //   if (timeRemaining.totalSeconds <= 3600) {
-    //     return { variant: "outline" as const, color: "error" as const };
-    //   } else if (timeRemaining.totalSeconds <= 10800) {
-    //     return { variant: "outline" as const, color: "error" as const };
-    //   } else if (timeRemaining.totalSeconds <= 21600) {
-    //     return { variant: "outline" as const, color: "error" as const };
-    //   } else {
-    //     return { variant: "outline" as const, color: "error" as const };
-    //   }
-    // };
+    if (timeRemaining.totalSeconds <= 7200) {
+      return (
+        <Badge
+          variant="outline"
+          color="warning"
+          size="xs"
+          className="text-center"
+        >
+          {t("time.TIMEREMAINING")} {formatRemainingTime()}
+        </Badge>
+      );
+    }
 
-    // const { variant, color } = getVariantAndColor();
-
-    // const formatTimeRemaining = () => {
-    //   const paddedDay = timeRemaining.days.toString().padStart(2, '0');
-    //   const paddedHours = timeRemaining.hours.toString().padStart(2, '0');
-    //   const paddedMinutes = timeRemaining.minutes.toString().padStart(2, '0');
-    //   const paddedSeconds = timeRemaining.seconds.toString().padStart(2, '0');
-
-    //   if (timeRemaining.days > 0) {
-    //     return `${paddedDay}d:${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
-    //   } else {
-    //     return `${paddedHours}h:${paddedMinutes}m:${paddedSeconds}s`;
-    //   }
-    // };
-
-    // const shouldPulse = timeRemaining.totalSeconds <= 600 && !timeRemaining.isOverdue;
-    // return (
-    //   <Badge
-    //     variant={variant}
-    //     color={color}
-    //     size="xs"
-    //     className={`text-center w-[32%] ${shouldPulse ? 'animate-pulse' : ''}`}
-    //   >
-    //     {formatTimeRemaining()}
-    //   </Badge>
-    // );
+    return null;
   };
 
-  // AdvanceFilter component now triggers the API call
   const AdvanceFilter: React.FC = () => {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
-      // const category = statusColumns.find(col => col.title === localFilters.category)?.group[0] || "";ßß
       await useFetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
@@ -440,7 +445,7 @@ export default function CasesView() {
       >
         <div className="flex items-start justify-between">
           <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
-          
+
         </div>
         {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
         <p className="text-sm text-gray-400 leading-relaxed line-clamp-2">{caseItem.caselocAddr}</p>
