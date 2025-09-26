@@ -248,7 +248,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         console.error('WebSocket error:', error);
         setConnectionState('error');
         isConnectingRef.current = false;
-        connect(defalutWebsocketConfig)
+        // connect(defalutWebsocketConfig)
       };
 
       wsRef.current = ws;

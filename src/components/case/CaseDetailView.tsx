@@ -804,9 +804,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 />
             )}
             <PreviewDataBeforeSubmit
-                caseData={caseState}
+                caseData={{...caseState, updateBy:profile.username, lastUpdate: new Date().toISOString()} as CaseDetails}
                 submitButton={handleSaveChanges}
                 isOpen={showPreviewData}
+                isCreate={false}
                 onClose={() => setShowPreviewData(false)}
             />
             <CreateSubCaseModel

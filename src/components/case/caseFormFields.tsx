@@ -1,6 +1,6 @@
 import DragDropFileUpload from "@/components/d&d upload/dndUpload";
 import CustomerInput from "./CaseCustomerInput";
-import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput";
+import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
 import Input from "@/components/form/input/InputField";
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType";
 import { getPriorityColorClass } from "@/components/function/Prioriy";

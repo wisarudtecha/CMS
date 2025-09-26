@@ -1,4 +1,5 @@
 import {
+    Clock,
     User,
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
@@ -11,12 +12,14 @@ import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubT
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { Modal } from "../ui/modal"
 import { useTranslation } from "@/hooks/useTranslation"
+import DateStringToDateFormat from "../date/DateToString"
 
 
 interface PreviewDataBeforeSubmitProps {
     caseData?: CaseDetails
     submitButton?: () => void
     isOpen: boolean
+    isCreate?: boolean
     onClose: () => void
 }
 
@@ -24,13 +27,14 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
     caseData,
     submitButton,
     isOpen,
+    isCreate = true,
     onClose
 }) => {
     const profile = useMemo(
         () => JSON.parse(localStorage.getItem("profile") ?? "{}"),
         []
     )
-    const { t,language} = useTranslation();
+    const { t, language } = useTranslation();
     return (
         <Modal
             isOpen={isOpen}
@@ -49,10 +53,14 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                         <div>
                             {caseData?.caseType && (
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                    {mergeCaseTypeAndSubType(caseData.caseType,language)}
+                                    {mergeCaseTypeAndSubType(caseData.caseType, language)}
                                 </h2>
                             )}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                                {!isCreate && caseData?.date && <div className="flex items-center space-x-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData?.date, false, language)}</span>
+                                </div>}
                                 <div className="flex items-center space-x-1">
                                     <User className="w-4 h-4" />
                                     <span>{t("case.assignment.create_by")}: {profile.username}</span>
@@ -65,7 +73,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                                     variant="outline"
                                     color={`${getTextPriority(caseData.caseType?.priority).color}`}
                                 >
-                                    {t("case.sop_card."+getTextPriority(caseData.caseType?.priority).level+" Priority")}
+                                    {t("case.sop_card." + getTextPriority(caseData.caseType?.priority).level + " Priority")}
                                 </Badge>
                             )}
                             {caseData?.status && (
@@ -101,7 +109,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                     </>
                 )}
 
-                <FormFieldValueDisplay caseData={caseData} isCreate={true} />
+                <FormFieldValueDisplay caseData={caseData} isCreate={isCreate} />
 
                 {submitButton && (
                     <div className="flex justify-end">

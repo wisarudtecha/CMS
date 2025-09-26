@@ -1,10 +1,10 @@
-import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket, UserPen } from "lucide-react";
+import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket } from "lucide-react";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
 import { mergeArea } from "@/store/api/area";
 import { CaseDetails } from "@/types/case";
 import Button from "../ui/button/Button";
-import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
+import { SearchableSelect } from "../SearchInput/SearchSelectInput";
 import { useState } from "react";
 import { closeStatus } from "../ui/status/status";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -87,8 +87,8 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                 }
-                <div className="grid grid-cols-2">
-                    <div className=" col-span-1">
+                {!isCreate&&<div className="">
+                    {/* <div className=" col-span-1">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <UserPen className="h-4 w-4 mr-2" />
                             <span>{t("case.display.updateBy")}</span>
@@ -96,18 +96,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.updateBy || "-"}
                         </div>
-                    </div>
+                    </div> */}
 
-                    <div className=" col-span-1">
+                    <div className="">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <ClockArrowUp className="h-4 w-4 mr-2" />
                             <span className="text-red-400">{t("case.display.updateAt")}</span>
                         </div>
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.lastUpdate ? formatDate(caseData?.lastUpdate) : "-"}
+                            {caseData?.lastUpdate ? `${formatDate(caseData?.lastUpdate)} ${t("userform.by")} ${caseData?.updateBy}`: "-"}
                         </div>
                     </div>
-                </div>
+                </div>}
             </div>
             <div className="col-span-2 sm:col-span-1 flex flex-col h-full">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1">

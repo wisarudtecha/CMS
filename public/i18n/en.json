@@ -30,7 +30,8 @@
     "search_placeholder": "Search...",
     "refresh": "Refresh",
     "home": "Home",
-    "retry": "Retry"
+    "retry": "Retry",
+    "no_result":"No results found."
   },
   "auth": {
     "signin": {

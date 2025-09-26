@@ -21,7 +21,7 @@ import DateStringToDateFormat, { DateStringToAgoFormat } from "@/components/date
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/uitls/CaseApiManager"
-import { SearchableSelect } from "@/components/SearchSelectInput/SearchSelectInput"
+import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput"
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
@@ -207,7 +207,7 @@ export default function CasesView() {
     useEffect(() => {
       const calculateTimeRemaining = () => {
         const createdDate = new Date(createdAt);
-        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000)- 7 * 3600 * 1000);
+        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000) - 7 * 3600 * 1000);
         const now = new Date();
         const diffMs = slaDeadline.getTime() - now.getTime();
         if (diffMs <= 0) {
@@ -558,8 +558,8 @@ export default function CasesView() {
                 </div>
 
                 {/* Status */}
-                <div className="col-span-2 flex flex-col items-center space-y-3">
-                  <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
+                <div className="col-span-2 flex items-center">
+                  {/* <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} /> */}
                   <Badge
                     color="primary"
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"

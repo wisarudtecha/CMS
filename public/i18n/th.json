@@ -30,7 +30,8 @@
     "search_placeholder": "ค้นหา...",
     "refresh": "รีเฟรช",
     "home": "หน้าหลัก",
-    "retry": "ลองใหม่อีกครั้ง"
+    "retry": "ลองใหม่อีกครั้ง",
+    "no_result":"ไม่เจอผลลัพธ์"
   },
   "auth": {
     "signin": {
@@ -680,7 +681,7 @@
       "area": "พื้นที่เกิดเหตุ",
       "area_placeholder": "ใส่พื้นที่เกิดเหตุ",
       "contact": "ข้อมูลติดต่อ",
-      "phone_number": "เลขโทรศัพท์",
+      "phone_number": "หมายเลขโทรศัพท์",
       "phone_number_placeholder": "ใส่เลขโทรศัพท์",
       "contact_method": "ช่องทางการติดต่อ",
       "contact_method_placeholder": "เลือกช่องทางการติดต่อ",
