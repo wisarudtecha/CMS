@@ -326,7 +326,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                 await refetch();
                             }
                         })();
-                    } else if (data?.EVENT === "CASE-STATUS-CHANGE") {
+                    } else if (data?.EVENT === "CASE-STATUS-UPDATE") {
                         (async () => {
                             if (data?.additionalJson?.caseId && caseState?.workOrderNummber === data?.additionalJson?.caseId) {
                                 await refetch();
@@ -592,6 +592,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseDuration: 0,
             caseLat: "",
             caseLon: "",
+            createdDate :caseState?.status === "S000" ? new Date(TodayDate()).toISOString() : undefined, 
             caseSTypeId: caseState?.caseType?.sTypeId || "",
             caseTypeId: caseState?.caseType?.typeId || "",
             caseVersion: caseState?.status === "S000" ? "publish" : sopData?.data?.caseVersion,

@@ -576,7 +576,9 @@ const ServiceDashboard: React.FC = () => {
       try {
         console.log("🚀 ~ WebSocket message received:", message);
         
-        const data = typeof message === "string" ? JSON.parse(message) : message;
+        // const data = typeof message === "string" ? JSON.parse(message) : message;
+        const messageJson = typeof message === "string" ? JSON.parse(message) : message;
+        const data = messageJson?.data || messageJson;
         
         // Check if additionalJson exists
         if (!data.additionalJson) {

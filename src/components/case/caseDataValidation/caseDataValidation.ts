@@ -15,6 +15,9 @@ export const validateCaseForSubmission = (caseState: CaseDetails | undefined): s
     if (!caseState.customerData?.contractMethod?.name?.trim()) {
         return "Please select a Contact Method.";
     }
+    if (!caseState.area) {
+        return "Please select a Response Area";
+    }
     if(caseState?.caseType?.formField && !validateInput(caseState?.caseType?.formField)){
         return "Please Enter value in dynamic Form.";
     }if (caseState.customerData?.mobileNo && !/^\+?[0-9]{8,15}$/.test(caseState.customerData.mobileNo)) {

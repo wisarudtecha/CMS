@@ -76,7 +76,7 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
       })();
       break;
 
-    case "CASE-STATUS-CHANGE":
+    case "CASE-STATUS-UPDATE":
       (() => {
         try {
           const caseList = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[];

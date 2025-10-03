@@ -382,7 +382,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             {/* Service Center and Customer */}
             <div className="sm:grid grid-cols-2">
                 <div>
-                    <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3">{t("case.display.service_center")} :</h3>
+                    <h3 className="w-auto text-gray-900 dark:text-gray-400 mx-3">{t("case.display.service_center")} : {requireElements}</h3>
                     <SearchableSelect
                         options={areaList.map(item => mergeArea(item, language))}
                         value={caseState?.area ? mergeArea(caseState.area, language) : ""}
