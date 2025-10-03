@@ -5,9 +5,8 @@ import { ArrowLeft } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import PageMeta from "@/components/common/PageMeta"
 import { FormFieldWithNode } from "@/components/interface/FormField"
-import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
+// import AssignOfficerModal from "@/components/assignOfficer/AssignOfficerModel"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import Toast from "../toast/Toast"
 import type { Custommer } from "@/types";
 import React from "react"
 import FormFieldValueDisplay from "./CaseDisplay"
@@ -16,59 +15,69 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, usePatchUpdateCaseMutation } from "@/store/api/caseApi" // REMOVED: usePostCreateCaseMutation
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSopUnit, Unit, UnitWithSop, useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
+import { CaseSopUnit, dispatchInterface, Unit, UnitWithSop, useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
 import { Area } from "@/store/api/area"
 import { CaseCard } from "./sopCard"
-import { CaseDetails, CaseEntity } from "@/types/case"
+import { CaseDetails, CaseEntity, caseResults } from "@/types/case"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { CaseStatusInterface } from "../ui/status/status"
+import { CaseStatusInterface, closeStatus} from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
-import { TranslationParams } from "@/types/i18n";
 import { source } from "./constants/caseConstants";
 import { CaseFormFields } from "./caseFormFields";
 import { CaseTypeSubType } from "../interface/CaseType"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
 import { validateCaseForSubmission } from "./caseDataValidation/caseDataValidation"
+import { SearchableSelect } from "../SearchInput/SearchSelectInput"
+import { usePermissions, useToast } from "@/hooks"
+import { ToastContainer } from "../crud/ToastContainer"
+import AssignOfficerModal from "../assignOfficer/singleAssignOfficer"
 
-const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
+const CaseHeader = memo(({
+    disablePageMeta,
+    onBack,
+    onOpenCustomerPanel,
+}: {
     disablePageMeta?: boolean;
     onBack?: () => void;
     onOpenCustomerPanel: () => void;
-    t: (key: string, params?: TranslationParams | undefined) => string;
-}) => (
-    <div className="flex-shrink-0">
-        <div className="">
-            <div className="flex items-center justify-between">
-                {!disablePageMeta && (
-                    <div className="flex items-center space-x-4">
-                        {onBack && (
-                            <Button variant="ghost" size="sm" onClick={onBack}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                {t("case.back")}
-                            </Button>
-                        )}
+}) => {
+    const { t } = useTranslation()
+    return (
+        <div className="flex-shrink-0">
+            <div>
+                <div className="flex items-center justify-between">
+                    {!disablePageMeta && (
+                        <div className="flex items-center space-x-4">
+                            {onBack && (
+                                <Button variant="ghost" size="sm" onClick={onBack}>
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    {t("case.back")}
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                    <div className="md:hidden">
+                        <Button
+                            className="mb-2"
+                            variant="outline"
+                            size="sm"
+                            onClick={onOpenCustomerPanel}
+                        >
+                            {t("case.panel.details_panel")}
+                        </Button>
                     </div>
-                )}
-                <div className="md:hidden">
-                    <Button
-                        className="mb-2"
-                        variant="outline"
-                        size="sm"
-                        onClick={onOpenCustomerPanel}
-                    >
-                        {t("case.panel.details_panel")}
-                    </Button>
                 </div>
             </div>
         </div>
-    </div>
-));
+    );
+});
+
 CaseHeader.displayName = 'CaseHeader';
 
 const AttachedFiles = memo(({ files, editFormData, onRemove }: {
@@ -118,12 +127,14 @@ const OfficerItem = memo(({
     handleDispatch,
     caseStatus,
     handleCancel,
+    canCancel
 }: {
     officer: UnitWithSop;
     onSelectOfficer: (officer: UnitWithSop) => void;
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[]
+    canCancel:boolean
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
@@ -131,6 +142,13 @@ const OfficerItem = memo(({
         setDisableButton(false);
     }, [officer.Sop?.nextStage?.nodeId]);
     const { t, language } = useTranslation();
+    const permissions = usePermissions();
+    const handleOfficerClick = useCallback(() => {
+        if (permissions.hasPermission("case.view_timeline")) {
+            onSelectOfficer(officer);
+        }
+    }, [permissions, officer, onSelectOfficer]);
+
     return (
         <div
             key={officer.unit.unitId + "-" + officer.Sop.currentStage.nodeId}
@@ -139,36 +157,38 @@ const OfficerItem = memo(({
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
                     {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
-                    <span className="ml-2 cursor-pointer" onClick={() => onSelectOfficer(officer)}>
+                    <span className="ml-2 cursor-pointer" onClick={handleOfficerClick}>
                         {officer.unit.username}
                     </span>
                 </div>
-                <div className="flex items-end justify-end">
-                    <Button
-                        onClick={async () => {
-                            if (hasAction) {
-                                handleDispatch(officer, setDisableButton);
-                            }
-                        }}
-                        size="xxs"
-                        className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
-                        variant="success"
-                        disabled={disableButton || !hasAction}
-                    >
-                        {caseStatus.find((item) =>
-                            officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
-                        )?.[language === "th" ? "th" : "en"] || "End"}
-                    </Button>
-                    <Button
-                        className="ml-2"
-                        title="Remove"
-                        variant="outline-no-transparent"
-                        size="xxs"
-                        onClick={() => handleCancel(officer)}
-                    >
-                        {t("case.display.cancel")}
-                    </Button>
-                </div>
+                {permissions.hasPermission("case.assign") &&
+                    <div className="flex items-end justify-end">
+                        <Button
+                            onClick={async () => {
+                                if (hasAction) {
+                                    handleDispatch(officer, setDisableButton);
+                                }
+                            }}
+                            size="xxs"
+                            className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
+                            variant="success"
+                            disabled={disableButton || !hasAction}
+                        >
+                            {caseStatus.find((item) =>
+                                officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
+                            )?.[language === "th" ? "th" : "en"] || "End"}
+                        </Button>
+                        {canCancel && <Button
+                            className="ml-2"
+                            title="Remove"
+                            variant="outline-no-transparent"
+                            size="xxs"
+                            onClick={() => handleCancel(officer)}
+                        >
+                            {t("case.display.cancel")}
+                        </Button>}
+                    </div>
+                }
             </div>
         </div>
     );
@@ -181,7 +201,8 @@ const AssignedOfficers = memo(({
     onSelectOfficer,
     handleDispatch,
     caseStatus,
-    handleCancel
+    handleCancel,
+    canCancel
 }: {
     SopUnit: UnitWithSop[] | null;
     onSelectOfficer: (officer: UnitWithSop) => void;
@@ -189,6 +210,7 @@ const AssignedOfficers = memo(({
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[];
+    canCancel:boolean;
 }) => {
     if (!SopUnit?.length) return null;
     const { t } = useTranslation();
@@ -207,6 +229,7 @@ const AssignedOfficers = memo(({
                     handleDispatch={handleDispatch}
                     caseStatus={caseStatus}
                     handleCancel={handleCancel}
+                    canCancel={canCancel}
                 />
             ))}
         </div>
@@ -217,7 +240,7 @@ AssignedOfficers.displayName = 'AssignedOfficers';
 
 // REMOVED: The `isCreate` prop from the component signature.
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isScheduleDate = false }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isScheduleDate?: boolean }) {
-
+    const permissions = usePermissions();
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
     const navigate = useNavigate()
     const handleBack = useCallback(() => {
@@ -227,7 +250,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             navigate('/case/assignment');
         }
     }, [onBack, navigate]);
-    
+
     const [showCloseCaseModal, setShowCloseCaseModal] = useState<boolean>(false)
     const [showCancelUnitModal, setShowCancelUnitModal] = useState<boolean>(false)
     const [showCancelCaseModal, setShowCancelCaseModal] = useState<boolean>(false)
@@ -243,14 +266,20 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [dispatchUnit, setDispatchUnit] = useState<CaseSopUnit[] | null>(null);
     const [unitWorkOrder, setUnitWorkOrder] = useState<UnitWithSop[]>([]);
     const [isCustomerPanelOpen, setIsCustomerPanelOpen] = useState(false);
-    const [showToast, setShowToast] = useState(false);
     const [showPreviewData, setShowPreviewData] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     const [isInitialized, setIsInitialized] = useState(false);
-    const { subscribe, isConnected, connectionState, connect } = useWebSocket()
+    const { onMessage, isConnected, connectionState, websocket } = useWebSocket()
     const { t, language } = useTranslation();
+    const [closeValue, setCloseValue] = useState<string>("")
+    const [resultDetail, setResultDetail] = useState<string>("")
+    const closeCaseOption = useMemo(() =>
+        JSON.parse(localStorage.getItem("caseResultsList") ?? "[]") as caseResults[], []
+    );
+    const { toasts, addToast, removeToast } = useToast();
+    const isCloseStage = closeStatus.find(status => status === caseState?.status);
+    const [disableButton, setDisableButton] = useState<boolean>(false);
+
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -275,7 +304,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [postDispatch] = usePostDispacthMutationMutation();
     const [getSopUnit] = useLazyGetSopUnitQuery();
     const [refetchTriggerUnit, setRefetchTriggerUnit] = useState(Boolean);
-
+    const canCancelUnit= sopData?.data?.dispatchStage?.data?.data?.config?.action===sopData?.data?.currentStage?.data?.data?.config?.action
     useEffect(() => {
         if (!isInitialized) {
             const customerList = JSON.parse(localStorage.getItem("customer_data") ?? "[]") as Customer[];
@@ -286,18 +315,18 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
 
     useEffect(() => {
-        const listener = subscribe((message) => {
+        const listener = onMessage((message) => {
             try {
                 if (message?.data) {
                     const data = message.data;
-                    if (data.additionalJson?.event === "Update") {
+                    if (data.EVENT === "CASE-UPDATE") {
                         (async () => {
                             const caseIdFromUrl = data.redirectUrl.split('/case/')[1];
                             if (caseIdFromUrl && caseState?.workOrderNummber === caseIdFromUrl) {
                                 await refetch();
                             }
                         })();
-                    } else if (data?.additionalJson?.event === "STATUS UPDATE") {
+                    } else if (data?.EVENT === "CASE-STATUS-CHANGE") {
                         (async () => {
                             if (data?.additionalJson?.caseId && caseState?.workOrderNummber === data?.additionalJson?.caseId) {
                                 await refetch();
@@ -313,7 +342,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         return () => {
             listener();
         };
-    }, [subscribe, connect, connectionState, isConnected, caseState]);
+    }, [onMessage, websocket, connectionState, isConnected, caseState]);
 
 
     useEffect(() => {
@@ -371,29 +400,51 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         console.log("Cancelling assignment for:", unitToCancel?.unit.username);
         setShowCancelUnitModal(false);
         setUnitToCancel(null);
-        setToastMessage("Unit assignment cancelled.");
-        setToastType("info");
-        setShowToast(true);
+        // setToastMessage("Unit assignment cancelled.");
+        // setToastType("info");
+        // setShowToast(true);
     }, [unitToCancel]);
+
+    const handleOnChickCloseButton = useCallback(async () => {
+        const closeCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
+        const dispatchjson = {
+            caseId: caseState?.workOrderNummber,
+            status: sopData?.data?.nextStage?.data?.data?.config?.action,
+            resId: closeCaseData?.resId,
+            resDetail: resultDetail
+        } as dispatchInterface;
+        try {
+            if (!dispatchjson ||
+                !dispatchjson.caseId ||
+                !dispatchjson.status ||
+                dispatchjson.resId === undefined ||
+                Object.keys(dispatchjson).length === 0) {
+                console.log(dispatchjson)
+                throw t("case.display.toast.missing_close_case_data");
+            }
+            const payload = await postDispatch(dispatchjson).unwrap();
+            if (payload.msg?.toLocaleLowerCase() !== "success") {
+                throw Error
+            }
+            addToast("success", t("case.display.toast.close_case_success"));
+
+        } catch (error) {
+            addToast("error", t("case.display.toast.close_case_fail") +` ${error}`);
+            setDisableButton(false);
+        }
+    }, [postDispatch, caseData, resultDetail, closeValue])
 
     const handleConfirmCancelCase = useCallback(() => {
         console.log("Cancelling case:", sopData?.data?.caseId);
         setShowCancelCaseModal(false);
-        setToastMessage("Case has been cancelled.");
-        setToastType("error");
-        setShowToast(true);
+        // setToastMessage("Case has been cancelled.");
+        // setToastType("error");
+        // setShowToast(true);
     }, [sopData?.data]);
 
-    const handleConfirmCloseCase = useCallback(() => {
-        console.log("Closing case:", sopData?.data?.caseId);
-        setShowCloseCaseModal(false);
-        setToastMessage("Case has been closed.");
-        setToastType("success");
-        setShowToast(true);
-    }, [sopData?.data]);
 
     useEffect(() => {
-        if ( sopData?.data && areaList.length > 0  && caseTypeSupTypeData.length > 0) {
+        if (sopData?.data && areaList.length > 0 && caseTypeSupTypeData.length > 0) {
             const utcTimestamp: string | undefined = sopData.data?.createdAt;
             const area = areaList.find((items) =>
                 sopData?.data?.provId === items.provId &&
@@ -427,7 +478,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 lastUpdate: sopData.data?.updatedAt,
                 updateBy: sopData.data?.updatedBy,
                 attachFile: [] as File[],
-                attachFileResult: [] as File[]
+                attachFileResult: [] as File[],
+                deviceMetaData: sopData.data.deviceMetaData
             } as CaseDetails;
 
             setCaseState(newCaseState);
@@ -508,7 +560,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             const updatedCase = {
                 ...originalCase,
                 ...updateJson,
-                caseSla:Number(updateJson.caseSla),
+                caseSla: Number(updateJson.caseSla),
                 id: originalCase.id,
                 caseId: originalCase.caseId,
                 createdAt: originalCase.createdAt,
@@ -516,7 +568,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 updatedAt: TodayDate(),
                 updatedBy: profile?.username || "",
             };
-            
+
             caseList[caseIndex] = updatedCase;
             localStorage.setItem("caseList", JSON.stringify(caseList));
             return true;
@@ -574,39 +626,33 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
         try {
             await updateCase({ caseId: caseState?.workOrderNummber || "", updateCase: updateJson }).unwrap();
-            const updateSuccess = updateCaseInLocalStorage(updateJson);
+            updateCaseInLocalStorage(updateJson);
             if (caseState?.status === "S000") {
                 setCaseState(prev => prev ? { ...prev, status: "S001" } : prev);
                 if (caseState?.workOrderNummber) navigate("/case/" + caseState?.workOrderNummber);
             }
 
             setEditFormData(false);
-            setToastMessage(updateSuccess ? "Changes saved successfully!" : "Changes saved to server");
-            setToastType("success");
-            setShowToast(true);
+            addToast("success", t("case.display.toast.save_change_sucess"));
 
         } catch (error: any) {
-            setToastType("error");
-            setToastMessage(`Failed to Update Case`);
-            setShowToast(true);
+            addToast('error', t("case.display.toast.save_change_fail"));
         }
     }, [caseState, sopData?.data, updateCase, updateCaseInLocalStorage, profile, navigate, isScheduleDate]);
-    
+
     const handlePreviewShow = useCallback(() => {
-            const errorMessage = validateCaseForSubmission(caseState);
-            if (errorMessage) {
-                setToastMessage(errorMessage);
-                setToastType("error");
-                setShowToast(true);
-                return;
-            }
-            setShowPreviewData(true);
+        const errorMessage = validateCaseForSubmission(caseState);
+        if (errorMessage) {
+            addToast('error', errorMessage);
+            return;
+        }
+        setShowPreviewData(true);
     }, [validateCaseForSubmission, caseState]);
 
     const handleEditClick = useCallback(() => {
         setEditFormData(prev => !prev);
     }, []);
-    
+
     const handleUnitSopDispatch = useCallback(async (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => {
         setDisableButton(true)
         const dispatchjson = {
@@ -624,18 +670,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             if (payload.msg?.toLocaleLowerCase() !== "success") {
                 throw Error
             }
-            setToastMessage("Dispatch Successfully!");
-            setToastType("success");
-            setShowToast(true);
+            addToast("success", `${caseStatus.find(items => officer.Sop?.nextStage?.data?.data?.config?.action === items.statusId)?.[language === "th" ? "th" : "en"] || ""} ${t("common.success")}`);
             dispatchUpdateLocate(dispatchjson)
             setCaseState(prev => prev ? { ...prev, status: dispatchjson.status } : prev);
             await triggerRefetchUnit();
             return true
         } catch (error) {
-            console.error('Dispatch failed:', error);
-            setToastMessage("Dispatch Failed");
-            setToastType("error");
-            setShowToast(true);
+            addToast("error", `${caseStatus.find(items => officer.Sop?.nextStage?.data?.data?.config?.action === items.statusId)?.[language === "th" ? "th" : "en"] || ""} ${t("status.failed")}`)
             setDisableButton(false);
             return false
         }
@@ -654,18 +695,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw new Error("No data found in dispatch object");
             }
             await postDispatch(dispatchjson).unwrap();
-            setToastMessage("Dispatch Successfully!");
-            setToastType("success");
-            setShowToast(true);
+            addToast("success",t("case.display.toast.dispatch_fail"));
             dispatchUpdateLocate(dispatchjson)
             setCaseState(prev => prev ? { ...prev, status: dispatchjson.status } : prev);
             refetch()
             return true
         } catch (error) {
             console.error('Dispatch failed:', error);
-            setToastMessage("Dispatch Failed");
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",t("case.display.toast.dispatch_fail"));
             return false
         }
     }, [initialCaseData, postDispatch, sopData?.data, refetch]);
@@ -701,7 +738,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     disablePageMeta={disablePageMeta}
                     onBack={handleBack}
                     onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
-                    t={t}
                 />
                 <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl">
                     <div className="flex items-center justify-center h-full w-full">
@@ -716,18 +752,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             </div>
         );
     }
-    
+
     return (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col">
             {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
-            {showToast && (
-                <Toast message={toastMessage} type={toastType} duration={3000} onClose={() => setShowToast(false)} />
-            )}
             <CaseHeader
                 disablePageMeta={disablePageMeta}
                 onBack={handleBack}
                 onOpenCustomerPanel={() => setIsCustomerPanelOpen(true)}
-                t={t}
             />
             <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl custom-scrollbar">
                 <div className="flex flex-col md:flex-row h-full gap-1 w-full">
@@ -756,6 +788,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     handleDispatch={handleUnitSopDispatch}
                                     caseStatus={caseStatus}
                                     handleCancel={handleCancelUnitClick}
+                                    canCancel={canCancelUnit}
                                 />
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
@@ -775,9 +808,44 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         </div>
                                     </div>
                                 ) : (
-                                    <FormFieldValueDisplay
-                                        caseData={caseState} showResult={true}
-                                    />
+                                    <div>
+                                        <FormFieldValueDisplay
+                                            caseData={caseState}
+                                        />
+                                        <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                                            <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
+                                            <div className="">
+                                                <SearchableSelect
+                                                    options={closeCaseOption.map(result => result[language == "th" ? "th" : "en"])}
+                                                    value={closeValue}
+                                                    onChange={setCloseValue}
+                                                    placeholder={t("case.display.result_placeholder")}
+                                                    className="  mb-2 items-center"
+                                                />
+
+                                                <div className="">
+                                                    {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
+                                                    <textarea
+                                                        value={resultDetail}
+                                                        onChange={(e) => setResultDetail(e.target.value)}
+                                                        placeholder={t("case.display.result_detail_placeholder")}
+                                                        className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end items-end">
+                                                <div className="justify-end items-end flex">
+                                                    <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
+                                                </div>
+                                                {permissions.hasPermission("case.close") &&
+                                                    <div className="ml-2">
+                                                        <Button size="sm" variant="outline" onClick={() => setShowCloseCaseModal(true)} disabled={!isCloseStage || disableButton}>{t("case.display.close_case")}</Button>
+                                                    </div>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -804,7 +872,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 />
             )}
             <PreviewDataBeforeSubmit
-                caseData={{...caseState, updateBy:profile.username, lastUpdate: new Date().toISOString()} as CaseDetails}
+                caseData={{ ...caseState, updateBy: profile.username, lastUpdate: new Date().toISOString() } as CaseDetails}
                 submitButton={handleSaveChanges}
                 isOpen={showPreviewData}
                 isCreate={false}
@@ -829,29 +897,34 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 isOpen={showCancelUnitModal}
                 onClose={() => setShowCancelUnitModal(false)}
                 onConfirm={handleConfirmCancelUnit}
-                title="Cancel Assignment"
-                description={<>Are you sure you want to cancel the assignment for <strong>{unitToCancel?.unit.username}</strong>?</>}
-                confirmButtonText="Confirm"
+                title={t("case.display.cancel_case_assignment_title")}
+                description={<>{t("case.display.cancel_case_assignment_detail")} <strong>{unitToCancel?.unit.username}</strong>?</>}
+                confirmButtonText={t("common.confirm")}
                 confirmButtonVariant="error"
+                cancelButtonText={t("common.cancel")}
             />
             <ConfirmationModal
                 isOpen={showCancelCaseModal}
                 onClose={() => setShowCancelCaseModal(false)}
                 onConfirm={handleConfirmCancelCase}
-                title="Cancel Case"
-                description="Are you sure you want to cancel this entire case? This action cannot be undone."
-                confirmButtonText="Confirm"
+                title={t("case.display.cancel_case_title")}
+                description={t("case.display.cancel_case_detail")}
+                confirmButtonText={t("common.confirm")}
                 confirmButtonVariant="error"
+                cancelButtonText={t("common.cancel")}
             />
             <ConfirmationModal
                 isOpen={showCloseCaseModal}
                 onClose={() => setShowCloseCaseModal(false)}
-                onConfirm={handleConfirmCloseCase}
-                title="Close Case"
-                description="Are you sure you want to close this case?"
-                confirmButtonText="Confirm"
-                confirmButtonVariant="success"
+                onConfirm={handleOnChickCloseButton}
+                title={t("case.display.close_case_title")}
+                description={t("case.display.close_case_detail")}
+                confirmButtonText={t("common.confirm")}
+                confirmButtonVariant="outline"
+                cancelButtonText={t("common.cancel")}
             />
+
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 }

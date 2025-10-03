@@ -21,12 +21,16 @@ import DateStringToDateFormat, { DateStringToAgoFormat } from "@/components/date
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
 import { useFetchCase } from "@/components/case/uitls/CaseApiManager"
-import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput"
+import { SearchableSelect, SearchableSelectApi } from "@/components/SearchInput/SearchSelectInput"
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
 import { getNewCaseData } from "@/components/case/caseLocalStorage.tsx/caseListUpdate"
 import { useTranslation } from "@/hooks/useTranslation"
+import { SLACountdownBadgeAssignment } from "@/components/Sla/Sla"
+import { Area, mergeArea } from "@/store/api/area"
+import { useGetUsersQuery } from "@/store/api/userApi"
+import { UserProfile } from "@/types/user"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
@@ -45,6 +49,7 @@ export default function CasesView() {
   const [selectedCase, setSelectedCase] = useState<CaseEntity | null>(null)
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false);
   // const [showDynamicForm, setShowDynamicForm] = useState(false)
   const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
   const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
@@ -70,6 +75,9 @@ export default function CasesView() {
     caseType: "",
     caseSubtype: "",
     createBy: "",
+    area: {} as Area,
+    phoneNumber: "",
+    user: "",
   })
   const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
 
@@ -131,7 +139,10 @@ export default function CasesView() {
       endDate: "",
       caseType: "",
       caseSubtype: "",
-      createBy: ""
+      createBy: "",
+      area: {} as Area,
+      phoneNumber: "",
+      user: "",
     };
     setAdvancedFilters(clearedFilters);
     setSelectedStatus(null)
@@ -141,7 +152,11 @@ export default function CasesView() {
     handleAdvanceFilterClose();
   };
   const handleRefreshCase = async () => {
+    setIsRefreshing(true);
     await getNewCaseData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 5000);
     const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
   }
@@ -189,125 +204,7 @@ export default function CasesView() {
       ;
   }
 
-  const SLACountdownBadge = ({ createdAt, sla }: { createdAt: string, sla: number }) => {
-    const [timeRemaining, setTimeRemaining] = useState<{
-      isOverdue: boolean;
-      days: number;
-      hours: number;
-      minutes: number;
-      seconds: number;
-      totalSeconds: number;
-    } | null>(null);
-    const { t } = useTranslation();
 
-    if (sla === null) {
-      return null;
-    }
-
-    useEffect(() => {
-      const calculateTimeRemaining = () => {
-        const createdDate = new Date(createdAt);
-        const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000) - 7 * 3600 * 1000);
-        const now = new Date();
-        const diffMs = slaDeadline.getTime() - now.getTime();
-        if (diffMs <= 0) {
-          const overdueSeconds = Math.abs(Math.floor(diffMs / 1000));
-          const overdueDays = Math.floor(overdueSeconds / (24 * 60 * 60));
-          const overdueHours = Math.floor((overdueSeconds % (24 * 60 * 60)) / (60 * 60));
-          const overdueMinutes = Math.floor((overdueSeconds % (60 * 60)) / 60);
-
-          return {
-            isOverdue: true,
-            days: overdueDays,
-            hours: overdueHours,
-            minutes: overdueMinutes,
-            seconds: overdueSeconds % 60,
-            totalSeconds: overdueSeconds
-          };
-        }
-
-
-        const totalSeconds = Math.floor(diffMs / 1000);
-        const days = Math.floor(totalSeconds / (24 * 60 * 60));
-        const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
-        const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-        const seconds = totalSeconds % 60;
-
-        return {
-          isOverdue: false,
-          days,
-          hours,
-          minutes,
-          seconds,
-          totalSeconds
-        };
-      };
-
-      setTimeRemaining(calculateTimeRemaining());
-
-      const interval = setInterval(() => {
-        setTimeRemaining(calculateTimeRemaining());
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }, [createdAt, sla]);
-
-    if (!timeRemaining) {
-      return null;
-    }
-
-    const formatOverdueTime = () => {
-      if (timeRemaining.days > 0) {
-        return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
-      } else if (timeRemaining.hours > 0) {
-        return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
-      } else if (timeRemaining.minutes > 0) {
-        return `${timeRemaining.minutes} ${t("time.m")}`;
-      } else {
-        return `${timeRemaining.seconds} ${t("time.s")}`;
-      }
-    };
-
-    const formatRemainingTime = () => {
-      if (timeRemaining.days > 0) {
-        return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
-      } else if (timeRemaining.hours > 0) {
-        return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
-      } else if (timeRemaining.minutes > 0) {
-        return `${timeRemaining.minutes} ${t("time.m")}`;
-      } else {
-        return `${timeRemaining.seconds} ${t("time.s")}`;
-      }
-    };
-
-    if (timeRemaining.isOverdue) {
-      return (
-        <Badge
-          variant="solid"
-          color="error"
-          size="xs"
-          className="text-center animate-pulse"
-        >
-          {t("progress.overdue_by")} {formatOverdueTime()}
-        </Badge>
-      );
-    }
-
-    if (timeRemaining.totalSeconds <= 7200) {
-      return (
-        <Badge
-          variant="outline"
-          color="warning"
-          size="xs"
-          className="text-center"
-        >
-          {t("time.TIMEREMAINING")} {formatRemainingTime()}
-        </Badge>
-      );
-    }
-
-    return null;
-  };
 
   const AdvanceFilter: React.FC = () => {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
@@ -319,7 +216,11 @@ export default function CasesView() {
         detail: localFilters.descriptionSearch,
         start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
         end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
-        createBy: localFilters.createBy ?? undefined
+        createBy: localFilters.createBy ?? undefined,
+        provId: localFilters.area.provId,
+        distId: localFilters.area.distId,
+        countryId: localFilters.area.countryId,
+        phoneNo: localFilters.phoneNumber
       });
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);
@@ -342,6 +243,16 @@ export default function CasesView() {
 
     };
 
+    const handleAreaChange = (label: string) => {
+      const selected = areaList.find(item => mergeArea(item, language) === label);
+      if (selected)
+        setLocalFilters(prev => ({
+          ...prev,
+          area: selected
+        }));
+
+    };
+
     const caseTypeOptions = useMemo(() => {
       if (!caseTypeSupTypeData?.length) return [];
       return caseTypeSupTypeData.map(item =>
@@ -349,6 +260,9 @@ export default function CasesView() {
       );
     }, [caseTypeSupTypeData]);
 
+    const areaList = useMemo(() =>
+      JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
+    );
 
     return (<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
       <div>
@@ -380,7 +294,16 @@ export default function CasesView() {
               placeholder={t("case.display.advance_filtering.search_detail_placeholder")}
             />
           </div>
-
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.service_center")}</label>
+            <SearchableSelect
+              options={areaList.map(item => mergeArea(item, language))}
+              value={localFilters?.area ? mergeArea(localFilters.area, language) : ""}
+              onChange={(e) => handleAreaChange(e)}
+              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.service_center")}
+            />
+          </div>
           <div className="grid grid-cols-2">
             <div className="mr-2">
               <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.start_date_title")}</label>
@@ -417,13 +340,44 @@ export default function CasesView() {
           </div>
           <div>
             <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.create_by_tilte")}</label>
-            <input
+            <SearchableSelectApi<UserProfile>
+              id="createBy"
+              value={localFilters.createBy}
+              onChange={(e) => setLocalFilters({ ...localFilters, createBy: e })}
+              placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
+              apiQuery={useGetUsersQuery}
+              labelKey="username"
+              valueKey="username"
+              className="w-full border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+            />
+            {/* <input
               id="createBy"
               type="texts"
               value={localFilters.createBy}
               onChange={(e) => setLocalFilters({ ...localFilters, createBy: e.target.value })}
               className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
               placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
+            /> */}
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.phone")}</label>
+            {/* <SearchableSelectApi<UserProfile>
+              id="mobile"
+              value={localFilters.phoneNumber}
+              onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e })}
+              placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
+              apiQuery={useGetUsersQuery}
+              labelKey="mobileNo"
+              valueKey="mobileNo"
+              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+            /> */}
+            <input
+              id="phoneNo"
+              type="texts"
+              value={localFilters.phoneNumber}
+              onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
             />
           </div>
         </div>
@@ -457,7 +411,7 @@ export default function CasesView() {
               <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
-          <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
+          <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
           {/* <div className="flex items-center space-x-2">
             <MessageCircle className="w-3 h-3" />
             <span>{caseItem.comments ?? 0}</span>
@@ -514,12 +468,13 @@ export default function CasesView() {
   }
 
   const ListView = () => (
-    <div className="space-y-3 ">
+    <div className="space-y-3  ">
       {/* Desktop Header - Hidden on mobile */}
-      <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
+      <div className="hidden md:grid grid-cols-14 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
         <div className="col-span-3">{t("case.assignment.case_type")}</div>
         <div className="col-span-2">{t("case.assignment.area")}</div>
         <div className="col-span-2">{t("case.assignment.status")}</div>
+        <div className="col-span-2">SLA</div>
         <div className="col-span-2">{t("case.assignment.piority")}</div>
         <div className="col-span-2">{t("case.assignment.create_by")}</div>
         <div className="col-span-1">{t("case.assignment.create_date")}</div>
@@ -536,7 +491,7 @@ export default function CasesView() {
               onClick={() => handleCaseClick(caseItem)}
             >
               {/* Desktop Layout */}
-              <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-4">
+              <div className="hidden md:grid grid-cols-14 gap-4 px-4 py-4">
                 {/* Case Type */}
                 <div className="col-span-3 flex items-center">
                   <div className="flex items-center space-x-3">
@@ -552,14 +507,13 @@ export default function CasesView() {
                 <div className="col-span-2 flex items-center">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600 dark:text-gray-300 ">
-                      {caseItem.caselocAddr || 'No location'}
+                      {caseItem.caselocAddr || '-'}
                     </span>
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="col-span-2 flex items-center">
-                  {/* <SLACountdownBadge createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} /> */}
                   <Badge
                     color="primary"
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
@@ -570,6 +524,11 @@ export default function CasesView() {
                         caseStatus.find((item) => caseItem?.statusId === item.statusId)?.en
                     }
                   </Badge>
+                </div>
+
+                {/* SLA */}
+                <div className="col-span-2 flex items-center">
+                  <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
                 </div>
 
                 {/* Priority */}
@@ -730,8 +689,14 @@ export default function CasesView() {
   }, [selectedCase, navigate])
 
   const hasActiveFilters = () => {
-    return Object.values(advancedFilters).some(value => value !== "");
+    return Object.entries(advancedFilters).some(([key, value]) => {
+      if (key === 'area') {
+        return value && typeof value === 'object' && Object.keys(value).length > 0;
+      }
+      return value !== "";
+    });
   };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
@@ -806,6 +771,7 @@ export default function CasesView() {
                 className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
                 onClick={handleRefreshCase}
                 size="sm"
+                disabled={isRefreshing}
               >
                 <RefreshCcw className="w-4 h-4" />
               </Button>
@@ -864,6 +830,6 @@ export default function CasesView() {
 
       {/* Advanced Filter Modal */}
       {showAdvanceFilter && <AdvanceFilter />}
-    </div>
+    </div >
   );
 }

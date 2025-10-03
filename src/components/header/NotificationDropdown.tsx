@@ -7,7 +7,7 @@ import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { useWebSocket } from "@/components/websocket/websocket";
 import { Menu } from "@headlessui/react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS, WEBSOCKET } from "@/utils/constants";
+import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS, } from "@/utils/constants";
 import { isValidImageUrl } from "@/utils/resourceValidators";
 import { formatLastNotification } from "@/utils/utils";
 import type { Notification, PopupItem } from "@/types/notification";
@@ -17,7 +17,7 @@ const NotificationDropdown = () => {
   const navigate = useNavigate();
 
   // Use main WebSocket context instead of creating own socket
-  const { isConnected, subscribe, connect, connectionState } = useWebSocket();
+  const { isConnected, onMessage, websocket, connectionState } = useWebSocket();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const closeAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -309,17 +309,17 @@ const NotificationDropdown = () => {
     }
 
     // Auto-connect if not connected
-    if (connectionState === 'disconnected') {
-      connect({
-        url: `${WEBSOCKET}/api/v1/notifications/register`,
-        reconnectInterval: 5000,
-        maxReconnectAttempts: 10,
-        heartbeatInterval: 60000
-      });
-    }
+    // if (connectionState === 'disconnected') {
+    //   connect({
+    //     url: `${WEBSOCKET}/api/v1/notifications/register`,
+    //     reconnectInterval: 5000,
+    //     maxReconnectAttempts: 10,
+    //     heartbeatInterval: 60000
+    //   });
+    // }
 
     // Subscribe to WebSocket messages
-    const unsubscribe = subscribe((message) => {
+    const unsubscribe = onMessage((message) => {
       try {
         const data: Notification = message.data;
         const prefs = getPreferences();
@@ -366,7 +366,7 @@ const NotificationDropdown = () => {
       clearGroupCloseTimer();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.username, profile?.orgId, subscribe, connect, connectionState, isOpen]);
+  }, [profile?.username, profile?.orgId, onMessage, websocket, connectionState, isOpen]);
 
   useEffect(() => {
     const loadNotifications = async () => {

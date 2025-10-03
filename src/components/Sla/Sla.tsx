@@ -1,21 +1,128 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDate } from "@fullcalendar/core/index.js";
+import { useState, useEffect } from "react";
+import Badge from "../ui/badge/Badge";
 import { CheckCircle, Circle } from "lucide-react";
-import { useState } from "react";
-import { getTimeDifference } from "../sopStepTranForm";
+import { getTimeDifference } from "../case/sopStepTranForm";
 
-export const formatAdjustedDate = (date: string | Date) =>
-    formatDate(
-        new Date(new Date(date).getTime() - 7 * 3600 * 1000).toISOString()
-    );
+export const SLACountdownBadgeAssignment = ({ createdAt, sla }: { createdAt: string, sla: number }) => {
+    const [timeRemaining, setTimeRemaining] = useState<{
+        isOverdue: boolean;
+        days: number;
+        hours: number;
+        minutes: number;
+        seconds: number;
+        totalSeconds: number;
+    } | null>(null);
+    const { t } = useTranslation();
+    
+    if (sla === null) {
+        return null;
+    }
+
+    useEffect(() => {
+        const calculateTimeRemaining = () => {
+            const createdDate = new Date(createdAt);
+            const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000));
+            const now = new Date();
+            const diffMs = slaDeadline.getTime() - now.getTime();
+            if (diffMs <= 0) {
+                const overdueSeconds = Math.abs(Math.floor(diffMs / 1000));
+                const overdueDays = Math.floor(overdueSeconds / (24 * 60 * 60));
+                const overdueHours = Math.floor((overdueSeconds % (24 * 60 * 60)) / (60 * 60));
+                const overdueMinutes = Math.floor((overdueSeconds % (60 * 60)) / 60);
+
+                return {
+                    isOverdue: true,
+                    days: overdueDays,
+                    hours: overdueHours,
+                    minutes: overdueMinutes,
+                    seconds: overdueSeconds % 60,
+                    totalSeconds: overdueSeconds
+                };
+            }
 
 
-export const formatDueDate = (date: string | Date, sla: number) =>
-    formatDate(
-        new Date(
-            new Date(date).getTime() + sla * 60 * 1000 - 7 * 3600 * 1000
-        ).toISOString()
-    );
+            const totalSeconds = Math.floor(diffMs / 1000);
+            const days = Math.floor(totalSeconds / (24 * 60 * 60));
+            const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+            const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+            const seconds = totalSeconds % 60;
+
+            return {
+                isOverdue: false,
+                days,
+                hours,
+                minutes,
+                seconds,
+                totalSeconds
+            };
+        };
+
+        setTimeRemaining(calculateTimeRemaining());
+
+        const interval = setInterval(() => {
+            setTimeRemaining(calculateTimeRemaining());
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [createdAt, sla]);
+
+    if (!timeRemaining) {
+        return null;
+    }
+
+    const formatOverdueTime = () => {
+        if (timeRemaining.days > 0) {
+            return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+        } else if (timeRemaining.hours > 0) {
+            return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+        } else if (timeRemaining.minutes > 0) {
+            return `${timeRemaining.minutes} ${t("time.m")}`;
+        } else {
+            return `${timeRemaining.seconds} ${t("time.s")}`;
+        }
+    };
+
+    const formatRemainingTime = () => {
+        if (timeRemaining.days > 0) {
+            return `${timeRemaining.days} ${t("time.d")} ${timeRemaining.hours}${t("time.h")}`;
+        } else if (timeRemaining.hours > 0) {
+            return `${timeRemaining.hours} ${t("time.h")} ${timeRemaining.minutes}${t("time.m")}`;
+        } else if (timeRemaining.minutes > 0) {
+            return `${timeRemaining.minutes} ${t("time.m")}`;
+        } else {
+            return `${timeRemaining.seconds} ${t("time.s")}`;
+        }
+    };
+
+    if (timeRemaining.isOverdue) {
+        return (
+            <Badge
+                variant="solid"
+                color="error"
+                size="xs"
+                className="text-center animate-pulse"
+            >
+                {t("progress.overdue_by")} {formatOverdueTime()}
+            </Badge>
+        );
+    }
+
+    if (timeRemaining.totalSeconds <= 7200) {
+        return (
+            <Badge
+                variant="outline"
+                color="warning"
+                size="xs"
+                className="text-center"
+            >
+                {t("time.TIMEREMAINING")} {formatRemainingTime()}
+            </Badge>
+        );
+    }
+
+    return null;
+};
 
 export const StepCircle: React.FC<{
     completed: boolean;
@@ -40,7 +147,7 @@ export const StepCircle: React.FC<{
             : "border-gray-300 dark:border-gray-600 text-gray-400";
 
     const calculateSlaPerformance = () => {
-        if (!step.sla || (!completed && !current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt ) {
+        if (!step.sla || (!completed && !current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt) {
             return null;
         }
 
@@ -49,10 +156,10 @@ export const StepCircle: React.FC<{
         const actualDurationMs = endTime - startTime;
         const actualDurationMinutes = actualDurationMs / (1000 * 60);
         const slaDurationMinutes = step.sla;
-        
+
         const difference = actualDurationMinutes - slaDurationMinutes;
         const isOverdue = difference > 0;
-        
+
         return {
             actualDuration: actualDurationMinutes,
             slaDuration: slaDurationMinutes,
@@ -66,10 +173,10 @@ export const StepCircle: React.FC<{
     const formatDuration = (minutes: number) => {
         if (minutes < 60) {
             return `${Math.round(minutes)} ${t("time.Minutes")}`;
-        } else if (minutes < 1440) {
+        } else if (minutes < 1440) { // Less than 24 hours
             const hours = Math.floor(minutes / 60);
             const remainingMinutes = Math.round(minutes % 60);
-            return remainingMinutes > 0 
+            return remainingMinutes > 0
                 ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
                 : `${hours} ${t("time.Hours")}`;
         } else {
@@ -102,7 +209,7 @@ export const StepCircle: React.FC<{
                             {t("progress.actual")}: {formatDuration(slaPerformance.actualDuration)}
                         </div>
                         <div className={`font-medium ${slaPerformance.isOverdue ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                            {slaPerformance.isOverdue 
+                            {slaPerformance.isOverdue
                                 ? `${t("progress.overdue_by")}: ${formatDuration(slaPerformance.difference)}`
                                 : `${t("progress.faster_by")}: ${formatDuration(slaPerformance.difference)}`
                             }
@@ -110,7 +217,7 @@ export const StepCircle: React.FC<{
                     </div>
                 </div>
             );
-        } else if (!step.sla) {
+        } else if (step.sla || step.sla === 0) {
             return (
                 <div className="space-y-1">
                     <div className="font-semibold text-gray-700 dark:text-gray-300">
@@ -141,7 +248,7 @@ export const StepCircle: React.FC<{
     };
 
     return (
-        <div 
+        <div
             className="relative inline-block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -153,7 +260,7 @@ export const StepCircle: React.FC<{
                     <Circle className={`w-3 h-3 ${current ? "fill-current" : ""}`} />
                 )}
             </div>
-            
+
             {isHovered && (
                 <div className="absolute z-50 bottom-1/2 left-1/2 transform  mb-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg whitespace-nowrap">
                     {renderTooltipContent()}

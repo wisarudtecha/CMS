@@ -40,14 +40,11 @@ export const CaseLayout = memo<CaseLayoutProps>(({
     caseItem,
     referCaseList,
     children,
-    showToast,
     className = ""
 }) => {
     return (
         <div className={`flex flex-col  ${className}`}>
             {/* Toast */}
-            {showToast}
-
             {/* Header */}
             <CaseHeader
                 disablePageMeta={disablePageMeta}

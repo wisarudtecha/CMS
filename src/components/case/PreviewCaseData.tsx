@@ -4,7 +4,7 @@ import {
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy"
 import FormFieldValueDisplay from "./CaseDisplay"
 import { CaseDetails } from "@/types/case"
@@ -12,7 +12,7 @@ import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubT
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { Modal } from "../ui/modal"
 import { useTranslation } from "@/hooks/useTranslation"
-import DateStringToDateFormat from "../date/DateToString"
+import { formatDate } from "@/utils/crud"
 
 
 interface PreviewDataBeforeSubmitProps {
@@ -35,6 +35,12 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
         []
     )
     const { t, language } = useTranslation();
+    const [disableButton, setDisableButton] = useState(false); // to make sure user cant spam on submit button
+    
+    useEffect(()=>{
+        setDisableButton(false)
+    },[isOpen]) // for make submit button can be use again
+
     return (
         <Modal
             isOpen={isOpen}
@@ -59,7 +65,7 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                                 {!isCreate && caseData?.date && <div className="flex items-center space-x-1">
                                     <Clock className="w-4 h-4" />
-                                    <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData?.date, false, language)}</span>
+                                    <span>{t("case.sop_card.create_date")}: {formatDate(caseData?.date)}</span>
                                 </div>}
                                 <div className="flex items-center space-x-1">
                                     <User className="w-4 h-4" />
@@ -113,7 +119,12 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
 
                 {submitButton && (
                     <div className="flex justify-end">
-                        <Button onClick={submitButton}>{t("common.confirm")}</Button>
+                        <Button 
+                        disabled={disableButton}
+                        onClick={()=>{
+                            submitButton()
+                            setDisableButton(true)
+                        }}>{t("common.confirm")}</Button>
                     </div>
                 )}
             </div>

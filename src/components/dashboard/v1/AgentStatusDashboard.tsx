@@ -1,4 +1,4 @@
-// src/components/AgentStatusDashboard.tsx
+// src/components/dashboard/v1/AgentStatusDashboard.tsx
 import React, { useState } from 'react';
 import { Settings, RotateCcw } from 'lucide-react';
 

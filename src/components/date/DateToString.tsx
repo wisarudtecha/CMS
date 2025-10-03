@@ -59,15 +59,13 @@ export default function DateStringToDateFormat(
 
 export function DateStringToAgoFormat(dateString: string, language: string) {
     const date = new Date(dateString);
-
-    // Shift the date by -7 hours
-    const shiftedDate = new Date(date.getTime() - 7 * 60 * 60 * 1000);
+    const shiftedDate = new Date(date.getTime());
 
     const locale = language === 'th' ? th : undefined;
 
     return formatDistanceToNow(shiftedDate, { 
         addSuffix: true,
-        locale: locale
+        locale: locale,
     });
 }
 
@@ -78,8 +76,10 @@ export function TodayDate() {
     const day = now.getDate().toString().padStart(2, '0');
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const miliseconds = now.getMilliseconds().toString().padStart(3, '0');
 
-    return `${year}-${month}-${day}T${hours}:${minutes}Z`;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${miliseconds}Z`;
 }
 
 export function TodayLocalDate() {

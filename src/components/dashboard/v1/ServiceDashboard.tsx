@@ -1,4 +1,4 @@
-// src/components/ServiceDashboard.tsx
+// src/components/dashboard/v1/ServiceDashboard.tsx
 import React, { useState } from "react";
 import { Cctv, Info, LayoutGrid, OctagonMinus, RotateCcw, Settings } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";

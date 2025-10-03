@@ -1,4 +1,4 @@
-// src/components/AnalyticsDashboard.tsx
+// src/components/dashboard/v1/AnalyticsDashboard.tsx
 import React, { useState } from 'react';
 import { Settings, RotateCcw, Phone, Clock, Users, PhoneOff } from 'lucide-react';
 

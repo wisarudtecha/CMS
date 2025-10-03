@@ -100,15 +100,15 @@ export interface CaselocAddr {
 }
 
 interface SlaTimelineEntry {
-  orgId: string;
-  caseId: string;
-  unitId: string;
-  userOwner: string;
-  statusId: string;
-  statusTh: string;
-  statusEn: string;
-  createdAt: string;
-  duration: number;
+    orgId: string;
+    caseId: string;
+    unitId: string;
+    userOwner: string;
+    statusId: string;
+    statusTh: string;
+    statusEn: string;
+    createdAt: string;
+    duration: number;
 }
 
 
@@ -163,22 +163,20 @@ export interface CaseSop {
     unitLists: CaseSopUnit[];
     formAnswer: FormFieldWithNode;
     slaTimelines: SlaTimelineEntry[];
-    deviceMetaData:DeviceMetaData
+    deviceMetaData: DeviceMetaData
 }
 
-interface DeviceLocation {
-  latitude: string;
-  longitude: string;
-}
-
-interface DeviceMetaData {
-  device_id: string;
-  device_name: string;
-  device_type: string;
-  device_serial_number: string;
-  device_model: string;
-  device_brand: string;
-  device_location: DeviceLocation;
+export interface DeviceMetaData {
+    device_id: string;
+    device_name: string;
+    device_type: string;
+    device_serial_number: string;
+    device_model: string;
+    device_brand: string;
+    device_location: {
+        latitude: string;
+        longitude: string;
+    };
 }
 
 export interface CaseSopUnit {
@@ -200,7 +198,7 @@ export interface Unit {
     plateNo: string;
     provinceCode: string;
     active: boolean;
-    photo:string;
+    photo: string;
     username: string;
     isLogin: boolean;
     isFreeze: boolean;
@@ -246,10 +244,12 @@ interface PaginationParams {
 
 export interface dispatchInterface {
     caseId: string
-    nodeId: string,
+    nodeId?: string,
     status: string,
-    unitId: string,
-    unitUser: string
+    unitId?: string,
+    resId?: string,
+    resDetail?: string,
+    unitUser?: string
 }
 
 export const dispantchApi = baseApi.injectEndpoints({

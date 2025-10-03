@@ -1,141 +1,532 @@
 // src/components/ServiceDashboard.tsx
-import React
-  // , { useState}
-from "react";
-import { ApexOptions } from "apexcharts";
-import { Cctv, Info, LayoutGrid, OctagonMinus, RotateCcw, Settings } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
+import { Cctv, Dam, LayoutGrid, Puzzle, RotateCcw, Settings } from "lucide-react";
+import { AnimatedNumber, AnimatedPercentage } from "@/components/ui/animation/AnimatedNumber";
+import { LoadingSpinner, ProgressBar, Skeleton } from "@/components/ui/loading/LoadingSystem";
+import { useWebSocket } from "@/components/websocket/websocket";
+import { useTranslation } from "@/hooks/useTranslation";
 
-// interface ServiceData {
-//   month: string;
-//   informationService: number;
-//   ticketingService: number;
-//   onProcess: number;
-// }
+type JSONValue = string | number | boolean | null | JSONArray | JSONObject;
+type JSONArray = Array<JSONValue>;
+type JSONObject = { [key: string]: JSONValue };
+
+interface MonthlyRangeResult {
+  monthsTh: string[];
+  monthsEn: string[];
+  records: JSONObject[];
+  series: {
+    name: string;
+    data: number[]
+  }[];
+  latestMonthStats: number[];
+}
+
+/**
+ * Recursively search for a key in nested objects/arrays.
+ * @param obj - The object or array to search
+ * @param targetKey - The key to look for
+ * @returns The value if found, otherwise undefined
+ */
+const findKeyDeep = (obj: JSONObject | JSONArray, targetKey: string): JSONValue | undefined => {
+  if (Array.isArray(obj)) {
+    // Loop through array items
+    for (const item of obj) {
+      if (typeof item === "object" && item !== null) {
+        const result = findKeyDeep(item, targetKey);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    }
+  }
+  else {
+    // Loop through object keys
+    for (const key in obj) {
+      if (key === targetKey) {
+        return obj[key];
+      }
+      const value = obj[key];
+      if (typeof value === "object" && value !== null) {
+        const result = findKeyDeep(value, targetKey);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Find key inside objects of an array, return index and val
+ * @param arr - The array to search
+ * @param searchKey - The key you want to find (e.g. "g1_en")
+ * @returns An object containing the index and val, or undefined if not found
+ */
+const findKeyInArray = (arr: JSONArray, searchKey: string): { index: number; val: JSONValue } | undefined => {
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (typeof item === "object" && item !== null) {
+      if (searchKey in item) {
+        return { index: i, val: (item as JSONObject)["val"] };
+      }
+    }
+  }
+  return undefined; // not found
+}
+
+/**
+ * Filter monthly data by defined range and start month,
+ * returning monthsTh, monthsEn, and series values.
+ *
+ * @param data - The DASHBOARD_MONTHLY object
+ * @param rangeMonths - Number of months to include (default = 6)
+ * @param startMonth - Starting month (1-12). Default is current month.
+ * @param startYear - Optional year for startMonth. Default is current year.
+ * @param labels - Object with label names for series (optional, default = EN values)
+ */
+const filterMonthlyRangeWithSeries = (
+  data: JSONObject,
+  rangeMonths: number = 6,
+  startMonth?: number,
+  startYear?: number,
+  labels = {
+    complete: "Complete",
+    inProgress: "In Progress",
+    new: "New"
+  }
+): MonthlyRangeResult => {
+  // Access data from additionalJson.data instead of Data
+  const additionalJson = data["additionalJson"] as JSONObject;
+  const rawData = additionalJson["data"] as JSONArray;
+
+  // Extract only month records (skip "Total")
+  const monthlyData = rawData.filter(item => {
+    if (typeof item === "object" && item !== null) {
+      return Object.keys(item).some(k => /^m\d+_en$/.test(k));
+    }
+    return false;
+  }) as JSONObject[];
+
+  // Parse date + extract labels
+  const parsedData = monthlyData.map((item: JSONObject) => {
+    const enKey = Object.keys(item).find(k => k.endsWith("_en"))!;
+    const thKey = Object.keys(item).find(k => k.endsWith("_th"))!;
+    const monthYearEn = item[enKey] as string;
+    const monthYearTh = item[thKey] as string;
+    const date = new Date(monthYearEn);
+    return { date, obj: item, monthYearEn, monthYearTh };
+  });
+
+  // Sort ascending
+  parsedData.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Determine anchor point
+  const today = new Date();
+  const startYearResolved = startYear ?? today.getFullYear();
+  const startMonthResolved = startMonth ?? (today.getMonth() + 1);
+  const anchorDate = new Date(startYearResolved, startMonthResolved - 1, 1);
+
+  // Cutoff date (N months back)
+  const cutoff = new Date(
+    anchorDate.getFullYear(),
+    anchorDate.getMonth() - (rangeMonths - 1),
+    1
+  );
+
+  // Get filtered range
+  const filtered = parsedData.filter(entry => entry.date >= cutoff && entry.date <= anchorDate);
+
+  // Build arrays
+  const monthsTh = filtered.map(entry => entry.monthYearTh);
+  const monthsEn = filtered.map(entry => entry.monthYearEn);
+  const valuesComplete = filtered.map(entry => (entry.obj["complete"] as number) ?? 0);
+  const valuesInProgress = filtered.map(entry => (entry.obj["inprogress"] as number) ?? 0);
+  const valuesNew = filtered.map(entry => (entry.obj["new"] as number) ?? 0);
+
+  // Construct series
+  const series = [
+    { name: labels.complete, data: valuesComplete },
+    { name: labels.inProgress, data: valuesInProgress },
+    { name: labels.new, data: valuesNew },
+  ];
+
+  // Latest month stats (last element of filtered)
+  const latest = filtered.length > 0 ? filtered[filtered.length - 1].obj : {};
+  const latestMonthStats = [
+    (latest["complete"] as number) ?? 0,
+    (latest["inprogress"] as number) ?? 0,
+    (latest["new"] as number) ?? 0,
+  ];
+
+  return { monthsTh, monthsEn, records: filtered.map(e => e.obj), series, latestMonthStats };
+}
 
 const ServiceDashboard: React.FC = () => {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
+  const { onMessage, isConnected, connectionState, websocket } = useWebSocket();
 
-  const categoriesEn = [
-    "Apr 2025",
-    "May 2025",
-    "Jun 2025",
-    "Jul 2025",
-    "Aug 2025",
-    "Sep 2025"
-  ];
+  // ===================================================================
+  // Mockup State Management
+  // ===================================================================
+  const DASHBOARD_CASE: JSONObject = {
+    EVENT: "DASHBOARD",
+    eventType: "hidden",
+    additionalJson: {
+      type: "CASE-SUMMARY",
+      title_en: "Work Order Summary",
+      title_th: "สรุปใบสั่งงาน",
+      data: [
+        {
+          "total_en": "Total",
+          "total_th": "ทั้งหมด",
+          "val": 376
+        },
+        {
+          "g1_en": "Censor",
+          "g1_th": "เซ็นเซอร์",
+          "val": 188
+        },
+        {
+          "g2_en": "CCTV",
+          "g2_th": "กล้อง",
+          "val": 112
+        },
+        {
+          "g3_en": "Traffic",
+          "g3_th": "การจราจร",
+          "val": 76
+        }
+      ]
+    }
+  };
 
-  const categoriesTh = [
-    "เม.ย. 2568",
-    "พ.ค. 2568",
-    "มิ.ย. 2568",
-    "ก.ค. 2568",
-    "ส.ค. 2568",
-    "ก.ย. 2568"
-  ];
+  const DASHBOARD_SLA: JSONObject = {
+    EVENT: "DASHBOARD",
+    eventType: "hidden",
+    additionalJson: {
+      type: "SLA-PERFORMANCE",
+      title_en: "SLA Performance",
+      title_th: "ประสิทธิภาพการทำงาน",
+      data: [
+        {
+        "total_en": "Total",
+        "total_th": "ทั้งหมด",
+        "val": 376
+        },
+        {
+          "inSLA_en": "InSLA",
+          "inSLA_th": "ปฏิบัติตาม SLA",
+          "val": 309
+        },
+        {
+          "overSLA_en": "OverSLA",
+          "overSLA_th": "เกินกำหนด SLA",
+          "val": 67
+        },
+        {
+          "percentage_inSLA_en": "InSLA",
+          "percentage_inSLA_th": "ปฏิบัติตาม SLA",
+          "val": "82%",
+          "formular_en": "(Number of tasks completed ON TIME / Total number of tasks) * 100",
+          "formular_th": "(จำนวนงานที่ทำเสร็จทันเวลา / จำนวนงานทั้งหมด) x 100"
+        },
+        {
+          "avg_respose_time_en": "Average Response Time",
+          "avg_respose_time_th": "เวลาเฉลี่ยในการแก้ปัญหา",
+          "val": 45,
+          "unit_en": "min.",
+          "unit_th": " นาที"
+        }
+      ]
+    }
+  };
 
-  const colors = ["#05df72", "#51a2ff", "#fdc700"];
-  const colorsReverse = ["#fdc700", "#51a2ff", "#05df72"];
-  
+  const DASHBOARD_MONTHLY: JSONObject = {
+    EVENT: "DASHBOARD-MONTHLY",
+    eventType: "hidden",
+    additionalJson: {
+      type: "CASE-MONTHLY-SUMMARY",
+      title_en: "Work Order in Monthly Summary",
+      title_th: "สรุปคำสั่งงานประจำเดือน",
+      data: [
+        { "total_en": "Total", "total_th": "ทั้งหมด", "new": 376, "inprogress": 3, "complete": 3 },
+        { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 685 },
+        { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 485 },
+        { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 645 },
+        { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 450 },
+        { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 550 },
+        { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 600 },
+        { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 379 },
+        { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 525 },
+        { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 537 },
+        { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 85, "inprogress": 212, "complete": 79 },
+        { "m11_en": "Nov 2025", "m11_th": "พ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m12_en": "Dec 2025", "m12_th": "ธ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 }
+      ]
+    }
+  };
+
+  // ===================================================================
+  // WebSocket State Management
+  // ===================================================================
+  const [dashboardCase, setDashboardCase] = useState<JSONObject>({
+    EVENT: "DASHBOARD",
+    eventType: "hidden",
+    additionalJson: {
+      type: "CASE-SUMMARY",
+      title_en: "Work Order Summary",
+      title_th: "สรุปใบสั่งงาน",
+      // data: []
+      data: (DASHBOARD_CASE.additionalJson as JSONObject)?.data
+    }
+  });
+
+  const [dashboardSLA, setDashboardSLA] = useState<JSONObject>({
+    EVENT: "DASHBOARD",
+    eventType: "hidden",
+    additionalJson: {
+      type: "SLA-PERFORMANCE",
+      title_en: "SLA Performance",
+      title_th: "ประสิทธิภาพการทำงาน",
+      // data: []
+      data: (DASHBOARD_SLA.additionalJson as JSONObject)?.data
+    }
+  });
+
+  const [dashboardMonthly, setDashboardMonthly] = useState<JSONObject>({
+    EVENT: "DASHBOARD-MONTHLY",
+    eventType: "hidden",
+    additionalJson: {
+      type: "CASE-MONTHLY-SUMMARY",
+      title_en: "Work Order in Monthly Summary",
+      title_th: "สรุปคำสั่งงานประจำเดือน",
+      // data: []
+      data: (DASHBOARD_MONTHLY.additionalJson as JSONObject)?.data
+    }
+  });
+
+  // ===================================================================
+  // General
+  // ===================================================================
+  const colors = ["#05DF72", "#51A2FF", "#FDC700"]; // Green, Blue, Yellow
+  const fontFamily = "Outfit, sans-serif";
+
+  // Access title from additionalJson
+  const dashboardCaseJson = dashboardCase.additionalJson as JSONObject;
+  const pageTitle = language === "th" ? dashboardCaseJson?.title_th : dashboardCaseJson?.title_en || "";
+
+  const dashboardSLAJson = dashboardSLA.additionalJson as JSONObject;
   const labels = {
-    new: language === "th" ? "งานใหม่" : "New",
+    complete: language === "th" ? "เสร็จสิ้น" : "Complete",
     inProgress: language === "th" ? "กำลังดำเนินการ" : "In Progress",
-    complete: language === "th" ? "เสร็จสิ้น" : "Complete"
+    new: language === "th" ? "งานใหม่" : "New",
+    compliance: language === "th" ? findKeyDeep(dashboardSLAJson, "inSLA_th") || "ปฏิบัติตาม" : findKeyDeep(dashboardSLAJson, "inSLA_en") || "Compliance",
+    overdue: language === "th" ? findKeyDeep(dashboardSLAJson, "overSLA_th") || "เกินกำหนด" : findKeyDeep(dashboardSLAJson, "overSLA_en") || "Overdue"
   }
+  
+  // ===================================================================
+  // MetricWidget
+  // ===================================================================
+  const metricsClassName = "text-gray-900 dark:text-white";
+  const metricsClassNameTotal = "text-green-500 dark:text-green-400";
+  const metricsIconSize = 24;
 
-  const seriesBarChart = [
+  // Access data from additionalJson.data
+  const caseData = dashboardCaseJson.data as JSONArray;
+
+  const metricsCards = [
     {
-      name: labels.complete,
-      data: [35, 29, 306, 164, 57, 85],
+      name: language === "th" ? findKeyDeep(caseData, "total_th") : findKeyDeep(caseData, "total_en") || "",
+      data: (findKeyInArray(caseData, "total_th")?.val || findKeyInArray(caseData, "total_en")?.val || 0) as number,
+      icon: <LayoutGrid className={metricsClassNameTotal} size={metricsIconSize} />,
+      className: metricsClassNameTotal
     },
     {
-      name: labels.inProgress,
-      data: [86, 201, 10, 21, 133, 212],
+      name: language === "th" ? findKeyDeep(caseData, "g1_th") : findKeyDeep(caseData, "g1_en") || "",
+      data: (findKeyInArray(caseData, "g1_th")?.val || findKeyInArray(caseData, "g1_en")?.val || 0) as number,
+      icon: <Dam className={metricsClassName} size={metricsIconSize} />,
+      className: metricsClassName
     },
     {
-      name: labels.new,
-      data: [267, 129, 132, 77, 58, 79],
+      name: language === "th" ? findKeyDeep(caseData, "g2_th") : findKeyDeep(caseData, "g2_en") || "",
+      data: (findKeyInArray(caseData, "g2_th")?.val || findKeyInArray(caseData, "g2_en")?.val || 0) as number,
+      icon: <Cctv className={metricsClassName} size={metricsIconSize} />,
+      className: metricsClassName
+    },
+    {
+      name: language === "th" ? findKeyDeep(caseData, "g3_th") : findKeyDeep(caseData, "g3_en") || "",
+      data: (findKeyInArray(caseData, "g3_th")?.val || findKeyInArray(caseData, "g3_en")?.val || 0) as number,
+      icon: <Puzzle className={metricsClassName} size={metricsIconSize} />,
+      className: metricsClassName
     }
   ];
-  const seriesPieChart = [86, 112, 48];
-  const seriesCustom = [48, 112];
-  
-  const optionsBarChart: ApexOptions = {
+
+  // ===================================================================
+  // ChartWidget
+  // ===================================================================
+  const chartWidgetHeight = 580;
+
+  const monthlyOfCases = filterMonthlyRangeWithSeries(
+    dashboardMonthly,
+    6,
+    undefined,
+    undefined,
+    {
+      complete: labels.complete,
+      inProgress: labels.inProgress,
+      new: labels.new
+    }
+  );
+
+  const monthsTh = monthlyOfCases.monthsTh;
+  const monthsEn = monthlyOfCases.monthsEn;
+  const seriesOfMonthlyCases = monthlyOfCases.series;
+  const seriesOfCaseStatusOverview = monthlyOfCases.latestMonthStats;
+
+  const seriesOfMonthlyCasesRate = seriesOfCaseStatusOverview.map(item => {
+    const total = seriesOfCaseStatusOverview.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+    return total > 0 ? (item / total) * 100 : 0;
+  });
+
+  const optionsOfMonthlyCases: ApexOptions = {
     colors: colors,
     chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "bar",
-      height: 500,
-      toolbar: {
-        show: false,
-      },
+      fontFamily: fontFamily,
       stacked: true,
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "39%",
-        borderRadius: 0,
-        borderRadiusApplication: "end",
-      },
+      toolbar: {
+        show: false
+      }
     },
     dataLabels: {
-      enabled: true,
+      enabled: true
     },
-    stroke: {
-      show: true,
-      width: 0,
-      colors: ["transparent"],
-    },
-    xaxis: {
-      categories: language === "th" ? categoriesTh : categoriesEn,
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-    },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
-    },
-    yaxis: {
-      title: {
-        text: undefined,
-      },
+    fill: {
+      opacity: 0.6
     },
     grid: {
       yaxis: {
         lines: {
-          show: false,
-        },
-      },
+          show: false
+        }
+      }
     },
-    fill: {
-      opacity: 1,
+    legend: {
+      fontFamily: fontFamily,
+      horizontalAlign: "right",
+      position: "top",
+      show: true
+    },
+    plotOptions: {
+      bar: {
+        columnWidth: "39%",
+        borderRadius: 0,
+        borderRadiusApplication: "end",
+        horizontal: false,
+        dataLabels: {
+          total: {
+            enabled: true,
+            offsetY: -2
+          }
+        }
+      }
+    },
+    stroke: {
+      colors: ["transparent"],
+      show: true,
+      width: 0
+    },
+    xaxis: {
+      categories: language === "th" ? monthsTh : monthsEn,
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
+    },
+    yaxis: {
+      title: {
+        text: undefined
+      }
     },
     tooltip: {
       x: {
-        show: false,
+        show: false
       },
       y: {
-        formatter: (val: number) => `${val}`,
-      },
-    },
+        formatter: (val: number) => `${val}`
+      }
+    }
   };
 
-  const optionsPieChart: ApexOptions = {
-    colors: colorsReverse,
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "donut",
-      sparkline: {
-        enabled: true,
+  const dashboardMonthlyJson = dashboardMonthly.additionalJson as JSONObject;
+  const monthlyCases = {
+    name: language === "th" ? dashboardMonthlyJson?.title_th : dashboardMonthlyJson?.title_en || "",
+    data: {
+      options: optionsOfMonthlyCases,
+      series: seriesOfMonthlyCases
+    }
+  };
+
+  // ===================================================================
+  // SLAMonitorWidget
+  // ===================================================================
+  const slaData = dashboardSLAJson.data as JSONArray;
+  const slaTotal = (findKeyInArray(slaData, "total_th")?.val || findKeyInArray(slaData, "total_en")?.val || 0) as number;
+  const slaMet = (findKeyInArray(slaData, "inSLA_th")?.val || findKeyInArray(slaData, "inSLA_en")?.val || 0) as number;
+  const slaOverdue = (findKeyInArray(slaData, "overSLA_th")?.val || findKeyInArray(slaData, "overSLA_en")?.val || 0) as number;
+  const slaMetRate = slaTotal > 0 ? (slaMet / slaTotal * 100) : 0;
+  const slaOverdueRate = slaTotal > 0 ? (slaOverdue / slaTotal * 100) : 0;
+
+  const slaPerformance = {
+    name: language === "th" ? dashboardSLAJson?.title_th : dashboardSLAJson?.title_en || "",
+    data: {
+      total: {
+        name: language === "th" ? findKeyDeep(slaData, "percentage_inSLA_th") : findKeyDeep(slaData, "percentage_inSLA_en") || "",
+        data: (findKeyInArray(slaData, "percentage_inSLA_th")?.val || findKeyInArray(slaData, "percentage_inSLA_en")?.val || "0") as string,
       },
+      met: {
+        name: language === "th" ? findKeyDeep(slaData, "inSLA_th") : findKeyDeep(slaData, "inSLA_en") || "",
+        data: slaMetRate,
+      },
+      overdue: {
+        name: language === "th" ? findKeyDeep(slaData, "overSLA_th") : findKeyDeep(slaData, "overSLA_en") || "",
+        data: slaOverdueRate,
+      },
+      avg: {
+        name: language === "th" ? findKeyDeep(slaData, "avg_respose_time_th") : findKeyDeep(slaData, "avg_respose_time_en") || "",
+        data: (findKeyInArray(slaData, "avg_respose_time_th")?.val || findKeyInArray(slaData, "avg_respose_time_en")?.val || 0) as number,
+        timeUnit: language === "th" ? findKeyDeep(slaData, "unit_th") : findKeyDeep(slaData, "unit_en") || findKeyDeep(slaData, "unit") || "",
+      }
+    }
+  };
+
+  // ===================================================================
+  // ProgressCircularWidget
+  // ===================================================================
+  const progressCircularWidgetHeight = 145;
+
+  const optionsOfCaseStatusOverview: ApexOptions = {
+    colors: colors,
+    chart: {
+      fontFamily: fontFamily,
+      sparkline: {
+        enabled: true
+      }
+    },
+    fill: {
+      colors: colors,
+      type: "solid"
+    },
+    labels: [
+      labels.complete,
+      labels.inProgress,
+      labels.new
+    ],
+    legend: {
+      show: true
     },
     plotOptions: {
       pie: {
@@ -143,251 +534,388 @@ const ServiceDashboard: React.FC = () => {
           labels: {
             show: true,
             total: {
-              show: true,
-              label: language === "th" ? "รวม" : "Total"
+              label: language === "th" ? "รวม" : "Total",
+              show: true
             }
-          }
+          },
+          size: "75%",
         }
       }
     },
-    fill: {
-      type: "solid",
-      colors: colorsReverse,
-    },
     stroke: {
-      show: false,
       lineCap: "round",
+      show: false
     },
-    labels: [
-      labels.new,
-      labels.inProgress,
-      labels.complete
-    ],
-    legend: {
-      show: true
-    },
+    tooltip: {
+      enabled: false
+    }
   };
 
-  // const [serviceData] = useState<ServiceData[]>([
-  //   { month: "Jul", informationService: 1200, ticketingService: 500, onProcess: 50 },
-  //   { month: "Aug", informationService: 900, ticketingService: 600, onProcess: 25 },
-  //   { month: "Sep", informationService: 350, ticketingService: 250, onProcess: 75 },
-  //   { month: "Oct", informationService: 0, ticketingService: 0, onProcess: 0 },
-  //   { month: "Nov", informationService: 0, ticketingService: 0, onProcess: 0 },
-  //   { month: "Dec", informationService: 0, ticketingService: 0, onProcess: 0 }
-  // ]);
+  // ===================================================================
+  // Case Status Overview
+  // ===================================================================
+  const caseStatusOverview = {
+    name: language === "th" ? "ภาพรวมสถานะใบสั่งงาน" : "Work Order Status Overview",
+    data: {
+      options: optionsOfCaseStatusOverview,
+      series: seriesOfCaseStatusOverview
+    }
+  };
 
-  // const statusCounts = {
-  //   informationService: 6,
-  //   ticketClosed: 3,
-  //   onProcess: 1
-  // };
+  // ===================================================================
+  // Action Button
+  // ===================================================================
+  const actionButtonClassName = "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 p-2 text-gray-600 dark:text-gray-300 rounded";
+  const actionButtonIconSize = 20;
 
-  // const total = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+  // ===================================================================
+  // WebSocket Message Handler - Updated for new structure
+  // ===================================================================
+  useEffect(() => {
+    const listener = onMessage(message => {
+      try {
+        console.log("🚀 ~ WebSocket message received:", message);
+        
+        const data = typeof message === "string" ? JSON.parse(message) : message;
+        
+        // Check if additionalJson exists
+        if (!data.additionalJson) {
+          console.warn("⚠️ Message missing additionalJson:", data);
+          return;
+        }
 
-  // const PieChart = () => {
-  //   const informationPercentage = (statusCounts.informationService / total) * 100;
-  //   const ticketClosedPercentage = (statusCounts.ticketClosed / total) * 100;
-  //   return (
-  //     <div className="relative w-32 h-32">
-  //       <svg viewBox="0 0 42 42" className="w-full h-full transform -rotate-90">
-  //         <circle
-  //           cx="21"
-  //           cy="21"
-  //           r="15.915"
-  //           fill="transparent"
-  //           stroke="#3b82f6"
-  //           strokeWidth="6"
-  //           strokeDasharray={`${informationPercentage} ${100 - informationPercentage}`}
-  //           strokeDashoffset="0"
-  //         />
-  //         <circle
-  //           cx="21"
-  //           cy="21"
-  //           r="15.915"
-  //           fill="transparent"
-  //           stroke="#10b981"
-  //           strokeWidth="6"
-  //           strokeDasharray={`${ticketClosedPercentage} ${100 - ticketClosedPercentage}`}
-  //           strokeDashoffset={`-${informationPercentage}`}
-  //         />
-  //         <circle
-  //           cx="21"
-  //           cy="21"
-  //           r="15.915"
-  //           fill="transparent"
-  //           stroke="#eab308"
-  //           strokeWidth="6"
-  //           strokeDasharray={`${(statusCounts.onProcess / total) * 100} ${100 - (statusCounts.onProcess / total) * 100}`}
-  //           strokeDashoffset={`-${informationPercentage + ticketClosedPercentage}`}
-  //         />
-  //       </svg>
-  //     </div>
-  //   );
-  // };
+        const additionalJson = data.additionalJson;
+        const messageType = additionalJson.type;
 
-  // const BarChart = () => {
-  //   const maxValue = Math.max(
-  //     ...serviceData.map(d => Math.max(d.informationService, d.ticketingService, d.onProcess))
-  //   );
-  //   return (
-  //     <div className="dark:bg-gray-700 rounded-lg h-full flex flex-col">
-  //       <div className="flex items-end justify-between gap-4 flex-1">
-  //         {serviceData.map((item, index) => (
-  //           <div key={index} className="flex flex-col items-center gap-2 h-full">
-  //             <div className="flex flex-col items-center gap-1 flex-1 justify-end">
-  //               {/* Information Service Bar */}
-  //               <div 
-  //                 className="bg-blue-400 dark:bg-blue-500 rounded-t w-16 transition-all duration-300 hover:bg-blue-500 dark:hover:bg-blue-400"
-  //                 style={{ 
-  //                   height: `${(item.informationService / maxValue) * 100}%`,
-  //                   minHeight: item.informationService > 0 ? "8px" : "0px",
-  //                   maxHeight: "30%" // Adjust this percentage as needed
-  //                 }}
-  //               ></div>
-  //               {/* Ticketing Service Bar */}
-  //               <div 
-  //                 className="bg-green-400 dark:bg-green-500 w-16 transition-all duration-300 hover:bg-green-500 dark:hover:bg-green-400"
-  //                 style={{ 
-  //                   height: `${(item.ticketingService / maxValue) * 100}%`,
-  //                   minHeight: item.ticketingService > 0 ? "8px" : "0px",
-  //                   maxHeight: "30%" // Adjust this percentage as needed
-  //                 }}
-  //               ></div>
-  //               {/* On Process Bar */}
-  //               <div 
-  //                 className="bg-yellow-400 dark:bg-yellow-500 rounded-b w-16 transition-all duration-300 hover:bg-yellow-500 dark:hover:bg-yellow-400"
-  //                 style={{ 
-  //                   height: `${(item.onProcess / maxValue) * 100}%`,
-  //                   minHeight: item.onProcess > 0 ? "8px" : "0px",
-  //                   maxHeight: "30%" // Adjust this percentage as needed
-  //                 }}
-  //               ></div>
-  //             </div>
-  //             <span className="text-sm text-gray-900 dark:text-white mt-2">{item.month}</span>
-  //           </div>
-  //         ))}
-  //       </div>
-  //     </div>
-  //   );
-  // };
+        // Handle different message types based on additionalJson.type
+        switch (messageType) {
+          case "CASE-SUMMARY":
+            console.log("📊 Updating DASHBOARD_CASE data");
+            setDashboardCase(data);
+            break;
+            
+          case "SLA-PERFORMANCE":
+            console.log("📈 Updating DASHBOARD_SLA data");
+            setDashboardSLA(data);
+            break;
+            
+          case "CASE-MONTHLY-SUMMARY":
+            console.log("📅 Updating DASHBOARD_MONTHLY data");
+            setDashboardMonthly(data);
+            break;
+            
+          default:
+            console.log("⚠️ Unknown message type:", messageType);
+        }
+      }
+      catch (error) {
+        console.error("❌ Error processing WebSocket message:", error);
+      }
+    });
+
+    return () => {
+      listener();
+    };
+  }, [connectionState, isConnected, onMessage, websocket]);
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 cursor-default">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t("navigation.sidebar.main.dashboard.nested.service.header")}</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-semibold text-2xl text-gray-900 dark:text-white">
+          {pageTitle as string}
+        </h1>
         <div className="flex gap-2">
-          <button className="p-2 text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded border border-gray-300 dark:border-gray-600">
-            <Settings size={20} />
+          <button className={actionButtonClassName || ""}>
+            <Settings size={actionButtonIconSize || 0} />
           </button>
-          <button className="p-2 text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded border border-gray-300 dark:border-gray-600">
-            <RotateCcw size={20} />
+          <button className={actionButtonClassName || ""}>
+            <RotateCcw size={actionButtonIconSize || 0} />
           </button>
         </div>
       </div>
 
-      <div className="space-y-6">
-        {/* Top Stats Cards */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
-          <div className="bg-gray-500 rounded-lg p-6 flex items-center justify-center gap-4">
-            <LayoutGrid className="text-white" size={24} />
-            <div>
-              <div className="text-sm text-white">{language === "th" ? "ทั้งหมด" : "Total"}</div>
-              <div className="text-3xl font-bold text-white">1,000</div>
-              {/* <div className="text-sm text-gray-100 mt-1">All Work Orders</div> */}
-              <div className="text-sm text-gray-100 mt-1"></div>
-            </div>
-          </div>
-
-          <div className="bg-blue-400 rounded-lg p-6 flex items-center justify-center gap-4">
-            <Info className="text-white" size={24} />
-            <div>
-              <div className="text-sm text-white">{language === "th" ? "เซ็นเซอร์" : "Sensor"}</div>
-              <div className="text-3xl font-bold text-white">500</div>
-              <div className="text-sm text-gray-100 mt-1"></div>
-            </div>
-          </div>
-
-          <div className="bg-green-400 rounded-lg p-6 flex items-center justify-center gap-4">
-            <Cctv className="text-white" size={24} />
-            <div>
-              <div className="text-sm text-white">{language === "th" ? "กล้อง" : "Camera"}</div>
-              <div className="text-3xl font-bold text-white">250</div>
-              <div className="text-sm text-gray-100 mt-1"></div>
-            </div>
-          </div>
-
-          <div className="bg-red-400 rounded-lg p-6 flex items-center justify-center gap-4">
-            <OctagonMinus className="text-white" size={24} />
-            <div>
-              <div className="text-sm text-white">{language === "th" ? "การจราจร" : "Traffic"}</div>
-              <div className="text-3xl font-bold text-white">250</div>
-              <div className="text-sm text-gray-100 mt-1"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        <div className="col-span-3 h-full">
-          <Chart options={optionsBarChart} series={seriesBarChart} type="bar" height={500} />
-          {/* <BarChart /> */}
-        </div>
-
-        <div className="col-span-1 h-full flex flex-col gap-6">
-          {/* Pie Chart */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <div className="flex justify-center">
-              <Chart options={optionsPieChart} series={seriesPieChart} type="donut" />
-              {/* <PieChart /> */}
-            </div>
-          </div>
-
-          {/* Status Cards */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-green-400 rounded-lg p-4">
-              <div className="text-sm text-white">{labels.complete}</div>
-              <div className="text-2xl font-bold text-white">{seriesCustom[0]}</div>
-            </div>
-
-            <div className="bg-blue-400 rounded-lg p-4">
-              <div className="text-sm text-white">{labels.inProgress}</div>
-              <div className="text-2xl font-bold text-white">{seriesCustom[1]}</div>
-            </div>
-          </div>
-
-          {/* Progress Bars */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg space-y-4 flex-1">
-            {/*
-            <div>
-              <div className="flex justify-between items-center mb-2 text-gray-900 dark:text-white">
-                <span className="text-sm">Information Service</span>
-                <span className="text-sm font-semibold">50 %</span>
-              </div>
-              <div className="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2">
-                <div className="bg-blue-400 h-2 rounded-full" style={{ width: "50%" }}></div>
-              </div>
-            </div>
+      <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">
+        <div className="col-span-3 h-full flex flex-col gap-4">
+          {/**
+            * Overview Cases
+            * Widget Name: MetricWidget
+            * Chart Type: Metric (Custom)
             */}
+          <div className="space-y-4">
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">
+              {metricsCards.map((item, index) => (
+                <div key={`metricsCardSummary-${index}`} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex gap-4 p-4 items-center justify-center rounded-lg">
+                  {(item?.name || item?.data) &&
+                    item?.icon || 
+                    <Skeleton className="mb-2" height={24} width={24} />
+                  }
+                  <div>
+                    {item?.name ? (
+                      <div className={`${item?.className as string || ""} text-sm`}>{item.name as string || ""}</div>
+                    ) : (
+                      <Skeleton className="mb-2" height={20} width={120} />
+                    )}
+                    {item?.data ? (
+                      <AnimatedNumber
+                        value={item.data || 0}
+                        className={`${item?.className as string || ""} text-3xl font-bold`}
+                        duration={1.2}
+                      />
+                    ) : (
+                      <Skeleton height={36} width={60} />
+                    )}
+                    {/* <div className={`${item?.className as string || ""} text-3xl font-bold`}>{item?.data || 0}</div> */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-2 text-gray-900 dark:text-white">
-                <span className="text-sm">{labels.complete}</span>
-                <span className="text-sm font-semibold">{parseInt(((seriesCustom[0] / seriesPieChart.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100).toString())} %</span>
+          {/**
+            * Monthly Cases
+            * Widget Name: ChartWidget
+            * Chart Type: Bar
+            */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 gap-2 p-2 rounded-lg relative">
+              <div className="absolute flex items-center justify-between left-4 top-4 mb-2">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {monthlyCases?.name as string || ""}
+                </h3>
               </div>
-              <div className="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2">
-                <div className="bg-green-400 h-2 rounded-full" style={{ width: `${(seriesCustom[0] / seriesPieChart.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100}%` }}></div>
+              {monthlyCases?.data?.series?.reduce((acc, curr) => acc + curr.data.reduce((sum, val) => sum + val, 0), 0) ? (
+                <Chart options={monthlyCases?.data?.options || []} series={monthlyCases?.data?.series || []} type="bar" height={chartWidgetHeight || 0} />
+              ) : (
+                <div className="flex items-center justify-center" style={{height: `${(chartWidgetHeight + 20) || 0}px`}}>
+                  <LoadingSpinner className="h-full" color="gray" size="xl" />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-1 h-full flex flex-col gap-4">
+          {/**
+            * SLA Performance
+            * Widget Name: SLAMonitorWidget
+            * Chart Type: ProgressBar (Custom)
+            */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 gap-2 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {slaPerformance?.name ? (
+                    slaPerformance.name as string || ""
+                  ) : (
+                    <Skeleton height={20} width={80} />
+                  )}
+                </h3>
+              </div>
+              <div className="space-y-4">
+                <div className="text-center">
+                  {slaPerformance?.data?.total?.data && slaPerformance?.data?.total?.data != "0" ? (
+                    <AnimatedPercentage
+                      value={slaPerformance.data.total.data || "0"}
+                      className="text-green-600 dark:text-green-300 text-2xl font-bold"
+                      duration={1.5}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center mb-2">
+                      <Skeleton height={32} width={60} />
+                    </div>
+                  )}
+                  {/* <div className="text-green-600 dark:text-green-300 text-2xl font-bold">{slaPerformance.data.total.data || "0"}%</div> */}
+                  <div className="text-gray-500 dark:text-gray-400 text-xs">
+                    {slaPerformance?.data?.total?.name ? (
+                      slaPerformance.data.total.name as string || ""
+                    ) : (
+                      <div className="flex items-center justify-center mb-2">
+                        <Skeleton height={15} width={100} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    {slaPerformance?.data?.met?.name ? (
+                      <span className="text-gray-600 dark:text-gray-300 text-sm">{slaPerformance.data.met.name as string || ""}</span>
+                    ) : (
+                      <Skeleton height={20} width={80} />
+                    )}
+                    {slaPerformance?.data?.met?.data ? (
+                      <AnimatedPercentage
+                        value={slaPerformance.data.met.data || 0}
+                        className="text-green-600 dark:text-green-300 text-sm font-medium"
+                        duration={1.5}
+                      />
+                    ) : (
+                      <Skeleton height={20} width={40} />
+                    )}
+                    {/* <span className="text-green-600 dark:text-green-300 text-sm font-medium">{slaPerformance.data.met.data || "0"}%</span> */}
+                  </div>
+                  <div className="bg-gray-200 dark:bg-gray-700 h-2 rounded-full w-full">
+                    <div className="bg-green-500 dark:bg-green-400 h-2 rounded-full" style={{width:`${slaPerformance.data.met.data || "0"}%`}}></div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {slaPerformance?.data?.overdue?.name ? (
+                      <span className="text-gray-600 dark:text-gray-300 text-sm">{slaPerformance.data.overdue.name as string || ""}</span>
+                    ) : (
+                      <Skeleton height={20} width={80} />
+                    )}
+                    {slaPerformance?.data?.overdue?.data ? (
+                      <AnimatedPercentage
+                        value={slaPerformance.data.overdue.data || 0}
+                        className="text-red-600 dark:text-red-300 text-sm font-medium"
+                        duration={1.5}
+                      />
+                    ) : (
+                      <Skeleton height={20} width={40} />
+                    )}
+                    {/* <span className="text-red-600 dark:text-red-300 text-sm font-medium">{slaPerformance?.data?.overdue?.data || "0"}%</span> */}
+                  </div>
+                </div>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-center">
+                  <div className="text-gray-900 dark:text-white text-lg font-bold">
+                    {slaPerformance?.data?.avg?.data ? (
+                      <AnimatedNumber
+                        value={slaPerformance.data.avg.data || 0}
+                        duration={1.5}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center mb-2">
+                        <Skeleton height={28} width={60} />
+                      </div>
+                    )}
+                    {/* {slaPerformance.data.avg.data || 0} */}
+                    {slaPerformance?.data?.avg?.timeUnit as string || ""}
+                  </div>
+                  <div className="text-gray-500 dark:text-gray-400 text-xs">
+                    {slaPerformance?.data?.avg?.name ? (
+                      slaPerformance.data.avg.name as string || ""
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <Skeleton height={20} width={120} />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-2 text-gray-900 dark:text-white">
-                <span className="text-sm">{labels.inProgress}</span>
-                <span className="text-sm font-semibold">{parseInt(((seriesCustom[1] / seriesPieChart.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100).toString())} %</span>
+          {/**
+            * Case Status Overview
+            * Widget Name: ProgressCircularWidget, MetricWidget, ProgressBarWidget
+            * Chart Type: Pie/Donut, Metric (Custom), ProgressBar (Custom)
+            */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 gap-2 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {caseStatusOverview?.name || ""}
+                </h3>
               </div>
-              <div className="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2">
-                <div className="bg-blue-400 h-2 rounded-full" style={{ width: `${(seriesCustom[1] / seriesPieChart.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100}%` }}></div>
+
+              {/* ProgressCircularWidget */}
+              <div className="flex justify-center mb-2">
+                {caseStatusOverview?.data?.series?.reduce((acc, curr) => acc + curr, 0) ? (
+                  <Chart options={caseStatusOverview?.data?.options || []} series={caseStatusOverview.data.series || []} height={progressCircularWidgetHeight} type="donut" />
+                ) : (
+                  <div className="flex items-center justify-center" style={{height: `${(progressCircularWidgetHeight - 10) || 0}px`}}>
+                    <LoadingSpinner className="h-full" color="gray" size="xl" />
+                  </div>
+                )}
+              </div>
+
+              {/* MetricWidget */}
+              <div className="flex flex-col gap-2 mb-2">
+                <div className="bg-green-400 px-4 py-2 rounded-lg">
+                  <div className="text-white text-sm">{labels?.complete || ""}</div>
+                  {seriesOfCaseStatusOverview[0] ? (
+                    <AnimatedNumber
+                      value={seriesOfCaseStatusOverview[0] || 0}
+                      className="text-white text-2xl font-bold"
+                      duration={1.2}
+                    />
+                  ) : (
+                    <LoadingSpinner color="white" size="lg" />
+                  )}
+                  {/* <div className="text-white text-2xl font-bold">{seriesOfCaseStatusOverview[0] || 0}</div> */}
+                </div>
+                <div className="bg-blue-400 px-4 py-2 rounded-lg">
+                  <div className="text-white text-sm">{labels?.inProgress || ""}</div>
+                  {seriesOfCaseStatusOverview[1] ? (
+                    <AnimatedNumber
+                      value={seriesOfCaseStatusOverview[1] || 0}
+                      className="text-white text-2xl font-bold"
+                      duration={1.2}
+                    />
+                  ) : (
+                    <LoadingSpinner color="white" size="lg" />
+                  )}
+                  {/* <div className="text-white text-2xl font-bold">{seriesOfCaseStatusOverview[1] || 0}</div> */}
+                </div>
+              </div>
+
+              {/* ProgressBarWidget */}
+              <div className="flex-1 space-y-2">
+                <div>
+                  <div className="flex items-center justify-between mb-2 text-gray-900 dark:text-white">
+                    <span className="text-sm">{labels?.complete}</span>
+                    {seriesOfMonthlyCasesRate[2] ? (
+                      <AnimatedPercentage
+                        value={seriesOfMonthlyCasesRate[2] || 0}
+                        className="text-sm font-semibold"
+                        duration={1.5}
+                      />
+                    ) : (
+                      <Skeleton height={20} width={40} />
+                    )}
+                    {/*
+                    <span className="text-sm font-semibold">
+                      {parseInt((seriesOfMonthlyCasesRate[2])?.toString()) || 0}%
+                    </span>
+                    */}
+                  </div>
+                  <div className="bg-gray-300 dark:bg-gray-600 h-2 w-full rounded-full">
+                    {seriesOfMonthlyCasesRate[2] ? (
+                      <div className="bg-blue-400 h-2 rounded-full opacity-60" style={{
+                        width: `${(seriesOfMonthlyCasesRate[2]) || 0}%`
+                      }}></div>
+                    ) : (
+                      <ProgressBar progress={0} />
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2 text-gray-900 dark:text-white">
+                    <span className="text-sm">{labels?.inProgress}</span>
+                    {seriesOfMonthlyCasesRate[1] ? (
+                      <AnimatedPercentage
+                        value={seriesOfMonthlyCasesRate[1] || 0}
+                        className="text-sm font-semibold"
+                        duration={1.5}
+                      />
+                    ) : (
+                      <Skeleton height={20} width={40} />
+                    )}
+                    {/*
+                    <span className="text-sm font-semibold">
+                      {parseInt((seriesOfMonthlyCasesRate[1])?.toString()) || 0}%
+                    </span>
+                    */}
+                  </div>
+                  <div className="bg-gray-300 dark:bg-gray-600 h-2 w-full rounded-full">
+                    {seriesOfMonthlyCasesRate[1] ? (
+                      <div className="bg-blue-400 h-2 rounded-full opacity-60" style={{
+                        width: `${(seriesOfMonthlyCasesRate[1]) || 0}%`
+                      }}></div>
+                    ) : (
+                      <ProgressBar progress={0} />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

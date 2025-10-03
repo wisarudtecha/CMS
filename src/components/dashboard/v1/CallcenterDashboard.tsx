@@ -1,4 +1,4 @@
-// src/components/CallcenterDashboard.tsx
+// src/components/dashboard/v1/CallcenterDashboard.tsx
 import React, { useState } from 'react';
 import { Settings, RotateCcw, Phone, Clock, PhoneOff, Users } from 'lucide-react';
 

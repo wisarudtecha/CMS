@@ -707,6 +707,12 @@
       "updateAt": "แก้ไขเมื่อ",
       "updateBy": "แก้ไขโดย",
       "edit": "การแก้ไข",
+      "cancel_case_detail":"ยืนยันการยกเลิกเหตุ",
+      "cancel_case_title":"ยกเลิกเหตุ",
+      "close_case_detail":"ยืนยันการปิดเหตุ",
+      "close_case_title":"ปิดเหตุ",
+      "cancel_case_assignment_title":"ยกเลิกการมอบหมายงาน",
+      "cancel_case_assignment_detail":"ยืนยันยกเลิกการมอบหมายงานสำหรับ",
       "advance_filtering": {
         "title": "กรองขั้นสูง",
         "search_case_type_place_holder": "ค้นหาโดยประเภทเหตุ...",
@@ -717,7 +723,22 @@
         "status_title": "สถานะ",
         "status_placeholder_all": "สถานะทั้งหมด",
         "create_by_tilte": "สร้างโดย",
-        "create_by_tilte_placeholder": "สร้างโดย..."
+        "create_by_tilte_placeholder": "สร้างโดย...",
+        "phone": "เบอร์โทรศัพท์",
+        "phone_number_placeholder": "เบอร์โทรศัพท์..."
+      },
+      "toast":{
+        "close_case_success":"ปิดงานสำเร็จ",
+        "close_case_fail":"ปิดงานไม่สำเร็จ",
+        "save_change_sucess":"บันทึกสำเร็จ",
+        "save_change_fail":"บันทึกไม่สำเร็จ",
+        "dispatch_success":"มอบหมายงานสำเร็จ",
+        "dispatch_fail":"มอบหมายงานไม่สำเร็จ",
+        "add_case_success":"สร้างเหตุสำเร็จ",
+        "savedaft_success":"สร้างแบบร่างสำเร็จ",
+        "add_case_fail":"สร้างเหตุไม่สำเร็จ",
+        "savedaft_fail":"สร้างแบบร่างไม่สำเร็จ",
+        "missing_close_case_data":"กรุณาใส่ข้อมูลปิดเหตุให้ครบ"
       }
     },
     "sop_card": {
@@ -727,7 +748,7 @@
       "attach_file": "แนบไฟล์",
       "assign_officer": "มอบหมายงานให้เจ้าหน้าที่",
       "created": "สร้างโดย",
-      "create_date": "วันที่ถูกสร้าง",
+      "create_date": "วันที่สร้าง",
       "High Priority": "ความสำคัญสูง",
       "Medium Priority": "ความสำคัญปานกลาง",
       "Low Priority": "ความสำคัญต่ำ",
@@ -742,7 +763,7 @@
       "status": "สถานะ",
       "piority": "ความสำคัญ",
       "create_by": "สร้างโดย",
-      "create_date": "วันที่ถูกสร้าง",
+      "create_date": "วันที่สร้าง",
       "kanban": "ใบงาน",
       "list": "รายการ",
       "pageheader": "ใบงาน",
@@ -775,7 +796,7 @@
       "mobile_number": "เบอร์โทรศัพท์",
       "email": "อีเมล",
       "service_title": "รายละเอียดงาน",
-      "vehicle": "หมายเลขรถ",
+      "vehicle": "หมายเลขหน่วย ",
       "address": "ที่อยู่",
       "service_progress_title": "ความคืบหน้าบริการ"
     },
@@ -793,7 +814,10 @@
       "device_type": "ประเภทอุปกรณ์",
       "device_model": "รุ่น",
       "service_history": "ประวัติงาน",
-      "details_panel": "หน้าต่างรายละเอียด"
+      "details_panel": "หน้าต่างรายละเอียด",
+      "brand":"ยี่ห้อ",
+      "iot_device_serial_number":"หมายเลขประจำเครื่อง",
+      "iot_device_name":"ชื่ออุปกรณ์"
     }
   },
   "time": {

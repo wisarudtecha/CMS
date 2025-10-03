@@ -17,7 +17,6 @@ import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubT
 import Badge from "../ui/badge/Badge";
 import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName";
 import { Comments } from "../comment/Comment";
-import DateStringToDateFormat from "../date/DateToString";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "./activityTimeline/caseActivityTimeline";
@@ -26,6 +25,8 @@ import { CaseDetails } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CommentModal } from "../comment/commentModal";
+import { formatDate } from "@/utils/crud";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface CaseCardProps {
     onAddSubCase?: () => void;
@@ -49,7 +50,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // **NEW**: Modal state
-    
+    const permissions = usePermissions();
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -128,7 +129,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>{t("case.sop_card.create_date")}: {DateStringToDateFormat(caseData.createdAt, false, language)}</span>
+                            <span>{t("case.sop_card.create_date")}: {formatDate(caseData.createdAt)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                             <User_Icon className="w-4 h-4" />
@@ -148,23 +149,23 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     </Badge>
                 </div>
             </div>
-            {caseData.caseVersion === "draft" ? undefined :
+            {permissions.hasPermission("case.view_timeline") && caseData.caseVersion === "draft" ? undefined :
                 <ProgressStepPreview progressSteps={stepsToDisplay} />
             }
 
             {/* START: Responsive Button Grid Container */}
             <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
-                {showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                {permissions.hasPermission("case.comment") && showCommentButton && <Button onClick={handleCommentToggle} size="sm" variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                     {showComment ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     <MessageSquare className="w-4 h-4 mr-2" />
                     {t("case.sop_card.comment")}
                 </Button>}
 
-                {onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                {permissions.hasPermission("case.update") && onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
                     {editFormData ? t("case.sop_card.cancel_edit") : t("case.sop_card.edit")}
                 </Button>}
 
-                {showAttachButton && <div>
+                {permissions.hasPermission("case.attach_file") && showAttachButton && <div>
                     <Button
                         size="sm"
                         variant="outline"
@@ -183,8 +184,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         style={{ display: "none" }}
                     />
                 </div>}
-
-                {caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+                {permissions.hasPermission("case.assign") && caseData?.unitLists ===null && caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}

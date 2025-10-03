@@ -7,7 +7,6 @@ import { ArrowLeft, FileText } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CreateCase, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/store/api/caseApi";
 import { useNavigate } from "react-router";
-import Toast from "@/components/toast/Toast";
 import PreviewDataBeforeSubmit from "../PreviewCaseData";
 import { TodayDate, TodayLocalDate } from "@/components/date/DateToString";
 import { exampleCaseState } from "../constants/exampleData";
@@ -15,6 +14,8 @@ import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataVali
 import { insertCaseToLocalStorage, updateCaseInLocalStorage } from "../caseLocalStorage.tsx/caseListUpdate";
 import { TranslationParams } from "@/types/i18n";
 import { CaseLayout } from "./layout";
+import { ToastContainer } from "@/components/crud/ToastContainer";
+import { useToast } from "@/hooks/useToast";
 
 const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
     disablePageMeta?: boolean;
@@ -60,7 +61,7 @@ export default function CaseCreation() {
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}");
-
+    const { toasts, addToast, removeToast } = useToast();
     const [caseState, setCaseState] = useState<CaseDetails | undefined>({
         location: "",
         date: "",
@@ -77,9 +78,6 @@ export default function CaseCreation() {
     } as CaseDetails);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [showPreviewData, setShowPreviewData] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
 
     const saveCase = useCallback(
         async (action: "draft" | "submit") => {
@@ -101,6 +99,7 @@ export default function CaseCreation() {
                 caselocAddr: caseState?.location || "",
                 caselocAddrDecs: caseState?.location || "",
                 countryId: caseState?.area?.countryId || "",
+                createdDate:new Date(TodayDate()).toISOString(),
                 distId: caseState?.area?.distId || "",
                 extReceive: "",
                 phoneNoHide: true,
@@ -160,20 +159,17 @@ export default function CaseCreation() {
                     }
                 }
 
-                // Navigate only when submitted
                 if (!isDraft) {
                     navigate(`/case/${caseState.workOrderNummber || data?.caseId}`);
                 }
 
-                setToastMessage(isDraft ? "Draft saved successfully!" : "Case submitted successfully!");
-                setToastType("success");
-                setShowToast(true);
+                addToast("success",isDraft ? t("case.display.toast.savedaft_success") : t("case.display.toast.add_case_success"));
+                setShowPreviewData(false)
 
                 return true;
             } catch (error) {
-                setToastMessage(isDraft ? "Failed to save draft" : "Failed to submit case");
-                setToastType("error");
-                setShowToast(true);
+                addToast("error",isDraft ? t("case.display.toast.add_case_fail") : t("case.display.toast.savedaft_fail"));
+                setShowPreviewData(false)
                 return false;
             }
         },
@@ -183,9 +179,7 @@ export default function CaseCreation() {
     const handleSaveDraft = useCallback(() => {
         const errorMessage = validateCaseForDraft(caseState);
         if (errorMessage) {
-            setToastMessage(errorMessage);
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",errorMessage);
             return;
         }
         saveCase("draft");
@@ -194,9 +188,7 @@ export default function CaseCreation() {
     const handleCreateCase = useCallback(() => {
         const errorMessage = validateCaseForSubmission(caseState);
         if (errorMessage) {
-            setToastMessage(errorMessage);
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",errorMessage);
             return;
         }
         saveCase("submit");
@@ -206,9 +198,7 @@ export default function CaseCreation() {
     const handlePreviewShow = useCallback(() => {
         const errorMessage = validateCaseForSubmission(caseState);
         if (errorMessage) {
-            setToastMessage(errorMessage);
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",errorMessage);
             return;
         }
         setShowPreviewData(true);
@@ -230,16 +220,6 @@ export default function CaseCreation() {
             // title={t("navigation.sidebar.main.case_management.nested.case_creation")}
             caseItem={caseState || {} as CaseDetails}
             referCaseList={[]}
-            showToast={
-                showToast && (
-                    <Toast 
-                        message={toastMessage} 
-                        type={toastType} 
-                        duration={3000} 
-                        onClose={() => setShowToast(false)} 
-                    />
-                )
-            }
         >
             <CaseFormFields
                 caseState={caseState || {} as CaseDetails}
@@ -270,6 +250,7 @@ export default function CaseCreation() {
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
             />
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </CaseLayout>
     );
 }

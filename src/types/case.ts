@@ -2,7 +2,7 @@
 import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
 import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
-import type { CaseSop } from "@/store/api/dispatch"; 
+import type { CaseSop, DeviceMetaData } from "@/store/api/dispatch"; 
 import type { BaseEntity, Custommer } from "@/types";
 
 export interface CaseEntity extends BaseEntity {
@@ -284,4 +284,19 @@ export interface CaseDetails {
   attachFileResult?:File[]
   updateBy?:string
   lastUpdate?:string
+  deviceMetaData?:DeviceMetaData
+}
+
+
+export interface caseResults {
+  id: string;
+  orgId: string;
+  resId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }

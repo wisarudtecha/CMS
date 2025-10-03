@@ -3,6 +3,7 @@ import { baseApi } from "./baseApi";
 import { CaseSubType, CaseType, CaseTypeSubType } from "@/components/interface/CaseType";
 import { PaginationParams } from "./custommerApi";
 import { FormFieldWithNode } from "@/components/interface/FormField";
+import { caseResults } from "@/types/case";
 
 export interface CreateCase {
     formData: FormFieldWithNode;
@@ -137,6 +138,13 @@ export interface AddComment {
     username: string;
 }
 
+export interface EditComment {
+    fullMsg: string;
+    jsonData: string;
+    type: string;
+}
+
+
 interface ApiResponseCreateCase<T> {
     status: string
     msg: string
@@ -165,7 +173,11 @@ export interface CaseListParams extends PaginationParams {
     category?: string;
     caseType?: string;
     caseSType?: string;
-    createBy?: string
+    createBy?: string;
+    countryId?: string;
+    provId?: string;
+    distId?: string;
+    phoneNo?: string;
 }
 
 export interface CaseHistory {
@@ -256,6 +268,14 @@ export const caseApi = baseApi.injectEndpoints({
             providesTags: ["Cases"],
         }),
 
+        getCaseResults : builder.query<ApiResponse<caseResults[]>, PaginationParams>({
+            query: (params) => ({
+                url: "/caseResult/",
+                params,
+            }),
+            providesTags: ["Cases"],
+        }),
+
         getCaseHistory: builder.query<ApiResponse<CaseHistory[]>, { caseId: string }>({
             query: (params) => ({
                 url: `/case_history/${params.caseId}`,
@@ -271,6 +291,15 @@ export const caseApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Cases"],
         }),
+
+        patchEditCaseHistory: builder.mutation<ApiResponse<null>,{ id: string; updateHistory: EditComment }>({
+            query: ({id,updateHistory}) => ({
+                url: `/case_history/${id}`,
+                method: 'PATCH',
+                body: updateHistory
+            }),
+            invalidatesTags: ["Cases"],
+        }),
     }),
 });
 export const {
@@ -283,6 +312,7 @@ export const {
     useGetListCaseQuery,
     useGetCaseHistoryQuery,
     usePostAddCaseHistoryMutation,
-    useGetListCaseMutationMutation
+    useGetListCaseMutationMutation,
+    usePatchEditCaseHistoryMutation
 } = caseApi;
 

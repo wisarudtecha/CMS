@@ -7,7 +7,6 @@ import { formatDate } from '@/utils/crud';
 
 const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
     const { t } = useTranslation();
-
     const filteredSteps = progressSteps.length === 6
         ? progressSteps.slice(1, -1)
         : progressSteps;
@@ -202,7 +201,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                 {step.timeline?.completedAt && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
                                         {formatDate(
-                                            new Date(new Date(step.timeline.completedAt).getTime() - (7 * 3600 * 1000)).toISOString()
+                                            new Date(new Date(step.timeline.completedAt).getTime()).toISOString()
                                         )}
                                     </div>
                                 )}
@@ -217,7 +216,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                 {step.nextStage && currentStep?.timeline?.completedAt && step.sla && step.sla != 0 ? (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 leading-tight mt-1">
                                         {t("case.sop_card.due")}: {formatDate(
-                                            new Date(new Date(currentStep.timeline.completedAt).getTime() + (step.sla * 60 * 1000) - (7 * 3600 * 1000)).toISOString()
+                                            new Date(new Date(currentStep.timeline.completedAt).getTime() + (step.sla * 60 * 1000)).toISOString()
                                         )}
                                     </div>
                                 ) : null}

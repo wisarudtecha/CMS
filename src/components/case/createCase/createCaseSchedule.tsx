@@ -10,10 +10,8 @@ import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import { getPriorityColorClass } from "../../function/Prioriy"
-import Toast from "../../toast/Toast"
 import Input from "../../form/input/InputField"
 import { convertFromThaiYear, getDisplayDate, getLocalISOString, getTodayDate, TodayDate } from "../../date/DateToString"
-import { SearchableSelect } from "../../SearchInput/SearchSelectInput"
 import { CaseTypeSubType } from "../../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -40,6 +38,9 @@ import { REQUIRED_ELEMENT as requireElements, source } from "../constants/caseCo
 import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataValidation/caseDataValidation";
 import { COMMON_INPUT_CSS as commonInputCss } from "../constants/caseConstants";
 import { CaseLayout } from "./layout";
+import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
+import { useToast } from "@/hooks/useToast";
+import { ToastContainer } from "@/components/crud/ToastContainer";
 // const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 interface CaseTypeFormSectionProps {
@@ -446,14 +447,12 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     });
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     // const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
-    const [showToast, setShowToast] = useState(false);
     const [showPreviewData, setShowPreviewData] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
     const [sopLocal] = useState<CaseSop>();
     const [listCustomerData, setListCustomerData] = useState<Customer[]>([])
     const [isInitialized, setIsInitialized] = useState(false);
     const { t, language } = useTranslation();
+    const { toasts, addToast, removeToast } = useToast();
     if (language === "th") {
         registerLocale("th", th);
     } else {
@@ -654,7 +653,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
 
     const createCaseAction = useCallback(async (action: "draft" | "submit") => {
         if (!caseState) return false;
-
+        const isDraft = action === "draft";
         const caseVersion = action === "draft" ? "draft" : "publish";
         const statusId = action === "draft" ? "S000" : "S001";
         const createJson = {
@@ -681,6 +680,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             referCaseId: caseState?.workOrderRef || "",
             resDetail: "",
             source: "06",
+            createdDate:new Date(TodayDate()).toISOString(),
             // startedDate: new Date(caseState?.iotDate ?? TodayDate()).toISOString(),
             statusId: statusId,
             userarrive: "",
@@ -736,8 +736,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     if (newCasePriorityOrder > existingCasePriorityOrder) {
                         return false; // Continue searching
                     }
-
-                    // If priority groups are equal, compare by date (newer first)
                     const newCaseDate = new Date(newCase.createdAt || newCase.createdDate);
                     const existingCaseDate = new Date(existingCase.createdAt || existingCase.createdDate);
                     return newCaseDate > existingCaseDate; // Insert before if new case is newer
@@ -752,9 +750,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 localStorage.setItem("caseList", JSON.stringify(caseList));
             }
         } catch (error: any) {
-            setToastType("error");
-            setToastMessage(`Failed to ${statusId === "S001" ? "Create Case" : "Save As Draft"}`);
-            setShowToast(true);
+            addToast("error",isDraft ? t("case.display.toast.add_case_fail") : t("case.display.toast.savedaft_fail"));
             return false;
         }
         return true;
@@ -773,9 +769,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const handlePreviewShow = useCallback(() => {
         const errorMessage = validateCaseForSubmission(caseState);
         if (errorMessage) {
-            setToastMessage(errorMessage);
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",errorMessage);
             return;
         }
         setShowPreviewData(true)
@@ -905,9 +899,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         const errorMessage = validateCaseForDraft(caseState);
 
         if (errorMessage) {
-            setToastMessage(errorMessage);
-            setToastType("error");
-            setShowToast(true);
+            addToast("error",errorMessage);
             return;
         }
         const isNotError = await createCaseAction("draft");
@@ -915,9 +907,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             return
         }
         localStorage.setItem("Create Case", JSON.stringify(caseState));
-        setToastMessage("Save As Draft successfully!");
-        setToastType("success");
-        setShowToast(true);
+        addToast("success",t("case.display.toast.savedaft_success"));
     }, [validateCaseForDraft, createCaseAction, caseState]);
 
 
@@ -944,16 +934,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             // title={isCreate ? "Create Case" : "Case Detail"}
             caseItem={caseState || {} as CaseDetails}
             referCaseList={sopLocal?.referCaseLists}
-            showToast={
-                showToast && (
-                    <Toast
-                        message={toastMessage}
-                        type={toastType}
-                        duration={3000}
-                        onClose={() => setShowToast(false)}
-                    />
-                )
-            }
         >
             {caseState && (
                 <CaseFormFields
@@ -1001,6 +981,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 isOpen={showPreviewData}
                 onClose={() => setShowPreviewData(false)}
             />
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </CaseLayout>
     );
 }

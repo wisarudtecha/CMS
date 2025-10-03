@@ -14,7 +14,8 @@ export const caseStatusGroup = [
   { title: {en:"Assigned",th:"มอบหมาย"}, group: ["S002", "S009","S003"] ,show:true},
   { title: {en:"In-progress",th:"ดำเนินการ"}, group: [ "S004", "S005", "S006", "S010", "S011", "S012", "S013", "S015", "S019"] ,show:true},
   { title: {en:"On-Hold",th:"หยุดไว้ชั่วคราว"}, group: [, "S018"] ,show:false},
-  { title: {en:"Done",th:"เสร็จสิ้น"}, group: ["S007", "S016","S017"] ,show:true},
+  { title: {en:"Done",th:"เสร็จสิ้น"}, group: ["S016","S017"] ,show:true},
+  { title: {en:"Close",th:"ปิดงาน"}, group: ["S007"] ,show:false},
   { title: {en:"Cancel",th:"ยกเลิก"}, group: ["S014"] ,show:false},
 ]
 

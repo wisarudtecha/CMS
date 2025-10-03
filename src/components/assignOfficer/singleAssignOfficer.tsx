@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect} from "react"
 import { ChevronDown, ChevronUp, Search, X, } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import Input from "@/components/form/input/InputField"
@@ -72,37 +72,26 @@ const SkillsDisplay = ({
   )
 }
 
-const UnifiedCheckbox = ({
+// Radio button component for single selection
+const UnifiedRadio = ({
   checked,
-  indeterminate = false,
   onChange,
   className = "",
   ...props
 }: {
   checked: boolean
-  indeterminate?: boolean
   onChange: (e: any) => void
   className?: string
   [key: string]: any
 }) => {
-  const checkboxRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = indeterminate
-    }
-  }, [indeterminate])
-
   return (
     <div className="relative flex items-center justify-center">
       <input
-        ref={checkboxRef}
-        type="checkbox"
+        type="radio"
         checked={checked}
-        // onChange={()=>console.log("chick")})
         onClick={onChange}
-        className={`w-4 h-4 appearance-none rounded cursor-pointer transition-all duration-200 
-      bg-gray-200  border-gray-300 
+        className={`w-4 h-4 appearance-none rounded-full cursor-pointer transition-all duration-200 
+      bg-gray-200 border-2 border-gray-300 
       focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
       checked:bg-blue-600 checked:border-blue-600
       hover:border-blue-400
@@ -113,20 +102,7 @@ const UnifiedCheckbox = ({
         {...props}
       />
       {checked && (
-        <svg
-          className="absolute pointer-events-none w-2.5 h-2.5 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 14 14"
-          fill="none"
-        >
-          <path
-            d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <div className="absolute pointer-events-none w-2 h-2 bg-white rounded-full" />
       )}
     </div>
   )
@@ -156,29 +132,33 @@ export default function AssignOfficerModal({
   sopUnitLists = [],
 }: AssignOfficerModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedOfficers, setSelectedOfficers] = useState<string[]>([])
+  // Changed from array to single string for single selection
+  const [selectedOfficer, setSelectedOfficer] = useState<string | null>(null)
   const [sortColumn] = useState<SortableColumns>("locAlt")
   const [sortDirection] = useState<"asc" | "desc">("asc")
   const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
+  
   const unitStatus = useMemo(() => {
     return JSON.parse(localStorage.getItem("unit_status") ?? "[]") as UnitStatus[];
   }, []);
+
   const handleAssignOfficers = async () => {
-    if (selectedOfficers.length === 0 || disableAssign) return;
+    if (!selectedOfficer || disableAssign) return;
     setDisableAssign(true);
     try {
-      const selectedOfficerObjects = availableOfficers.filter(officer =>
-        selectedOfficers.includes(officer.unitId)
+      const selectedOfficerObject = availableOfficers.find(officer =>
+        officer.unitId === selectedOfficer
       );
-      await onAssign(selectedOfficerObjects);
+      if (selectedOfficerObject) {
+        await onAssign([selectedOfficerObject]); // Still pass as array for API compatibility
+      }
     } catch (error) {
-      console.error("Failed to assign officers:", error);
+      console.error("Failed to assign officer:", error);
     } finally {
       setDisableAssign(false);
     }
   };
-
 
   const { data: unitData, isLoading: isLoadingUnits, error: unitError } = useGetUnitQuery(
     { caseId },
@@ -204,10 +184,11 @@ export default function AssignOfficerModal({
 
   useEffect(() => {
     if (open) {
-      const assignedIds = assignedOfficers.map((o) => o.unitId)
-      setSelectedOfficers(assignedIds)
+      // Set the first assigned officer as selected, or null if none
+      const assignedId = assignedOfficers.length > 0 ? assignedOfficers[0].unitId : null
+      setSelectedOfficer(assignedId)
     } else {
-      setSelectedOfficers([])
+      setSelectedOfficer(null)
       setSearchTerm("")
     }
     setDisableAssign(false)
@@ -240,8 +221,6 @@ export default function AssignOfficerModal({
     )
   }, [availableOfficers, searchTerm])
 
-
-
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
       const aValue = a[sortColumn]
@@ -253,47 +232,16 @@ export default function AssignOfficerModal({
     [filteredOfficers, sortColumn, sortDirection]
   )
 
-
+  // Updated to handle single selection
   const handleSelectOfficer = (officerId: string) => {
-    setSelectedOfficers((prev) => {
-      const isSelected = prev.includes(officerId)
-      if (isSelected) {
-        return prev.filter((id) => id !== officerId)
-      } else {
-        return [...prev, officerId]
-      }
-    })
+    setSelectedOfficer(prev => prev === officerId ? null : officerId)
   }
 
-
-  const isAllFilteredSelected = useMemo(() => {
-    if (filteredOfficers.length === 0) return false
-    return filteredOfficers.every(officer => selectedOfficers.includes(officer.unitId))
-  }, [filteredOfficers, selectedOfficers])
-
-  const isSomeFilteredSelected = useMemo(() => {
-    if (filteredOfficers.length === 0) return false
-    return filteredOfficers.some(officer => selectedOfficers.includes(officer.unitId)) && !isAllFilteredSelected
-  }, [filteredOfficers, selectedOfficers, isAllFilteredSelected])
-
-
-  const handleSelectAll = () => {
-    const filteredIds = filteredOfficers.map(officer => officer.unitId)
-    if (isAllFilteredSelected) {
-      setSelectedOfficers(prev => prev.filter(id => !filteredIds.includes(id)))
-    } else {
-      setSelectedOfficers(prev => {
-        const newSelections = new Set([...prev, ...filteredIds])
-        return Array.from(newSelections)
-      })
-    }
-  }
-
-
-
-  const selectedOfficerObjects = useMemo(() => {
-    return availableOfficers.filter(officer => selectedOfficers.includes(officer.unitId))
-  }, [availableOfficers, selectedOfficers])
+  // Get selected officer object for display
+  const selectedOfficerObject = useMemo(() => {
+    if (!selectedOfficer) return null
+    return availableOfficers.find(officer => officer.unitId === selectedOfficer)
+  }, [availableOfficers, selectedOfficer])
 
   if (isLoadingUnits) {
     return (
@@ -382,18 +330,11 @@ export default function AssignOfficerModal({
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar">
             <div className="min-w-[768px]">
-              {/* Table Header */}
+              {/* Table Header - Removed select all checkbox */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
-                  <div className="px-4 py-3">
-                    <UnifiedCheckbox
-                      checked={isAllFilteredSelected}
-                      indeterminate={isSomeFilteredSelected}
-                      onChange={(e) => {
-                        e.stopPropagation()
-                        handleSelectAll()
-                      }}
-                    />
+                  <div className="px-4 py-3 w-12">
+                    {/* Empty space where select all checkbox was */}
                   </div>
                   <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
@@ -415,7 +356,7 @@ export default function AssignOfficerModal({
                       </div>
                     ) : (
                       sortedOfficers.map((officer) => {
-                        const isSelected = selectedOfficers.includes(officer.unitId)
+                        const isSelected = selectedOfficer === officer.unitId
                         return (
                           <div
                             key={officer.unitId}
@@ -425,7 +366,7 @@ export default function AssignOfficerModal({
                               }`}
                           >
                             <div className="px-4">
-                              <UnifiedCheckbox
+                              <UnifiedRadio
                                 checked={isSelected}
                                 onChange={(e) => {
                                   e.stopPropagation()
@@ -437,8 +378,7 @@ export default function AssignOfficerModal({
                               className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => {
                                 setShowOFFicerData(officer)
-                              }
-                              }
+                              }}
                             >
                               <div className="flex items-center mx-4 space-x-2">
                                 <Avatar className="w-8 h-8">
@@ -501,28 +441,26 @@ export default function AssignOfficerModal({
           </div>
         </div>
 
-        {/* Selection Summary */}
-        {selectedOfficers.length > 0 && (
+        {/* Selection Summary - Updated for single selection */}
+        {selectedOfficer && selectedOfficerObject && (
           <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              {t("case.assign_officer_modal.select")} {selectedOfficers.length} {t("case.assign_officer_modal.officer")}:
+              {t("case.assign_officer_modal.select")} {t("case.assign_officer_modal.officer")}:
             </div>
-            <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
-              {selectedOfficerObjects.map((officer) => (
-                <Badge key={officer.unitId}>
-                  {getAvatarIconFromString(officer.username, "bg-blue-600 dark:bg-blue-700 my-1")}
-                  {officer.username}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleSelectOfficer(officer.unitId)
-                    }}
-                    className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge>
+                {getAvatarIconFromString(selectedOfficerObject.username, "bg-blue-600 dark:bg-blue-700 my-1")}
+                {selectedOfficerObject.username}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedOfficer(null)
+                  }}
+                  className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
             </div>
           </div>
         )}
@@ -530,10 +468,10 @@ export default function AssignOfficerModal({
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
           {canDispatch && <Button
             onClick={handleAssignOfficers}
-            disabled={selectedOfficers.length === 0 || disableAssign}
+            disabled={!selectedOfficer || disableAssign}
             className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            {t("case.assign_officer_modal.assign_button")} ({selectedOfficers.length})
+            {t("case.assign_officer_modal.assign_button")} {selectedOfficer ? "(1)" : "(0)"}
           </Button>}
         </DialogFooter>
       </DialogContent>

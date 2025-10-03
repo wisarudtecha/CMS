@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react"
 import {
     Cpu,
+    Hash,
     Tag,
-    Wifi,
     X
 } from "lucide-react"
 import Button from "@/components/ui/button/Button"
@@ -13,7 +13,6 @@ import { getPriorityBorderColorClass, getPriorityColorClass } from "../function/
 import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
 import React from "react"
-import DateStringToDateFormat from "../date/DateToString"
 import { mergeAddress } from "@/store/api/custommerApi"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { useGetDeviceIoTQuery } from "@/store/api/deviceIoT"
@@ -21,6 +20,7 @@ import { Device } from "@/types/deviceIoT"
 import { statusIdToStatusTitle } from "../ui/status/status"
 import { useNavigate } from "react-router"
 import { useTranslation } from "@/hooks/useTranslation"
+import { formatDate } from "@/utils/crud"
 
 
 
@@ -32,9 +32,9 @@ interface PanelProps {
 const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
     const [activeTab, setActiveTab] = useState("Device info");
-    const [device, setDevice] = useState<Device>()
+    // const [device, setDevice] = useState<Device>()
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
-    const { t,language } = useTranslation();
+    const { t } = useTranslation();
     const tabs = [
         { id: "Device info", label: t("case.panel.device_info") }
     ];
@@ -47,7 +47,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
     }
 
-    
+
     useEffect(() => {
         if (referCaseList) {
 
@@ -95,9 +95,9 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
             return device.deviceId === caseItem?.iotDevice
         })
         if (matchDevice) {
-            setDevice(matchDevice)
+            // setDevice(matchDevice)
         } else {
-            setDevice(undefined)
+            // setDevice(undefined)
         }
     }, [caseItem?.iotDevice])
 
@@ -214,7 +214,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                         <div>
                                             <div className="text-blue-500 dark:text-blue-400 mb-1">Date of birth</div>
                                             <div className="text-gray-900 dark:text-white">
-                                                {caseItem?.customerData?.dob ? DateStringToDateFormat(caseItem?.customerData.dob,false,language) : "-"}
+                                                {caseItem?.customerData?.dob ? formatDate(caseItem?.customerData.dob) : "-"}
                                             </div>
                                         </div>
                                         <div>
@@ -291,15 +291,39 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                         </span>
                                     </div>
 
-                                    <div className="space-y-2 text-xs">
+                                    <div className="space-y-2 text-sm">
                                         <div className="grid grid-cols-2 gap-2">
-                                            <div>
+                                            <div className=" col-span-2">
                                                 <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <span>{t("case.panel.iot_device_name")}</span>
+                                                </div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {caseItem?.deviceMetaData?.device_name || "-"}
+                                                </div>
+                                            </div>
+                                            {/* <div className=" col-span-2">
+                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <Hash className="w-3 h-3" />
+                                                    <span>{t("case.panel.iot_device_serial_number")}</span>
+                                                </div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {caseItem?.deviceMetaData?.device_serial_number || "-"}
+                                                </div>
+                                            </div> */}
+                                            <div>
+                                                {/* <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
                                                     <Wifi className="w-3 h-3" />
                                                     <span>{t("case.display.iot_device")}</span>
                                                 </div>
                                                 <div className="text-gray-900 dark:text-white">
-                                                    {caseItem?.iotDevice || "-"}
+                                                    {caseItem?.deviceMetaData?.device_id || caseItem?.iotDevice || "-"}
+                                                </div> */}
+                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <Hash className="w-3 h-3" />
+                                                    <span>{t("case.panel.iot_device_serial_number")}</span>
+                                                </div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {caseItem?.deviceMetaData?.device_serial_number || "-"}
                                                 </div>
                                             </div>
                                             <div>
@@ -308,25 +332,29 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                                     <span>{t("case.panel.device_type")}</span>
                                                 </div>
                                                 <div className="text-gray-900 dark:text-white">
-                                                    {device?.deviceType || "-"}
+                                                    {caseItem?.deviceMetaData?.device_type || "-"}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                    <Tag className="w-3 h-3" />
+                                                    <span>{t("case.panel.brand")}</span>
+                                                </div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {caseItem?.deviceMetaData?.device_brand || "-"}
+                                                    <span>{!caseItem?.deviceMetaData?.device_brand || ` ${t("case.panel.device_model")} `}</span>
+                                                    {caseItem?.deviceMetaData?.device_brand ? caseItem?.deviceMetaData?.device_model : ""}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
-                                                <Tag className="w-3 h-3" />
-                                                <span>{t("case.panel.device_model")}</span>
-                                            </div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {device?.model || "-"}
-                                            </div>
-                                        </div>
+
                                     </div>
                                 </>
-                            ): (
-                        <div className="text-center py-4">
-                            <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
-                        </div>
+                            ) : (
+                                <div className="text-center py-4">
+                                    <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
+                                </div>
                             )}
                     </div>
                 </ScrollArea>

@@ -21,8 +21,8 @@ interface WebSocketContextType {
   isConnected: boolean;
   connectionState: 'connecting' | 'connected' | 'disconnected' | 'error';
   send: (data: any) => void;
-  subscribe: (callback: (message: WebSocketMessage) => void) => () => void;
-  connect: (config: WebSocketConfig) => void;
+  onMessage: (callback: (message: WebSocketMessage) => void) => () => void;
+  websocket: (config: WebSocketConfig) => void;
   disconnect: () => void;
   lastMessage: WebSocketMessage | null;
 }
@@ -54,51 +54,59 @@ export const defalutWebsocketConfig = {
 } as WebSocketConfig;
 
 export const WebSocketCaseEvent = (message: WebSocketMessage) => {
-  if (message.data?.additionalJson?.event === "Create") {
-    (async () => {
-      await getNewCaseData();
-      window.dispatchEvent(new StorageEvent("storage", {
-        key: "caseList",
-        newValue: localStorage.getItem("caseList"),
-      }));
-    })();
+  switch (message.data?.EVENT) {
+    case "CASE-CREATE":
+      (async () => {
+        await getNewCaseData();
+        window.dispatchEvent(new StorageEvent("storage", {
+          key: "caseList",
+          newValue: localStorage.getItem("caseList"),
+        }));
+      })();
+      break;
 
-  } else if (message.data?.additionalJson?.event === "Update") {
-    (async () => {
-      const caseIdFromUrl = message.data.redirectUrl.split('/case/')[1];
-      await getNewCaseDataByCaseId(caseIdFromUrl)
-      window.dispatchEvent(new StorageEvent("storage", {
-        key: "caseList",
-        newValue: localStorage.getItem("caseList"),
-      }));
-    })();
-    
-  } else if (message?.data?.additionalJson?.event === "STATUS UPDATE") {
-    (() => {
-      try {
-        const caseList = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[];
-        const targetCaseId = message?.data?.additionalJson?.caseId;
-        const newStatus = message?.data?.additionalJson?.status;
+    case "CASE-UPDATE":
+      (async () => {
+        const caseIdFromUrl = message.data.redirectUrl.split('/case/')[1];
+        await getNewCaseDataByCaseId(caseIdFromUrl);
+        window.dispatchEvent(new StorageEvent("storage", {
+          key: "caseList",
+          newValue: localStorage.getItem("caseList"),
+        }));
+      })();
+      break;
 
-        if (targetCaseId && newStatus !== undefined) {
-          const updatedCaseList = caseList.map((item) =>
-            item.caseId === targetCaseId
-              ? { ...item, statusId: newStatus }
-              : item
-          );
+    case "CASE-STATUS-CHANGE":
+      (() => {
+        try {
+          const caseList = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[];
+          const targetCaseId = message?.data?.additionalJson?.caseId;
+          const newStatus = message?.data?.additionalJson?.status;
 
-          localStorage.setItem("caseList", JSON.stringify(updatedCaseList));
+          if (targetCaseId && newStatus !== undefined) {
+            const updatedCaseList = caseList.map((item) =>
+              item.caseId === targetCaseId
+                ? { ...item, statusId: newStatus }
+                : item
+            );
 
-          // Dispatch storage event to notify other components
-          window.dispatchEvent(new StorageEvent("storage", {
-            key: "caseList",
-            newValue: localStorage.getItem("caseList"),
-          }));
+            localStorage.setItem("caseList", JSON.stringify(updatedCaseList));
+
+
+            window.dispatchEvent(new StorageEvent("storage", {
+              key: "caseList",
+              newValue: localStorage.getItem("caseList"),
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to update case status:", error);
         }
-      } catch (error) {
-        console.error("Failed to update case status:", error);
-      }
-    })();
+      })();
+      break;
+
+    default:
+
+      break;
   }
 };
 
@@ -110,7 +118,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
-
   const wsRef = useRef<WebSocket | null>(null);
   const configRef = useRef<WebSocketConfig | null>(null);
   const subscribersRef = useRef<Set<(message: WebSocketMessage) => void>>(new Set());
@@ -150,10 +157,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
   const attemptReconnect = () => {
     const config = configRef.current;
-    if (!config) return;
+    // if (!config) return;
 
-    const maxAttempts = config.maxReconnectAttempts || 5;
-    const interval = config.reconnectInterval || 3000;
+    const maxAttempts = config?.maxReconnectAttempts || 5;
+    const interval = config?.reconnectInterval || 3000;
 
     if (reconnectAttemptsRef.current >= maxAttempts) {
       console.error('Max reconnect attempts reached');
@@ -165,7 +172,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
 
     reconnectTimeoutRef.current = setTimeout(() => {
-      connect(config);
+      websocket(config || defalutWebsocketConfig);
     }, interval);
   };
 
@@ -180,7 +187,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     return null;
   };
 
-  const connect = (config: WebSocketConfig) => {
+  const websocket = (config: WebSocketConfig) => {
     if (isConnectingRef.current || wsRef.current?.readyState === WebSocket.OPEN) {
 
       return;
@@ -196,12 +203,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       const ws = new WebSocket(config.url);
       const profile = getProfile();
       ws.onopen = () => {
-        const payload = { orgId: profile.orgId, username: profile.username };
+        const userRegisterPayload = { "EVENT": "SUBSCRIBE", orgId: profile.orgId, username: profile.username };
 
-        ws.send(JSON.stringify(payload));
-        console.log('WebSocket connected');
-        setIsConnected(true);
-        setConnectionState('connected');
+        ws.send(JSON.stringify(userRegisterPayload));
+        // console.log('WebSocket connected');
+        // setIsConnected(true);
+        // setConnectionState('connected');
         isConnectingRef.current = false;
         reconnectAttemptsRef.current = 0;
         startHeartbeat();
@@ -216,8 +223,23 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
             timestamp: Date.now()
           };
 
+          if (isConnected === false && message.data.EVENT === "SUBSCRIBE-SUCCESS") {
+            console.log('WebSocket connected');
+            setIsConnected(true);
+            setConnectionState('connected');
+            return
+          }
+
           setLastMessage(message);
-          WebSocketCaseEvent(message)
+          switch (message.data.EVENT != null) {
+            case message.data.EVENT.includes("CASE"):
+              WebSocketCaseEvent(message)
+              break;
+            default:
+              break;
+          }
+
+
           // Notify all subscribers
           subscribersRef.current.forEach(callback => {
             try {
@@ -249,6 +271,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         setConnectionState('error');
         isConnectingRef.current = false;
         // connect(defalutWebsocketConfig)
+        attemptReconnect();
+
       };
 
       wsRef.current = ws;
@@ -280,7 +304,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
   };
 
-  const subscribe = (callback: (message: WebSocketMessage) => void) => {
+  const onMessage = (callback: (message: WebSocketMessage) => void) => {
     subscribersRef.current.add(callback);
 
     // Return unsubscribe function
@@ -292,7 +316,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   // Auto-connect on mount if enabled
   useEffect(() => {
     if (autoConnect) {
-      connect(defaultConfig || defalutWebsocketConfig);
+      websocket(defaultConfig || defalutWebsocketConfig);
 
     }
 
@@ -305,8 +329,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     isConnected,
     connectionState,
     send,
-    subscribe,
-    connect,
+    onMessage,
+    websocket,
     disconnect,
     lastMessage
   };

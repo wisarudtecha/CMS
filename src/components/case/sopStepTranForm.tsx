@@ -91,7 +91,6 @@ export const mapSopToOrderedProgress = (sopData: CaseSop, language: string): Pro
     if (!sopData?.sop || !sopData?.currentStage) {
         return [];
     }
-
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[];
     const slaTimelines = sopData.slaTimelines || [];
 
@@ -222,7 +221,6 @@ export const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps
     if (!fromStep.timeline?.completedAt || !toStep.timeline?.completedAt) {
         return '';
     }
-
     const fromTime = new Date(fromStep.timeline.completedAt).getTime();
     const toTime = new Date(toStep.timeline.completedAt).getTime();
     const diffMs = toTime - fromTime;

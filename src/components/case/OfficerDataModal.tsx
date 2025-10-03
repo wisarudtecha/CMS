@@ -4,10 +4,11 @@ import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
 import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
-import ProgressStepPreviewUnit from "./activityTimeline/unitActivityTimeline"
+import ProgressStepPreviewUnit from "./activityTimeline/officerActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
+import { usePermissions } from "@/hooks/usePermissions"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -20,6 +21,7 @@ export default function OfficerDataModal({
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
     const { t, language } = useTranslation();
+    const permissions = usePermissions();
     const progressSteps = useMemo(() => {
         return mapSopToOrderedProgress(officer.Sop, language);
     }, [officer]);
@@ -191,9 +193,9 @@ export default function OfficerDataModal({
                         <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_progress_title")}</h3>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg   p-6">
+                    {permissions.hasPermission("case.view_timeline") && <div className="bg-gray-50 dark:bg-gray-900 rounded-lg   p-6">
                         <ProgressStepPreviewUnit progressSteps={progressSteps} />
-                    </div>
+                    </div>}
                 </div>
 
                

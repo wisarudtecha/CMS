@@ -35,6 +35,19 @@ export const useFetchCase = async (params: CaseListParams) => {
 
 };
 
+
+export const useFetchCaseResults = async () => {
+  const result = await store.dispatch(
+    caseApi.endpoints.getCaseResults.initiate({})
+  );
+  if (result.data?.data) {
+    localStorage.setItem("caseResultsList", JSON.stringify(result.data?.data))
+  } else {
+    localStorage.setItem("caseResultsList", "[]")
+  }
+
+};
+
 export const useFetchTypeSubType = async () => {
   const caseTypeSubType = await store.dispatch(
     caseApi.endpoints.postTypeSubType.initiate(null)
@@ -96,6 +109,7 @@ export const caseApiSetup = async () => {
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();
   // await useFetchSubTypeAllForm();
+  await useFetchCaseResults();
   await useFetchUnitStatus();
   await useFetchArea();
 }

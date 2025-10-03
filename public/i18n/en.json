@@ -707,6 +707,12 @@
       "updateAt": "Update At",
       "updateBy": "Update By",
       "edit": "Edit",
+      "cancel_case_detail":"Confirm to cancel this case?",
+      "cancel_case_title":"Cancel Case",
+      "close_case_detail":"Confirm to close this case?",
+      "close_case_title":"Close Case",
+      "cancel_case_assignment_title":"Cancel Assignment",
+      "cancel_case_assignment_detail":"Confirm to cancel the assignment for",
       "advance_filtering": {
         "title": "Advanced filtering",
         "search_case_type_place_holder": "Search by case type...",
@@ -717,7 +723,21 @@
         "status_title": "Status",
         "status_placeholder_all": "All statuses",
         "create_by_tilte": "Created by",
-        "create_by_tilte_placeholder": "Created by..."
+        "create_by_tilte_placeholder": "Created by...",
+        "phone": "Phone Number",
+        "phone_number_placeholder": "Enter Phone Number..."
+      },"toast":{
+        "close_case_success":"Close Work Order Success.",
+        "close_case_fail":"Close Work Order fail.",
+        "save_change_sucess":"Update Work Order Success.",
+        "save_change_fail":"Update Work Order fail.",
+        "dispatch_success":"Dispatch Success.",
+        "dispatch_fail":"Dispatch fail.",
+        "add_case_success":"Add Work Order Success.",
+        "savedaft_success":"SaveDraft Success.",
+        "add_case_fail":"Add Work Order fail.",
+        "savedaft_fail":"SaveDraft fail.",
+        "missing_close_case_data":"Missing Close Details Data."
       }
     },
     "sop_card": {
@@ -793,7 +813,10 @@
       "device_type": "Device Type",
       "device_model": "Model",
       "service_history": "Service History",
-      "details_panel": "View Details Panel"
+      "details_panel": "View Details Panel",
+      "brand":"Brand",
+      "iot_device_serial_number":"Serial Number",
+      "iot_device_name":"Device Name"
     }
   },
   "time": {
