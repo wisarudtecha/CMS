@@ -244,7 +244,7 @@ const ServiceDashboard: React.FC = () => {
   };
 
   const DASHBOARD_MONTHLY: JSONObject = {
-    EVENT: "DASHBOARD-MONTHLY",
+    EVENT: "DASHBOARD",
     eventType: "hidden",
     additionalJson: {
       type: "CASE-MONTHLY-SUMMARY",
