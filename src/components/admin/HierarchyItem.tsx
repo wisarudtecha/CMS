@@ -1,6 +1,6 @@
 // /src/components/admin/HierarchyItem.tsx
 import React from "react";
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
 import type { HierarchyAction, HierarchyAnalytics, HierarchyConfig, HierarchyItem, LevelConfig } from "@/types/hierarchy";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
@@ -82,6 +82,25 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
     }
   };
 
+  // Check if action should be disabled (for delete with children)
+  const isActionDisabled = (action: HierarchyAction): boolean => {
+    // Disable delete action if item has children
+    if (action.label.toLowerCase().includes('delete') && canHaveChildren && childCount > 0) {
+      return true;
+    }
+    return false;
+  };
+
+  // Get tooltip message for disabled actions
+  const getDisabledTooltip = (action: HierarchyAction): string | undefined => {
+    if (action.label.toLowerCase().includes("delete") && canHaveChildren && childCount > 0) {
+      const childLabel = levelConfig.childCountLabel?.plural || "child items";
+      return `Cannot delete: ${childCount} ${childLabel} exist. Please remove all ${childLabel} first.`;
+    }
+    return undefined;
+  };
+
+
   const primaryLabel = getDisplayValue(config.displayFields.primaryLabel);
   const secondaryLabel = config.displayFields.secondaryLabel 
     ? getDisplayValue(config.displayFields.secondaryLabel)
@@ -146,11 +165,12 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
 
   return (
     <div
-      className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${getBackgroundColor()}`}
+      className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${getBackgroundColor()}`}
+      // className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${getBackgroundColor()}`}
       // className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${
       //   isSelected ? "bg-blue-100 dark:bg-blue-800" : ""
       // } ${!isParent ? "border-gray-300 dark:border-gray-600" : ""}`}
-      onClick={onToggleExpansion}
+      // onClick={onToggleExpansion}
       // onClick={onSelect}
     >
       <div className="flex items-center space-x-3">
@@ -167,12 +187,10 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
             >
               {isExpanded ? (
                 // config.collapseIcon
-                levelConfig.collapseIcon
-                || <ChevronDown className="w-4 h-4" />
+                levelConfig.collapseIcon || <ChevronDown className="w-4 h-4" />
               ) : (
                 // config.expandIcon
-                levelConfig.expandIcon
-                || <ChevronRight className="w-4 h-4" />
+                levelConfig.expandIcon || <ChevronRight className="w-4 h-4" />
               )}
             </button>
           )
@@ -330,17 +348,40 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
           if (action.showWhen && !action.showWhen(item)) {
             return null;
           }
+
+          const isDisabled = isLoading || isActionDisabled(action);
+          const tooltipMessage = getDisabledTooltip(action);
           
           return (
-            <Button
-              disabled={isLoading}
-              key={index}
-              size={action.size || "xs"}
-              variant={action.variant || "primary"}
-              onClick={() => handleActionClick(action)}
-            >
-              {action.label}
-            </Button>
+            <div key={index} className="relative group">
+              <Button
+                disabled={isDisabled || isLoading}
+                key={index}
+                size={action.size || "xs"}
+                variant={action.variant || "primary"}
+                // onClick={() => handleActionClick(action)}
+                onClick={() => {
+                  if (!isDisabled) {
+                    handleActionClick(action);
+                  }
+                }}
+              >
+                {action.label}
+              </Button>
+
+              {/* Tooltip for disabled delete button */}
+              {tooltipMessage && isDisabled && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                  <div className="flex items-center space-x-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{tooltipMessage}</span>
+                  </div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

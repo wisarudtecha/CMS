@@ -9,6 +9,18 @@ export interface Department extends BaseEntity {
   active: boolean;
 }
 
+export interface DepartmentCreateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
+export interface DepartmentUpdateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
 export interface Command extends BaseEntity {
   orgId: string;
   deptId: string;
@@ -16,6 +28,20 @@ export interface Command extends BaseEntity {
   en: string;
   th: string;
   active: boolean;
+}
+
+export interface CommandCreateData {
+  active: boolean;
+  deptId: string;
+  en: string;
+  th: string;
+}
+
+export interface CommandUpdateData {
+  active: boolean;
+  deptId: string;
+  en: string;
+  th: string;
 }
 
 export interface Station extends BaseEntity {
@@ -26,6 +52,22 @@ export interface Station extends BaseEntity {
   en: string;
   th: string;
   active: boolean;
+}
+
+export interface StationCreateData {
+  active: boolean;
+  commId: string;
+  deptId: string;
+  en: string;
+  th: string;
+}
+
+export interface StationUpdateData {
+  active: boolean;
+  commId: string;
+  deptId: string;
+  en: string;
+  th: string;
 }
 
 export interface Organization {

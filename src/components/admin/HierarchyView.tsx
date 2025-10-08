@@ -165,8 +165,14 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
 
       // console.log(`🚀 Rendering item: ${item.name}, level: ${level}, canHaveChildren: ${canHaveChildren}`);
 
+      // Use a composite key to ensure uniqueness
+      const compositeKey = `${parentId ?? "root"}-${level}-${item.id}`;
+
       return (
-        <div key={item.id}>
+        <div
+          key={compositeKey}
+          // key={item.id}
+        >
           <HierarchyItemComponent
             analytics={itemAnalytics}
             canHaveChildren={canHaveChildren}

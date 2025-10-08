@@ -169,7 +169,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
 
     reconnectAttemptsRef.current++;
-    console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
+    // console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
 
     reconnectTimeoutRef.current = setTimeout(() => {
       websocket(config || defalutWebsocketConfig);
@@ -232,7 +232,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
           setLastMessage(message);
           switch (message.data.EVENT != null) {
-            case message.data.EVENT.includes("CASE"):
+            case message.data.EVENT?.includes("CASE"):
               WebSocketCaseEvent(message)
               break;
             default:
@@ -254,7 +254,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+        // console.log('WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
         setConnectionState('disconnected');
         isConnectingRef.current = false;
