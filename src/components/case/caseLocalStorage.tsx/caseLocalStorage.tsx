@@ -1,5 +1,5 @@
-import { dispatchInterface } from "@/store/api/dispatch";
 import { CaseEntity } from "@/types/case";
+import { dispatchInterface } from "@/types/dispatch";
 
 
 export const dispatchUpdateLocate = (dispatch: dispatchInterface) => {

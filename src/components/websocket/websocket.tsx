@@ -86,7 +86,7 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
           if (targetCaseId && newStatus !== undefined) {
             const updatedCaseList = caseList.map((item) =>
               item.caseId === targetCaseId
-                ? { ...item, statusId: newStatus }
+                ? { ...item, statusId: newStatus === "S013" ? "S001" : newStatus }
                 : item
             );
 
@@ -232,7 +232,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
           setLastMessage(message);
           switch (message.data.EVENT != null) {
-            case message.data.EVENT?.includes("CASE"):
+            case message.data.EVENT.includes("CASE"):
               WebSocketCaseEvent(message)
               break;
             default:

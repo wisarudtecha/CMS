@@ -4,39 +4,39 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getTimeDifference, isSlaViolated, ProgressStepPreviewProps } from '../sopStepTranForm';
 import { CompactCountdownTimer } from '@/components/countDownSla/countDownSla';
 import { formatDate } from '@/utils/crud';
+import { formatDuration } from '@/components/Sla/Sla';
 
 const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
     const { t } = useTranslation();
-    const filteredSteps = progressSteps.length === 6
-        ? progressSteps.slice(1, -1)
-        : progressSteps;
-
+    // const filteredSteps = progressSteps.length === 6
+    //     ? progressSteps.slice(1, -1)
+    //     : progressSteps;
+    const filteredSteps = progressSteps
     const currentStepIndex = filteredSteps.findIndex(step => step.current);
     const currentStep = currentStepIndex >= 0 ? filteredSteps[currentStepIndex] : null;
-
-    const formatDuration = (minutes: number) => {
-        if (minutes < 60) {
-            return `${Math.floor(minutes)} ${t("time.Minutes")}`;
-        } else if (minutes < 1440) {
-            const hours = Math.floor(minutes / 60);
-            const remainingMinutes = Math.floor(minutes % 60);
-            return remainingMinutes > 0
-                ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
-                : `${hours} ${t("time.Hours")}`;
-        } else {
-            const days = Math.floor(minutes / 1440);
-            const remainingHours = Math.floor((minutes % 1440) / 60);
-            const remainingMinutes = Math.floor(minutes % 60);
-            let result = `${days} ${t("time.Days")}`;
-            if (remainingHours > 0) {
-                result += ` ${remainingHours} ${t("time.Hours")}`;
-            }
-            if (remainingMinutes > 0) {
-                result += ` ${remainingMinutes} ${t("time.Minutes")}`;
-            }
-            return result;
-        }
-    };
+    // const formatDuration = (minutes: number) => {
+    //     if (minutes < 60) {
+    //         return `${Math.floor(minutes)} ${t("time.Minutes")}`;
+    //     } else if (minutes < 1440) {
+    //         const hours = Math.floor(minutes / 60);
+    //         const remainingMinutes = Math.floor(minutes % 60);
+    //         return remainingMinutes > 0
+    //             ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
+    //             : `${hours} ${t("time.Hours")}`;
+    //     } else {
+    //         const days = Math.floor(minutes / 1440);
+    //         const remainingHours = Math.floor((minutes % 1440) / 60);
+    //         const remainingMinutes = Math.floor(minutes % 60);
+    //         let result = `${days} ${t("time.Days")}`;
+    //         if (remainingHours > 0) {
+    //             result += ` ${remainingHours} ${t("time.Hours")}`;
+    //         }
+    //         if (remainingMinutes > 0) {
+    //             result += ` ${remainingMinutes} ${t("time.Minutes")}`;
+    //         }
+    //         return result;
+    //     }
+    // };
 
     const calculateSlaPerformance = (step: any, previousStep: any) => {
         if (!step.sla || (!step.completed && !step.current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt) {

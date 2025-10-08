@@ -1,6 +1,8 @@
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, X } from "lucide-react";
 import Input from "../form/input/InputField";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { COMMON_INPUT_CSS } from "../case/constants/caseConstants";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const SearchableSelect: React.FC<{
     options: any[],
@@ -14,10 +16,10 @@ export const SearchableSelect: React.FC<{
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     // const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
-    const [dropdownPosition] = useState<'bottom' | 'top'>('bottom');
+    // const [dropdownPosition] = useState<'bottom' | 'top'>('bottom');
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
+    // const dropdownRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
     const filteredOptions = useMemo(() => {
         if (!searchTerm) return options;
         return options.filter(opt => {
@@ -83,10 +85,16 @@ export const SearchableSelect: React.FC<{
         setSearchTerm("");
     };
 
-    const dropdownClasses = `
-        absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700
-        ${dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'}
-    `;
+    // const dropdownClasses = `
+    //     absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700
+    //     ${dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'}
+    // `;
+
+    const handleClear = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onChange("");
+        setSearchTerm("");
+    };
 
     return (
         <div className={className}>
@@ -95,17 +103,27 @@ export const SearchableSelect: React.FC<{
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
                     disabled={disabled}
-                    className="appearance-none border rounded-md w-full py-3 px-3 text-gray-900 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 text-left flex justify-between items-center"
+                    className={`${COMMON_INPUT_CSS} appearance-none border rounded-md w-full py-3 px-3 text-gray-900 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 text-left flex justify-between items-center`}
                 >
                     <span className="truncate">{selectedLabel}</span>
-                    <ChevronsUpDown size={16} className="text-gray-400" />
+                    <div className="flex items-center gap-2">
+                        {value && (
+                            <div
+                                onClick={handleClear}
+                                className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 transition-colors"
+                            >
+                                <X size={16} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                            </div>
+                        )}
+                        <ChevronsUpDown size={16} className="text-gray-400" />
+                    </div>
                 </button>
                 {isOpen && (
-                    <div className={dropdownClasses} ref={dropdownRef}>
+                    <div className="absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 top-full mt-1">
                         <div className="p-2">
                             <Input
                                 type="text"
-                                placeholder="Search..."
+                                placeholder={placeholder || t("common.search_placeholder")}
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="w-full"
@@ -126,7 +144,9 @@ export const SearchableSelect: React.FC<{
                                 );
                             })}
                             {filteredOptions.length === 0 && (
-                                <li className="px-4 py-2 text-sm text-gray-500 italic">No options found.</li>
+                                <li className="px-4 py-2 text-sm text-gray-500 italic">
+                                    {t("common.no_options")}
+                                </li>
                             )}
                         </ul>
                     </div>
@@ -173,7 +193,11 @@ export const SearchableSelectApi = <T extends ApiOption>({
     const wrapperRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-
+    const handleClear = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onChange("");
+        setSearchTerm("");
+    };
 
     // Build query parameters
     const apiQueryParams = useMemo(() => {
@@ -271,7 +295,17 @@ export const SearchableSelectApi = <T extends ApiOption>({
                     className="appearance-none border rounded-md w-full py-3 px-3 text-gray-900 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 text-left flex justify-between items-center"
                 >
                     <span className="truncate">{selectedLabel}</span>
-                    <ChevronsUpDown size={16} className="text-gray-400" />
+                    <div className="flex items-center gap-2">
+                        {value && (
+                            <div
+                                onClick={handleClear}
+                                className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 transition-colors"
+                            >
+                                <X size={16} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                            </div>
+                        )}
+                        <ChevronsUpDown size={16} className="text-gray-400" />
+                    </div>
                 </button>
 
                 {isOpen && (

@@ -21,6 +21,8 @@ export const caseStatusGroup = [
 
 export const delayStatus =["S008", "S009", "S010", "S011", "S012", "S013", "S014"]
 
+export const cancelAndCloseStatus = ["S007","S014"]
+
 export interface CaseStatusInterface {
   id: string;
   statusId: string;

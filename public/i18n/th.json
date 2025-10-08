@@ -31,7 +31,8 @@
     "refresh": "รีเฟรช",
     "home": "หน้าหลัก",
     "retry": "ลองใหม่อีกครั้ง",
-    "no_result":"ไม่เจอผลลัพธ์"
+    "no_result":"ไม่เจอผลลัพธ์",
+    "charater":"ตัวอักษร"
   },
   "auth": {
     "signin": {
@@ -730,6 +731,10 @@
       "toast":{
         "close_case_success":"ปิดงานสำเร็จ",
         "close_case_fail":"ปิดงานไม่สำเร็จ",
+        "cancel_case_success":"ยกเลิกงานสำเร็จ",
+        "cancel_case_fail":"ยกเลิกงานไม่สำเร็จ",
+        "cancel_unit_success":"ยกเลิกเจ้าหน้าที่สำเร็จ",
+        "cancel_unit_fail":"ยกเลิกเจ้าหน้าที่ไม่สำเร็จ",
         "save_change_sucess":"บันทึกสำเร็จ",
         "save_change_fail":"บันทึกไม่สำเร็จ",
         "dispatch_success":"มอบหมายงานสำเร็จ",
@@ -738,7 +743,7 @@
         "savedaft_success":"สร้างแบบร่างสำเร็จ",
         "add_case_fail":"สร้างเหตุไม่สำเร็จ",
         "savedaft_fail":"สร้างแบบร่างไม่สำเร็จ",
-        "missing_close_case_data":"กรุณาใส่ข้อมูลปิดเหตุให้ครบ"
+        "missing_close_case_data":"กรุณาใส่ข้อมูลให้ครบ"
       }
     },
     "sop_card": {
@@ -843,6 +848,9 @@
     "faster_by": "เร็วกว่า",
     "in_progress": "กำลังดำเนินการ", 
     "pending": "รอดำเนินการ",
-    "no_sla": "ไม่ได้กำหนด SLA"
+    "no_sla": "ไม่ได้กำหนด SLA",
+    "used":"ใช้ไป",
+    "completed_progress":"สำเร็จไปแล้ว",
+    "total_sla": "SLA ทั้งหมด"
   }
 }

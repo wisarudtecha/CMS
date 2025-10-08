@@ -8,12 +8,13 @@ import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { CaseSop, Unit, useGetUnitQuery } from "@/store/api/dispatch"
+import { useGetUnitQuery } from "@/store/api/dispatch"
 import { Area, mergeArea } from "@/store/api/area"
 import OfficerDetailModal from "./officerSkillModal"
 import { useTranslation } from "@/hooks/useTranslation"
 import { UnitStatus } from "@/types/unit"
 import { unitStatusConfig } from "../ui/status/status"
+import { CaseSop, Unit } from "@/types/dispatch"
 
 const SkillsDisplay = ({
   skills,
@@ -307,7 +308,7 @@ export default function AssignOfficerModal({
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-              <div className="text-gray-600 dark:text-gray-400">Loading officers...</div>
+              <div className="text-gray-600 dark:text-gray-400">{t("common.loading")}</div>
             </div>
           </div>
         </DialogContent>
@@ -326,7 +327,7 @@ export default function AssignOfficerModal({
           </DialogHeader>
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-red-600 dark:text-red-400 mb-2">Error loading officers</div>
+              <div className="text-red-600 dark:text-red-400 mb-2">{t("common.error")}</div>
               <Button onClick={() => window.location.reload()} variant="outline" size="sm">
                 Retry
               </Button>

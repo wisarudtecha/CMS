@@ -1,10 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog/dialog"
-import { Unit } from "@/store/api/dispatch"
 import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { useMemo } from "react"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building } from "lucide-react"
+import { Unit } from "@/types/dispatch"
 
 interface CreateSubCaseModel {
     officer: Unit
@@ -35,7 +35,7 @@ export default function OfficerDetailModal({
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                            <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading officer data...</p>
+                            <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">{t("common.loading")}</p>
                         </div>
                     </div>
                 </DialogContent>

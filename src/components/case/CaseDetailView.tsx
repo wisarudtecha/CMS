@@ -15,7 +15,7 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, usePatchUpdateCaseMutation } from "@/store/api/caseApi" // REMOVED: usePostCreateCaseMutation
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSopUnit, dispatchInterface, Unit, UnitWithSop, useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostDispacthMutationMutation } from "@/store/api/dispatch"
+import { useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostCancelCaseMutationMutation, usePostCancelUnitMutationMutation, usePostDispacthMutationMutation } from "@/store/api/dispatch"
 import { Area } from "@/store/api/area"
 import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity, caseResults } from "@/types/case"
@@ -24,11 +24,11 @@ import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { CaseStatusInterface, closeStatus} from "../ui/status/status"
+import { cancelAndCloseStatus, CaseStatusInterface, closeStatus } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
-import { source } from "./constants/caseConstants";
+import { COMMON_INPUT_CSS, resultStringLimit, source } from "./constants/caseConstants";
 import { CaseFormFields } from "./caseFormFields";
 import { CaseTypeSubType } from "../interface/CaseType"
 import { getLocalISOString, TodayDate } from "../date/DateToString"
@@ -37,6 +37,9 @@ import { SearchableSelect } from "../SearchInput/SearchSelectInput"
 import { usePermissions, useToast } from "@/hooks"
 import { ToastContainer } from "../crud/ToastContainer"
 import AssignOfficerModal from "../assignOfficer/singleAssignOfficer"
+import TextAreaWithCounter from "../form/input/TextAreaWithCounter"
+import { UnitWithSop, Unit, CaseSopUnit, dispatchInterface, CancelCase, CancelUnit } from "@/types/dispatch"
+import removeCaseFromLocalStore from "./caseLocalStorage.tsx/removeCaseFromLocalStore"
 
 const CaseHeader = memo(({
     disablePageMeta,
@@ -134,7 +137,7 @@ const OfficerItem = memo(({
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[]
-    canCancel:boolean
+    canCancel: boolean
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
@@ -158,7 +161,7 @@ const OfficerItem = memo(({
                 <div className="flex items-center">
                     {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
                     <span className="ml-2 cursor-pointer" onClick={handleOfficerClick}>
-                        {officer.unit.username}
+                        {officer.unit.unitId}
                     </span>
                 </div>
                 {permissions.hasPermission("case.assign") &&
@@ -210,7 +213,7 @@ const AssignedOfficers = memo(({
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
     caseStatus: CaseStatusInterface[];
-    canCancel:boolean;
+    canCancel: boolean;
 }) => {
     if (!SopUnit?.length) return null;
     const { t } = useTranslation();
@@ -238,7 +241,6 @@ const AssignedOfficers = memo(({
 AssignedOfficers.displayName = 'AssignedOfficers';
 
 
-// REMOVED: The `isCreate` prop from the component signature.
 export default function CaseDetailView({ onBack, caseData, disablePageMeta = false, isSubCase = false, isScheduleDate = false }: { onBack?: () => void, caseData?: CaseEntity, disablePageMeta?: boolean, isSubCase?: boolean, isScheduleDate?: boolean }) {
     const permissions = usePermissions();
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
@@ -302,9 +304,11 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
     const [updateCase] = usePatchUpdateCaseMutation();
     const [postDispatch] = usePostDispacthMutationMutation();
+    const [postCancelCase] = usePostCancelCaseMutationMutation();
+    const [postCancelUnit] = usePostCancelUnitMutationMutation();
     const [getSopUnit] = useLazyGetSopUnitQuery();
     const [refetchTriggerUnit, setRefetchTriggerUnit] = useState(Boolean);
-    const canCancelUnit= sopData?.data?.dispatchStage?.data?.data?.config?.action===sopData?.data?.currentStage?.data?.data?.config?.action
+    const canCancelUnit = sopData?.data?.dispatchStage?.data?.data?.config?.action === sopData?.data?.currentStage?.data?.data?.config?.action
     useEffect(() => {
         if (!isInitialized) {
             const customerList = JSON.parse(localStorage.getItem("customer_data") ?? "[]") as Customer[];
@@ -396,14 +400,33 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowCancelUnitModal(true);
     }, []);
 
-    const handleConfirmCancelUnit = useCallback(() => {
-        console.log("Cancelling assignment for:", unitToCancel?.unit.username);
-        setShowCancelUnitModal(false);
-        setUnitToCancel(null);
-        // setToastMessage("Unit assignment cancelled.");
-        // setToastType("info");
-        // setShowToast(true);
-    }, [unitToCancel]);
+    const handleConfirmCancelUnit = useCallback(async (unit:CaseSopUnit) => {
+        // const closeCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
+        const cancelUnitJson = {
+            caseId: caseState?.workOrderNummber,
+            // status: sopData?.data?.nextStage?.data?.data?.config?.action,
+            // resId: closeCaseData?.resId,
+            // resDetail: resultDetail
+            unitId:unit.unitId,
+            unitUser:unit.username,
+        } as CancelUnit;
+        try {
+            // if (!cancelUnitJson ||
+            //     !cancelUnitJson.caseId ||
+            //     Object.keys(cancelUnitJson).length === 0) {
+            //     console.log(cancelUnitJson)
+            //     throw t("case.display.toast.missing_close_case_data");
+            // }
+            const payload = await postCancelUnit(cancelUnitJson).unwrap();
+            if (payload.msg?.toLocaleLowerCase() !== "success") {
+                throw Error
+            }
+            addToast("success", t("case.display.toast.cancel_unit_success"));
+        } catch (error) {
+            addToast("error", t("case.display.toast.cancel_unit_fail") + ` ${error}`);
+            setDisableButton(false);
+        }
+    }, [postCancelUnit, caseData, unitToCancel])
 
     const handleOnChickCloseButton = useCallback(async () => {
         const closeCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
@@ -427,20 +450,39 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw Error
             }
             addToast("success", t("case.display.toast.close_case_success"));
-
         } catch (error) {
-            addToast("error", t("case.display.toast.close_case_fail") +` ${error}`);
+            addToast("error", t("case.display.toast.close_case_fail") + ` ${error}`);
             setDisableButton(false);
         }
     }, [postDispatch, caseData, resultDetail, closeValue])
 
-    const handleConfirmCancelCase = useCallback(() => {
-        console.log("Cancelling case:", sopData?.data?.caseId);
-        setShowCancelCaseModal(false);
-        // setToastMessage("Case has been cancelled.");
-        // setToastType("error");
-        // setShowToast(true);
-    }, [sopData?.data]);
+    const handleConfirmCancelCase = useCallback(async () => {
+        const cancelCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
+        const canceljson = {
+            caseId: caseState?.workOrderNummber,
+            resId: cancelCaseData?.resId,
+            resDetail: resultDetail
+        } as CancelCase;
+        try {
+            if (!canceljson ||
+                !canceljson.caseId ||
+                canceljson.resId === undefined ||
+                Object.keys(canceljson).length === 0) {
+                console.log(canceljson)
+                throw t("case.display.toast.missing_close_case_data");
+            }
+            const payload = await postCancelCase(canceljson).unwrap();
+            if (payload.msg?.toLocaleLowerCase() !== "success") {
+                throw Error
+            }
+            addToast("success", t("case.display.toast.cancel_case_success"));
+            removeCaseFromLocalStore(canceljson.caseId)
+            // navigate(-1)
+        } catch (error) {
+            addToast("error", t("case.display.toast.cancel_case_fail") + ` ${error}`);
+            setDisableButton(false);
+        }
+    }, [postCancelCase, caseData, resultDetail, closeValue])
 
 
     useEffect(() => {
@@ -592,7 +634,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseDuration: 0,
             caseLat: "",
             caseLon: "",
-            createdDate :caseState?.status === "S000" ? new Date(TodayDate()).toISOString() : undefined, 
+            createdDate: caseState?.status === "S000" ? new Date(TodayDate()).toISOString() : undefined,
             caseSTypeId: caseState?.caseType?.sTypeId || "",
             caseTypeId: caseState?.caseType?.typeId || "",
             caseVersion: caseState?.status === "S000" ? "publish" : sopData?.data?.caseVersion,
@@ -696,14 +738,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw new Error("No data found in dispatch object");
             }
             await postDispatch(dispatchjson).unwrap();
-            addToast("success",t("case.display.toast.dispatch_fail"));
+            addToast("success", t("case.display.toast.dispatch_success"));
             dispatchUpdateLocate(dispatchjson)
             setCaseState(prev => prev ? { ...prev, status: dispatchjson.status } : prev);
             refetch()
             return true
         } catch (error) {
             console.error('Dispatch failed:', error);
-            addToast("error",t("case.display.toast.dispatch_fail"));
+            addToast("error", t("case.display.toast.dispatch_fail"));
             return false
         }
     }, [initialCaseData, postDispatch, sopData?.data, refetch]);
@@ -724,7 +766,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 <div className="absolute inset-0 flex items-center justify-center dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 z-50 rounded-2xl">
                     <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                        <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">Loading Case...</div>
+                        <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">{t("common.loading")}</div>
                     </div>
                 </div>
             </div>
@@ -743,10 +785,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 md:flex rounded-2xl">
                     <div className="flex items-center justify-center h-full w-full">
                         <div className="text-center px-6 py-12">
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Case Data Found</h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t("common.error")}</h3>
+                            {/* <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                                 The case you're looking for doesn't exist or couldn't be loaded.
-                            </p>
+                            </p> */}
                         </div>
                     </div>
                 </div>
@@ -813,39 +855,41 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         <FormFieldValueDisplay
                                             caseData={caseState}
                                         />
-                                        <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                                            <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
-                                            <div className="">
-                                                <SearchableSelect
-                                                    options={closeCaseOption.map(result => result[language == "th" ? "th" : "en"])}
-                                                    value={closeValue}
-                                                    onChange={setCloseValue}
-                                                    placeholder={t("case.display.result_placeholder")}
-                                                    className="  mb-2 items-center"
-                                                />
-
+                                        {!cancelAndCloseStatus.some(item => item === caseState?.status) &&
+                                            <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-3">
+                                                <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
                                                 <div className="">
-                                                    {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
-                                                    <textarea
-                                                        value={resultDetail}
-                                                        onChange={(e) => setResultDetail(e.target.value)}
-                                                        placeholder={t("case.display.result_detail_placeholder")}
-                                                        className={`w-full mb-2  h-20 p-2 appearance-none rounded text-gray-700 leading-tight bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent  dark:text-gray-300 dark:border-gray-800 dark:bg-gray-800 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700`}
+                                                    <SearchableSelect
+                                                        options={closeCaseOption.map(result => result[language == "th" ? "th" : "en"])}
+                                                        value={closeValue}
+                                                        onChange={setCloseValue}
+                                                        placeholder={t("case.display.result_placeholder")}
+                                                        className="  mb-2 items-center"
                                                     />
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-end items-end">
-                                                <div className="justify-end items-end flex">
-                                                    <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
-                                                </div>
-                                                {permissions.hasPermission("case.close") &&
-                                                    <div className="ml-2">
-                                                        <Button size="sm" variant="outline" onClick={() => setShowCloseCaseModal(true)} disabled={!isCloseStage || disableButton}>{t("case.display.close_case")}</Button>
-                                                    </div>
-                                                }
 
+                                                    <div className="mb-3">
+                                                        {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
+                                                        <TextAreaWithCounter
+                                                            value={resultDetail}
+                                                            maxLength={resultStringLimit}
+                                                            onChange={(e: any) => setResultDetail(e.target.value)}
+                                                            placeholder={t("case.display.result_detail_placeholder")}
+                                                            className={`w-full h-20 p-2 appearance-none rounded !bg-gray-200  dark:!bg-gray-800 ${COMMON_INPUT_CSS}`}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end items-end space-x-3">
+                                                    <div className="justify-end items-end flex">
+                                                        <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
+                                                    </div>
+                                                    {permissions.hasPermission("case.close") &&
+                                                        <div className="ml-2">
+                                                            <Button size="sm" variant="primary" onClick={() => setShowCloseCaseModal(true)} disabled={!isCloseStage || disableButton}>{t("case.display.close_case")}</Button>
+                                                        </div>
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
+                                        }
                                     </div>
                                 )}
                             </div>
@@ -897,7 +941,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             <ConfirmationModal
                 isOpen={showCancelUnitModal}
                 onClose={() => setShowCancelUnitModal(false)}
-                onConfirm={handleConfirmCancelUnit}
+                onConfirm={()=>{
+                    unitToCancel&&
+                    handleConfirmCancelUnit(unitToCancel?.unit)}
+                }
                 title={t("case.display.cancel_case_assignment_title")}
                 description={<>{t("case.display.cancel_case_assignment_detail")} <strong>{unitToCancel?.unit.username}</strong>?</>}
                 confirmButtonText={t("common.confirm")}

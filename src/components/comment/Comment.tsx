@@ -29,7 +29,7 @@ export const Comments: React.FC<CommentsProps> = ({
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
-        {   
+        {
             refetchOnMountOrArgChange: true,
             skip: !isOpen
         }
@@ -40,22 +40,45 @@ export const Comments: React.FC<CommentsProps> = ({
     useEffect(() => {
         const listener = onMessage((message) => {
             try {
-                if (message?.data) {
-                    const data = message.data;
-                    if (data?.additionalJson?.type === "comment" && caseId===data?.additionalJson?.caseId) {
+                switch (message?.data?.EVENT) {
+                    case "CASE-HISTORY": {
+                        const data = message.data;
+                        if (data?.additionalJson?.type === "comment" && caseId === data?.additionalJson?.caseId) {
+                            const optimisticComment: CaseHistory = {
+                                id: Date.now(),
+                                orgId: data.additionalJson.org || "",
+                                caseId: data?.additionalJson?.caseId,
+                                username: data?.additionalJson?.username,
+                                type: "comment",
+                                fullMsg: data?.additionalJson?.fullMsg,
+                                jsonData: "",
+                                createdAt: data?.additionalJson?.createdAt,
+                                createdBy: data?.additionalJson?.username,
+                            };
+                            setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+                        }
+                        break;
+                    }
+
+                    case "CASE-STATUS-UPDATE": {
+                        const data = message.data;
                         const optimisticComment: CaseHistory = {
                             id: Date.now(),
-                            orgId: data.additionalJson.org || "",
+                            orgId: data.org || "",
                             caseId: data?.additionalJson?.caseId,
                             username: data?.createdBy,
                             type: "comment",
-                            fullMsg: data?.additionalJson?.fullMsg,
+                            fullMsg: data?.additionalJson?.ms_alert,
                             jsonData: "",
                             createdAt: data?.createdAt,
                             createdBy: data?.createdBy,
                         };
                         setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+                        break;
                     }
+
+                    default:
+                        break;
                 }
             } catch (error) {
                 console.error("Error processing WebSocket message:", error);
@@ -166,7 +189,7 @@ export const Comments: React.FC<CommentsProps> = ({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Loading comments...</span>
+                    <span>{t("common.loading")}</span>
                 </div>
             );
         }
@@ -174,7 +197,7 @@ export const Comments: React.FC<CommentsProps> = ({
         if (fetchError) {
             return (
                 <div className="flex justify-center items-center h-full text-red-500">
-                    <p>Failed to load comments.</p>
+                    <p>{t("common.error")}</p>
                 </div>
             );
         }
@@ -200,14 +223,14 @@ export const Comments: React.FC<CommentsProps> = ({
                 <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-semibold text-blue-500 dark:text-blue-400">{comment.createdBy}</p>
                     <div className="flex space-x-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
-                        {formatDate(new Date(new Date(comment.createdAt).getTime()))}
-                    </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
+                            {formatDate(new Date(new Date(comment.createdAt).getTime()))}
+                        </span>
                     </div>
                 </div>
                 <div className="flex space-x-2 justify-between">
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">{comment.fullMsg}</p>
-                {/* <Pencil className="w-4 text-xs text-gray-500 dark:text-gray-400" onClick={handleEditComment}/> */}
+                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">{comment.fullMsg}</p>
+                    {/* <Pencil className="w-4 text-xs text-gray-500 dark:text-gray-400" onClick={handleEditComment}/> */}
                 </div>
             </div>
         ));
@@ -216,9 +239,8 @@ export const Comments: React.FC<CommentsProps> = ({
     return (
         <div className={isModal ? "h-full flex flex-col" : ""}>
             <div
-                className={`bg-gray-100 dark:bg-gray-800 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 shadow-inner ${
-                    isModal ? 'flex-1 min-h-0' : ''
-                }`}
+                className={`bg-gray-100 dark:bg-gray-800 my-2 rounded-lg overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700 shadow-inner ${isModal ? 'flex-1 min-h-0' : ''
+                    }`}
                 style={isModal ? {} : { height: '10em' }}
                 ref={commentsContainerRef}
             >
@@ -227,14 +249,14 @@ export const Comments: React.FC<CommentsProps> = ({
 
             {addCommentError && (
                 <div className="text-red-500 text-sm mb-2">
-                    {t("case.sop_data.fail_send_activity")}
+                    {t("case.sop_card.fail_send_activity")}
                 </div>
             )}
 
             <div className={`flex gap-3 ${isModal ? 'mt-4' : 'mt-3'}`}>
                 <div className="flex-1">
                     <Input
-                        placeholder={t("case.sop_card.comment")+"..."}
+                        placeholder={t("case.sop_card.comment") + "..."}
                         value={newCommentMessage}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCommentMessage(e.target.value)}
                         onKeyDown={handleKeyDownComment}
@@ -248,16 +270,7 @@ export const Comments: React.FC<CommentsProps> = ({
                     onClick={handleNewComment}
                     disabled={newCommentMessage.trim() === '' || isAddingComment}
                 >
-                    {isAddingComment ? (
-                        <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Adding...
-                        </>
-                    ) : (
-                        <div className="flex text-gray-900 dark:text-gray-300">
+                        <div className="flex text-gray-600 dark:text-gray-300">
                             <svg
                                 className="w-4 mr-2"
                                 fill="none"
@@ -273,7 +286,6 @@ export const Comments: React.FC<CommentsProps> = ({
                             </svg>
                             <span>{t("case.sop_card.send_activity")}</span>
                         </div>
-                    )}
                 </Button>
             </div>
         </div>

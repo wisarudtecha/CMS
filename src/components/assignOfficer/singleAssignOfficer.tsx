@@ -8,12 +8,13 @@ import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar/Avatarv2"
 import Badge from "@/components/ui/badge/Badge"
 import { getAvatarIconFromString } from "../avatar/createAvatarFromString"
-import { CaseSop, Unit, useGetUnitQuery } from "@/store/api/dispatch"
+import { useGetUnitQuery } from "@/store/api/dispatch"
 import { Area, mergeArea } from "@/store/api/area"
 import OfficerDetailModal from "./officerSkillModal"
 import { useTranslation } from "@/hooks/useTranslation"
 import { UnitStatus } from "@/types/unit"
 import { unitStatusConfig } from "../ui/status/status"
+import { CaseSop, Unit } from "@/types/dispatch"
 
 const SkillsDisplay = ({
   skills,
@@ -255,7 +256,7 @@ export default function AssignOfficerModal({
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-              <div className="text-gray-600 dark:text-gray-400">Loading officers...</div>
+              <div className="text-gray-600 dark:text-gray-400">{t("common.loading")}</div>
             </div>
           </div>
         </DialogContent>
@@ -274,7 +275,7 @@ export default function AssignOfficerModal({
           </DialogHeader>
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-red-600 dark:text-red-400 mb-2">Error loading officers</div>
+              <div className="text-red-600 dark:text-red-400 mb-2">{t("common.error")}</div>
               <Button onClick={() => window.location.reload()} variant="outline" size="sm">
                 Retry
               </Button>
@@ -333,7 +334,7 @@ export default function AssignOfficerModal({
               {/* Table Header - Removed select all checkbox */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
-                  <div className="px-4 py-3 w-12">
+                  <div className="p-5 w-12">
                     {/* Empty space where select all checkbox was */}
                   </div>
                   <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
@@ -384,7 +385,7 @@ export default function AssignOfficerModal({
                                 <Avatar className="w-8 h-8">
                                   <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
                                     {officer.photo ?
-                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitName
+                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitId
                                         .split(" ")
                                         .map((n) => n[0])
                                         .join("")
@@ -392,7 +393,7 @@ export default function AssignOfficerModal({
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-gray-800 dark:text-white font-medium">
-                                  {officer.unitName}
+                                  {officer.unitId}
                                 </span>
                               </div>
                               <div className="flex items-center justify-center">
@@ -450,7 +451,7 @@ export default function AssignOfficerModal({
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge>
                 {getAvatarIconFromString(selectedOfficerObject.username, "bg-blue-600 dark:bg-blue-700 my-1")}
-                {selectedOfficerObject.username}
+                {selectedOfficerObject.unitId}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()

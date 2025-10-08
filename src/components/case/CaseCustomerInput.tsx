@@ -1,6 +1,5 @@
 import { Custommer } from "@/types";
 import { ChangeEvent } from "react";
-import Input from "../form/input/InputField";
 // import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/store/api/custommerApi";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,6 +12,7 @@ interface CustomerInputProps {
     handleCustomerDataChange: (newValue: Custommer) => void;
     hidePhone?: boolean
 }
+
 const CustomerInput: React.FC<CustomerInputProps> = ({
     customerData,
     listCustomerData,
@@ -70,10 +70,10 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     };
 
     return (
-        <div className=" text-gray-900 dark:text-gray-400 mx-3">
+        <div className="mx-3 text-gray-900 dark:text-gray-400">
             {/* <div className="w-auto md:mr-2">
                 <h3 className="mb-2 ">Customer Name :</h3>
-                <Input
+                <input
                     value={customerData.name}
                     onChange={(e) => { handleCustomerDataNameChange(e) }}
                     className={`${commonInputCss}`}
@@ -81,9 +81,9 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                 />
             </div> */}
             {!hidePhone &&
-                <div className="w-auto md:mr-2">
+                <div className={` w-auto md:mr-2`}>
                     <h3 className="my-2 ">{t("case.display.phone_number")} :</h3>
-                    <Input
+                    <input
                         value={customerData.mobileNo ?? ""}
                         onChange={(e) => { handleCustomerDataPhoneChange(e) }}
                         className={`${COMMON_INPUT_CSS}`}
@@ -109,7 +109,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
             {customerData.contractMethod?.name === "Email" &&
                 <div className="w-auto md:mr-2  ">
                     <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
-                    <Input
+                    <input
                         type="email"
                         onChange={handleCustomerEmailChange}
                         value={customerData.email || ""}

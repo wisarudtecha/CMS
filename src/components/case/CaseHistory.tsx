@@ -15,12 +15,12 @@ import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
-import type { CaseSop } from "@/store/api/dispatch"; 
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Badge from "@/components/ui/badge/Badge";
 import { source } from "./constants/caseConstants";
+import { CaseSop } from "@/types/dispatch";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC<{

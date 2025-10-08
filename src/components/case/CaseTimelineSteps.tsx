@@ -1,8 +1,8 @@
 // /src/components/case/CaseTimelineSteps.tsx
 import { useTranslation } from "@/hooks/useTranslation";
 // import { useGetCaseSopQuery } from "@/store/api/dispatch";
-import type { CaseSop } from "@/store/api/dispatch";
 import type { CaseStatus, TimelineStep } from "@/types/case";
+import { CaseSop } from "@/types/dispatch";
 import type { Connection } from "@/types/workflow";
 import { SOP_TIMELINES_STATUS } from "@/utils/constants";
 

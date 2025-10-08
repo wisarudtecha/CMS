@@ -1,7 +1,6 @@
 import DragDropFileUpload from "@/components/d&d upload/dndUpload";
 import CustomerInput from "./CaseCustomerInput";
 import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
-import Input from "@/components/form/input/InputField";
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType";
 import { getPriorityColorClass } from "@/components/function/Prioriy";
 import { FormField, formType } from "@/components/interface/FormField";
@@ -9,14 +8,15 @@ import { Area, mergeArea } from "@/store/api/area";
 import { Customer } from "@/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType } from "@/types/case";
 import { ChangeEvent, memo, useCallback, useEffect, useMemo, useState } from "react";
-import { source } from "./constants/caseConstants";
+import { detailsStringLimit, source } from "./constants/caseConstants";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
-import { Custommer } from "@/types";
+import { contractMethod, Custommer } from "@/types";
 import { REQUIRED_ELEMENT as requireElements, COMMON_INPUT_CSS as commonInputCss } from "./constants/caseConstants";
 import { useTranslation } from "@/hooks/useTranslation";
 import { findCaseTypeSubType } from "@/components/caseTypeSubType/findCaseTypeSubTypeByMergeName";
 import { TodayLocalDate } from "@/components/date/DateToString";
 import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
+import TextAreaWithCounter from "../form/input/TextAreaWithCounter";
 
 interface CaseTypeFormSectionProps {
     handleGetTypeFormData: (getTypeData: FormField) => void;
@@ -82,8 +82,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         );
     }, [caseTypeSupTypeData]);
     const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>();
-    
-    
+
     const caseType = useMemo(() => ({
         caseType: caseState?.caseType?.caseType ?? "",
         priority: caseState?.priority ?? 0
@@ -182,7 +181,10 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     // Handle functions
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue, language);
-        if (!newCaseType) return;
+        if (!newCaseType) return updateCaseState({
+                priority: undefined,
+                caseType: undefined
+            });;
 
         const shouldUpdate = isCreate ||
             newCaseType?.typeId !== caseState?.caseType?.typeId ||
@@ -196,7 +198,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     caseType: mergeCaseTypeAndSubType(newCaseType, language)
                 } as formType
             });
-        }
+        } 
     }, [caseTypeSupTypeData, caseState?.caseType, isCreate, language, updateCaseState]);
 
     const handleContactMethodChange = useCallback((data: { name: string, id: string }) => {
@@ -228,6 +230,8 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         const selected = areaList.find(item => mergeArea(item, language) === selectedName);
         if (selected) {
             updateCaseState({ area: selected });
+        } else {
+            updateCaseState({ area: undefined });
         }
     }, [areaList, language, updateCaseState]);
 
@@ -316,6 +320,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                             onChange={(selectedName) => {
                                 const selectedMethod = source.find(method => method.name === selectedName);
                                 if (selectedMethod) handleContactMethodChange(selectedMethod);
+                                else  handleContactMethodChange({} as contractMethod)
                             }}
                             placeholder={t("case.display.contact_method_placeholder")}
                         />
@@ -328,7 +333,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                 {caseState?.workOrderRef && (
                     <div className="px-3">
                         <h3 className="text-gray-900 dark:text-gray-400 mb-3">Work Order Reference :</h3>
-                        <Input
+                        <input
                             required
                             type="text"
                             className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
@@ -341,7 +346,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 
                 <div className="px-3 mb-3">
                     <h3 className="text-gray-900 dark:text-gray-400 mb-3">{t("case.display.iot_device")} :</h3>
-                    <Input
+                    <input
                         required
                         type="text"
                         className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
@@ -353,7 +358,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 
                 <div className="px-3">
                     <h3 className="text-gray-900 dark:text-gray-400 mb-3">{t("case.display.iot_alert_date")} :</h3>
-                    <Input
+                    <input
                         required
                         type="datetime-local"
                         className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
@@ -366,15 +371,17 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             </div>
 
             {/* Case Details */}
-            <div className="pr-7">
-                <h3 className="text-gray-900 dark:text-gray-400 mx-3">
+            <div className="pr-7 mb-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mx-4">
                     {t("case.display.case_detail")}: {requireElements}
                 </h3>
-                <textarea
+                <TextAreaWithCounter
+                    maxLength={detailsStringLimit}
                     onChange={(e) => handleDetailChange(e.target.value)}
                     value={caseState?.description || ""}
                     placeholder={t("case.display.case_detail_placeholder")}
-                    className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                    className={`w-full h-20 ${commonInputCss}`}
+                    containnerClass="m-3"
                     required
                 />
             </div>

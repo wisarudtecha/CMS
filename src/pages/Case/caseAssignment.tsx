@@ -245,12 +245,15 @@ export default function CasesView() {
 
     const handleAreaChange = (label: string) => {
       const selected = areaList.find(item => mergeArea(item, language) === label);
-      if (selected)
-        setLocalFilters(prev => ({
+      if (!selected)
+        return setLocalFilters(prev => ({
           ...prev,
-          area: selected
+          area: {} as Area
         }));
-
+      setLocalFilters(prev => ({
+        ...prev,
+        area: selected
+      }));
     };
 
     const caseTypeOptions = useMemo(() => {
@@ -397,11 +400,11 @@ export default function CasesView() {
         onClick={() => handleCaseClick(caseItem)}
       >
         <div className="flex items-start justify-between">
-          <h3 className="font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
+          <h3 className="min-h-[40px] font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
 
         </div>
         {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
-        <p className="text-sm text-gray-400 leading-relaxed line-clamp-2">{caseItem.caselocAddr}</p>
+        <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[40px]">{caseItem.caselocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (
             <div className="flex items-center space-x-2">

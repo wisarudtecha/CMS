@@ -1,6 +1,5 @@
 // sopCard.tsx
 
-import { CaseSop } from "@/store/api/dispatch";
 import Button from "../ui/button/Button";
 import {
     Clock,
@@ -27,6 +26,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { CommentModal } from "../comment/commentModal";
 import { formatDate } from "@/utils/crud";
 import { usePermissions } from "@/hooks/usePermissions";
+import { CaseSop } from "@/types/dispatch";
 
 interface CaseCardProps {
     onAddSubCase?: () => void;

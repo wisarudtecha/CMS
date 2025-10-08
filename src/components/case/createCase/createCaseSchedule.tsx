@@ -21,7 +21,6 @@ import { Customer } from "@/store/api/custommerApi"
 import { CreateCase, usePostCreateCaseMutation } from "@/store/api/caseApi"
 import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndSubType"
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
-import { CaseSop } from "@/store/api/dispatch"
 import { Area, mergeArea } from "@/store/api/area"
 import DragDropFileUpload from "../../d&d upload/dndUpload"
 import { CaseDetails, CaseEntity } from "@/types/case"
@@ -34,13 +33,15 @@ import { th, enUS } from 'date-fns/locale';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePickerLocal from "@/components/form/input/DatepicketLocal";
 import { exampleCaseState } from "../constants/exampleData";
-import { REQUIRED_ELEMENT as requireElements, source } from "../constants/caseConstants";
+import { detailsStringLimit, REQUIRED_ELEMENT as requireElements, source } from "../constants/caseConstants";
 import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataValidation/caseDataValidation";
 import { COMMON_INPUT_CSS as commonInputCss } from "../constants/caseConstants";
 import { CaseLayout } from "./layout";
 import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
 import { useToast } from "@/hooks/useToast";
 import { ToastContainer } from "@/components/crud/ToastContainer";
+import TextAreaWithCounter from "@/components/form/input/TextAreaWithCounter";
+import { CaseSop } from "@/types/dispatch";
 // const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 interface CaseTypeFormSectionProps {
@@ -116,46 +117,6 @@ const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
 ));
 CaseHeader.displayName = 'CaseHeader';
 
-const AttachedFiles = memo(({ files, editFormData, onRemove }: {
-    files?: File[];
-    editFormData: boolean;
-    onRemove: (index: number) => void;
-}) => {
-    if (!files?.length) return null;
-    const { t } = useTranslation()
-    return (
-        <div className="mx-3">
-            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                {t("case.display.attach_file")} :
-            </span>
-            <div className="mt-2 mb-3">
-                <div className="grid grid-cols-3 gap-2">
-                    {files.map((file, index) => (
-                        <div key={`${file.name}-${index}`} className="relative group">
-                            <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Upload ${index + 1}`}
-                                className="w-full h-20 object-cover rounded border border-gray-600"
-                            />
-                            {editFormData && (
-                                <Button
-                                    onClick={() => onRemove(index)}
-                                    className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                    size="sm"
-                                    variant="error"
-                                >
-                                    ×
-                                </Button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-});
-AttachedFiles.displayName = 'AttachedFiles';
-
 
 
 
@@ -169,7 +130,6 @@ interface CaseFormFieldsProps {
     caseTypeSupTypeData: CaseTypeSubType[];
     areaList: Area[];
     listCustomerData: Customer[];
-    isCreate: boolean;
     // Handlers
     caseTypeOptions: string[]
     handleWorkOrderNumber: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -200,7 +160,7 @@ interface CaseFormFieldsProps {
 // Memoized Form Fields Component
 const CaseFormFields = memo<CaseFormFieldsProps>(({
     caseState, caseData, caseType, selectedCaseTypeForm, caseTypeSupTypeData,
-    areaList, listCustomerData, isCreate,
+    areaList, listCustomerData,
     handleIotDevice,
     handleCaseTypeChange, handleGetTypeFormData, handleDetailChange,
     handleSetArea, handleCustomerDataChange, handleLocationChange, handleScheduleDate,
@@ -219,29 +179,27 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
         )}
-        {isCreate &&
-            <div className="px-3 mb-3">
-                <div className="flex mb-3">
-                    <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
-                </div>
-                <DatePickerLocal
-                    selected={getDisplayDate(caseState?.scheduleDate, language)}
-                    onChange={(date: Date | null) => {
-                        const gregorianDate = language === 'th' ? convertFromThaiYear(date) : date;
-                        handleScheduleDate(gregorianDate);
-                    }}
-                    language={language}
-                    showTimeSelect
-                    dateFormat="Pp"
-                    minDate={getTodayDate(language)}
-                    popperClassName="z-50"
-                    wrapperClassName="w-full"
-                    className={`p-2 w-full dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                    placeholderText={t("case.display.schedule_placeholder")}
-                    locale={language === 'th' ? 'th' : 'en'}
-                />
+        <div className="px-3 mb-3">
+            <div className="flex mb-3">
+                <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
             </div>
-        }
+            <DatePickerLocal
+                selected={getDisplayDate(caseState?.scheduleDate, language)}
+                onChange={(date: Date | null) => {
+                    const gregorianDate = language === 'th' ? convertFromThaiYear(date) : date;
+                    handleScheduleDate(gregorianDate);
+                }}
+                language={language}
+                showTimeSelect
+                dateFormat="Pp"
+                minDate={getTodayDate(language)}
+                popperClassName="z-50"
+                wrapperClassName="w-full"
+                className={`p-2 w-full dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
+                placeholderText={t("case.display.schedule_placeholder")}
+                locale={language === 'th' ? 'th' : 'en'}
+            />
+        </div>
         {/* Form Grid */}
         {/* Case Type Form Section */}
         <CaseTypeFormSection
@@ -295,16 +253,18 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
 
 
         {/* Case Details */}
-        <div className="pr-7">
-            <h3 className="text-gray-900 dark:text-gray-400 mx-3">
+        <div className="pr-7 mb-1">
+            <h3 className="text-gray-900 dark:text-gray-400 mx-4">
                 {t("case.display.case_detail")}: {requireElements}
             </h3>
-            <textarea
+            <TextAreaWithCounter
+                maxLength={detailsStringLimit}
                 onChange={(e) => handleDetailChange(e.target.value)}
                 value={caseState?.description || ""}
                 placeholder={t("case.display.case_detail_placeholder")}
-                className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
+                className={`w-full h-20 ${commonInputCss}`}
                 required
+                containnerClass="m-3"
             />
         </div>
 
@@ -338,52 +298,23 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
             </div>
 
-            {/* Schedule Date */}
-
-            {/* {isCreate && isScheduleDate &&
-                <div className="px-3">
-                    <div className="flex mb-3">
-                        <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
-                        <input
-                            type="checkbox"
-                            className="mx-3"
-                            checked={caseState?.requireSchedule || false}
-                            onChange={() => {
-                                setCaseState(prevState => ({
-                                    ...prevState,
-                                    requireSchedule: !prevState?.requireSchedule
-                                } as CaseDetails));
-                            }}
-                        />
-                    </div>
-                    <Input
-                        required
-                        type="datetime-local"
-                        disabled={!caseState?.requireSchedule}
-                        className={`dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
-                        onChange={handleScheduleDate}
-                        value={caseState?.scheduleDate || ""}
-                        min={new Date().toISOString().slice(0, 16)}
-                    />
-                </div>} */}
         </div>
 
         {/* File Upload for new cases */}
-        {isCreate && (
-            <div className="px-3 my-6">
-                <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-3">
-                    {t("case.display.attach_file")}:
-                </h3>
-                <DragDropFileUpload
-                    files={caseState?.attachFile || []}
-                    onFilesChange={handleFilesChange}
-                    accept="image/*,.pdf,.doc,.docx,.txt"
-                    maxSize={1}
-                    className="mb-4"
-                    disabled={false}
-                />
-            </div>
-        )}
+
+        <div className="px-3 my-6">
+            <h3 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-3">
+                {t("case.display.attach_file")}:
+            </h3>
+            <DragDropFileUpload
+                files={caseState?.attachFile || []}
+                onFilesChange={handleFilesChange}
+                accept="image/*,.pdf,.doc,.docx,.txt"
+                maxSize={1}
+                className="mb-4"
+                disabled={false}
+            />
+        </div>
         <div className="flex justify-between items-center m-3">
             {/* Left side: Example button */}
             <div>
@@ -439,8 +370,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 status: "",
                 scheduleDate: "",
                 customerData: {} as Custommer,
-                attachFile: [] as File[], // For new cases (edit mode)
-                attachFileResult: [] as File[] // For existing cases (view/edit mode)
+                attachFile: [] as File[],
+                attachFileResult: [] as File[]
             } as CaseDetails;
         }
         return undefined;
@@ -680,7 +611,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             referCaseId: caseState?.workOrderRef || "",
             resDetail: "",
             source: "06",
-            createdDate:new Date(TodayDate()).toISOString(),
+            createdDate: new Date(TodayDate()).toISOString(),
             // startedDate: new Date(caseState?.iotDate ?? TodayDate()).toISOString(),
             statusId: statusId,
             userarrive: "",
@@ -688,7 +619,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             usercommand: caseState?.serviceCenter?.commandTh || "",
             usercreate: profile?.username || "",
             userreceive: "",
-            startedDate:new Date(TodayDate()).toISOString(),
+            startedDate: new Date(TodayDate()).toISOString(),
             nodeId: caseState?.caseType?.formField?.nextNodeId || "",
             wfId: caseState?.caseType?.wfId || "",
             versions: caseState?.caseType?.formField?.versions || "",
@@ -717,19 +648,16 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     createdBy: profile?.username || ""
                 } as CaseEntity;
 
-                // Helper function to get priority group order
                 const getPriorityOrder = (priority: number): number => {
-                    if (priority <= 3) return 1; // High priority
-                    if (priority <= 6) return 2; // Medium priority
-                    return 3; // Low priority
+                    if (priority <= 3) return 1;
+                    if (priority <= 6) return 2;
+                    return 3;
                 };
 
-                // Find the correct position to insert the new case
                 const insertIndex = caseList.findIndex(existingCase => {
                     const newCasePriorityOrder = getPriorityOrder(newCase.priority);
                     const existingCasePriorityOrder = getPriorityOrder(existingCase.priority);
 
-                    // First, compare by priority group (High → Medium → Low)
                     if (newCasePriorityOrder < existingCasePriorityOrder) {
                         return true; // Insert before this case
                     }
@@ -750,7 +678,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 localStorage.setItem("caseList", JSON.stringify(caseList));
             }
         } catch (error: any) {
-            addToast("error",isDraft ? t("case.display.toast.add_case_fail") : t("case.display.toast.savedaft_fail"));
+            addToast("error", isDraft ? t("case.display.toast.add_case_fail") : t("case.display.toast.savedaft_fail"));
             return false;
         }
         return true;
@@ -769,7 +697,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const handlePreviewShow = useCallback(() => {
         const errorMessage = validateCaseForSubmission(caseState);
         if (errorMessage) {
-            addToast("error",errorMessage);
+            addToast("error", errorMessage);
             return;
         }
         setShowPreviewData(true)
@@ -778,7 +706,10 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue, language);
 
-        if (!newCaseType) return;
+        if (!newCaseType) return updateCaseState({
+                priority: undefined,
+                caseType: undefined
+            });;
 
         // Always update for new cases, or when the case type is actually different
         const shouldUpdate = isCreate ||
@@ -887,6 +818,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         const selected = areaList.find(item => mergeArea(item, language) === selectedName);
         if (selected) {
             updateCaseState({ area: selected });
+        } else {
+            updateCaseState({ area: undefined })
         }
     }, [areaList, updateCaseState]);
 
@@ -899,7 +832,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         const errorMessage = validateCaseForDraft(caseState);
 
         if (errorMessage) {
-            addToast("error",errorMessage);
+            addToast("error", errorMessage);
             return;
         }
         const isNotError = await createCaseAction("draft");
@@ -907,7 +840,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             return
         }
         localStorage.setItem("Create Case", JSON.stringify(caseState));
-        addToast("success",t("case.display.toast.savedaft_success"));
+        addToast("success", t("case.display.toast.savedaft_success"));
     }, [validateCaseForDraft, createCaseAction, caseState]);
 
 
@@ -948,7 +881,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     caseTypeSupTypeData={caseTypeSupTypeData}
                     areaList={areaList}
                     listCustomerData={listCustomerData}
-                    isCreate={isCreate}
                     caseTypeOptions={caseTypeOptions}
                     handleWorkOrderNumber={handleWorkOrderNumber}
                     handleWorkOrderDate={handleWorkOrderDate}
@@ -971,7 +903,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     handleExampleData={handleExampleData}
                     language={language}
                     t={t}
-                    isScheduleDate={true}
                 />
             )}
 

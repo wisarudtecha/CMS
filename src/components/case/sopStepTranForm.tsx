@@ -1,4 +1,4 @@
-import { CaseSop } from "@/store/api/dispatch";
+import { CaseSop } from "@/types/dispatch";
 import { CaseStatusInterface, delayStatus } from "../ui/status/status";
 
 export interface ProgressSteps {

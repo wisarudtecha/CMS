@@ -1,4 +1,3 @@
-import { UnitWithSop } from "@/store/api/dispatch"
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dialog"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
@@ -9,6 +8,8 @@ import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
 import { usePermissions } from "@/hooks/usePermissions"
+import ProgressSummary from "./activityTimeline/sumaryUnitProgress"
+import { UnitWithSop } from "@/types/dispatch"
 
 interface OfficerDataModal {
     officer: UnitWithSop
@@ -43,7 +44,7 @@ export default function OfficerDataModal({
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                            <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading officer data...</p>
+                            <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">{t("common.loading")}</p>
                         </div>
                     </div>
                 </DialogContent>
@@ -193,12 +194,19 @@ export default function OfficerDataModal({
                         <h3 className="font-semibold text-gray-900 dark:text-white">{t("case.officer_detail.service_progress_title")}</h3>
                     </div>
 
-                    {permissions.hasPermission("case.view_timeline") && <div className="bg-gray-50 dark:bg-gray-900 rounded-lg   p-6">
-                        <ProgressStepPreviewUnit progressSteps={progressSteps} />
-                    </div>}
+                    {permissions.hasPermission("case.view_timeline") && (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+                            <div className="lg:col-span-2">
+                                <ProgressStepPreviewUnit progressSteps={progressSteps} />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <ProgressSummary progressSteps={progressSteps} />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-               
+
 
 
                 {/* Footer with additional details */}

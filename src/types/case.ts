@@ -2,8 +2,8 @@
 import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
 import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
-import type { CaseSop, DeviceMetaData } from "@/store/api/dispatch"; 
 import type { BaseEntity, Custommer } from "@/types";
+import { CaseSop, DeviceMetaData } from "./dispatch";
 
 export interface CaseEntity extends BaseEntity {
   orgId: string;

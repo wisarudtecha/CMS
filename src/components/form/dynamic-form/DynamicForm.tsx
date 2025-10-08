@@ -32,7 +32,6 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "../input/TextArea";
 import { Modal } from "@/components/ui/modal";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormConfigItem, FormFieldWithChildren, FormRule } from "@/components/interface/FormField";
-import Toast from "@/components/toast/Toast";
 import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
 import { useNavigate } from "react-router";
 import { colSpanClasses, commonClasses, formConfigurations, formTypeIcons, gridColumnContainerClasses, maxGridCol } from "./constant";
@@ -40,6 +39,8 @@ import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { getCountries } from 'react-phone-number-input/input'
 import { validateInput, validateFieldValue } from "./validateDynamicForm";
+import { ToastContainer } from "@/components/crud/ToastContainer";
+import { useToast } from "@/hooks/useToast";
 export type CountryCode = ReturnType<typeof getCountries>[number]
 
 
@@ -442,8 +443,7 @@ function createDynamicFormField(
 
 function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, editFormData = true, enableFormTitle = true, enableSelfBg = false, saveDraftsLocalStoreName = "", onFormChange, returnValidValue, showValidationErrors = true }: DynamicFormProps) {
   const [isPreview, setIsPreview] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const { toasts, addToast, removeToast } = useToast();
   const [updateFormData] = useUpdateFormMutation();
   const [createFormData] = useCreateFormMutation();
   const navigate = useNavigate();
@@ -544,7 +544,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       setCurrentForm(parsedJson);
       setImport(false);
     } catch (error) {
-      setShowToast(true)
+      setImport(false);
+      addToast("error",String(error))
     }
   }, [importJsonText]);
 
@@ -827,21 +828,18 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           }).unwrap();
         }
         else {
-          setToastMessage("There are no element in form.")
-          setShowToast(true)
+          addToast("error","There are no element in form.")
           return
         }
       }
       if (response.msg === "Success") {
         navigate(0);
       } else {
-        setToastMessage(response.desc)
-        setShowToast(true)
+        addToast("success",response.desc)
         console.log("error")
       }
     } catch (e: any) {
-      setToastMessage(e.data.desc)
-      setShowToast(true)
+      addToast("error",e.data.desc)
     }
   }
 
@@ -1000,16 +998,13 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         onFormSubmit(submitData);
       }
     } else {
-      setToastMessage("Please correct the errors before submitting.");
-      console.error("Form submission failed due to validation errors.");
-      setShowToast(true); // Notify user of failure
+      addToast("error","Please correct the errors before submitting.");
     }
   }, [currentForm, onFormSubmit, transformFieldForSubmission]);
 
   const updateFieldId = useCallback((oldId: string, newId: string) => {
     const trimmedNewId = newId.trim();
     if (!trimmedNewId) {
-      setShowToast(true)
       return;
     }
     const checkIdExistsRecursively = (fields: IndividualFormFieldWithChildren[]): boolean => {
@@ -1032,7 +1027,6 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     };
 
     if (checkIdExistsRecursively(currentForm.formFieldJson)) {
-      setShowToast(true)
       return;
     }
 
@@ -2120,14 +2114,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     <div className={!isPreview ? "grid grid-cols-[2fr_8fr]  md:block" : ""}>
       <PageMeta title="Dynamic Form Builder" description="" />
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
-      {showToast && (
-        <Toast
-          message={toastMessage ? toastMessage : "Please enter all data."}
-          type="error"
-          duration={1000}
-          onClose={() => { setShowToast(false); toastMessage ?? setToastMessage("") }}
-        />
-      )}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
 
         {!isPreview && (
@@ -2166,7 +2153,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               {formConfigurations.map((item) => (
                 <Button
                   key={item.formType}
-                  className="w-full text-center bg-gray-200/50 dark:bg-gray-700/50 rounded-lg p-1 sm:p-2 text-[10px] sm:text-sm dark:text-gray-300 text-gray-800 hover:text-sky-700 dark:hover:text-sky-400"
+                  className="w-auto h-full text-center bg-gray-200/50 dark:bg-gray-700/50 rounded-lg p-1 sm:p-2 text-[10px] sm:text-sm dark:text-gray-300 text-gray-800 hover:text-sky-700 dark:hover:text-sky-400"
                   onClick={() => addField(item.formType)}
                   disabled={!editFormData}
                   variant="outline-no-transparent"

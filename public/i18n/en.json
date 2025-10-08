@@ -31,7 +31,8 @@
     "refresh": "Refresh",
     "home": "Home",
     "retry": "Retry",
-    "no_result":"No results found."
+    "no_result":"No results found.",
+    "charater":"Characters"
   },
   "auth": {
     "signin": {
@@ -729,6 +730,10 @@
       },"toast":{
         "close_case_success":"Close Work Order Success.",
         "close_case_fail":"Close Work Order fail.",
+        "cancel_case_success":"Cancel Work Order Success.",
+        "cancel_case_fail":"Cancel Work Order fail.",
+        "cancel_unit_success":"Cancel Officer Success.",
+        "cancel_unit_fail":"Cancel Officer fail.",
         "save_change_sucess":"Update Work Order Success.",
         "save_change_fail":"Update Work Order fail.",
         "dispatch_success":"Dispatch Success.",
@@ -842,6 +847,9 @@
     "faster_by": "Faster by", 
     "in_progress": "In Progress",
     "pending": "Pending",
-    "no_sla": "No SLA defined"
+    "no_sla": "No SLA defined",
+    "used":"been used",
+    "completed_progress":"Completion Rate",
+    "total_sla": "Total SLA"
   }
 }
