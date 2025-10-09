@@ -1,10 +1,23 @@
 // /src/components/case/CaseHistory.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import {
+  ChartColumnStacked,
+  ClockArrowUp,
+  Contact,
+  Cpu,
+  MapPin,
+  MapPinHouse,
+  Phone,
+  Share2,
+  Siren,
+  Ticket
+} from "lucide-react";
 import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+import { source } from "@/components/case/constants/caseConstants";
+import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -16,11 +29,11 @@ import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
+import type { CaseSop } from "@/types/dispatch";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import FormViewer from "@/components/form/dynamic-form/FormViewValue";
 import Badge from "@/components/ui/badge/Badge";
-import { source } from "./constants/caseConstants";
-import { CaseSop } from "@/types/dispatch";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC<{
@@ -34,10 +47,11 @@ const CaseHistoryComponent: React.FC<{
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
-  const [crudOpen, ] = useState("block");
 
+  const [crudOpen, ] = useState("block");
   const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
+  const [sopData, setSopData] = useState<CaseSop | null>(null);
 
   const { data: dispatchSOPsData } = useGetCaseSopQuery(
     { caseId: selectedCaseForSop ?? "" }, 
@@ -57,34 +71,42 @@ const CaseHistoryComponent: React.FC<{
   // Case Status Properties
   // ===================================================================
 
-  const caseStatusesColorMap: Record<string, string> = {
-    "#000000": "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
-    "#F9C601": "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 border border-yellow-300 dark:border-yellow-600",
-    "#852B99": "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 border border-purple-300 dark:border-purple-600",
-    "#FF0080": "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100 border border-pink-300 dark:border-pink-600",
-    "#295F79": "bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100 border border-cyan-300 dark:border-cyan-600",
-    "#468847": "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 border border-green-300 dark:border-green-600",
-    "#999999": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
-    "#FF8000": "bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100 border border-orange-300 dark:border-orange-600",
-    "#FF0000": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
-    "#B94A48": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
-    null: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
-  };
+  // const caseStatusesColorMap: Record<string, string> = {
+  //   "#000000": "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
+  //   "#F9C601": "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 border border-yellow-300 dark:border-yellow-600",
+  //   "#852B99": "bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 border border-purple-300 dark:border-purple-600",
+  //   "#FF0080": "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100 border border-pink-300 dark:border-pink-600",
+  //   "#295F79": "bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-100 border border-cyan-300 dark:border-cyan-600",
+  //   "#468847": "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 border border-green-300 dark:border-green-600",
+  //   "#999999": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600",
+  //   "#FF8000": "bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100 border border-orange-300 dark:border-orange-600",
+  //   "#FF0000": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
+  //   "#B94A48": "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border border-red-300 dark:border-red-600",
+  //   null: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+  // };
 
   const generateStatusConfigs = (data: CaseStatus[]) => {
-    const configs: Record<string, { color: string; label: string }> = {};
+    const configs: Record<string, { color?: string; label: string, style: { background: string, border: string, color: string }}> = {};
     data.forEach(item => {
       configs[item.statusId] = {
-        color: caseStatusesColorMap[item.color as keyof typeof caseStatusesColorMap] || caseStatusesColorMap.null,
-        label: item[language as keyof CaseStatus] as string || item?.th || item?.en
+        // color: caseStatusesColorMap[item.color as keyof typeof caseStatusesColorMap] || caseStatusesColorMap.null,
+        label: item[language as keyof CaseStatus] as string || item?.th || item?.en,
+        // style: `background:transparent;border:1px solid ${item.color};color:${item.color}`
+        style: {
+          background: "transparent",
+          border: `1px solid ${item?.color || "#000000"}`,
+          color: item?.color || "#000000"
+        }
       };
     });
+    // console.log("🚀 ~ generateStatusConfigs ~ configs:", configs);
     return configs;
   }
 
   const statusConfigs = generateStatusConfigs(caseStatuses);
 
   const getStatusConfig = (caseItem: CaseEntity) => {
+    // console.log("🚀 ~ getStatusConfig ~ statusConfigs:", statusConfigs[caseItem.statusId]);
     return statusConfigs[caseItem.statusId as keyof typeof statusConfigs] || statusConfigs['S000'];
   };
 
@@ -349,16 +371,31 @@ const CaseHistoryComponent: React.FC<{
 
   const PreviewTitle: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
     return (
-      <div className="flex gap-2 items-center">
-        <TimeIcon className="w-4 h-4" /> {t("case.assignment.create_date")}: {formatDate(caseItem.createdAt)}
-        <UserIcon className="w-4 h-4" /> {t("case.assignment.create_by")}: {caseItem.createdBy}
+      <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
+          <TimeIcon className="w-4 h-4" /> {t("case.assignment.create_date")}: {formatDate(caseItem.createdAt)}
+          <UserIcon className="w-4 h-4" /> {t("case.assignment.create_by")}: {caseItem.createdBy}
+        </div>
+        <div className="flex gap-2 items-center">
+          <Badge className={`${getPriorityConfig(caseItem)?.color} border text-sm`}>
+            {getPriorityConfig(caseItem)?.label}
+          </Badge>
+          <span
+            className="inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-md border text-sm"
+            style={getStatusConfig(caseItem)?.style}
+          >
+            {getStatusConfig(caseItem)?.label}
+          </span>
+        </div>
       </div>
     );
   };
 
-  const getTimelineSteps = (caseItem: CaseEntity) => {
-    const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
-    const timelineSteps = CaseTimelineSteps(sopData, caseStatuses);
+  const getTimelineSteps = (
+    // caseItem: CaseEntity
+  ) => {
+    // const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
+    const timelineSteps = CaseTimelineSteps(sopData || undefined, caseStatuses);
     return timelineSteps;
   };
 
@@ -367,21 +404,31 @@ const CaseHistoryComponent: React.FC<{
       setSelectedCaseForSop(caseItem.caseId);
     }, [caseItem.caseId]);
 
+    useEffect(() => {
+      setSopData((selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : null);
+    }, [caseItem.caseId]);
+
     const dpcConfig = getAreaConfig(caseItem);
-    const dpcDisplay = `${dpcConfig.district || "Unknown:District"}-${dpcConfig.province || "Unknown:Province"}-${dpcConfig.country || "Unknown:Country"}`;
+    const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
 
     const contactMethod = source.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+
+    const timelineSteps = getTimelineSteps();
 
     return (
       <>
         <PermissionGate module="case" action="view_timeline">
           <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
             {/* Progress Timeline and Progress Line */}
-            {getTimelineSteps(caseItem).length > 0 ? (
+            {
+              // getTimelineSteps(caseItem).length
+              timelineSteps.length
+              > 0 ? (
               <>
                 <div className="hidden xl:block">
                   <ProgressTimeline
-                    steps={getTimelineSteps(caseItem)}
+                    // steps={getTimelineSteps(caseItem)}
+                    steps={timelineSteps}
                     orientation="horizontal"
                     size="md"
                     showTimestamps={false}
@@ -390,7 +437,8 @@ const CaseHistoryComponent: React.FC<{
                 </div>
                 <div className="block xl:hidden">
                   <ProgressTimeline
-                    steps={getTimelineSteps(caseItem)}
+                    // steps={getTimelineSteps(caseItem)}
+                    steps={timelineSteps}
                     orientation="vertical"
                     size="sm"
                     showTimestamps={false}
@@ -412,16 +460,55 @@ const CaseHistoryComponent: React.FC<{
                 {t("case.display.case_information")}
               </h4>
               <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.no")}:</span>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1">
+                    <Ticket className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.no")}:</span>
+                  </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.caseId || ""}
                   </div>
                 </div>
-                <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.service_center")}:</span>
+                <div className="xl:flex items-start justify-left gap-1">
+                  <ChartColumnStacked className="xl:block hidden w-4 h-4" />
+                  <div>
+                    <div className="xl:flex items-center justify-left gap-1">
+                      <div className="flex items-center justify-left gap-1">
+                        <ChartColumnStacked className="block xl:hidden w-4 h-4" />
+                        <div className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.types")}:</div>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || ""}</div>
+                    </div>
+                    <div className="xl:flex items-center justify-left gap-1 text-sm">
+                      {sopData?.formAnswer && <FormViewer formData={sopData.formAnswer} />}
+                    </div>
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1">
+                    <MapPinHouse className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.service_center")}:</span>
+                  </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {dpcDisplay || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1">
+                    <Siren className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {formatDate(sopData?.startedDate as string) || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1">
+                    <ClockArrowUp className="w-4 h-4" />
+                    <span className="text-red-500 dark:text-red-400 text-sm font-medium">{t("case.display.updateAt")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {formatDate(sopData?.updatedAt as string) || ""} {t("case.display.updateBy")} {caseItem.updatedBy || ""}
                   </div>
                 </div>
               </div>
@@ -429,9 +516,12 @@ const CaseHistoryComponent: React.FC<{
 
             {/* Location */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.display.area")}
-              </h4>
+              <div className="xl:flex items-left justify-left gap-2 mb-4">
+                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+                  <MapPin className="w-4 h-4" />
+                  <h4>{t("case.display.area")}</h4>
+                </div>
+              </div>
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
@@ -443,24 +533,36 @@ const CaseHistoryComponent: React.FC<{
 
             {/* Contact */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.display.contact")}
-              </h4>
+              <div className="xl:flex items-left justify-left gap-2 mb-4">
+                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+                  <Contact className="w-4 h-4" />
+                  <h4>{t("case.display.contact")}</h4>
+                </div>
+              </div>
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
+                  <div className="flex items-center justify-left gap-1">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
+                  </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.phoneNo || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
+                  <div className="flex items-center justify-left gap-1">
+                    <Share2 className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
+                  </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {contactMethod?.name || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
+                  <div className="flex items-center justify-left gap-1">
+                    <Cpu className="w-4 h-4" />
+                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
+                  </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.deviceId || ""}
                   </div>

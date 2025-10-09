@@ -115,28 +115,28 @@ export const POPUP_TRANSITION_MS = 300 as const; // animation 300ms (ต้อ�
 // } as const;
 
 export const PRIORITY_COLORS = {
-  low: "text-green-600 dark:text-green-300",
-  medium: "text-yellow-600 dark:text-yellow-300",
-  high: "text-red-600 dark:text-red-300",
-  urgent: "text-red-600 dark:text-red-300",
+  low: "bg-transparent border-blue-600 dark:border-blue-300 text-blue-600 dark:text-blue-300",
+  medium: "bg-transparent border-yellow-600 dark:border-yellow-300 text-yellow-600 dark:text-yellow-300",
+  high: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
+  urgent: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
 } as const;
 
 export const PRIORITY_LABELS = {
   low: {
-    th: "ต่ำ",
-    en: "Low",
+    th: "ความสำคัญต่ำ",
+    en: "Low Priority",
   },
   medium: {
-    th: "ปานกลาง",
-    en: "Medium",
+    th: "ความสำคัญปานกลาง",
+    en: "Medium Priority",
   },
   high: {
-    th: "สูง",
-    en: "High",
+    th: "ความสำคัญสูง",
+    en: "High Priority",
   },
   urgent: {
-    th: "สูงสุด",
-    en: "Urgent",
+    th: "ความสำคัญสูงสุด",
+    en: "Urgent Priority",
   }
 } as const;
 

@@ -3,38 +3,38 @@ import
   // React,
   { useState, useEffect }
 from "react";
-import { Modal } from "@/components/ui/modal";
-import Button from "@/components/ui/button/Button";
 import { 
-  CloseIcon, 
-  // AngleLeftIcon, 
-  // AngleRightIcon, 
-  CopyIcon,
+  // AngleLeftIcon,
+  // AngleRightIcon,
   CheckCircleIcon,
+  CloseIcon,
+  CopyIcon,
+  // FileIcon,
   // InfoIcon,
-  // SettingsIcon,
-  // FileIcon
+  // SettingsIcon
 } from "@/icons";
+import { Modal } from "@/components/ui/modal";
 import type { PreviewConfig, PreviewState } from "@/types/enhanced-crud";
+import Button from "@/components/ui/button/Button";
 
 interface PreviewDialogProps<T> {
-  previewState: PreviewState<T>;
+  canGoNext?: boolean;
+  canGoPrev?: boolean;
   config: PreviewConfig<T>;
+  previewState: PreviewState<T>;
   onClose: () => void;
   onNext?: () => void;
   onPrev?: () => void;
-  canGoNext?: boolean;
-  canGoPrev?: boolean;
 }
 
 export const PreviewDialog = <T extends { id: string }>({
-  previewState,
+  canGoNext = false,
+  canGoPrev = false,
   config,
+  previewState,
   onClose,
   onNext,
-  onPrev,
-  canGoNext = false,
-  canGoPrev = false
+  onPrev
 }: PreviewDialogProps<T>) => {
   const [activeTab, setActiveTab] = useState(0);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -48,23 +48,30 @@ export const PreviewDialog = <T extends { id: string }>({
       await navigator.clipboard.writeText(value);
       setCopiedField(fieldKey);
       setTimeout(() => setCopiedField(null), 2000);
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Failed to copy:", error);
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (!previewState.isOpen) return;
+    if (!previewState.isOpen) {
+      return;
+    }
     
     switch (e.key) {
       case "Escape":
         onClose();
         break;
       case "ArrowLeft":
-        if (canGoPrev && onPrev) onPrev();
+        if (canGoPrev && onPrev) {
+          onPrev();
+        }
         break;
       case "ArrowRight":
-        if (canGoNext && onNext) onNext();
+        if (canGoNext && onNext) {
+          onNext();
+        }
         break;
     }
   };
@@ -75,7 +82,9 @@ export const PreviewDialog = <T extends { id: string }>({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewState.isOpen, canGoNext, canGoPrev]);
 
-  if (!previewState.isOpen || !previewState.item) return null;
+  if (!previewState.isOpen || !previewState.item) {
+    return null;
+  }
 
   const item = previewState.item;
   const currentTab = config.tabs[activeTab];
@@ -161,9 +170,6 @@ export const PreviewDialog = <T extends { id: string }>({
                 </h2>
               )}
               {config.subtitle && (
-                // <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                //   {config.subtitle(item)}
-                // </p>
                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {config.subtitle(item)}
                 </div>

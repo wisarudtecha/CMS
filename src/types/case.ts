@@ -45,7 +45,7 @@ export interface CaseEntity extends BaseEntity {
   resDetail: string;
   sop: string | null;
   currentStage: string | null;
-  caseSla:number
+  caseSla: number;
 }
 
 export interface CaseHistory {

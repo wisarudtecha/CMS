@@ -18,17 +18,24 @@ export const CaseTimelineSteps = (
   const { language } = useTranslation();
 
   const mapSOPToTimeline = (caseSop: CaseSop): TimelineStep[] => {
+    // console.log("🚀 ~ mapSOPToTimeline ~ caseSop.sop:", caseSop.sop);
+
     const connections = caseSop.sop?.find(item => item.section === "connections")?.data || [];
+    // console.log("🚀 ~ mapSOPToTimeline ~ connections:", connections);
 
     const noConnectionTargets = new Set(
       (connections as Connection[])
         .filter((conn: Connection) => conn.label === "no")
         .map((conn: Connection) => conn.target)
     );
+    // console.log("🚀 ~ mapSOPToTimeline ~ noConnectionTargets:", noConnectionTargets);
 
     const processNodes = caseSop.sop
-      ?.filter(node => node.type === "process"
-        && !noConnectionTargets.has(node.nodeId)
+      ?.filter(node => (
+          // node.type === "decision"
+          // ||
+          node.type === "process"
+        ) && !noConnectionTargets.has(node.nodeId)
       )
       .sort((a, b) => {
         return a.data?.position?.y - b.data?.position?.y;
