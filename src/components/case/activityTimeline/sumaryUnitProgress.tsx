@@ -1,8 +1,9 @@
 import { useMemo } from "react"
 import { Clock } from "lucide-react"
 import { ProgressSteps } from "../sopStepTranForm"
-import { formatDuration } from "@/components/Sla/Sla";
+
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatDuration } from "@/components/Sla/formatSlaDuration";
 
 interface ProgressSummaryProps {
     progressSteps: ProgressSteps[]
@@ -10,21 +11,21 @@ interface ProgressSummaryProps {
 
 export default function ProgressSummary({ progressSteps }: ProgressSummaryProps) {
     // Calculate summary statistics
-    // const filteredSteps = progressSteps.length !== 2
-    //     ? progressSteps.slice(1, -1)
-    //     : progressSteps;
-    const filteredSteps = progressSteps.slice(1, -1)
+    const filteredSteps = progressSteps.length !== 2
         ? progressSteps.slice(1, -1)
         : progressSteps;
+    // const filteredSteps = progressSteps.slice(1, -1)
+    //     ? progressSteps.slice(1, -1)
+    //     : progressSteps;
     const { t } = useTranslation();
     const summary = useMemo(() => {
         const total = filteredSteps.length
-        const completed = filteredSteps.reduce((sum, step) =>
-            step.completed || step.current ? sum + (step.sla || 0) : sum, 0);
+        const completed = filteredSteps.reduce((sum, step, index) =>
+            index != 0 ? step.completed || step.current ? sum + (step.sla || 0) : sum : 0, 0);
         const current = filteredSteps.find(step => step.current)
-        const totalSLA = filteredSteps.reduce((acc, step) => acc + (step.sla || 0), 0)
+        const totalSLA = filteredSteps.reduce((acc, step, index) =>
+            index != 0 ? acc + (step.sla || 0) : acc, 0);
         let totalDuration = 0;
-
         filteredSteps.forEach(step => {
             if (step.timeline?.duration) {
                 totalDuration += step.timeline.duration * 1000;
@@ -41,7 +42,7 @@ export default function ProgressSummary({ progressSteps }: ProgressSummaryProps)
         });
         const totalDurationMinutes = totalDuration / 60000;
         const slaUsagePercent = totalSLA > 0 ? Math.min((totalDurationMinutes / totalSLA) * 100, 100) : 0;
-        
+
         return {
             total,
             inProgress: current ? 1 : 0,
@@ -51,7 +52,7 @@ export default function ProgressSummary({ progressSteps }: ProgressSummaryProps)
             totalDuration,
             totalDurationMinutes,
             slaUsagePercent,
-            completionRate: total > 0 ? Math.round((completed / totalSLA) * 100) : 0
+            completionRate: completed && totalSLA > 0 ? Math.round((completed / totalSLA) * 100) : 100
         }
     }, [filteredSteps])
 

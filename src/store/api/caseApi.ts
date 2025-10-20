@@ -3,7 +3,7 @@ import { baseApi } from "./baseApi";
 import { CaseSubType, CaseType, CaseTypeSubType } from "@/components/interface/CaseType";
 import { PaginationParams } from "./custommerApi";
 import { FormFieldWithNode } from "@/components/interface/FormField";
-import { caseResults } from "@/types/case";
+import { Attachment, caseResults } from "@/types/case";
 
 export interface CreateCase {
     formData: FormFieldWithNode;
@@ -51,6 +51,7 @@ export interface CreateCase {
     caseId: string
     scheduleFlag: boolean,
     scheduleDate: string,
+    attachments: Attachment[]
 }
 
 export interface Case {

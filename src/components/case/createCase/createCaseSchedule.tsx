@@ -23,7 +23,7 @@ import { mergeCaseTypeAndSubType } from "../../caseTypeSubType/mergeCaseTypeAndS
 import { findCaseTypeSubType, findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/findCaseTypeSubTypeByMergeName"
 import { Area, mergeArea } from "@/store/api/area"
 import DragDropFileUpload from "../../d&d upload/dndUpload"
-import { CaseDetails, CaseEntity } from "@/types/case"
+import { CaseDetails, CaseEntity, FileItem } from "@/types/case"
 import { genCaseID } from "../../genCaseId/genCaseId"
 import { useNavigate, useParams } from "react-router"
 import { useTranslation } from "@/hooks/useTranslation";
@@ -147,7 +147,7 @@ interface CaseFormFieldsProps {
     handleWorkOrderDateChangeDefault: (date: string) => string;
     handleIotDateChangeDefault: (date: string) => string;
     handleScheduleDateChangeDefault: (date: string) => string;
-    handleFilesChange: (newFiles: File[]) => void;
+    handleFilesChange: (newFiles: FileItem[]) => void;
     handlePreviewShow: () => void;
     handleSaveDrafts: () => Promise<void>;
     handleExampleData: () => void;
@@ -312,6 +312,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 accept="image/*,.pdf,.doc,.docx,.txt"
                 maxSize={1}
                 className="mb-4"
+                type="case"
                 disabled={false}
             />
         </div>
@@ -573,7 +574,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     }, [listCustomerData.length, sopLocal, initialCaseData?.phoneNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
-    const handleFilesChange = useCallback((newFiles: File[]) => {
+    const handleFilesChange = useCallback((newFiles: FileItem[]) => {
         setCaseState(prev => prev ? {
             ...prev,
             attachFile: newFiles
@@ -599,7 +600,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             caseTypeId: caseState?.caseType?.typeId || "",
             caseVersion: caseVersion,
             caselocAddr: caseState?.location || "",
-            caselocAddrDecs: caseState?.location || "",
+            caselocAddrDecs: "",
             deviceId: caseState?.iotDevice || "",
             countryId: caseState?.area?.countryId || "",
             distId: caseState?.area?.distId || "",

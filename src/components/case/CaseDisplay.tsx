@@ -5,6 +5,8 @@ import { mergeArea } from "@/store/api/area";
 import { CaseDetails } from "@/types/case";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/utils/crud";
+import { cancelAndCloseStatus, closeStatus } from "../ui/status/status";
+import AttachedFiles from "../Attachment/AttachmentPreviewList";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -13,7 +15,7 @@ interface FormFieldValueDisplayProps {
 
 
 
-const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData, isCreate  }) => {
+const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData, isCreate }) => {
 
     const { t, language } = useTranslation();
 
@@ -223,6 +225,30 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 </div>
             </div>
+
+            {cancelAndCloseStatus.includes(caseData?.status || "") &&
+                <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-3">
+                    <h3 className="text-blue-500 dark:text-blue-400">{closeStatus === caseData?.status ? t("case.display.result") : t("case.display.cancel_case")}</h3>
+                    <div className=" space-y-1">
+
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.resultId || "-"}
+                        </div>
+                        <div className="text-md font-medium text-gray-900 dark:text-white">
+                            {t("case.display.detail")}
+                        </div>
+                        <div className="pl-3 text-md font-medium text-gray-900 dark:text-white">
+                            {caseData?.resultDetail || "-"}
+                        </div>
+                    </div>
+                    <AttachedFiles
+                        files={caseData?.attachFile}
+                        editFormData={false}
+                        type={"close"}
+                    />
+                </div>
+            }
+
             {/* <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-1 md:col-span-2">
                 <div className="mb-2">
                     <span className="text-md text-blue-500 dark:text-blue-400">Attachments</span>

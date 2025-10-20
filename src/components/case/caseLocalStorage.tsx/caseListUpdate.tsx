@@ -1,14 +1,14 @@
 // utils/caseUtils.ts
 import { TodayDate } from '@/components/date/DateToString';
+import distIdCommaSeparate from '@/components/profile/profileDistId';
 import { store } from '@/store';
 import { caseApi, CreateCase } from '@/store/api/caseApi';
 import { CaseEntity } from '@/types/case';
 
 export const getNewCaseData = async () => {
     try {
-
         const result = await store.dispatch(
-            caseApi.endpoints.getListCaseMutation.initiate({})
+            caseApi.endpoints.getListCaseMutation.initiate({distId:distIdCommaSeparate()})
         );
 
         if ('data' in result && result.data?.data) {

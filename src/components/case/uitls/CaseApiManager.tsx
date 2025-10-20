@@ -5,6 +5,7 @@ import { formApi } from "@/store/api/formApi";
 import { CaseTypeSubType } from "../../interface/CaseType";
 import { areaApi } from "@/store/api/area";
 import { unitApi } from "@/store/api/unitApi";
+import distIdCommaSeparate from "@/components/profile/profileDistId";
 
 
 export const useFetchCustomers = async () => {
@@ -23,9 +24,9 @@ export const useFetchUnitStatus = async () => {
 
 };
 
-export const useFetchCase = async (params: CaseListParams) => {
+export const fetchCase = async (params: CaseListParams) => {
   const result = await store.dispatch(
-    caseApi.endpoints.getListCase.initiate(params)
+    caseApi.endpoints.getListCase.initiate({ ...params, distId: distIdCommaSeparate() })
   );
   if (result.data?.data) {
     localStorage.setItem("caseList", JSON.stringify(result.data?.data))
@@ -103,8 +104,8 @@ export const useFetchArea = async () => {
 };
 
 export const caseApiSetup = async () => {
-  await useFetchCustomers();
-  await useFetchCase({});
+  // await useFetchCustomers();
+  await fetchCase({});
   await useFetchTypeSubType();
   await useFetchDeptCommandStations();
   await useFetchCaseStatus();

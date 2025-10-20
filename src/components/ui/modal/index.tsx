@@ -8,6 +8,7 @@ interface ModalProps {
   showCloseButton?: boolean; // New prop to control close button visibility
   closeButtonClassName?:string
   isFullscreen?: boolean; // Default to false for backwards compatibility
+  disableBgColor?:boolean
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -17,7 +18,8 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   showCloseButton = true, // Default to true for backwards compatibility
   isFullscreen = false,
-  closeButtonClassName=""
+  closeButtonClassName="",
+  disableBgColor=false
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -53,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative w-full rounded-3xl bg-white dark:bg-gray-900";
+    : `relative w-full rounded-3xl ${disableBgColor?"":"bg-white dark:bg-gray-900"}`;
 
   return (
     <div
@@ -62,7 +64,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {!isFullscreen && (
         <div
-          className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
+          className={`fixed inset-0 h-full w-full ${disableBgColor?"":"bg-gray-400/50"} backdrop-blur-[32px]`}
           onClick={onClose}
         ></div>
       )}

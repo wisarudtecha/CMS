@@ -1,21 +1,29 @@
 // /src/components/case/CaseHistory.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  AtSign,
+  Building,
   ChartColumnStacked,
+  CheckCircle,
   ClockArrowUp,
   Contact,
   Cpu,
+  Mail,
   MapPin,
   MapPinHouse,
   Phone,
   Share2,
   Siren,
-  Ticket
+  Tag,
+  Ticket,
+  Truck,
+  User
 } from "lucide-react";
 import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+import { mapSopToOrderedProgress } from "@/components/case/sopStepTranForm";
 import { source } from "@/components/case/constants/caseConstants";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
@@ -23,14 +31,17 @@ import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimel
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Area } from "@/store/api/area";
-import { useGetCaseHistoryQuery } from "@/store/api/caseApi";
+import { DepartmentCommandStationDataMerged, mergeDeptCommandStation, useGetCaseHistoryQuery } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
+import { useGetUserByUserNameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
-import type { CaseSop } from "@/types/dispatch";
+import type { CaseSop, UnitWithSop } from "@/types/dispatch";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
+import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import FormViewer from "@/components/form/dynamic-form/FormViewValue";
 import Badge from "@/components/ui/badge/Badge";
@@ -43,15 +54,17 @@ const CaseHistoryComponent: React.FC<{
   caseTypesSubTypes: CaseTypeSubType[];
 }> = ({ areas, caseHistories, caseStatuses, caseTypesSubTypes }) => {
   const { t, language } = useTranslation();
-
+  // const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username });
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
-
+  
   const [crudOpen, ] = useState("block");
   const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
+  const [selectedCaseForUnit, setSelectedCaseForUnit] = useState<string | null>(null);
   const [sopData, setSopData] = useState<CaseSop | null>(null);
+  const [, setUnitData] = useState<UnitWithSop | null>(null);
 
   const { data: dispatchSOPsData } = useGetCaseSopQuery(
     { caseId: selectedCaseForSop ?? "" }, 
@@ -61,6 +74,11 @@ const CaseHistoryComponent: React.FC<{
   const { data: caseHistoriesData } = useGetCaseHistoryQuery(
     { caseId: selectedCaseForHistory ?? ""  }, 
     { skip: !selectedCaseForHistory }
+  );
+
+  const { data: unitsData } = useGetUserByUserNameQuery(
+    { username: selectedCaseForUnit ?? "" }, 
+    { skip: !selectedCaseForUnit }
   );
 
   const isCancelAvailable = (data: CaseEntity) => {
@@ -405,11 +423,29 @@ const CaseHistoryComponent: React.FC<{
     }, [caseItem.caseId]);
 
     useEffect(() => {
+      setSelectedCaseForUnit(sopData?.unitLists[0]?.username || null);
+    }, []);
+
+    useEffect(() => {
       setSopData((selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : null);
+    }, [caseItem.caseId]);
+
+    useEffect(() => {
+      setUnitData((selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
     }, [caseItem.caseId]);
 
     const dpcConfig = getAreaConfig(caseItem);
     const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
+
+    const progressSteps = useMemo(() => {
+      return mapSopToOrderedProgress(sopData as CaseSop, language);
+    }, []);
+    const deptComStn = useMemo(() =>
+      JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
+    );
+    const userStation = deptComStn.find((items) => {
+      return items.commId === unitsData?.data?.commId && items.stnId === unitsData?.data?.stnId && items.deptId === unitsData.data.deptId;
+    });
 
     const contactMethod = source.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
 
@@ -431,8 +467,9 @@ const CaseHistoryComponent: React.FC<{
                     steps={timelineSteps}
                     orientation="horizontal"
                     size="md"
-                    showTimestamps={false}
+                    showTimestamps={true}
                     showDescriptions={false}
+                    showSLA={true}
                   />
                 </div>
                 <div className="block xl:hidden">
@@ -441,8 +478,9 @@ const CaseHistoryComponent: React.FC<{
                     steps={timelineSteps}
                     orientation="vertical"
                     size="sm"
-                    showTimestamps={false}
+                    showTimestamps={true}
                     showDescriptions={false}
+                    showSLA={true}
                     className="mb-2"
                   />
                 </div>
@@ -461,21 +499,21 @@ const CaseHistoryComponent: React.FC<{
               </h4>
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Ticket className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.no")}:</span>
+                    <span className="text-sm font-medium">{t("case.display.no")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.caseId || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-start justify-left gap-1">
-                  <ChartColumnStacked className="xl:block hidden w-4 h-4" />
+                  <ChartColumnStacked className="xl:block hidden w-4 h-4 text-gray-900 dark:text-white" />
                   <div>
                     <div className="xl:flex items-center justify-left gap-1">
-                      <div className="flex items-center justify-left gap-1">
+                      <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                         <ChartColumnStacked className="block xl:hidden w-4 h-4" />
-                        <div className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.types")}:</div>
+                        <div className="text-sm font-medium">{t("case.display.types")}:</div>
                       </div>
                       <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || ""}</div>
                     </div>
@@ -485,18 +523,18 @@ const CaseHistoryComponent: React.FC<{
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <MapPinHouse className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.service_center")}:</span>
+                    <span className="text-sm font-medium">{t("case.display.service_center")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {dpcDisplay || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Siren className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
+                    <span className="text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {formatDate(sopData?.startedDate as string) || ""}
@@ -504,7 +542,7 @@ const CaseHistoryComponent: React.FC<{
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
                   <div className="flex items-center justify-left gap-1">
-                    <ClockArrowUp className="w-4 h-4" />
+                    <ClockArrowUp className="w-4 h-4 text-gray-900 dark:text-white" />
                     <span className="text-red-500 dark:text-red-400 text-sm font-medium">{t("case.display.updateAt")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
@@ -541,27 +579,27 @@ const CaseHistoryComponent: React.FC<{
               </div>
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Phone className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
+                    <span className="text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.phoneNo || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Share2 className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
+                    <span className="text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {contactMethod?.name || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Cpu className="w-4 h-4" />
-                    <span className="text-gray-900 dark:text-white text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
+                    <span className="text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {caseItem.deviceId || ""}
@@ -581,6 +619,104 @@ const CaseHistoryComponent: React.FC<{
                     {caseItem.caseDetail || ""}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Unit Information */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                {t("case.officer_detail.personal_title")}
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {unitsData?.data?.firstName || ""}{" "}{unitsData?.data?.lastName || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <AtSign className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.username")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {unitsData?.data?.username || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {unitsData?.data?.mobileNo || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.email")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {unitsData?.data?.email || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div className="xl:flex items-left justify-left gap-2 mb-4">
+                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+                  <Truck className="w-4 h-4" />
+                  {t("case.officer_detail.service_title")}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Tag className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.vehicle")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {sopData?.unitLists[0]?.unitId || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div className="xl:flex items-left justify-left gap-2 mb-4">
+                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+                  <Truck className="w-4 h-4" />
+                  {t("case.officer_detail.service_title")}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Building className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {userStation && mergeDeptCommandStation(userStation) || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div className="xl:flex items-left justify-left gap-2 mb-4">
+                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+                  <CheckCircle className="w-4 h-4" />
+                  {t("case.officer_detail.service_progress_title")}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 space-y-3">
+                <ProgressStepPreviewUnit progressSteps={progressSteps} />
+                <ProgressSummary progressSteps={progressSteps} />
               </div>
             </div>
           </div>
@@ -880,10 +1016,17 @@ const CaseHistoryComponent: React.FC<{
       // Handle search
       if (key === "search" && typeof value === "string") {
         const searchTerm = value.toLowerCase();
-        return typeSubTypeConfigs.find(c => c.subTypeTh.toLowerCase().includes(searchTerm) || c.subTypeEn.toLowerCase().includes(searchTerm))
-          || caseItem.caseDetail.toLowerCase().includes(searchTerm)
-          || caseItem.caselocAddr.toLowerCase().includes(searchTerm)
-          || caseItem.caselocAddrDecs.toLowerCase().includes(searchTerm);
+        // return typeSubTypeConfigs.find(c => c.subTypeTh.toLowerCase().includes(searchTerm) || c.subTypeEn.toLowerCase().includes(searchTerm))
+        //   || caseItem.caseDetail.toLowerCase().includes(searchTerm)
+        //   || caseItem.caselocAddr.toLowerCase().includes(searchTerm)
+        //   || caseItem.caselocAddrDecs.toLowerCase().includes(searchTerm);
+        return typeSubTypeConfigs.find(c => c?.subTypeTh?.toLowerCase()?.includes(searchTerm) || c?.subTypeEn?.toLowerCase()?.includes(searchTerm))
+          || caseItem?.caseId?.toLowerCase()?.includes(searchTerm)
+          || caseItem?.caseDetail?.toLowerCase()?.includes(searchTerm)
+          || caseItem?.caselocAddr?.toLowerCase()?.includes(searchTerm)
+          || caseItem?.caselocAddrDecs?.toLowerCase()?.includes(searchTerm)
+          || caseItem?.deviceId?.toLowerCase()?.includes(searchTerm)
+          || caseItem?.phoneNo?.toLowerCase()?.includes(searchTerm);
       }
 
       // Handle regular values

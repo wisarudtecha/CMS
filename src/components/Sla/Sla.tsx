@@ -3,31 +3,8 @@ import { useState, useEffect } from "react";
 import Badge from "../ui/badge/Badge";
 import { CheckCircle, Circle } from "lucide-react";
 import { getTimeDifference } from "../case/sopStepTranForm";
+import { useFormatDuration } from "./formatSlaDuration";
 
-export const formatDuration = (minutes: number) => {
-    const { t } = useTranslation();
-    if (minutes < 60) {
-        return `${Math.round(minutes)} ${t("time.Minutes")}`;
-    } else if (minutes < 1440) { // Less than 24 hours
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = Math.round(minutes % 60);
-        return remainingMinutes > 0
-            ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
-            : `${hours} ${t("time.Hours")}`;
-    } else {
-        const days = Math.floor(minutes / 1440);
-        const remainingHours = Math.floor((minutes % 1440) / 60);
-        const remainingMinutes = Math.round(minutes % 60);
-        let result = `${days} ${t("time.Days")}`;
-        if (remainingHours > 0) {
-            result += ` ${remainingHours} ${t("time.Hours")}`;
-        }
-        if (remainingMinutes > 0) {
-            result += ` ${remainingMinutes} ${t("time.Minutes")}`;
-        }
-        return result;
-    }
-};
 
 export const SLACountdownBadgeAssignment = ({ createdAt, sla }: { createdAt: string, sla: number }) => {
     const [timeRemaining, setTimeRemaining] = useState<{
@@ -158,7 +135,7 @@ export const StepCircle: React.FC<{
 }> = ({ completed, current, violated, step, previousStep }) => {
     const { t } = useTranslation();
     const [isHovered, setIsHovered] = useState(false);
-
+    const formatDuration = useFormatDuration();
     const base =
         "w-8 h-8 rounded-full flex items-center justify-center border-2 bg-white dark:bg-gray-800 relative z-10 flex-shrink-0 cursor-pointer";
     const stateClasses = completed
@@ -268,7 +245,7 @@ export const StepCircle: React.FC<{
                 <div className="absolute z-50 bottom-1/2 left-1/2 transform  mb-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg whitespace-nowrap">
                     {renderTooltipContent()}
                     {/* Arrow */}
-                    <div className="absolute top-1/2 left-1/2 transform  w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200 dark:border-t-gray-600"></div>
+                    
                 </div>
             )}
         </div>

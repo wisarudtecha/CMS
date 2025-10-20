@@ -20,7 +20,7 @@ import DateStringToDateFormat, { DateStringToAgoFormat } from "@/components/date
 
 import { CaseTypeSubType } from "@/components/interface/CaseType"
 import { mergeCaseTypeAndSubType } from "@/components/caseTypeSubType/mergeCaseTypeAndSubType"
-import { useFetchCase } from "@/components/case/uitls/CaseApiManager"
+import { fetchCase } from "@/components/case/uitls/CaseApiManager"
 import { SearchableSelect, SearchableSelectApi } from "@/components/SearchInput/SearchSelectInput"
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
@@ -35,6 +35,33 @@ import { UserProfile } from "@/types/user"
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
 });
+
+const getInitialFilters = () => {
+  const savedFilters = localStorage.getItem("WorkOrderFilter");
+
+  if (savedFilters) {
+    try {
+      return JSON.parse(savedFilters);
+    } catch (error) {
+      console.error("Error parsing filters:", error);
+    }
+  }
+
+  return {
+    priority: "",
+    category: "",
+    titleSearch: "",
+    descriptionSearch: "",
+    startDate: "",
+    endDate: "",
+    caseType: "",
+    caseSubtype: "",
+    createBy: "",
+    area: {} as Area,
+    phoneNumber: "",
+    user: "",
+  };
+};
 
 function createAvatarFromString(name: string): string {
   const words = name.trim().split(' ');
@@ -65,20 +92,7 @@ export default function CasesView() {
       ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
   });
   const { t, language } = useTranslation();
-  const [advancedFilters, setAdvancedFilters] = useState({
-    priority: "",
-    category: "",
-    titleSearch: "",
-    descriptionSearch: "",
-    startDate: "",
-    endDate: "",
-    caseType: "",
-    caseSubtype: "",
-    createBy: "",
-    area: {} as Area,
-    phoneNumber: "",
-    user: "",
-  })
+  const [advancedFilters, setAdvancedFilters] = useState(getInitialFilters())
   const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
 
   const getStatusKey = (caseItem: CaseEntity): string => {
@@ -145,6 +159,7 @@ export default function CasesView() {
       user: "",
     };
     setAdvancedFilters(clearedFilters);
+    localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
     await getNewCaseData();
     const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
@@ -210,7 +225,8 @@ export default function CasesView() {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
-      await useFetchCase({
+      localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
+      await fetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
         detail: localFilters.descriptionSearch,
@@ -235,7 +251,7 @@ export default function CasesView() {
     const handleCaseTypeChange = (label: string) => {
       const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item, language) === label);
 
-      setLocalFilters(prev => ({
+      setLocalFilters((prev: any) => ({
         ...prev,
         caseSubtype: selectedCaseTypes?.sTypeId || "",
         caseType: selectedCaseTypes?.typeId || ""
@@ -246,11 +262,11 @@ export default function CasesView() {
     const handleAreaChange = (label: string) => {
       const selected = areaList.find(item => mergeArea(item, language) === label);
       if (!selected)
-        return setLocalFilters(prev => ({
+        return setLocalFilters((prev: any) => ({
           ...prev,
           area: {} as Area
         }));
-      setLocalFilters(prev => ({
+      setLocalFilters((prev: any) => ({
         ...prev,
         area: selected
       }));

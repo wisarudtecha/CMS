@@ -19,14 +19,18 @@ import { Comments } from "../comment/Comment";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "./activityTimeline/caseActivityTimeline";
-import { CaseStatusInterface } from "../ui/status/status";
-import { CaseDetails } from "@/types/case";
+import { cancelAndCloseStatus, CaseStatusInterface } from "../ui/status/status";
+import { CaseDetails, FileItem } from "@/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CommentModal } from "../comment/commentModal";
 import { formatDate } from "@/utils/crud";
 import { usePermissions } from "@/hooks/usePermissions";
 import { CaseSop } from "@/types/dispatch";
+import { usePostUploadFileMutationMutation } from "@/store/api/file";
+import { ToastContainer } from "../crud/ToastContainer";
+import { useToast } from "@/hooks/useToast";
+import { validateFile } from "../Attachment/AttachmentConv";
 
 interface CaseCardProps {
     onAddSubCase?: () => void;
@@ -55,7 +59,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
     const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
-    
+    const [postUploadFile] = usePostUploadFileMutationMutation();
+    const { toasts, addToast, removeToast } = useToast();
     const handleCommentToggle = () => {
         setShowComment(!showComment);
     };
@@ -87,27 +92,65 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     // Use dynamic steps if available, otherwise use default
     const stepsToDisplay = progressSteps.length > 0 ? progressSteps : defaultProgressSteps;
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const [isUploading, setIsUploading] = useState<boolean>(false);
     const handleButtonClick = () => {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
-        if (files && files.length > 0) {
-            const newFilesArray = Array.from(files);
+        if (!files || files.length === 0) {
+            return;
+        }
+        setIsUploading(true);
+        const newFilesArray = Array.from(files);
+        const uploadedFiles: FileItem[] = [];
 
-            setCaseData?.((prev) => {
-                if (!prev) return prev;
+        try {
+            for (const file of newFilesArray) {
+                try {
+                    if (!validateFile(file)) {
+                        addToast("error", `File "${file.name}" is too large.`)
+                        continue
+                    }
+                    const result = await postUploadFile({
+                        path: "case",
+                        file: file,
+                        caseId: caseData.caseId
+                    }).unwrap();
 
-                const currentFiles = prev.attachFileResult ?? [];
+                    if (result.data) {
+                        uploadedFiles.push(result.data);
+                        console.log(`✅ Uploaded ${file.name}`);
+                    } else {
+                        console.error(`❌ Failed to upload ${file.name}`);
+                        addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error uploading ${file.name}:`, error);
+                    addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                }
+            }
 
-                return {
-                    ...prev,
-                    attachFileResult: [...currentFiles, ...newFilesArray],
-                };
-            });
+            if (uploadedFiles.length > 0) {
+                setCaseData?.((prev) => {
+                    if (!prev) return prev;
+
+                    const currentFiles = prev.attachFile ?? [];
+                    return {
+                        ...prev,
+                        attachFile: [...currentFiles, ...uploadedFiles],
+                    };
+                });
+
+                // addToast?.("success", t("case.display.toast.upload_file_success"));
+            }
+        } catch (error) {
+            console.error("Error during file upload process:", error);
+            addToast?.("error", t("case.display.toast.upload_file_fail"));
+        } finally {
+            setIsUploading(false);
             e.target.value = '';
         }
     };
@@ -160,48 +203,50 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     <MessageSquare className="w-4 h-4 mr-2" />
                     {t("case.sop_card.comment")}
                 </Button>}
+                {!cancelAndCloseStatus.includes(caseData.statusId) && <>
+                    {permissions.hasPermission("case.update") && onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
+                        {editFormData ? t("case.sop_card.cancel_edit") : t("case.sop_card.edit")}
+                    </Button>}
 
-                {permissions.hasPermission("case.update") && onEditClick && <Button onClick={onEditClick} size="sm" variant="outline" className="border-blue-500 dark:border-blue-600 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900">
-                    {editFormData ? t("case.sop_card.cancel_edit") : t("case.sop_card.edit")}
-                </Button>}
-
-                {permissions.hasPermission("case.attach_file") && showAttachButton && <div>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 w-full"
-                        onClick={handleButtonClick}
-                    >
-                        <Paperclip className="w-4 h-4 mr-2" />
-                        {t("case.sop_card.attach_file")}
-                    </Button>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        multiple
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                    />
-                </div>}
-                {permissions.hasPermission("case.assign") && caseData?.unitLists ===null && caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+                    {permissions.hasPermission("case.attach_file") && showAttachButton && <div>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 w-full"
+                            onClick={handleButtonClick}
+                        >
+                            <Paperclip className="w-4 h-4 mr-2" />
+                            {t("case.sop_card.attach_file")}
+                        </Button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            multiple
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                            disabled={isUploading}
+                        />
+                    </div>}</>
+                }
+                {permissions.hasPermission("case.assign") && caseData?.unitLists === null && caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
                     <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}
             </div>
 
             {showComment && <div className="relative">
-                <Maximize2 
-                    className="absolute right-0 m-3 rounded-md opacity-70 hover:cursor-pointer hover:opacity-100 transition-opacity z-10 bg-white dark:bg-gray-900 dark:text-white p-1 shadow-sm" 
+                <Maximize2
+                    className="absolute right-0 m-3 rounded-md opacity-70 hover:cursor-pointer hover:opacity-100 transition-opacity z-10 bg-white dark:bg-gray-900 dark:text-white p-1 shadow-sm"
                     onClick={handleOpenModal}
                     size={24}
                 />
                 <Comments caseId={caseData.caseId} isOpen={showComment} />
             </div>}
 
-            <CommentModal 
-                isOpen={isModalOpen} 
-                onClose={handleCloseModal} 
+            <CommentModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
                 caseId={caseData.caseId}
                 caseTitle={mergeCaseTypeAndSubType(
                     findCaseTypeSubTypeByTypeIdSubTypeId(
@@ -211,6 +256,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     ) ?? ({} as CaseTypeSubType), language
                 )}
             />
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

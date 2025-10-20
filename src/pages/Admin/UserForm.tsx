@@ -544,7 +544,7 @@ const UserForm: React.FC = () => {
       const successMessage = isEdit ? tt("userform.updateSuccess") || "User updated successfully!" : tt("userform.createSuccess") || "User created successfully!";
       
       // Navigate to /users page immediately with toast message - no setLoading(false) needed
-      navigate("/users", {
+      navigate("/user", {
         state: { 
           toast: {
             message: successMessage,
@@ -941,7 +941,7 @@ const UserForm: React.FC = () => {
                       className={inputClasses}
                       required
                       maxLength={30}
-                      pattern="[a-zA-Z0-9_]+"
+                      pattern="[a-zA-Z0-9_\-]+"
                       title="Username can only contain letters, numbers, and underscores"
                     />
                   ) : (
@@ -980,9 +980,9 @@ const UserForm: React.FC = () => {
                         onChange={handleInputChange}
                         className={inputClasses}
                         required
-                        minLength={8}
+                        minLength={7}
                         maxLength={30}
-                        title="Password must be at least 8 characters with 1 uppercase letter and 1 special character"
+                        title="Password must be at least 7 characters with 1 uppercase letter and 1 special character"
                         autoComplete="new-password"
                       />
                       <span className="text-xs text-gray-500 dark:text-gray-300">{tt("userform.pwdHint")}</span>
@@ -999,7 +999,7 @@ const UserForm: React.FC = () => {
                         onChange={handleInputChange}
                         className={inputClasses}
                         required
-                        minLength={8}
+                        minLength={7}
                         maxLength={30}
                         autoComplete="new-password"
                       />

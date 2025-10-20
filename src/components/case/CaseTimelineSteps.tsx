@@ -1,10 +1,15 @@
 // /src/components/case/CaseTimelineSteps.tsx
 import { useTranslation } from "@/hooks/useTranslation";
 // import { useGetCaseSopQuery } from "@/store/api/dispatch";
-import type { CaseStatus, TimelineStep } from "@/types/case";
 import { CaseSop } from "@/types/dispatch";
-import type { Connection } from "@/types/workflow";
 import { SOP_TIMELINES_STATUS } from "@/utils/constants";
+import {
+  sortSOPNodes,
+  // sortWorkflowByConnections,
+  WorkflowNode
+} from "@/utils/workflowSort";
+import type { CaseStatus, TimelineStep } from "@/types/case";
+import type { Connection } from "@/types/workflow";
 
 // Utility function to create timeline steps from case status
 export const CaseTimelineSteps = (
@@ -17,41 +22,86 @@ export const CaseTimelineSteps = (
 ): TimelineStep[] => {
   const { language } = useTranslation();
 
+  // const sortByActionId = (data: TimelineStep[]): TimelineStep[] => {
+  //   return [...data].sort((a, b) => {
+  //     const actionIdA = a.metadata?.actionId as string || "";
+  //     const actionIdB = b.metadata?.actionId as string || "";
+  //     const numA = parseInt(actionIdA.replace(/\D/g, ""), 10);
+  //     const numB = parseInt(actionIdB.replace(/\D/g, ""), 10);
+  //     return numA - numB;
+  //   });
+  // };
+
   const mapSOPToTimeline = (caseSop: CaseSop): TimelineStep[] => {
+    // console.log("🚀 ~ mapSOPToTimeline ~ caseSop:", caseSop);
+    // console.log("🚀 ~ mapSOPToTimeline ~ caseSop.slaTimelines:", caseSop.slaTimelines);
     // console.log("🚀 ~ mapSOPToTimeline ~ caseSop.sop:", caseSop.sop);
 
-    const connections = caseSop.sop?.find(item => item.section === "connections")?.data || [];
+    const connectionsData = caseSop.sop?.find(item => item.section === "connections")?.data || [];
+    // console.log("🚀 ~ mapSOPToTimeline ~ connectionsData:", connectionsData);
+
+    // const connections = caseSop.sop?.find(item => item.section === "connections")?.data || [];
+    const connections = connectionsData as Connection[];
     // console.log("🚀 ~ mapSOPToTimeline ~ connections:", connections);
 
-    const noConnectionTargets = new Set(
-      (connections as Connection[])
-        .filter((conn: Connection) => conn.label === "no")
-        .map((conn: Connection) => conn.target)
+    // Get all nodes
+    const allNodes = caseSop.sop?.filter(node => node.section === "nodes") || [];
+    // console.log("🚀 ~ mapSOPToTimeline ~ allNodes:", allNodes);
+
+    // Sort nodes using topological sort
+    const processNodes = sortSOPNodes(
+      allNodes as WorkflowNode[],
+      // connections as Connection[]
+      connections
     );
+    // console.log("🚀 ~ mapSOPToTimeline ~ sortedNodes:", processNodes);
+    // console.log("🚀 ~ mapSOPToTimeline ~ sortedNodes:", processNodes.map(n => ({
+    //   id: n.nodeId,
+    //   type: n.type,
+    //   label: n.data?.data?.label,
+    //   action: n.data?.data?.config?.action
+    // })));
+
+    // const noConnectionTargets = new Set(
+    //   (connections as Connection[])
+    //     .filter((conn: Connection) => conn.label === "no")
+    //     .map((conn: Connection) => conn.target)
+    // );
     // console.log("🚀 ~ mapSOPToTimeline ~ noConnectionTargets:", noConnectionTargets);
 
-    const processNodes = caseSop.sop
-      ?.filter(node => (
-          // node.type === "decision"
-          // ||
-          node.type === "process"
-        ) && !noConnectionTargets.has(node.nodeId)
-      )
-      .sort((a, b) => {
-        return a.data?.position?.y - b.data?.position?.y;
-      });
+    // const processNodes = caseSop.sop
+    //   ?.filter(node => (
+    //       // node.type === "decision"
+    //       // ||
+    //       node.type === "process"
+    //       ||
+    //       node.type === "dispatch"
+    //     ) && !noConnectionTargets.has(node.nodeId)
+    //   )
+    //   .sort((a, b) => {
+    //     return a.data?.position?.y - b.data?.position?.y;
+    //   });
+    // console.log("🚀 ~ mapSOPToTimeline ~ processNodes:", processNodes);
 
     const currentNodeId = caseSop.currentStage?.nodeId;
+    // console.log("🚀 ~ mapSOPToTimeline ~ currentNodeId:", currentNodeId);
     let currentStageFound = false;
+    // console.log("🚀 ~ mapSOPToTimeline ~ currentStageFound:", currentStageFound);
+    const lastNodeId = processNodes?.[processNodes.length - 1]?.nodeId;
+    // console.log("🚀 ~ mapSOPToTimeline ~ lastNodeId:", lastNodeId);
 
     return processNodes?.map((node): TimelineStep => {
       const isCurrentStage = node.nodeId === currentNodeId;
       const actionId = node.data?.data?.config?.action;
+      const createdAt = caseSop?.slaTimelines.find(d => d.statusId === actionId)?.createdAt;
       
       let status: TimelineStep["status"];
       if (isCurrentStage) {
         status = "active";
         currentStageFound = true;
+        if (currentNodeId === lastNodeId && createdAt) {
+          status = "completed";
+        }
       }
       else if (!currentStageFound) {
         status = "completed";
@@ -87,7 +137,7 @@ export const CaseTimelineSteps = (
       }
 
       // Handle error status for cancelled or delayed items
-      if (SOP_TIMELINES_STATUS.includes(actionId)) {
+      if (actionId && SOP_TIMELINES_STATUS.includes(actionId as typeof SOP_TIMELINES_STATUS[number])) {
         status = status === "active" ? "error" : status;
       }
 
@@ -107,14 +157,19 @@ export const CaseTimelineSteps = (
           groups: node.data?.data?.config?.group,
           pic: node.data?.data?.config?.pic,
           sla: node.data?.data?.config?.sla,
-          position: node.data?.position
+          position: node.data?.position,
+          createdAt: createdAt
         }
       };
     }) || [];
   };
 
   const timelineSteps: TimelineStep[] = sop ? mapSOPToTimeline(sop) : [];
-  return timelineSteps;
+  // console.log("🚀 ~ CaseTimelineSteps ~ timelineSteps:", timelineSteps);
+  // const sortedData = sortByActionId(timelineSteps);
+  const sortedData = timelineSteps;
+  // console.log("🚀 ~ CaseTimelineSteps ~ sortedData:", sortedData);
+  return sortedData;
 
   // const baseSteps: Omit<TimelineStep, "status">[] = [
   //   {

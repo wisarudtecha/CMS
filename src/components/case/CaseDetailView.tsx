@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useMemo, useState, useEffect, memo } from "react"
-import { ArrowLeft } from "lucide-react"
+import { useCallback, useMemo, useState, useEffect, memo, useRef } from "react"
+import { ArrowLeft, Paperclip } from "lucide-react"
 import Button from "@/components/ui/button/Button"
 import PageMeta from "@/components/common/PageMeta"
 import { FormFieldWithNode } from "@/components/interface/FormField"
@@ -18,13 +18,13 @@ import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCas
 import { useGetCaseSopQuery, useLazyGetSopUnitQuery, usePostCancelCaseMutationMutation, usePostCancelUnitMutationMutation, usePostDispacthMutationMutation } from "@/store/api/dispatch"
 import { Area } from "@/store/api/area"
 import { CaseCard } from "./sopCard"
-import { CaseDetails, CaseEntity, caseResults } from "@/types/case"
+import { CaseDetails, CaseEntity, caseResults, FileItem } from "@/types/case"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { cancelAndCloseStatus, CaseStatusInterface, closeStatus } from "../ui/status/status"
+import { cancelAndCloseStatus, CaseStatusInterface, RequestCloesStage } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
@@ -40,6 +40,10 @@ import AssignOfficerModal from "../assignOfficer/singleAssignOfficer"
 import TextAreaWithCounter from "../form/input/TextAreaWithCounter"
 import { UnitWithSop, Unit, CaseSopUnit, dispatchInterface, CancelCase, CancelUnit } from "@/types/dispatch"
 import removeCaseFromLocalStore from "./caseLocalStorage.tsx/removeCaseFromLocalStore"
+import AttachedFiles from "../Attachment/AttachmentPreviewList"
+import { isAttachment, validateFile } from "../Attachment/AttachmentConv"
+import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from "@/store/api/file"
+
 
 const CaseHeader = memo(({
     disablePageMeta,
@@ -83,46 +87,6 @@ const CaseHeader = memo(({
 
 CaseHeader.displayName = 'CaseHeader';
 
-const AttachedFiles = memo(({ files, editFormData, onRemove }: {
-    files?: File[];
-    editFormData: boolean;
-    onRemove: (index: number) => void;
-}) => {
-    if (!files?.length) return null;
-    const { t } = useTranslation()
-    return (
-        <div className="mx-3">
-            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
-                {t("case.display.attach_file")} :
-            </span>
-            <div className="mt-2 mb-3">
-                <div className="grid grid-cols-3 gap-2">
-                    {files.map((file, index) => (
-                        <div key={`${file.name}-${index}`} className="relative group">
-                            <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Upload ${index + 1}`}
-                                className="w-full h-20 object-cover rounded border border-gray-600"
-                            />
-                            {editFormData && (
-                                <Button
-                                    onClick={() => onRemove(index)}
-                                    className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                    size="sm"
-                                    variant="error"
-                                >
-                                    ×
-                                </Button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-});
-AttachedFiles.displayName = 'AttachedFiles';
-
 
 const OfficerItem = memo(({
     officer,
@@ -146,11 +110,14 @@ const OfficerItem = memo(({
     }, [officer.Sop?.nextStage?.nodeId]);
     const { t, language } = useTranslation();
     const permissions = usePermissions();
+
     const handleOfficerClick = useCallback(() => {
         if (permissions.hasPermission("case.view_timeline")) {
             onSelectOfficer(officer);
         }
     }, [permissions, officer, onSelectOfficer]);
+
+    const fullname = officer.unit.firstName + " " + officer.unit.lastName
 
     return (
         <div
@@ -159,9 +126,9 @@ const OfficerItem = memo(({
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                    {getAvatarIconFromString(officer.unit.username, "bg-blue-600 dark:bg-blue-700 mx-1")}
+                    {getAvatarIconFromString(fullname, "bg-blue-600 dark:bg-blue-700 mx-1")}
                     <span className="ml-2 cursor-pointer" onClick={handleOfficerClick}>
-                        {officer.unit.unitId}
+                        {fullname}
                     </span>
                 </div>
                 {permissions.hasPermission("case.assign") &&
@@ -253,8 +220,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [onBack, navigate]);
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
     const [showCloseCaseModal, setShowCloseCaseModal] = useState<boolean>(false)
     const [showCancelUnitModal, setShowCancelUnitModal] = useState<boolean>(false)
+    const [isSaving, setIsSaving] = useState<boolean>(false)
     const [showCancelCaseModal, setShowCancelCaseModal] = useState<boolean>(false)
     const [unitToCancel, setUnitToCancel] = useState<UnitWithSop | null>(null);
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
@@ -273,15 +245,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [isInitialized, setIsInitialized] = useState(false);
     const { onMessage, isConnected, connectionState, websocket } = useWebSocket()
     const { t, language } = useTranslation();
-    const [closeValue, setCloseValue] = useState<string>("")
-    const [resultDetail, setResultDetail] = useState<string>("")
     const closeCaseOption = useMemo(() =>
         JSON.parse(localStorage.getItem("caseResultsList") ?? "[]") as caseResults[], []
     );
     const { toasts, addToast, removeToast } = useToast();
-    const isCloseStage = closeStatus.find(status => status === caseState?.status);
+    const isCloseStage = RequestCloesStage.find(status => status === caseState?.status);
     const [disableButton, setDisableButton] = useState<boolean>(false);
-
+    const [disableCloseCancelForm, setDisableCloseCancelForm] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -301,7 +271,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             skip: !initialCaseData?.caseId
         }
     );
-
+    const [delFileApi] = useDeleteFileMutationMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const [postDispatch] = usePostDispacthMutationMutation();
     const [postCancelCase] = usePostCancelCaseMutationMutation();
@@ -317,6 +287,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [isInitialized]);
 
+    const updateCaseState = useCallback((updates: Partial<CaseDetails>) => {
+        setCaseState(prev => prev ? { ...prev, ...updates } : prev);
+    }, [setCaseState]);
 
     useEffect(() => {
         const listener = onMessage((message) => {
@@ -364,6 +337,59 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         return result;
     }, [refetch]);
 
+    const [postUploadFile] = usePostUploadFileMutationMutation();
+
+    const handleRusultFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (!files || files.length === 0) {
+            return;
+        }
+        const newFilesArray = Array.from(files);
+        const uploadedFiles: FileItem[] = [];
+
+        try {
+            for (const file of newFilesArray) {
+                try {
+                    if (!validateFile(file)) {
+                        addToast("error", `File "${file.name}" is too large.`)
+                        continue
+                    }
+                    const result = await postUploadFile({
+                        path: "close",
+                        file: file,
+                        caseId: caseState?.workOrderNummber
+                    }).unwrap();
+
+                    if (result.data) {
+                        uploadedFiles.push(result.data);
+                        console.log(`✅ Uploaded ${file.name}`);
+                    } else {
+                        console.error(`❌ Failed to upload ${file.name}`);
+                        addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error uploading ${file.name}:`, error);
+                    addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                }
+            }
+
+            if (uploadedFiles.length > 0) {
+
+                // const currentFiles = prev.attachFile ?? [];
+
+                updateCaseState({ attachFile: [...(caseState?.attachFile || []),...uploadedFiles] })
+                // addToast?.("success", t("case.display.toast.upload_file_success"));
+            }
+        } catch (error) {
+            console.error("Error during file upload process:", error);
+            addToast?.("error", t("case.display.toast.upload_file_fail"));
+        } finally {
+            e.target.value = '';
+        }
+    };
+
+
     useEffect(() => {
         if (!dispatchUnit || dispatchUnit.length === 0) {
             setUnitWorkOrder([]);
@@ -400,15 +426,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowCancelUnitModal(true);
     }, []);
 
-    const handleConfirmCancelUnit = useCallback(async (unit:CaseSopUnit) => {
+    const handleConfirmCancelUnit = useCallback(async (unit: CaseSopUnit) => {
         // const closeCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
         const cancelUnitJson = {
             caseId: caseState?.workOrderNummber,
             // status: sopData?.data?.nextStage?.data?.data?.config?.action,
             // resId: closeCaseData?.resId,
             // resDetail: resultDetail
-            unitId:unit.unitId,
-            unitUser:unit.username,
+            unitId: unit.unitId,
+            unitUser: unit.username,
         } as CancelUnit;
         try {
             // if (!cancelUnitJson ||
@@ -429,12 +455,12 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [postCancelUnit, caseData, unitToCancel])
 
     const handleOnChickCloseButton = useCallback(async () => {
-        const closeCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
+        const closeCaseData = closeCaseOption.find(items => caseState?.resultId === items[language === "th" ? "th" : "en"])
         const dispatchjson = {
             caseId: caseState?.workOrderNummber,
             status: sopData?.data?.nextStage?.data?.data?.config?.action,
             resId: closeCaseData?.resId,
-            resDetail: resultDetail
+            resDetail: caseState?.resultDetail
         } as dispatchInterface;
         try {
             if (!dispatchjson ||
@@ -454,14 +480,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             addToast("error", t("case.display.toast.close_case_fail") + ` ${error}`);
             setDisableButton(false);
         }
-    }, [postDispatch, caseData, resultDetail, closeValue])
+    }, [postDispatch, caseData, caseState])
 
     const handleConfirmCancelCase = useCallback(async () => {
-        const cancelCaseData = closeCaseOption.find(items => closeValue === items[language === "th" ? "th" : "en"])
+        const cancelCaseData = closeCaseOption.find(items => caseState?.resultId === items[language === "th" ? "th" : "en"])
         const canceljson = {
             caseId: caseState?.workOrderNummber,
             resId: cancelCaseData?.resId,
-            resDetail: resultDetail
+            resDetail: caseState?.resultDetail
         } as CancelCase;
         try {
             if (!canceljson ||
@@ -482,7 +508,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             addToast("error", t("case.display.toast.cancel_case_fail") + ` ${error}`);
             setDisableButton(false);
         }
-    }, [postCancelCase, caseData, resultDetail, closeValue])
+    }, [postCancelCase, caseData, caseState])
 
 
     useEffect(() => {
@@ -519,11 +545,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 status: sopData.data?.statusId || "",
                 lastUpdate: sopData.data?.updatedAt,
                 updateBy: sopData.data?.updatedBy,
-                attachFile: [] as File[],
+                attachFile: sopData.data?.attachments as FileItem[],
                 attachFileResult: [] as File[],
-                deviceMetaData: sopData.data.deviceMetaData
+                deviceMetaData: sopData.data.deviceMetaData,
+                resultDetail: sopData.data.resDetail,
+                resultId: closeCaseOption.find(result => {
+                    if (sopData.data?.resId === result.resId) return result
+                })?.[language == "th" ? "th" : "en"]
             } as CaseDetails;
-
+            setDisableCloseCancelForm(cancelAndCloseStatus.includes(sopData.data.statusId))
             setCaseState(newCaseState);
         }
         else if (isSubCase) {
@@ -533,7 +563,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             } as CaseDetails;
             setCaseState(newCaseState);
         }
-
     }, [sopData?.data, areaList.length, caseTypeSupTypeData, isSubCase, language]);
 
 
@@ -562,19 +591,48 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [listCustomerData.length, sopData?.data, initialCaseData?.phoneNo]);
 
-    const handleRemoveFileResult = useCallback((index: number) => {
+
+    const handleRemoveCaseFile = useCallback(async (index: number) => {
+        if (!caseState?.attachFile) {
+            console.warn("No attach file");
+            return;
+        }
+        const fileToRemove = caseState.attachFile[index];
+        if (isAttachment(fileToRemove)) {
+            try {
+                const result = await delFileApi({
+                    attId: fileToRemove.attId,
+                    caseId: caseState.workOrderNummber || "",
+                    filename: fileToRemove.attName,
+                    path: "case"
+                });
+
+                if (!result.data) {
+                    console.error(`Failed to delete ${fileToRemove.attName}`);
+                    addToast("error", `${t("case.display.toast.upload_file_fail")}: ${fileToRemove}`);
+                    return;
+                }
+
+                console.log(`Successfully deleted ${fileToRemove.attName}`);
+            } catch (error) {
+                console.error(`Failed to delete ${fileToRemove.attName}:`, error);
+                addToast("error", `${t("case.display.toast.upload_file_fail")}: ${fileToRemove}`);
+                return;
+            }
+        }
+
         setCaseState((prev) => {
             if (!prev) return prev;
-            const updatedFiles = (prev.attachFileResult ?? []).filter(
-                (_file, i) => i !== index
-            );
+
+            const updatedFiles = (prev.attachFile ?? []).filter((_file, i) => i !== index);
 
             return {
                 ...prev,
-                attachFileResult: updatedFiles,
+                attachFile: updatedFiles,
             };
         });
-    }, []);
+
+    }, [caseState?.attachFile]);
 
     const handleSelectOfficer = useCallback((selectedOfficer: UnitWithSop) => {
         setShowOFFicersData(prev => (prev?.unit.unitId === selectedOfficer.unit.unitId ? null : selectedOfficer));
@@ -620,13 +678,68 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [sopData?.data, profile]);
 
+    // const handleFileChangeToServer = async (
+    //     newFiles: FileItem[],
+    //     oldFiles: FileItem[],
+    //     caseId: string
+    // ) => {
+    //     const results: any[] = [];
+    //     const oldAttachments = oldFiles.filter(isAttachment);
+    //     const newAttachments = newFiles.filter(isAttachment);
 
+    //     const attachmentsToDelete = oldAttachments.filter(
+    //         oldFile => !newAttachments.some(newFile => newFile.attId === oldFile.attId)
+    //     );
+
+    //     for (const fileToDelete of attachmentsToDelete) {
+    //         try {
+    //             const result = await delFileApi({
+    //                 attId: fileToDelete.attId,
+    //                 caseId: caseId,
+    //                 filename: fileToDelete.attName,
+    //                 path: "case"
+    //             });
+
+    //             if (!result?.data) {
+    //                 console.error(`❌ Failed to delete ${fileToDelete.attName}`);
+    //                 continue;
+    //             }
+
+    //             console.log(`✅ Deleted ${fileToDelete.attName}`);
+    //         } catch (error) {
+    //             console.error(`❌ Error deleting ${fileToDelete.attName}:`, error);
+    //         }
+    //     }
+
+    //     const newFilesToUpload = newFiles.filter((file): file is File => !isAttachment(file));
+
+    //     for (const file of newFilesToUpload) {
+    //         try {
+    //             const result = await postUploadFile({
+    //                 path: "case",
+    //                 file,
+    //                 caseId: caseId
+    //             }).unwrap();
+
+    //             if (result.data) {
+    //                 results.push(result.data);
+    //                 console.log(`✅ Uploaded ${file.name}`);
+    //             } else {
+    //                 console.error(`❌ Failed to upload ${file.name}`);
+    //             }
+    //         } catch (error) {
+    //             console.error(`❌ Error uploading ${file.name}:`, error);
+    //         }
+    //     }
+
+    //     return results;
+    // };
 
     const handleSaveChanges = useCallback(async () => {
-        if (!caseState) return;
-
         setShowPreviewData(false)
+        setIsSaving(true)
         const updateJson = {
+            ...sopData?.data,
             caseId: caseState?.workOrderNummber,
             formData: caseState?.caseType?.formField,
             customerName: caseState?.customerData?.name,
@@ -639,7 +752,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             caseTypeId: caseState?.caseType?.typeId || "",
             caseVersion: caseState?.status === "S000" ? "publish" : sopData?.data?.caseVersion,
             caselocAddr: caseState?.location || "",
-            caselocAddrDecs: caseState?.location || "",
             countryId: caseState?.area?.countryId || "",
             distId: caseState?.area?.distId,
             extReceive: "",
@@ -668,6 +780,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         } as CreateCase;
 
         try {
+
+            // await handleFileChangeToServer(caseState?.attachFile || [], sopData?.data?.attachments || [], caseState?.workOrderNummber || "");
             await updateCase({ caseId: caseState?.workOrderNummber || "", updateCase: updateJson }).unwrap();
             updateCaseInLocalStorage(updateJson);
             if (caseState?.status === "S000") {
@@ -675,12 +789,13 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 if (caseState?.workOrderNummber) navigate("/case/" + caseState?.workOrderNummber);
             }
 
-            setEditFormData(false);
             addToast("success", t("case.display.toast.save_change_sucess"));
-
         } catch (error: any) {
+            console.log(error)
             addToast('error', t("case.display.toast.save_change_fail"));
         }
+        setEditFormData(false);
+        setIsSaving(false)
     }, [caseState, sopData?.data, updateCase, updateCaseInLocalStorage, profile, navigate, isScheduleDate]);
 
     const handlePreviewShow = useCallback(() => {
@@ -759,7 +874,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowAssignModal(false);
     }, [handleDispatch]);
 
-
     if (initialCaseData && isLoading) {
         return (
             <div className="relative flex-1 min-h-screen ">
@@ -795,7 +909,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             </div>
         );
     }
-
     return (
         <div className="flex flex-col">
             {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
@@ -820,9 +933,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     />
                                 )}
                                 <AttachedFiles
-                                    files={caseState?.attachFileResult}
-                                    editFormData={editFormData}
-                                    onRemove={handleRemoveFileResult}
+                                    files={caseState?.attachFile}
+                                    editFormData={false}
+                                    onRemove={handleRemoveCaseFile}
+                                    type={"case"}
                                 />
                                 <AssignedOfficers
                                     SopUnit={unitWorkOrder}
@@ -845,7 +959,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                             listCustomerData={listCustomerData}
                                         />
                                         <div className="flex justify-end items-center m-3">
-                                            <Button variant="success" onClick={handlePreviewShow}>
+                                            <Button variant="success" onClick={handlePreviewShow} disabled={isSaving}>
                                                 {t("case.display.save_change")}
                                             </Button>
                                         </div>
@@ -855,29 +969,64 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         <FormFieldValueDisplay
                                             caseData={caseState}
                                         />
-                                        {!cancelAndCloseStatus.some(item => item === caseState?.status) &&
+                                        {!disableCloseCancelForm &&
                                             <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-3">
                                                 <h3 className="text-blue-500 dark:text-blue-400">{t("case.display.result")}</h3>
-                                                <div className="">
-                                                    <SearchableSelect
-                                                        options={closeCaseOption.map(result => result[language == "th" ? "th" : "en"])}
-                                                        value={closeValue}
-                                                        onChange={setCloseValue}
-                                                        placeholder={t("case.display.result_placeholder")}
-                                                        className="  mb-2 items-center"
-                                                    />
+                                                <div>
+                                                    <div className="grid  grid-cols-[70%_30%] xl:grid-cols-[80%_20%] space-x-3">
+                                                        <SearchableSelect
+                                                            options={closeCaseOption.map(result => result[language == "th" ? "th" : "en"])}
+                                                            value={caseState?.resultId || ""}
+                                                            onChange={(e) => updateCaseState({ resultId: e })} placeholder={t("case.display.result_placeholder")}
+                                                            className="  mb-2 items-center"
+                                                        />
+                                                        {permissions.hasPermission("case.attach_file") && <div>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 w-full"
+                                                                onClick={handleButtonClick}
+                                                            >
+                                                                <Paperclip className="w-4 h-4 mr-2" />
+                                                                {t("case.sop_card.attach_file")}
+                                                            </Button>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                ref={fileInputRef}
+                                                                multiple
+                                                                onChange={handleRusultFileChange}
+                                                                style={{ display: "none" }}
+                                                            />
+                                                        </div>}
+                                                    </div>
 
                                                     <div className="mb-3">
                                                         {/* <h3 className="text-gray-900 dark:text-gray-400 mx-3">Result Details</h3> */}
                                                         <TextAreaWithCounter
-                                                            value={resultDetail}
+                                                            value={caseState?.resultDetail || ""}
                                                             maxLength={resultStringLimit}
-                                                            onChange={(e: any) => setResultDetail(e.target.value)}
-                                                            placeholder={t("case.display.result_detail_placeholder")}
-                                                            className={`w-full h-20 p-2 appearance-none rounded !bg-gray-200  dark:!bg-gray-800 ${COMMON_INPUT_CSS}`}
+                                                            onChange={(e: any) => updateCaseState({ resultDetail: e.target.value })}
+                                                            placeholder={t("case.display.result_detail_placeholder")} className={`w-full h-20 p-2 appearance-none rounded !bg-gray-200  dark:!bg-gray-800 ${COMMON_INPUT_CSS}`}
                                                         />
                                                     </div>
+                                                    <AttachedFiles
+                                                        files={caseState?.attachFile}
+                                                        editFormData={false}
+                                                        onRemove={handleRemoveCaseFile}
+                                                        type={"close"}
+                                                    />
                                                 </div>
+                                                {/* <DragDropFileUpload
+                                                    files={caseState?.attachFile || []}
+                                                    onFilesChange={handleFilesChange}
+                                                    accept="image/*,.pdf,.doc,.docx,.txt"
+                                                    maxSize={1}
+                                                    className="mb-4"
+                                                    type="close"
+                                                    disableDelImageButton={true}
+                                                    caseId={caseState?.workOrderNummber}
+                                                /> */}
                                                 <div className="flex justify-end items-end space-x-3">
                                                     <div className="justify-end items-end flex">
                                                         <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
@@ -941,9 +1090,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             <ConfirmationModal
                 isOpen={showCancelUnitModal}
                 onClose={() => setShowCancelUnitModal(false)}
-                onConfirm={()=>{
-                    unitToCancel&&
-                    handleConfirmCancelUnit(unitToCancel?.unit)}
+                onConfirm={() => {
+                    unitToCancel &&
+                        handleConfirmCancelUnit(unitToCancel?.unit)
+                }
                 }
                 title={t("case.display.cancel_case_assignment_title")}
                 description={<>{t("case.display.cancel_case_assignment_detail")} <strong>{unitToCancel?.unit.username}</strong>?</>}

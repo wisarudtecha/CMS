@@ -88,4 +88,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
   };
 };
 
-
+export const normalizeDate = (value: string | null | undefined) => {
+  if (!value || value === "0001-01-01T00:00:00Z") return null;
+  return new Date(value);
+};

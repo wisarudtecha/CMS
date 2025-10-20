@@ -1,7 +1,10 @@
 // /src/components/ui/progressTimeline/ProgressTimeline.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import { CheckLineIcon, TimeIcon, AlertHexaIcon } from "@/icons";
-import { formatDate } from "@/utils/crud";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatDate, normalizeDate } from "@/utils/crud";
+import { calculateTimelinesSLA } from "@/utils/sla";
+import { msToMinutesFixed } from "@/utils/timeConverter";
 import type { ProgressTimelineProps, TimelineStep } from "@/types/case";
 
 export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
@@ -10,10 +13,14 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
   size = "md",
   showTimestamps = true,
   showDescriptions = false,
+  showSLA = true,
   animated = true,
   className = "",
   onStepClick
 }) => {
+  const { language } = useTranslation();
+  const slaList = useMemo(() => calculateTimelinesSLA(steps, language), [steps, language]);
+
   const getSizeClasses = () => {
     const sizes = {
       sm: {
@@ -108,11 +115,14 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
           const Icon = step.icon || statusConfig.icon;
           const isLast = index === steps.length - 1;
           const isClickable = !!onStepClick;
+          const sla = slaList[index];
+          const slaInMin = msToMinutesFixed(sla?.milliseconds || 0);
+          const isOverSla = (slaInMin as unknown as number) > (step?.metadata?.sla as number) && true || false;
 
           return (
             <div key={step.id} className="flex bg-blue">
               {/* Left side - Node and line */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center justify-center">
                 <button
                   className={`
                     ${sizeClasses.node} rounded-full border-2 flex items-center justify-center
@@ -131,7 +141,26 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
                 </button>
                 
                 {!isLast && (
-                  <div className={`w-0.5 flex-1 mt-0 ${statusConfig.line} min-h-8`}></div>
+                  // <div className={`w-0.5 flex-1 mt-0 ${statusConfig.line} min-h-8`}></div>
+                  <div className={`w-0.5 flex-1 mt-0 ${statusConfig.line} min-h-16 relative`}>
+                    {/* SLA badge on the line */}
+                    {showSLA && sla && !isOverSla && (
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <span className="border border-blue-200 dark:border-blue-700 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
+                          {sla.formatted}
+                        </span>
+                      </div>
+                    )}
+
+                    {showSLA && sla && isOverSla && (
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <span className="border border-red-200 dark:border-red-700 bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
+                          {sla.formatted} {language === "th" ? "เกินกำหนด" : "Over SLA"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  // <div className={`w-0.5 flex-1 mt-0 ${statusConfig.line} min-h-16`}></div>
                 )}
               </div>
 
@@ -146,10 +175,18 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
                     {step.description}
                   </div>
                 )}
-                
+
+                {/*
                 {showTimestamps && step.timestamp && (
-                  <div className={`text-xs text-gray-500 dark:text-gray-400 mt-1`}>
-                    {formatDate(step.timestamp)}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {normalizeDate(step.timestamp) && formatDate(step.timestamp)}
+                  </div>
+                )}
+                */}
+
+                {showTimestamps && (step?.metadata?.createdAt as string) && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 ml-4 mt-1">
+                    {normalizeDate(step?.metadata?.createdAt as string) && formatDate(step?.metadata?.createdAt as string)}
                   </div>
                 )}
               </div>
@@ -164,11 +201,11 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Progress line background */}
-      <div className={`absolute top-1/5 left-0 right-0 ${sizeClasses.line} bg-gray-200 dark:bg-gray-700 transform -translate-y-1/4`}></div>
+      <div className={`absolute top-1/7 left-0 right-0 ${sizeClasses.line} bg-gray-200 dark:bg-gray-700 transform -translate-y-1/7`}></div>
       
       {/* Progress line fill */}
-      <div 
-        className={`absolute top-1/5 left-0 ${sizeClasses.line} bg-blue-500 transform -translate-y-1/4 ${animated ? 'transition-all duration-500' : ''}`}
+      <div
+        className={`absolute top-1/7 left-0 ${sizeClasses.line} bg-blue-500 transform -translate-y-1/7 ${animated ? 'transition-all duration-500' : ''}`}
         style={{ width: `${progressPercentage}%` }}
       ></div>
 
@@ -178,9 +215,13 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
           const statusConfig = getStatusConfig(step.status);
           const Icon = step.icon || statusConfig.icon;
           const isClickable = !!onStepClick;
+          const isLast = index === steps.length - 1;
+          const sla = slaList[index];
+          const slaInMin = msToMinutesFixed(sla?.milliseconds || 0);
+          const isOverSla = (slaInMin as unknown as number) > (step?.metadata?.sla as number) && true || false;
 
           return (
-            <div key={step.id} className="flex flex-col items-center">
+            <div key={step.id} className="flex flex-col items-center relative">
               <button
                 className={`
                   ${sizeClasses.node} rounded-full border-2 flex items-center justify-center mb-
@@ -197,9 +238,26 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
                   <div className="w-3 h-3 rounded-full bg-current"></div>
                 )}
               </button>
+
+              {showSLA && !isLast && sla && !isOverSla && (
+                <div className="absolute top-1/12 right-px transform translate-x-full -translate-y-1/5">
+                  <span className="border border-blue-200 dark:border-blue-700 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
+                    {sla.formatted}
+                  </span>
+                </div>
+              )}
+
+              {showSLA && !isLast && sla && isOverSla && (
+                <div className="absolute top-1/12 right-px transform translate-x-full -translate-y-1/4 text-center">
+                  <div className="border border-red-200 dark:border-red-700 bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
+                    <div>{sla.formatted}</div>
+                    <div>{language === "th" ? "เกินกำหนด" : "Over SLA"}</div>
+                  </div>
+                </div>
+              )}
               
               <div className={`text-center max-w-20 ${sizeClasses.gap} mt-4`}>
-                <div className={`font-medium ${statusConfig.text} ${sizeClasses.text}`}>
+                <div className={`font-medium ${statusConfig.text} ${sizeClasses.text} min-h-10`}>
                   {step.label}
                 </div>
                 
@@ -209,9 +267,17 @@ export const ProgressTimeline: React.FC<ProgressTimelineProps> = ({
                   </div>
                 )}
                 
+                {/*
                 {showTimestamps && step.timestamp && (
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {formatDate(step.timestamp)}
+                    {normalizeDate(step.timestamp) && formatDate(step.timestamp)}
+                  </div>
+                )}
+                */}
+
+                {showTimestamps && (step?.metadata?.createdAt as string) && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {normalizeDate(step?.metadata?.createdAt as string) && formatDate(step?.metadata?.createdAt as string)}
                   </div>
                 )}
               </div>

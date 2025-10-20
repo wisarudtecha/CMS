@@ -1,17 +1,28 @@
-// components/fileUpload/DragDropFileUpload.tsx
 "use client"
 import React, { useCallback, useState, useRef } from 'react'
-import { Upload, X, FileText, Image as ImageIcon, File } from 'lucide-react'
-import Button from '@/components/ui/button/Button'
+import { Upload } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { Attachment } from '@/types/case'
+import { formatFileSize, getFileIcon, isAttachment } from '../Attachment/AttachmentConv'
+import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from '@/store/api/file'
+import { FilePreviewCard } from '../Attachment/AttachmentPreviewList'
+import { ToastContainer } from '../crud/ToastContainer'
+import { useToast } from '@/hooks'
+
+
+export type FileItem = File | Attachment;
+
 
 interface DragDropFileUploadProps {
-  files: File[]
-  onFilesChange: (files: File[]) => void
+  files: FileItem[]
+  onFilesChange: (files: any) => void
   accept?: string
   maxSize?: number // in MB
   className?: string
   disabled?: boolean
+  caseId?: string
+  disableDelImageButton?:boolean,
+  type: string
 }
 
 const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
@@ -20,20 +31,23 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
   accept = "image/*,.pdf,.doc,.docx,.txt",
   maxSize = 1,
   className = "",
-  disabled = false
+  disabled = false,
+  caseId = "",
+  disableDelImageButton=false,
+  type = ""
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { t} = useTranslation();
+  const { t } = useTranslation();
+  const [delFileApi] = useDeleteFileMutationMutation();
+  const [postUploadFile] = usePostUploadFileMutationMutation();
+  const { toasts, addToast, removeToast } = useToast();
   const validateFile = (file: File): boolean => {
-    // Check file size
     if (file.size > maxSize * 1024 * 1024) {
       setError(`File "${file.name}" is too large. Maximum size is ${maxSize}MB.`)
       return false
     }
-
-    // Check file type
     const acceptedTypes = accept.split(',').map(type => type.trim())
     const isAccepted = acceptedTypes.some(type => {
       if (type.startsWith('.')) {
@@ -51,12 +65,43 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
     return true
   }
 
-  const processFiles = useCallback((fileList: FileList | File[]) => {
+  const processFiles = useCallback(async (fileList: FileList | File[]) => {
     const newFiles = Array.from(fileList).filter(validateFile)
+    if (caseId != "") {
+      const uploadedAttachments: Attachment[] = [];
+      for (const file of newFiles) {
+        try {
+          if (isAttachment(file))
+            continue
+          const result = await postUploadFile({
+            path: "close",
+            file: file,
+            caseId: caseId || ""
+          }).unwrap();
+
+          if (result.data) {
+            uploadedAttachments.push(result.data)
+            console.log(`✅ Uploaded ${file.name}`);
+          } else {
+            console.error(`❌ Failed to upload ${file.name}`);
+            addToast("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error uploading ${file.name}:`, error);
+          addToast("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+        }
+      }
+
+      if (uploadedAttachments.length > 0) {
+        // addToast("success", t("case.display.toast.upload_file_success"));
+        onFilesChange([...files, ...uploadedAttachments])
+        return
+      }
+    }
     if (newFiles.length > 0) {
       onFilesChange([...files, ...newFiles])
     }
-  }, [files, onFilesChange, maxSize, accept])
+  }, [files, onFilesChange])
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -105,29 +150,36 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
     fileInputRef.current?.click()
   }
 
-  const removeFile = (index: number) => {
+  const removeFile = async (index: number) => {
+    const fileToRemove = files[index];
+    if (isAttachment(fileToRemove)) {
+      try {
+        const result = await delFileApi({
+          attId: fileToRemove.attId,
+          caseId: caseId || "",
+          filename: fileToRemove.attName,
+          path: type
+        });
+
+        if (!result.data) {
+          console.error(`Failed to delete ${fileToRemove.attName}`);
+          addToast("error", `${t("case.display.toast.upload_file_fail")}: ${fileToRemove}`);
+          return;
+        }
+
+        console.log(`Successfully deleted ${fileToRemove.attName}`);
+      } catch (error) {
+        console.error(`Failed to delete ${fileToRemove.attName}:`, error);
+        addToast("error", `${t("case.display.toast.upload_file_fail")}: ${fileToRemove}`);
+        return;
+      }
+    }
     const updatedFiles = files.filter((_, i) => i !== index)
     onFilesChange(updatedFiles)
   }
 
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      return <ImageIcon className="w-6 h-6 text-blue-500" />
-    } else if (file.type === 'application/pdf') {
-      return <FileText className="w-6 h-6 text-red-500" />
-    } else if (file.type.includes('document') || file.type.includes('word')) {
-      return <FileText className="w-6 h-6 text-blue-600" />
-    }
-    return <File className="w-6 h-6 text-gray-500" />
-  }
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
+
 
   return (
     <div className={`w-full ${className}`}>
@@ -181,130 +233,30 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
       {/* File Preview Grid */}
       {files.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {/* <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {t("case.display.attach_file")} ({files.length})
-          </h4>
+          </h4> */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {files.map((file, index) => (
               <FilePreviewCard
-                key={`${file.name}-${index}`}
+                key={isAttachment(file) ? file.attId : `${file.name}-${index}`}
                 file={file}
                 index={index}
                 onRemove={removeFile}
                 getFileIcon={getFileIcon}
                 formatFileSize={formatFileSize}
-                disabled={disabled}
+                disabled={disabled||disableDelImageButton}
+                type={type}
               />
             ))}
           </div>
         </div>
       )}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )
 }
 
-interface FilePreviewCardProps {
-  file: File
-  index: number
-  onRemove: (index: number) => void
-  getFileIcon: (file: File) => React.ReactNode
-  formatFileSize: (bytes: number) => string
-  disabled?: boolean
-}
 
-const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
-  file,
-  index,
-  onRemove,
-  getFileIcon,
-  formatFileSize,
-  disabled = false
-}) => {
-  const [preview, setPreview] = useState<string | null>(null)
-  const { t} = useTranslation();
-  React.useEffect(() => {
-    if (file.type.startsWith('image/')) {
-      const objectUrl = URL.createObjectURL(file)
-      setPreview(objectUrl)
-      return () => URL.revokeObjectURL(objectUrl)
-    }
-  }, [file])
-
-  const handleDownload = () => {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = file.name
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
-
-  return (
-    <div className="relative group border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
-      {/* Remove Button - Only show if not disabled */}
-      {!disabled && (
-        <Button
-          onClick={() => onRemove(index)}
-          className="absolute top-2 right-2 z-10 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white"
-          size="sm"
-        >
-          <X className="w-3 h-3" />
-        </Button>
-      )}
-
-      {/* File Content */}
-      <div className="p-3">
-        {preview ? (
-          /* Image Preview */
-          <div className="mb-2">
-            <img
-              src={preview}
-              alt={file.name}
-              className="w-full h-24 object-cover rounded cursor-pointer"
-              onClick={handleDownload}
-            />
-          </div>
-        ) : (
-          /* Document Icon */
-          <div className="flex items-center justify-center h-24 bg-gray-50 dark:bg-gray-700 rounded mb-2 cursor-pointer"
-               onClick={handleDownload}>
-            {getFileIcon(file)}
-          </div>
-        )}
-
-        {/* File Info */}
-        <div className="space-y-1">
-          <p
-            className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-            title={file.name}
-            onClick={handleDownload}
-          >
-            {file.name}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {formatFileSize(file.size)}
-          </p>
-          {file.type && (
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              {file.type.split('/')[1]?.toUpperCase() || 'FILE'}
-            </p>
-          )}
-        </div>
-
-        {/* Download Button */}
-        <Button
-          onClick={handleDownload}
-          variant="outline"
-          size="sm"
-          className="w-full mt-2 text-xs py-1 h-7"
-        >
-          {t("case.download")}
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 export default DragDropFileUpload

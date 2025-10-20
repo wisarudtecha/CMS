@@ -4,39 +4,16 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getTimeDifference, isSlaViolated, ProgressStepPreviewProps } from '../sopStepTranForm';
 import { CompactCountdownTimer } from '@/components/countDownSla/countDownSla';
 import { formatDate } from '@/utils/crud';
-import { formatDuration } from '@/components/Sla/Sla';
+import { formatDuration } from '@/components/Sla/formatSlaDuration';
+
 
 const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
     const { t } = useTranslation();
-    // const filteredSteps = progressSteps.length === 6
-    //     ? progressSteps.slice(1, -1)
-    //     : progressSteps;
-    const filteredSteps = progressSteps
+    const filteredSteps = progressSteps.length === 6
+        ? progressSteps.slice(1, -1)
+        : progressSteps;
     const currentStepIndex = filteredSteps.findIndex(step => step.current);
     const currentStep = currentStepIndex >= 0 ? filteredSteps[currentStepIndex] : null;
-    // const formatDuration = (minutes: number) => {
-    //     if (minutes < 60) {
-    //         return `${Math.floor(minutes)} ${t("time.Minutes")}`;
-    //     } else if (minutes < 1440) {
-    //         const hours = Math.floor(minutes / 60);
-    //         const remainingMinutes = Math.floor(minutes % 60);
-    //         return remainingMinutes > 0
-    //             ? `${hours} ${t("time.Hours")} ${remainingMinutes} ${t("time.Minutes")}`
-    //             : `${hours} ${t("time.Hours")}`;
-    //     } else {
-    //         const days = Math.floor(minutes / 1440);
-    //         const remainingHours = Math.floor((minutes % 1440) / 60);
-    //         const remainingMinutes = Math.floor(minutes % 60);
-    //         let result = `${days} ${t("time.Days")}`;
-    //         if (remainingHours > 0) {
-    //             result += ` ${remainingHours} ${t("time.Hours")}`;
-    //         }
-    //         if (remainingMinutes > 0) {
-    //             result += ` ${remainingMinutes} ${t("time.Minutes")}`;
-    //         }
-    //         return result;
-    //     }
-    // };
 
     const calculateSlaPerformance = (step: any, previousStep: any) => {
         if (!step.sla || (!step.completed && !step.current) || !step.timeline?.completedAt || !previousStep?.timeline?.completedAt) {
@@ -48,7 +25,6 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
         const actualDurationMs = endTime - startTime;
         const actualDurationMinutes = actualDurationMs / (1000 * 60);
         const slaDurationMinutes = step.sla;
-
         const difference = actualDurationMinutes - slaDurationMinutes;
         const isOverdue = difference > 0;
 
@@ -73,33 +49,11 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                         (step.completed && nextStep?.completed) ||
                         (step.completed && nextStep?.current) ||
                         (step.current);
-
+                        
                     return (
-                        <div key={step.id} className="flex items-start relative min-h-[100px]">
+                        <div key={step.id} className=" space-x-5 flex items-start relative min-h-[100px]">
                             {/* Left side - SLA Information */}
-                            <div className="w-40 flex flex-col items-end pr-6 pt-3">
-                                {step.sla || step.sla === 0 ? (
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                                        {t("progress.sla")}:{" "} {formatDuration(step.sla)}
-                                    </div>
-                                ) :
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                                        {t("progress.no_sla")}
-                                    </div>}
-
-                                {slaPerformance && (
-                                    <div className="text-xs text-right mt-1">
-                                        <div className="text-gray-500 dark:text-gray-400">
-                                            {t("progress.actual")}:{" "} {formatDuration(slaPerformance.actualDuration)}
-                                        </div>
-                                        <div className={`font-medium ${slaPerformance.isOverdue ? 'text-red-500' : 'text-green-500'}`}>
-                                            {slaPerformance.isOverdue
-                                                ? `${t("progress.overdue_by")} ${formatDuration(slaPerformance.difference)}`
-                                                : `${t("progress.faster_by")} ${formatDuration(slaPerformance.difference)}`
-                                            }
-                                        </div>
-                                    </div>
-                                )}
+                            <div className="w-30 flex flex-col items-end relative">
 
                                 {!step.completed && step.current && !slaPerformance && (
                                     <div className="text-xs text-blue-500 dark:text-blue-400 text-right">
@@ -110,6 +64,29 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                 {!step.completed && !step.current && (
                                     <div className="text-xs text-gray-400 dark:text-gray-500 text-right">
                                         {t("progress.pending")}
+                                    </div>
+                                )}
+
+                                {/* SLA Performance - positioned at line height */}
+                                {slaPerformance && (
+                                    <div className="absolute bottom-[20px] right-6 text-xs text-right">
+                                        {(step.sla || step.sla === 0) ? (
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                                {t("progress.sla")}:{" "} {formatDuration(step.sla)}
+                                            </div>
+                                        ) :
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                                {t("progress.no_sla")}
+                                            </div>}
+                                        <div className="text-gray-500 dark:text-gray-400">
+                                            {t("progress.actual")}:{" "} {formatDuration(slaPerformance.actualDuration)}
+                                        </div>
+                                        <div className={`font-medium ${slaPerformance.isOverdue ? 'text-red-500' : 'text-green-500'}`}>
+                                            {slaPerformance.isOverdue
+                                                ? `${t("progress.overdue_by")} ${formatDuration(slaPerformance.difference)}`
+                                                : `${t("progress.faster_by")} ${formatDuration(slaPerformance.difference)}`
+                                            }
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -173,7 +150,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
                                                 <CompactCountdownTimer
                                                     createdAt={currentStep?.timeline?.completedAt}
-                                                    sla={filteredSteps[index + 1].sla} // Now in minutes
+                                                    sla={filteredSteps[index + 1].sla}
                                                     size="sm"
                                                     className="px-2 py-1 rounded-md text-xs font-medium shadow-sm"
                                                 />
@@ -185,7 +162,7 @@ const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressS
                             </div>
 
                             {/* Right side - Step Information */}
-                            <div className="ml-6 flex-1 pt-1">
+                            <div className="flex-1 pt-1">
                                 <div className={`
                                     text-sm font-medium mb-1 leading-tight
                                     ${step.completed

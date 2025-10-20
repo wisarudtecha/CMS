@@ -13,6 +13,7 @@ import { statusIdToStatusTitle } from "../ui/status/status"
 import { Modal } from "../ui/modal"
 import { useTranslation } from "@/hooks/useTranslation"
 import { formatDate } from "@/utils/crud"
+import AttachedFiles from "../Attachment/AttachmentPreviewList"
 
 
 interface PreviewDataBeforeSubmitProps {
@@ -96,11 +97,11 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                         <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
                             {t("case.display.attach_file")} :
                         </span>
-
-                        {Array.isArray(caseData.attachFile) && caseData.attachFile.length > 0 && (
+                        <AttachedFiles files={caseData?.attachFile} type={"case"} editFormData={true} />
+                        {/* {Array.isArray(caseData.attachFile) && caseData.attachFile.length > 0 && (
                             <div className="mt-2 mb-3">
                                 <div className="grid grid-cols-3 gap-2">
-                                    {caseData.attachFile.map((file: File, index: number) => (
+                                    {caseData.attachFile.map((file: FileItem, index: number) => (
                                         <div key={file.name + index} className="relative group">
                                             <img
                                                 src={URL.createObjectURL(file)}
@@ -111,7 +112,8 @@ const PreviewDataBeforeSubmit: React.FC<PreviewDataBeforeSubmitProps> = ({
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        )} */}
+                        
                     </>
                 )}
 

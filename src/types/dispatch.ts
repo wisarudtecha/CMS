@@ -1,4 +1,5 @@
 import { FormFieldWithNode } from "@/components/interface/FormField";
+import { Attachment } from "./case";
 
 export interface Commands {
     id: string;
@@ -162,7 +163,8 @@ export interface CaseSop {
     unitLists: CaseSopUnit[];
     formAnswer: FormFieldWithNode;
     slaTimelines: SlaTimelineEntry[];
-    deviceMetaData: DeviceMetaData
+    deviceMetaData: DeviceMetaData;
+    attachments: Attachment[]
 }
 
 export interface DeviceMetaData {
@@ -180,7 +182,9 @@ export interface DeviceMetaData {
 
 export interface CaseSopUnit {
     unitId: string,
-    username: string
+    username: string,
+    firstName: string,
+    lastName: string
 }
 
 export interface Unit {

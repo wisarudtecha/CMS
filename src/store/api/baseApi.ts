@@ -34,7 +34,7 @@ const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQuery
       }
       
       headers.set("Accept", "application/json");
-      headers.set("Content-Type", "application/json");
+      // headers.set("Content-Type", "application/json"); comment out because can't set file
       headers.set("X-Requested-With", "XMLHttpRequest");
       
       return headers;
@@ -126,7 +126,8 @@ export const baseApi = createApi({
     "Customer",
     "Area",
     "Device Iot",
-    "Unit"
+    "Unit",
+    "Files"
   ],
   endpoints: () => ({}),
 });

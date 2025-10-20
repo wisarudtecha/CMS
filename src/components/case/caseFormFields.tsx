@@ -6,7 +6,7 @@ import { getPriorityColorClass } from "@/components/function/Prioriy";
 import { FormField, formType } from "@/components/interface/FormField";
 import { Area, mergeArea } from "@/store/api/area";
 import { Customer } from "@/store/api/custommerApi";
-import { CaseDetails, CaseTypeSubType } from "@/types/case";
+import { CaseDetails, CaseTypeSubType, FileItem } from "@/types/case";
 import { ChangeEvent, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { detailsStringLimit, source } from "./constants/caseConstants";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
@@ -244,9 +244,11 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     }, [updateCaseState]);
 
 
-    const handleFilesChange = useCallback((newFiles: File[]) => {
+    const handleFilesChange = useCallback((newFiles: FileItem[]) => {
         updateCaseState({ attachFile: newFiles });
     }, [updateCaseState]);
+
+    
 
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = {
@@ -416,7 +418,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     />
                 </div>
             </div>
-
+            {/* <FilePreviewAttachmentCard file={ca} /> */}
             {/* File Upload for new cases */}
             {isCreate && (
                 <div className="px-3 my-6">
@@ -430,6 +432,8 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                         maxSize={1}
                         className="mb-4"
                         disabled={false}
+                        caseId={caseState.workOrderNummber}
+                        type="case"
                     />
                 </div>
             )}

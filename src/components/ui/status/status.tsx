@@ -21,7 +21,11 @@ export const caseStatusGroup = [
 
 export const delayStatus =["S008", "S009", "S010", "S011", "S012", "S013", "S014"]
 
-export const cancelAndCloseStatus = ["S007","S014"]
+export const closeStatus ="S007"
+
+export const cancelStatus ="S014"
+
+export const cancelAndCloseStatus = [closeStatus,cancelStatus]
 
 export interface CaseStatusInterface {
   id: string;
@@ -36,7 +40,7 @@ export interface CaseStatusInterface {
   updatedBy: string;
 }
 
-export const closeStatus =["S007", "S016", "S017", "S018"]
+export const RequestCloesStage =["S007", "S016", "S017", "S018"]
 
 export const unitStatusConfig = [
   { 

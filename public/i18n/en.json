@@ -490,7 +490,7 @@
     "displayName": "Display Name",
     "password": "Password",
     "confirmPassword": "Confirm Password",
-    "pwdHint": "Password must be at least 8 characters, 1 uppercase letter, and 1 special character.",
+    "pwdHint": "Password must be at least 7 characters, 1 uppercase letter, and 1 special character.",
     "personal": "Personal Details",
     "title": "Title",
     "firstName": "First Name",
@@ -742,7 +742,9 @@
         "savedaft_success":"SaveDraft Success.",
         "add_case_fail":"Add Work Order fail.",
         "savedaft_fail":"SaveDraft fail.",
-        "missing_close_case_data":"Missing Close Details Data."
+        "missing_close_case_data":"Missing Close Details Data.",
+        "upload_file_success":"Upload file Success.",
+        "upload_file_fail":"Upload file fail."
       }
     },
     "sop_card": {

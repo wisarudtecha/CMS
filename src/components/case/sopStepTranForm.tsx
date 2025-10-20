@@ -1,5 +1,6 @@
 import { CaseSop } from "@/types/dispatch";
 import { CaseStatusInterface, delayStatus } from "../ui/status/status";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ProgressSteps {
     id: string;
@@ -226,7 +227,7 @@ export const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps
     const diffMs = toTime - fromTime;
 
     if (diffMs <= 0) return '';
-
+    const { t } = useTranslation();
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
@@ -243,14 +244,14 @@ export const getTimeDifference = (fromStep: ProgressSteps, toStep: ProgressSteps
 
     const timeUnits = [];
 
-    if (years > 0) timeUnits.push(`${years}y`);
-    if (months > 0) timeUnits.push(`${months}mo`);
-    if (days > 0) timeUnits.push(`${days}d`);
-    if (hours > 0) timeUnits.push(`${hours}h`);
-    if (minutes > 0) timeUnits.push(`${minutes}m`);
-    if (seconds > 0) timeUnits.push(`${seconds}s`);
+    if (years > 0) timeUnits.push(`${years}${t("time.y")}`);
+    if (months > 0) timeUnits.push(`${months}${t("time.m")}`);
+    if (days > 0) timeUnits.push(`${days}${t("time.d")}`);
+    if (hours > 0) timeUnits.push(`${hours}${t("time.h")}`);
+    if (minutes > 0) timeUnits.push(`${minutes}${t("time.m")}`);
+    if (seconds > 0) timeUnits.push(`${seconds}${t("time.s")}`);
 
-    return timeUnits.slice(0, 2).join(' ') || '0s';
+    return timeUnits.slice(0, 2).join(' ') || `0${t("time.s")}`;
 };
 
 export const isSlaViolated = (step: ProgressSteps): boolean => {

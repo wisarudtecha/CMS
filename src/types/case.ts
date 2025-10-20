@@ -5,6 +5,21 @@ import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
 import type { BaseEntity, Custommer } from "@/types";
 import { CaseSop, DeviceMetaData } from "./dispatch";
 
+export interface Attachment {
+    id: number;
+    orgId: string;
+    caseId: string;
+    type: string;
+    attId: string;
+    attName: string;
+    attUrl: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+}
+
+
 export interface CaseEntity extends BaseEntity {
   orgId: string;
   caseId: string;
@@ -45,7 +60,8 @@ export interface CaseEntity extends BaseEntity {
   resDetail: string;
   sop: string | null;
   currentStage: string | null;
-  caseSla: number;
+  caseSla:number;
+  attachments:Attachment[]
 }
 
 export interface CaseHistory {
@@ -99,15 +115,6 @@ export interface CaseTypeSubType {
   userSkillList: string[];
   unitPropLists: string[];
   subTypeActive: boolean;
-}
-
-export interface Attachment {
-  id: string;
-  filename: string;
-  size: number;
-  type: string;
-  uploadedAt: string;
-  uploadedBy: string;
 }
 
 export interface Comment {
@@ -244,6 +251,7 @@ export interface ProgressTimelineProps {
   size?: "sm" | "md" | "lg";
   showTimestamps?: boolean;
   showDescriptions?: boolean;
+  showSLA?: boolean;
   animated?: boolean;
   className?: string;
   onStepClick?: (step: TimelineStep, index: number) => void;
@@ -257,6 +265,8 @@ export interface TypeAnalytics {
   efficiency: number;
   lastUsed: string;
 }
+
+export type FileItem = File | Attachment;
 
 export interface CaseDetails {
   status: string
@@ -272,7 +282,7 @@ export interface CaseDetails {
   serviceCenter?:DepartmentCommandStationDataMerged
   customerData?:Custommer
   location?:string
-  attachFile?:File[]
+  attachFile?:FileItem[]
   requireSchedule?:boolean
   area?:Area
   scheduleDate?:string
@@ -281,10 +291,12 @@ export interface CaseDetails {
   workOrderDate?:string
   iotDevice?:string
   iotDate?:string
-  attachFileResult?:File[]
+  attachFileResult?:FileItem[]
   updateBy?:string
   lastUpdate?:string
   deviceMetaData?:DeviceMetaData
+  resultDetail?:string
+  resultId?:string
 }
 
 
