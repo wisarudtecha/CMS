@@ -43,8 +43,8 @@ export const sortWorkflowByConnections = (
   });
 
   // Find start node
-  // const startNode = nodes.find(n => n.type === "start");
-  const startNode = nodes.find(n => n.type === "process" || n.type === "dispatch");
+  // const startNode = nodes?.find(n => n.type === "start") || null;
+  const startNode = nodes?.find(n => n.type === "process" || n.type === "dispatch") || null;
   if (!startNode) {
     // console.warn("No start node found, falling back to position sort");
     return sortByPosition(nodes);
@@ -70,7 +70,7 @@ export const sortWorkflowByConnections = (
 
     processing.add(nodeId);
 
-    const currentNode = nodes.find(n => n.nodeId === nodeId);
+    const currentNode = nodes?.find(n => n.nodeId === nodeId) || null;
     if (currentNode && !visited.has(nodeId)) {
       sorted.push(currentNode);
       visited.add(nodeId);
@@ -135,7 +135,7 @@ export const sortSOPNodes = (
     
     noConnections.forEach(conn => {
       // Mark this node as a delay node
-      const targetNode = sopNodes.find(n => n.nodeId === conn.target);
+      const targetNode = sopNodes?.find(n => n.nodeId === conn.target) || null;
       if (targetNode && targetNode.data?.data?.label?.toLowerCase().includes("delay")) {
         delayNodeIds.add(conn.target);
       }
@@ -161,7 +161,7 @@ export const getMainWorkflowPath = (
   nodes: WorkflowNode[],
   connections: Connection[]
 ): WorkflowNode[] => {
-  const startNode = nodes.find(n => n.type === "start");
+  const startNode = nodes?.find(n => n.type === "start") || null;
   if (!startNode) return [];
 
   const mainPath: WorkflowNode[] = [];
@@ -171,23 +171,23 @@ export const getMainWorkflowPath = (
   while (currentNodeId && !visited.has(currentNodeId)) {
     visited.add(currentNodeId);
     
-    const currentNode = nodes.find(n => n.nodeId === currentNodeId);
+    const currentNode = nodes?.find(n => n.nodeId === currentNodeId) || null;
     if (currentNode) {
       mainPath.push(currentNode);
     }
 
     // Find next node (prioritize "yes" or unlabeled connections)
-    const nextConnection = connections.find(
+    const nextConnection = connections?.find(
       conn =>
         conn.source === currentNodeId &&
         (conn.label?.toLowerCase() === "yes" || !conn.label || conn.label === "")
-    );
+    ) || null;
 
     currentNodeId = nextConnection?.target;
 
     // If no "yes" connection found, try any connection
     if (!currentNodeId) {
-      const anyConnection = connections.find(conn => conn.source === currentNode?.nodeId);
+      const anyConnection = connections?.find(conn => conn.source === currentNode?.nodeId) || null;
       currentNodeId = anyConnection?.target;
     }
   }

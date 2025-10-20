@@ -172,9 +172,9 @@ const CaseHistoryComponent: React.FC<{
   const typeSubTypeConfigs = generateTypeSubTypeConfigs(caseTypesSubTypes);
 
   const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
-    const found = typeSubTypeConfigs.find(config => 
+    const found = typeSubTypeConfigs?.find(config => 
       config.sTypeId === caseItem.caseSTypeId
-    );
+    ) || null;
     return found || { 
       en: "", 
       th: "", 
@@ -221,9 +221,9 @@ const CaseHistoryComponent: React.FC<{
   const areaConfigs = generateAreaConfigs(areas);
 
   const getAreaConfig = (caseItem: CaseEntity) => {
-    const found = areaConfigs.find(config => 
+    const found = areaConfigs?.find(config => 
       config.distId === caseItem.distId
-    );
+    ) || null;
     return found || {
       distId: "",
       district: "", 
@@ -423,7 +423,7 @@ const CaseHistoryComponent: React.FC<{
     }, [caseItem.caseId]);
 
     useEffect(() => {
-      setSelectedCaseForUnit(sopData?.unitLists[0]?.username || null);
+      setSelectedCaseForUnit(sopData?.unitLists?.length && sopData?.unitLists[0]?.username || null);
     }, []);
 
     useEffect(() => {
@@ -431,7 +431,7 @@ const CaseHistoryComponent: React.FC<{
     }, [caseItem.caseId]);
 
     useEffect(() => {
-      setUnitData((selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
+      setUnitData((sopData?.unitLists?.length && selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
     }, [caseItem.caseId]);
 
     const dpcConfig = getAreaConfig(caseItem);
@@ -443,11 +443,11 @@ const CaseHistoryComponent: React.FC<{
     const deptComStn = useMemo(() =>
       JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
     );
-    const userStation = deptComStn.find((items) => {
+    const userStation = deptComStn?.find(items => {
       return items.commId === unitsData?.data?.commId && items.stnId === unitsData?.data?.stnId && items.deptId === unitsData.data.deptId;
-    });
+    }) || null;
 
-    const contactMethod = source.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+    const contactMethod = source?.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
 
     const timelineSteps = getTimelineSteps();
 
@@ -681,7 +681,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.officer_detail.vehicle")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists[0]?.unitId || ""}
+                    {sopData?.unitLists?.length && sopData?.unitLists[0]?.unitId || ""}
                   </div>
                 </div>
               </div>
@@ -1016,11 +1016,11 @@ const CaseHistoryComponent: React.FC<{
       // Handle search
       if (key === "search" && typeof value === "string") {
         const searchTerm = value.toLowerCase();
-        // return typeSubTypeConfigs.find(c => c.subTypeTh.toLowerCase().includes(searchTerm) || c.subTypeEn.toLowerCase().includes(searchTerm))
+        // return typeSubTypeConfigs?.find(c => c.subTypeTh.toLowerCase().includes(searchTerm) || c.subTypeEn.toLowerCase().includes(searchTerm))
         //   || caseItem.caseDetail.toLowerCase().includes(searchTerm)
         //   || caseItem.caselocAddr.toLowerCase().includes(searchTerm)
         //   || caseItem.caselocAddrDecs.toLowerCase().includes(searchTerm);
-        return typeSubTypeConfigs.find(c => c?.subTypeTh?.toLowerCase()?.includes(searchTerm) || c?.subTypeEn?.toLowerCase()?.includes(searchTerm))
+        return typeSubTypeConfigs?.find(c => c?.subTypeTh?.toLowerCase()?.includes(searchTerm) || c?.subTypeEn?.toLowerCase()?.includes(searchTerm))
           || caseItem?.caseId?.toLowerCase()?.includes(searchTerm)
           || caseItem?.caseDetail?.toLowerCase()?.includes(searchTerm)
           || caseItem?.caselocAddr?.toLowerCase()?.includes(searchTerm)

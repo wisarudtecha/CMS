@@ -93,7 +93,7 @@ export const CaseTimelineSteps = (
     return processNodes?.map((node): TimelineStep => {
       const isCurrentStage = node.nodeId === currentNodeId;
       const actionId = node.data?.data?.config?.action;
-      const createdAt = caseSop?.slaTimelines.find(d => d.statusId === actionId)?.createdAt;
+      const createdAt = caseSop?.slaTimelines?.find(d => d.statusId === actionId)?.createdAt || "";
       
       let status: TimelineStep["status"];
       if (isCurrentStage) {
@@ -141,7 +141,7 @@ export const CaseTimelineSteps = (
         status = status === "active" ? "error" : status;
       }
 
-      const label = caseStatus?.find(cs => cs.statusId === actionId)
+      const label = caseStatus?.find(cs => cs.statusId === actionId) || null;
       const langLabel = label?.[language as keyof CaseStatus] as string || label?.th || label?.en;
 
       return {
