@@ -592,7 +592,7 @@
     "user_activities": "用户活动",
     "loading": "加载中...",
     "search": "搜索",
-    "search_placeholder": "按用户、事务ID、功能、操作搜索...",
+    "search_placeholder": "按用户、功能、操作搜索...",
     "search_data": "搜索数据",
     "refresh_data": "刷新数据",
     "filters": "筛选",

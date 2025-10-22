@@ -657,10 +657,14 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
                               <User className="w-3 h-3 text-blue-500" />
                               <span className="font-medium text-gray-900 dark:text-white">{log.username}</span>
                             </div>
+
+                            {/*
                             <div className="flex items-center gap-2 mb-1">
                               <Hash className="w-3 h-3 text-gray-400" />
                               <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{log.txId}</span>
                             </div>
+                            */}
+
                             <div className="flex items-center gap-2">
                               <Clock className="w-3 h-3 text-gray-400" />
                               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -717,6 +721,7 @@ const UserAuditLog = ({ username }: UserAuditLogProps) => {
                           <statusInfo.icon className="w-3 h-3" />
                           {statusInfo.text}
                         </span>
+                        <div className="text-xs text-center text-gray-900 dark:text-white">{log.duration.toFixed(2)}</div>
                       </td>
                     </tr>
                     {isExpanded && (

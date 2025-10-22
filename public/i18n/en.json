@@ -594,7 +594,7 @@
     "user_activities": "User Activities",
     "loading": "Loading...",
     "search": "Search",
-    "search_placeholder": "Search by user, transaction ID, function, action...",
+    "search_placeholder": "Search by user, function, action...",
     "search_data": "Search Data",
     "refresh_data": "Refresh Data",
     "filters": "Filters",
