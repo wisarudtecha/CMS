@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import {
   CheckLineIcon,
+  CloseIcon,
   GroupIcon,
   // LockIcon,
   // PencilIcon,
@@ -12,6 +13,7 @@ import {
   // ShootingStarIcon
 } from "@/icons";
 import { ToastContainer } from "@/components/crud/ToastContainer";
+import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import {
@@ -22,14 +24,20 @@ import {
   // useGetUserRolesPermissionsByIdQuery,
   // useDeleteUserRolePermissionsMutation,
   // useUpdateUserRolePermissionsMutation,
+  useCreateUserRolesMutation,
+  useUpdateUserRolesMutation,
+  // useDeleteUserRolesMutation
 } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import { SYSTEM_ROLE } from "@/utils/constants";
-import type { PreviewConfig } from "@/types/enhanced-crud";
-import type { Permission, Role, RoleAnalytics, RolePermission, RolesPermissionsUpdateData } from "@/types/role";
+import { permissionsByRole } from "@/utils/dataMappers";
+// import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Permission, Role, RoleAnalytics, RoleCreateData, RoleUpdateData, RolePermission, RolesPermissionsUpdateData } from "@/types/role";
 import MetricsView from "@/components/admin/MetricsView";
 import PrivilegeMatrixContent from "@/components/admin/user-management/role-privilege/PrivilegeMatrixView";
 import RoleCardContent from "@/components/admin/user-management/role-privilege/RoleCard";
+import Input from "@/components/form/input/InputField";
+import Button from "@/components/ui/button/Button";
 
 // ===================================================================
 // Utility Functions
@@ -74,10 +82,19 @@ const RoleManagementComponent: React.FC<{
   // const [createRolePermissions] = useCreateUserRolePermissionsMutation();
 
   const [updateUserRolesPermissions] = useUpdateUserRolesPermissionsMutation();
+  const [createUserRoles] = useCreateUserRolesMutation();
+  const [updateUserRoles] = useUpdateUserRolesMutation();
+  // const [deleteUserRoles] = useDeleteUserRolesMutation();
 
   // const [updateUserRolesPermissionsResponse, setUpdateUserRolesPermissionsResponse] = useState<ApiResponse<RolePermission[]>>();
 
   const [roleAnalytics, setRoleAnalytics] = useState<RoleAnalytics>();
+
+  // const [roleDeleteOpen, setRoleDeleteOpen] = useState(false);
+  const [roleSaveOpen, setRoleSaveOpen] = useState(false);
+  const [roleId, setRoleId] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [roleValidateErrors, setRoleValidateErrors] = useState("");
 
   // ===================================================================
   // Loading State
@@ -159,13 +176,13 @@ const RoleManagementComponent: React.FC<{
     entityName: "Role",
     entityNamePlural: "Roles",
     apiEndpoints: {
-      list: "/api/roles",
-      create: "/api/roles",
-      read: "/api/roles/:id",
-      update: "/api/roles/:id",
-      delete: "/api/roles/:id",
-      bulkDelete: "/api/roles/bulk",
-      export: "/api/roles/export"
+      list: "/api/v1/role",
+      create: "/api/v1/role",
+      read: "/api/v1/role/:id",
+      update: "/api/v1/role/:id",
+      delete: "/api/v1/role/:id",
+      bulkDelete: "/api/v1/role/bulk",
+      export: "/api/v1/role/export"
     },
     columns: [
       {
@@ -174,8 +191,61 @@ const RoleManagementComponent: React.FC<{
         sortable: true,
         render: (roleItem: Role) => {
           return (
-            <div className="flex items-center gap-3 capitalize">
+            <div className="flex items-center gap-3 capitalize text-gray-900 dark:text-white">
               {roleItem.roleName.replace(/_/g, " ")}
+            </div>
+          )
+        }
+      },
+      {
+        key: "permission",
+        label: "Permissions",
+        sortable: false,
+        render: (roleItem: Role) => {
+          return (
+            <div className="text-gray-900 dark:text-white">
+              {roleItem.permissions?.length || 0}
+            </div>
+          )
+        }
+      },
+      {
+        key: "updatedAt",
+        label: "Last Modified",
+        sortable: true,
+        render: (roleItem: Role) => {
+          return (
+            <div className="text-gray-900 dark:text-white">
+              {new Date(roleItem.updatedAt || "").toLocaleDateString()}
+            </div>
+          )
+        }
+      },
+      {
+        key: "groupName",
+        label: "Group",
+        sortable: false,
+        render: (roleItem: Role) => {
+          const permissionByRole = Object.values(permissionsByRole(perms.filter(p => (roleItem.permissions || []).includes(p.permId)))) || [];
+          return (
+            <div className="flex items-center space-x-2 min-h-6">
+              {permissionByRole.slice(0, 2).map((item, key) => {
+                if (item[key]) {
+                  return (
+                    <div
+                      key={`${item[key]?.permId}-${key}`}
+                      className="flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
+                    >
+                      <span className="text-gray-700 dark:text-gray-300">{item[key]?.groupName}</span>
+                    </div>
+                  );
+                }
+              })}
+              {permissionByRole.length > 2 && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  +{permissionByRole.length - 2} more
+                </span>
+              )}
             </div>
           )
         }
@@ -190,24 +260,32 @@ const RoleManagementComponent: React.FC<{
       //   onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}`),
       //   condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
       // },
-      // {
-      //   key: "update",
-      //   label: "Edit",
-      //   variant: "warning" as const,
-      //   // icon: PencilIcon,
-      //   onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
-      //   condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
-      // },
-      // {
-      //   key: "delete",
-      //   label: "Delete",
-      //   variant: "outline" as const,
-      //   // icon: TrashBinIcon,
-      //   onClick: (roleItem: Role) => {
-      //     console.log("Delete role:", roleItem.id);
-      //   },
-      //   condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
-      // }
+      {
+        key: "update",
+        label: "Edit",
+        variant: "warning" as const,
+        // icon: PencilIcon,
+        // onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
+        onClick: (roleItem: Role) => {
+          setRoleSaveOpen(true);
+          setRoleId(roleItem.id);
+          setRoleName(roleItem.roleName);
+        },
+        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
+      },
+      {
+        key: "delete",
+        label: "Delete",
+        variant: "outline" as const,
+        // icon: TrashBinIcon,
+        // onClick: (roleItem: Role) => {
+        //   setRoleDeleteOpen(true);
+        //   setRoleId(roleItem.id);
+        //   setRoleName(roleItem.roleName);
+        // },
+        onClick: (roleItem: Role) => console.log(`Delete role: ${roleItem.id}`),
+        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
+      }
     ]
   };
 
@@ -215,75 +293,75 @@ const RoleManagementComponent: React.FC<{
   // Preview Configuration
   // ===================================================================
 
-  const previewConfig: PreviewConfig<Role> = {
-    // title: () => "Role Information",
-    title: (roleItem: Role) => {
-      return (
-        <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${roleItem.active
-            ? "bg-green-500 dark:bg-green-400"
-            : "bg-red-500 dark:bg-red-400"
-          }`}></div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">{roleItem.roleName}</h2>
-            {/* <p className="text-sm text-gray-500 dark:text-gray-400">Level {role.level} • {role.userCount} users</p> */}
-          </div>
-        </div>
-      );
-    },
-    size: "xl",
-    enableNavigation: true,
-    tabs: [
-      {
-        key: "role",
-        label: "Role",
-        // icon: InfoIcon,
-        render: (
-          // userItem: UserEntity
-          // userItem: UserProfile
-        ) => {
-          return (
-            <></>
-          )
-        }
-      }
-    ],
-    actions: [
-      {
-        key: "view",
-        label: "View",
-        // icon: EyeIcon,
-        variant: "primary",
-        onClick: (roleItem: Role, closePreview: () => void) => {
-          closePreview();
-          navigate(`/role/${roleItem.id}`);
-        },
-        condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
-      },
-      {
-        key: "update",
-        label: "Edit",
-        // icon: PencilIcon,
-        variant: "warning",
-        onClick: (roleItem: Role, closePreview: () => void) => {
-          closePreview();
-          navigate(`/role/${roleItem.id}/edit`);
-        },
-        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
-      },
-      {
-        key: "delete",
-        label: "Delete",
-        // icon: CheckLineIcon,
-        variant: "outline",
-        onClick: (roleItem: Role, closePreview: () => void) => {
-          console.log("Delete role:", roleItem.id);
-          closePreview();
-        },
-        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
-      }
-    ]
-  };
+  // const previewConfig: PreviewConfig<Role> = {
+  //   // title: () => "Role Information",
+  //   title: (roleItem: Role) => {
+  //     return (
+  //       <div className="flex items-center gap-3">
+  //         <div className={`w-3 h-3 rounded-full ${roleItem.active
+  //           ? "bg-green-500 dark:bg-green-400"
+  //           : "bg-red-500 dark:bg-red-400"
+  //         }`}></div>
+  //         <div>
+  //           <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">{roleItem.roleName}</h2>
+  //           {/* <p className="text-sm text-gray-500 dark:text-gray-400">Level {role.level} • {role.userCount} users</p> */}
+  //         </div>
+  //       </div>
+  //     );
+  //   },
+  //   size: "xl",
+  //   enableNavigation: true,
+  //   tabs: [
+  //     {
+  //       key: "role",
+  //       label: "Role",
+  //       // icon: InfoIcon,
+  //       render: (
+  //         // userItem: UserEntity
+  //         // userItem: UserProfile
+  //       ) => {
+  //         return (
+  //           <></>
+  //         )
+  //       }
+  //     }
+  //   ],
+  //   actions: [
+  //     {
+  //       key: "view",
+  //       label: "View",
+  //       // icon: EyeIcon,
+  //       variant: "primary",
+  //       onClick: (roleItem: Role, closePreview: () => void) => {
+  //         closePreview();
+  //         navigate(`/role/${roleItem.id}`);
+  //       },
+  //       condition: () => (permissions.hasPermission("role.view") || isSystemAdmin) as boolean
+  //     },
+  //     {
+  //       key: "update",
+  //       label: "Edit",
+  //       // icon: PencilIcon,
+  //       variant: "warning",
+  //       onClick: (roleItem: Role, closePreview: () => void) => {
+  //         closePreview();
+  //         navigate(`/role/${roleItem.id}/edit`);
+  //       },
+  //       condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
+  //     },
+  //     {
+  //       key: "delete",
+  //       label: "Delete",
+  //       // icon: CheckLineIcon,
+  //       variant: "outline",
+  //       onClick: (roleItem: Role, closePreview: () => void) => {
+  //         console.log("Delete role:", roleItem.id);
+  //         closePreview();
+  //       },
+  //       condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
+  //     }
+  //   ]
+  // };
 
   // ===================================================================
   // Advanced Filters
@@ -551,6 +629,9 @@ const RoleManagementComponent: React.FC<{
   const handleDelete = (roleId: string) => {
     console.log("Role deleted:", roleId);
     // Handle role delete
+    setTimeout(() => {
+      window.location.replace(`/role-privilege`);
+    }, 1000);
   };
 
   // const handleDelete = useCallback((role: Role) => {
@@ -562,6 +643,108 @@ const RoleManagementComponent: React.FC<{
   //     setRoles(prevRoles => prevRoles.filter(r => r.id !== role.id));
   //   }
   // }, []);
+
+  // ===================================================================
+  // Validation before saving
+  // ===================================================================
+
+  // Validate department
+  const validateRole = useCallback((): string => {
+    if (!roleName.trim()) {
+      const errors: string = "Role name is required";
+      setRoleValidateErrors(errors);
+      return errors;
+    }
+    return "";
+  }, [roleName]);
+
+  // ===================================================================
+  // Role CRUD
+  // ===================================================================
+
+  // Delete Role
+  // const handleRoleDelete = useCallback(async (id: string) => {
+  //   if (!id) {
+  //     throw new Error("Role ID not found");
+  //   }
+  //   try {
+  //     setLoading(true);
+  //     let response;
+  //     if (permissions.hasAnyPermission(["role.update"])) {
+  //       response = await deleteUserRoles(id).unwrap();
+  //     }
+  //     else {
+  //       throw new Error("Permission denied");
+  //     }
+  //     if (response?.status) {
+  //       addToast("success", `Role & Privilege Management: ${response?.desc || response?.msg || "Delete successfully"}`);
+  //       setTimeout(() => {
+  //         window.location.replace(`/role-privilege`);
+  //       }, 1000);
+  //     }
+  //     else {
+  //       throw new Error(response?.desc || response?.msg || "Unknown error");
+  //     }
+  //   }
+  //   catch (error) {
+  //     addToast("error", `Role & Privilege Management: ${error}`);
+  //   }
+  //   finally {
+  //     setLoading(false);
+  //   }
+  // }, [permissions, addToast, deleteUserRoles]);
+
+  // Reset Department
+  const handleRoleReset = () => {
+    setRoleId("");
+    setRoleName("");
+    setRoleValidateErrors("");
+  };
+
+  // Create / Update Department
+  const handleRoleSave = useCallback(async () => {
+    const errors = validateRole();
+    if (errors) {
+      return; // Don"t save if there are validation errors
+    }
+    const roleData: RoleCreateData | RoleUpdateData = {
+      active: true,
+      roleName: roleName,
+    };
+    try {
+      setLoading(true);
+      let response;
+      if (permissions.hasAnyPermission(["role.create", "role.update"])) {
+        if (roleId) {
+          response = await updateUserRoles({
+            id: roleId, data: roleData
+          }).unwrap();
+        }
+        else {
+          response = await createUserRoles(roleData).unwrap();
+        }
+      }
+      else {
+        throw new Error("Permission denied");
+      }
+      if (response?.status) {
+        addToast("success", `Role & Privilege Management: ${response?.desc || response?.msg || "Save successfully"}`);
+        setTimeout(() => {
+          window.location.replace(`/role-privilege`);
+        }, 1000);
+      }
+      else {
+        throw new Error(response?.desc || response?.msg || "Unknown error");
+      }
+    }
+    catch (error) {
+      addToast("error", `Role & Privilege Management: ${error}`);
+    }
+    finally {
+      setRoleSaveOpen(false);
+      setLoading(false);
+    }
+  }, [roleId, roleName, permissions, addToast, createUserRoles, updateUserRoles, validateRole]);
 
   // ===================================================================
   // Custom Rendering
@@ -621,13 +804,13 @@ const RoleManagementComponent: React.FC<{
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            list: "/roles",
-            create: "/roles",
-            read: "/roles/:id",
-            update: "/roles/:id",
-            delete: "/roles/:id",
-            bulkDelete: "/roles/bulk",
-            export: "/roles/export"
+            list: "/role",
+            create: "/role",
+            read: "/role/:id",
+            update: "/role/:id",
+            delete: "/role/:id",
+            bulkDelete: "/role/bulk",
+            export: "/role/export"
           }
         }}
         // bulkActions={bulkActions}
@@ -655,12 +838,13 @@ const RoleManagementComponent: React.FC<{
         // keyboardShortcuts={[]}
         // loading={false}
         module="role"
-        previewConfig={previewConfig}
+        // previewConfig={previewConfig}
         // previewConfig={previewConfig as PreviewConfig<Role & { id: string }>}
         // searchFields={["name", "description"]}
         searchFields={["roleName"]}
         // customFilterFunction={() => true}
         // onCreate={() => navigate("/role/create")}
+        onCreate={() => setRoleSaveOpen(true)}
         onDelete={handleDelete}
         onItemAction={handleAction}
         // onItemClick={(item) => navigate(`/role/${item.id}`)}
@@ -671,6 +855,52 @@ const RoleManagementComponent: React.FC<{
       />
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      <Modal
+        isOpen={roleSaveOpen}
+        onClose={() => {
+          setRoleSaveOpen(false);
+          handleRoleReset();
+        }}
+        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            {roleId && "Edit" || "Create"} Role
+          </h3>
+          <Button
+            onClick={() => setRoleSaveOpen(false)}
+            variant="ghost"
+            size="sm"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="roleName" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              Role Name
+            </label>
+            <Input
+              id="roleName"
+              placeholder="Fill role name"
+              value={roleName}
+              onChange={(e) => setRoleName && setRoleName(e.target.value)}
+            />
+            <span className="text-red-500 dark:text-red-400 text-xs">{roleValidateErrors}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button onClick={handleRoleReset} variant="outline">
+              Reset
+            </Button>
+            <Button onClick={handleRoleSave} variant="primary">
+              Confirm
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };

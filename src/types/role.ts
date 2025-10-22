@@ -90,6 +90,16 @@ export interface RolesPermissionsUpdateData {
   body: RolePermissionsCreateData[];
 }
 
+export interface RoleCreateData {
+  active: boolean;
+  roleName: string;
+}
+
+export interface RoleUpdateData {
+  active: boolean;
+  roleName: string;
+}
+
 export interface RoleQueryParams {
   start?: number;
   length?: number;

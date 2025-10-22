@@ -34,13 +34,13 @@ const RolePrivilegeManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 100 });
+  const { data: permissionsData } = useGetUserPermissionsQuery({ start: 0, length: 1000 });
   const permissions = permissionsData?.data as unknown as Permission[] || [];
 
-  const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 1000 });
+  const { data: rolesPermissionsData } = useGetUserRolesPermissionsQuery({ start: 0, length: 10000 });
   const rolesPermissions = rolesPermissionsData?.data as unknown as RolePermission[] || [];
 
-  const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
+  const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 100 });
   // const roles = rolesData?.data?.map((r) => ({
   //   ...r,
   //   permissions: rolesPermissions.filter(rp => rp.roleId === r.id).map(rp => rp.permId)

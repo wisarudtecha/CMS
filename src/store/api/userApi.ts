@@ -16,6 +16,8 @@ import type {
   RolePermissionsCreateData,
   RolePermissionsUpdateData,
   RolesPermissionsUpdateData,
+  RoleCreateData,
+  RoleUpdateData,
   RoleQueryParams,
 } from "@/types/role";
 import type {
@@ -103,6 +105,14 @@ export const userApi = baseApi.injectEndpoints({
     // Role
     // ===================================================================
 
+    createUserRoles: builder.mutation<ApiResponse<User>, RoleCreateData>({
+      query: (data) => ({
+        url: "/role/add",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
     getUserRoles: builder.query<ApiResponse<Role[]>, RoleQueryParams>({
       query: (params) => {
         const searchParams = new URLSearchParams();
@@ -113,6 +123,21 @@ export const userApi = baseApi.injectEndpoints({
         });
         return `/role?${searchParams.toString()}`;
       }
+    }),
+
+    updateUserRoles: builder.mutation<ApiResponse<User>, { id: string; data: RoleUpdateData }>({
+      query: ({ id, data }) => ({
+        url: `/role/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+    }),
+
+    deleteUserRoles: builder.mutation<ApiResponse<void>, string>({
+      query: id => ({
+        url: `/role/${id}`,
+        method: "DELETE",
+      }),
     }),
 
     // ===================================================================
@@ -298,7 +323,10 @@ export const {
   useDeleteUserMutation,
   useToggleUserStatusMutation,
   useGetUserGroupQuery,
+  useCreateUserRolesMutation,
   useGetUserRolesQuery,
+  useUpdateUserRolesMutation,
+  useDeleteUserRolesMutation,
   useGetUserRolesPermissionsQuery,
   useCreateUserRolePermissionsMutation,
   useUpdateUserRolesPermissionsMutation,
