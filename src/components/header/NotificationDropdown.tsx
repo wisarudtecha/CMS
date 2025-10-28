@@ -325,10 +325,35 @@ const NotificationDropdown = () => {
         const prefs = getPreferences();
 
         if (data.eventType && data.message && data.eventType != "hidden") {
-          setNotifications((prev) => {
-            if (prev.some((n) => n.id === data.id)) return prev;
+          // setNotifications((prev) => {
+          //   if (prev.some((n) => n.id === data.id)) return prev;
+          //   const updated = [{ ...data, read: false }, ...prev];
+          //   if (profile) localStorage.setItem(`notifications`, JSON.stringify(updated));
+          //   return updated;
+          // });
+
+          setNotifications(prev => {
+            if (prev.some(n => n.id === data.id)) {
+              return prev;
+            }
+            // const updated = [{ ...data, read: false }, ...prev].slice(0, MAX_NOTIFICATIONS);
             const updated = [{ ...data, read: false }, ...prev];
-            if (profile) localStorage.setItem(`notifications`, JSON.stringify(updated));
+            if (profile) {
+              try {
+                localStorage.setItem("notifications", JSON.stringify(updated));
+              }
+              catch (e) {
+                if (e && typeof e === "object" && "name" in e && e.name === "QuotaExceededError") {
+                  console.warn("LocalStorage quota exceeded, clearing old notifications...");
+                  // Optionally, remove some old items
+                  // updated.pop(); // Remove oldest
+                  // localStorage.setItem("notifications", JSON.stringify(updated));
+                }
+                else {
+                  console.error("Failed to save notifications:", e);
+                }
+              }
+            }
             return updated;
           });
 

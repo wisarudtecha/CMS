@@ -678,7 +678,7 @@ const ServiceDashboard: React.FC = () => {
         
         // Check if additionalJson exists
         if (!data.additionalJson) {
-          // console.warn("⚠️ Message missing additionalJson:", data);
+          console.warn("⚠️ Message missing additionalJson:", data);
           return;
         }
 
@@ -688,22 +688,22 @@ const ServiceDashboard: React.FC = () => {
         // Handle different message types based on additionalJson.type
         switch (messageType) {
           case "CASE-SUMMARY":
-            // console.log("📊 Updating DASHBOARD_CASE data");
+            console.log("📊 Updating DASHBOARD_CASE data");
             setDashboardCase(data);
             break;
             
           case "SLA-PERFORMANCE":
-            // console.log("📈 Updating DASHBOARD_SLA data");
+            console.log("📈 Updating DASHBOARD_SLA data");
             setDashboardSLA(data);
             break;
             
           case "CASE-MONTHLY-SUMMARY":
-            // console.log("📅 Updating DASHBOARD_MONTHLY data");
+            console.log("📅 Updating DASHBOARD_MONTHLY data");
             setDashboardMonthly(data);
             break;
             
           default:
-            // console.warn("⚠️ Unknown message type:", messageType);
+            console.warn("⚠️ Unknown message type:", messageType);
         }
       }
       catch (error) {
@@ -736,6 +736,7 @@ const ServiceDashboard: React.FC = () => {
         const profile = await getProfile();
         send({ "EVENT": "DASHBOARD", orgId: profile?.orgId || "", username: profile?.username || "" });
         setIsMounted(true);
+        console.log("🚀 ~ ServiceDashboard ~ sender:", profile);
       }
     }
 
