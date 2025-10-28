@@ -543,6 +543,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 iotDevice: sopData.data?.deviceId || "",
                 iotDate: getLocalISOString(sopData.data?.startedDate) || "",
                 area: area,
+                source: {
+                    id: sopData?.data?.source || "",
+                    name: source.find((items) => items.id === sopData?.data?.source)?.name || ""
+                },
                 status: sopData.data?.statusId || "",
                 lastUpdate: sopData.data?.updatedAt,
                 updateBy: sopData.data?.updatedBy,
@@ -568,7 +572,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
 
     useEffect(() => {
-        if (listCustomerData.length > 0 && sopData?.data) {
+        if (sopData?.data) {
             const result = listCustomerData.find(items => items.mobileNo === initialCaseData?.phoneNo)
             const customerData = result ? {
                 ...result,
@@ -579,10 +583,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 }
             } as Custommer : {
                 mobileNo: sopData?.data?.phoneNo,
-                contractMethod: {
-                    id: sopData?.data?.source || "",
-                    name: source.find((items) => items.id === sopData?.data?.source)?.name || ""
-                },
             } as Custommer;
             setCaseState(prev => prev ? {
                 ...prev,
@@ -734,7 +734,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             resDetail: "",
             caseSla: caseState?.caseType?.caseSla || "",
             deviceId: caseState?.iotDevice || "",
-            source: caseState?.customerData?.contractMethod?.id || "",
+            source: caseState?.source?.id || "",
             statusId: caseState?.status === "S000" ? "S001" : sopData?.data?.statusId,
             userarrive: "",
             userclose: "",

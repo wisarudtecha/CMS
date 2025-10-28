@@ -560,10 +560,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 }
             } as Custommer : {
                 mobileNo: profile.mobileNo,
-                contractMethod: {
-                    id: "06",
-                    name: source.find((items) => items.id === "06")?.name || ""
-                },
             } as Custommer;
             setCaseState(prev => prev ? {
                 ...prev,
@@ -571,6 +567,10 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 status: prev.status || "",
             } as CaseDetails : prev);
         }
+        setCaseState(prev => prev ? {
+                ...prev,
+                status: prev.status || "",
+            } as CaseDetails : prev);
     }, [listCustomerData.length, sopLocal, initialCaseData?.phoneNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)

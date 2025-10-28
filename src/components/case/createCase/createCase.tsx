@@ -218,7 +218,7 @@ const saveCase = useCallback(
             provId: caseState?.area?.provId || "",
             referCaseId: caseState?.workOrderRef || "",
             resDetail: "",
-            source: caseState?.customerData?.contractMethod?.id || "",
+            source: caseState?.source?.id || "",
             startedDate: caseState?.iotDate ? new Date(caseState?.iotDate).toISOString() : todayDate,
             statusId,
             userarrive: "",

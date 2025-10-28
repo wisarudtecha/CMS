@@ -165,8 +165,8 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     // Add parent items (case types)
     (caseTypes || []).forEach(type => {
       items.push({
-        id: type.id,
-        // id: type.typeId,
+        // id: type.id,
+        id: type.typeId,
         parentId: null, // Explicitly set to null for root items
         name: type.th,
         secondaryName: type.en,
@@ -187,10 +187,10 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
       const parentType = caseTypes?.find(type => type.typeId === subType.typeId);
       if (parentType) {
         items.push({
-          id: subType.id,
-          // id: subType.sTypeId,
-          parentId: parentType.id,
-          // parentId: parentType.typeId,
+          // id: subType.id,
+          id: subType.sTypeId,
+          // parentId: parentType.id,
+          parentId: parentType.typeId,
           name: subType.th,
           secondaryName: subType.en,
           active: subType.active,

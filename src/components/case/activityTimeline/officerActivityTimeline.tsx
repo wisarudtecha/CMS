@@ -7,9 +7,9 @@ import { formatDate } from '@/utils/crud';
 import { formatDuration } from '@/components/Sla/formatSlaDuration';
 
 
-const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps }) => {
+const ProgressStepPreviewUnit: React.FC<ProgressStepPreviewProps> = ({ progressSteps ,sliceIndex=true }) => {
     const { t } = useTranslation();
-    const filteredSteps = progressSteps.length === 6
+    const filteredSteps = progressSteps.length === 6 && sliceIndex
         ? progressSteps.slice(1, -1)
         : progressSteps;
     const currentStepIndex = filteredSteps.findIndex(step => step.current);

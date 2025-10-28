@@ -40,13 +40,12 @@ export interface BaseEntity {
   updatedBy: string;
 }
 
-export interface contractMethod {
+export interface sourceInterface {
   id: string;
   name: string;
 }
 
 export interface Custommer extends Customer {
-  contractMethod: contractMethod;
   name: string; 
 }
 

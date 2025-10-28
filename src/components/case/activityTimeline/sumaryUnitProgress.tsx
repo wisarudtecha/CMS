@@ -7,11 +7,12 @@ import { formatDuration } from "@/components/Sla/formatSlaDuration";
 
 interface ProgressSummaryProps {
     progressSteps: ProgressSteps[]
+    sliceIndex?: boolean
 }
 
-export default function ProgressSummary({ progressSteps }: ProgressSummaryProps) {
+export default function ProgressSummary({ progressSteps, sliceIndex = true }: ProgressSummaryProps) {
     // Calculate summary statistics
-    const filteredSteps = progressSteps.length !== 2
+    const filteredSteps = progressSteps.length !== 2 && sliceIndex
         ? progressSteps.slice(1, -1)
         : progressSteps;
     // const filteredSteps = progressSteps.slice(1, -1)

@@ -12,7 +12,7 @@ export const validateCaseForSubmission = (caseState: CaseDetails | undefined): s
     if (!caseState.description?.trim()) {
         return "Please enter Case Details.";
     }
-    if (!caseState.customerData?.contractMethod?.name?.trim()) {
+    if (!caseState.source?.name?.trim()) {
         return "Please select a Contact Method.";
     }
     if (!caseState.area) {

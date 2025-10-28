@@ -184,7 +184,9 @@ export interface CaseSopUnit {
     unitId: string,
     username: string,
     firstName: string,
-    lastName: string
+    lastName: string,
+    createdBy:string,
+    statusId:string
 }
 
 export interface Unit {

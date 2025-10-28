@@ -47,7 +47,6 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     email: matchingCustomer.email,
                     photo: matchingCustomer.photo,
                     id: matchingCustomer.id,
-                    contractMethod: updatedCustomerData.contractMethod
                 };
             } else {
                 updatedCustomerData = {
@@ -64,10 +63,10 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
         handleCustomerDataChange(updatedCustomerData);
     };
 
-    const handleCustomerEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value === "" ? "" : e.target.value;
-        handleCustomerDataChange({ ...customerData, email: value });
-    };
+    // const handleCustomerEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    //     const value = e.target.value === "" ? "" : e.target.value;
+    //     handleCustomerDataChange({ ...customerData, email: value });
+    // };
 
     return (
         <div className="mx-3 text-gray-900 dark:text-gray-400">
@@ -106,7 +105,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     }}
                 />
             </div> */}
-            {customerData.contractMethod?.name === "Email" &&
+            {/* {customerData.contractMethod?.name === "Email" &&
                 <div className="w-auto md:mr-2  ">
                     <h3 className="my-2">Customer Email : <span className=" text-red-500 text-sm font-bold">*</span></h3>
                     <input
@@ -118,7 +117,7 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                         required={true}
                     />
                 </div>
-            }
+            } */}
         </div>
     );
 };

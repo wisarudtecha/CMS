@@ -2,7 +2,7 @@
 import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
 import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
-import type { BaseEntity, Custommer } from "@/types";
+import type { BaseEntity, Custommer, sourceInterface } from "@/types";
 import type { Properties } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
@@ -369,6 +369,7 @@ export interface CaseDetails {
   area?: Area
   scheduleDate?: string
   workOrderNummber?: string
+  source?:sourceInterface
   workOrderRef?: string
   workOrderDate?: string
   iotDevice?: string

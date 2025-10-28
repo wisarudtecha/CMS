@@ -715,8 +715,8 @@ const CaseHistoryComponent: React.FC<{
                 </div>
               </div>
               <div className="grid grid-cols-1 space-y-3">
-                <ProgressStepPreviewUnit progressSteps={progressSteps} />
-                <ProgressSummary progressSteps={progressSteps} />
+                <ProgressStepPreviewUnit progressSteps={progressSteps} sliceIndex={false} />
+                <ProgressSummary progressSteps={progressSteps} sliceIndex={false} />
               </div>
             </div>
           </div>

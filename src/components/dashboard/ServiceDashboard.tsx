@@ -165,7 +165,8 @@ const filterMonthlyRangeWithSeries = (
 
 const ServiceDashboard: React.FC = () => {
   const { language } = useTranslation();
-  const { onMessage, isConnected, connectionState, websocket } = useWebSocket();
+  const { connectionState, isConnected, onMessage, send } = useWebSocket();
+  const [isMounted, setIsMounted] = useState(false);
 
   // ===================================================================
   // Mockup State Management
@@ -181,26 +182,57 @@ const ServiceDashboard: React.FC = () => {
         {
           "total_en": "Total",
           "total_th": "ทั้งหมด",
-          "val": 376
+          "val": 0
         },
         {
           "g1_en": "Censor",
           "g1_th": "เซ็นเซอร์",
-          "val": 188
+          "val": 0
         },
         {
           "g2_en": "CCTV",
           "g2_th": "กล้อง",
-          "val": 112
+          "val": 0
         },
         {
           "g3_en": "Traffic",
           "g3_th": "การจราจร",
-          "val": 76
+          "val": 0
         }
       ]
     }
   };
+  // const DASHBOARD_CASE: JSONObject = {
+  //   EVENT: "DASHBOARD",
+  //   eventType: "hidden",
+  //   additionalJson: {
+  //     type: "CASE-SUMMARY",
+  //     title_en: "Work Order Summary",
+  //     title_th: "สรุปใบสั่งงาน",
+  //     data: [
+  //       {
+  //         "total_en": "Total",
+  //         "total_th": "ทั้งหมด",
+  //         "val": 376
+  //       },
+  //       {
+  //         "g1_en": "Censor",
+  //         "g1_th": "เซ็นเซอร์",
+  //         "val": 188
+  //       },
+  //       {
+  //         "g2_en": "CCTV",
+  //         "g2_th": "กล้อง",
+  //         "val": 112
+  //       },
+  //       {
+  //         "g3_en": "Traffic",
+  //         "g3_th": "การจราจร",
+  //         "val": 76
+  //       }
+  //     ]
+  //   }
+  // };
 
   const DASHBOARD_SLA: JSONObject = {
     EVENT: "DASHBOARD",
@@ -213,35 +245,75 @@ const ServiceDashboard: React.FC = () => {
         {
         "total_en": "Total",
         "total_th": "ทั้งหมด",
-        "val": 376
+        "val": 0
         },
         {
           "inSLA_en": "InSLA",
           "inSLA_th": "ปฏิบัติตาม SLA",
-          "val": 309
+          "val": 0
         },
         {
           "overSLA_en": "OverSLA",
           "overSLA_th": "เกินกำหนด SLA",
-          "val": 67
+          "val": 0
         },
         {
           "percentage_inSLA_en": "InSLA",
           "percentage_inSLA_th": "ปฏิบัติตาม SLA",
-          "val": "82%",
+          "val": "0%",
           "formular_en": "(Number of tasks completed ON TIME / Total number of tasks) * 100",
           "formular_th": "(จำนวนงานที่ทำเสร็จทันเวลา / จำนวนงานทั้งหมด) x 100"
         },
         {
           "avg_respose_time_en": "Average Response Time",
           "avg_respose_time_th": "เวลาเฉลี่ยในการแก้ปัญหา",
-          "val": 45,
+          "val": 0,
           "unit_en": "min.",
           "unit_th": " นาที"
         }
       ]
     }
   };
+  // const DASHBOARD_SLA: JSONObject = {
+  //   EVENT: "DASHBOARD",
+  //   eventType: "hidden",
+  //   additionalJson: {
+  //     type: "SLA-PERFORMANCE",
+  //     title_en: "SLA Performance",
+  //     title_th: "ประสิทธิภาพการทำงาน",
+  //     data: [
+  //       {
+  //       "total_en": "Total",
+  //       "total_th": "ทั้งหมด",
+  //       "val": 376
+  //       },
+  //       {
+  //         "inSLA_en": "InSLA",
+  //         "inSLA_th": "ปฏิบัติตาม SLA",
+  //         "val": 309
+  //       },
+  //       {
+  //         "overSLA_en": "OverSLA",
+  //         "overSLA_th": "เกินกำหนด SLA",
+  //         "val": 67
+  //       },
+  //       {
+  //         "percentage_inSLA_en": "InSLA",
+  //         "percentage_inSLA_th": "ปฏิบัติตาม SLA",
+  //         "val": "82%",
+  //         "formular_en": "(Number of tasks completed ON TIME / Total number of tasks) * 100",
+  //         "formular_th": "(จำนวนงานที่ทำเสร็จทันเวลา / จำนวนงานทั้งหมด) x 100"
+  //       },
+  //       {
+  //         "avg_respose_time_en": "Average Response Time",
+  //         "avg_respose_time_th": "เวลาเฉลี่ยในการแก้ปัญหา",
+  //         "val": 45,
+  //         "unit_en": "min.",
+  //         "unit_th": " นาที"
+  //       }
+  //     ]
+  //   }
+  // };
 
   const DASHBOARD_MONTHLY: JSONObject = {
     EVENT: "DASHBOARD",
@@ -251,22 +323,46 @@ const ServiceDashboard: React.FC = () => {
       title_en: "Work Order in Monthly Summary",
       title_th: "สรุปคำสั่งงานประจำเดือน",
       data: [
-        { "total_en": "Total", "total_th": "ทั้งหมด", "new": 376, "inprogress": 3, "complete": 3 },
-        { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 685 },
-        { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 485 },
-        { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 645 },
-        { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 450 },
-        { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 550 },
-        { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 600 },
-        { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 379 },
-        { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 525 },
-        { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 537 },
-        { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 85, "inprogress": 212, "complete": 79 },
+        { "total_en": "Total", "total_th": "ทั้งหมด", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+        { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
         { "m11_en": "Nov 2025", "m11_th": "พ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
         { "m12_en": "Dec 2025", "m12_th": "ธ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 }
       ]
     }
   };
+  // const DASHBOARD_MONTHLY: JSONObject = {
+  //   EVENT: "DASHBOARD",
+  //   eventType: "hidden",
+  //   additionalJson: {
+  //     type: "CASE-MONTHLY-SUMMARY",
+  //     title_en: "Work Order in Monthly Summary",
+  //     title_th: "สรุปคำสั่งงานประจำเดือน",
+  //     data: [
+  //       { "total_en": "Total", "total_th": "ทั้งหมด", "new": 376, "inprogress": 3, "complete": 3 },
+  //       { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 685 },
+  //       { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 485 },
+  //       { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 645 },
+  //       { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 450 },
+  //       { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 550 },
+  //       { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 600 },
+  //       { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 379 },
+  //       { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 525 },
+  //       { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 537 },
+  //       { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 85, "inprogress": 212, "complete": 79 },
+  //       { "m11_en": "Nov 2025", "m11_th": "พ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m12_en": "Dec 2025", "m12_th": "ธ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 }
+  //     ]
+  //   }
+  // };
 
   // ===================================================================
   // WebSocket State Management
@@ -574,7 +670,7 @@ const ServiceDashboard: React.FC = () => {
   useEffect(() => {
     const listener = onMessage(message => {
       try {
-        console.log("🚀 ~ WebSocket message received:", message);
+        // console.log("🚀 ~ WebSocket message received:", message);
         
         // const data = typeof message === "string" ? JSON.parse(message) : message;
         const messageJson = typeof message === "string" ? JSON.parse(message) : message;
@@ -582,7 +678,7 @@ const ServiceDashboard: React.FC = () => {
         
         // Check if additionalJson exists
         if (!data.additionalJson) {
-          console.warn("⚠️ Message missing additionalJson:", data);
+          // console.warn("⚠️ Message missing additionalJson:", data);
           return;
         }
 
@@ -592,22 +688,22 @@ const ServiceDashboard: React.FC = () => {
         // Handle different message types based on additionalJson.type
         switch (messageType) {
           case "CASE-SUMMARY":
-            console.log("📊 Updating DASHBOARD_CASE data");
+            // console.log("📊 Updating DASHBOARD_CASE data");
             setDashboardCase(data);
             break;
             
           case "SLA-PERFORMANCE":
-            console.log("📈 Updating DASHBOARD_SLA data");
+            // console.log("📈 Updating DASHBOARD_SLA data");
             setDashboardSLA(data);
             break;
             
           case "CASE-MONTHLY-SUMMARY":
-            console.log("📅 Updating DASHBOARD_MONTHLY data");
+            // console.log("📅 Updating DASHBOARD_MONTHLY data");
             setDashboardMonthly(data);
             break;
             
           default:
-            console.log("⚠️ Unknown message type:", messageType);
+            // console.warn("⚠️ Unknown message type:", messageType);
         }
       }
       catch (error) {
@@ -618,7 +714,35 @@ const ServiceDashboard: React.FC = () => {
     return () => {
       listener();
     };
-  }, [connectionState, isConnected, onMessage, websocket]);
+  }, [onMessage]);
+
+  useEffect(() => {
+    const getProfile = () => {
+      const storage = localStorage || sessionStorage;
+      const profile = storage.getItem("profile");
+      if (profile) {
+        try {
+          return JSON.parse(profile);
+        }
+        catch (err) {
+          console.error("Failed to parse profile:", err);
+        }
+      }
+      return null;
+    };
+
+    const sender = async () => {
+      if ((isConnected || connectionState === "connected") && !isMounted) {
+        const profile = await getProfile();
+        send({ "EVENT": "DASHBOARD", orgId: profile?.orgId || "", username: profile?.username || "" });
+        setIsMounted(true);
+      }
+    }
+
+    return () => {
+      sender();
+    };
+  }, [connectionState, isConnected, isMounted, send]);
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 cursor-default">
@@ -658,7 +782,7 @@ const ServiceDashboard: React.FC = () => {
                     ) : (
                       <Skeleton className="mb-2" height={20} width={120} />
                     )}
-                    {item?.data ? (
+                    {item?.data !== null && item?.data !== undefined ? (
                       <AnimatedNumber
                         value={item.data || 0}
                         className={`${item?.className as string || ""} text-3xl font-bold`}
@@ -686,6 +810,8 @@ const ServiceDashboard: React.FC = () => {
                   {monthlyCases?.name as string || ""}
                 </h3>
               </div>
+              <Chart options={monthlyCases?.data?.options || []} series={monthlyCases?.data?.series || []} type="bar" height={chartWidgetHeight || 0} />
+              {/*
               {monthlyCases?.data?.series?.reduce((acc, curr) => acc + curr.data.reduce((sum, val) => sum + val, 0), 0) ? (
                 <Chart options={monthlyCases?.data?.options || []} series={monthlyCases?.data?.series || []} type="bar" height={chartWidgetHeight || 0} />
               ) : (
@@ -693,6 +819,7 @@ const ServiceDashboard: React.FC = () => {
                   <LoadingSpinner className="h-full" color="gray" size="xl" />
                 </div>
               )}
+              */}
             </div>
           </div>
         </div>
@@ -716,7 +843,7 @@ const ServiceDashboard: React.FC = () => {
               </div>
               <div className="space-y-4">
                 <div className="text-center">
-                  {slaPerformance?.data?.total?.data && slaPerformance?.data?.total?.data != "0" ? (
+                  {slaPerformance?.data?.total?.data !== null && slaPerformance?.data?.total?.data !== undefined ? (
                     <AnimatedPercentage
                       value={slaPerformance.data.total.data || "0"}
                       className="text-green-600 dark:text-green-300 text-2xl font-bold"
@@ -745,7 +872,7 @@ const ServiceDashboard: React.FC = () => {
                     ) : (
                       <Skeleton height={20} width={80} />
                     )}
-                    {slaPerformance?.data?.met?.data ? (
+                    {slaPerformance?.data?.met?.data !== null && slaPerformance?.data?.met?.data !== undefined ? (
                       <AnimatedPercentage
                         value={slaPerformance.data.met.data || 0}
                         className="text-green-600 dark:text-green-300 text-sm font-medium"
@@ -765,7 +892,7 @@ const ServiceDashboard: React.FC = () => {
                     ) : (
                       <Skeleton height={20} width={80} />
                     )}
-                    {slaPerformance?.data?.overdue?.data ? (
+                    {slaPerformance?.data?.overdue?.data !== null && slaPerformance?.data?.overdue?.data !== undefined ? (
                       <AnimatedPercentage
                         value={slaPerformance.data.overdue.data || 0}
                         className="text-red-600 dark:text-red-300 text-sm font-medium"
@@ -779,7 +906,7 @@ const ServiceDashboard: React.FC = () => {
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-center">
                   <div className="text-gray-900 dark:text-white text-lg font-bold">
-                    {slaPerformance?.data?.avg?.data ? (
+                    {slaPerformance?.data?.avg?.data !== null && slaPerformance?.data?.avg?.data !== undefined ? (
                       <AnimatedNumber
                         value={slaPerformance.data.avg.data || 0}
                         duration={1.5}
@@ -821,6 +948,8 @@ const ServiceDashboard: React.FC = () => {
 
               {/* ProgressCircularWidget */}
               <div className="flex justify-center mb-2">
+                <Chart options={caseStatusOverview?.data?.options || []} series={caseStatusOverview.data.series || []} height={progressCircularWidgetHeight} type="donut" />
+                {/*
                 {caseStatusOverview?.data?.series?.reduce((acc, curr) => acc + curr, 0) ? (
                   <Chart options={caseStatusOverview?.data?.options || []} series={caseStatusOverview.data.series || []} height={progressCircularWidgetHeight} type="donut" />
                 ) : (
@@ -828,13 +957,14 @@ const ServiceDashboard: React.FC = () => {
                     <LoadingSpinner className="h-full" color="gray" size="xl" />
                   </div>
                 )}
+                */}
               </div>
 
               {/* MetricWidget */}
               <div className="flex flex-col gap-2 mb-2">
                 <div className="bg-green-400 px-4 py-2 rounded-lg">
                   <div className="text-white text-sm">{labels?.complete || ""}</div>
-                  {seriesOfCaseStatusOverview[0] ? (
+                  {seriesOfCaseStatusOverview[0] !== null && seriesOfCaseStatusOverview[0] !== undefined ? (
                     <AnimatedNumber
                       value={seriesOfCaseStatusOverview[0] || 0}
                       className="text-white text-2xl font-bold"
@@ -847,7 +977,7 @@ const ServiceDashboard: React.FC = () => {
                 </div>
                 <div className="bg-blue-400 px-4 py-2 rounded-lg">
                   <div className="text-white text-sm">{labels?.inProgress || ""}</div>
-                  {seriesOfCaseStatusOverview[1] ? (
+                  {seriesOfCaseStatusOverview[1] !== null && seriesOfCaseStatusOverview[1] !== undefined ? (
                     <AnimatedNumber
                       value={seriesOfCaseStatusOverview[1] || 0}
                       className="text-white text-2xl font-bold"
@@ -865,7 +995,7 @@ const ServiceDashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2 text-gray-900 dark:text-white">
                     <span className="text-sm">{labels?.complete}</span>
-                    {seriesOfMonthlyCasesRate[2] ? (
+                    {seriesOfMonthlyCasesRate[2] !== null && seriesOfMonthlyCasesRate[2] !== undefined ? (
                       <AnimatedPercentage
                         value={seriesOfMonthlyCasesRate[2] || 0}
                         className="text-sm font-semibold"
@@ -893,7 +1023,7 @@ const ServiceDashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2 text-gray-900 dark:text-white">
                     <span className="text-sm">{labels?.inProgress}</span>
-                    {seriesOfMonthlyCasesRate[1] ? (
+                    {seriesOfMonthlyCasesRate[1] !== null && seriesOfMonthlyCasesRate[1] !== undefined ? (
                       <AnimatedPercentage
                         value={seriesOfMonthlyCasesRate[1] || 0}
                         className="text-sm font-semibold"

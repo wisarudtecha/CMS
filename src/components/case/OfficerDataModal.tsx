@@ -6,7 +6,7 @@ import { DialogTitle } from "@radix-ui/react-dialog"
 import ProgressStepPreviewUnit from "./activityTimeline/officerActivityTimeline"
 import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
-import { User, AtSign, Phone, Mail, Truck, Tag, Building, CheckCircle } from "lucide-react"
+import { User, Phone, Tag, Building, CheckCircle } from "lucide-react"
 import { usePermissions } from "@/hooks/usePermissions"
 import ProgressSummary from "./activityTimeline/sumaryUnitProgress"
 import { UnitWithSop } from "@/types/dispatch"
@@ -21,6 +21,7 @@ export default function OfficerDataModal({
     onOpenChange,
 }: OfficerDataModal) {
     const { data: userData, isLoading } = useGetUserByUserNameForCaseInfoQuery({ username: officer.unit.username })
+    const { data: assigneeData, isLoading: isLoadingAssignee } = useGetUserByUserNameForCaseInfoQuery({ username: officer.unit.createdBy })
     const { t, language } = useTranslation();
     const permissions = usePermissions();
     const progressSteps = useMemo(() => {
@@ -32,7 +33,11 @@ export default function OfficerDataModal({
     const userStation = deptComStn.find((items) => {
         return items.commId === userData?.data?.commId && items.stnId === userData?.data?.stnId && items.deptId === userData.data.deptId;
     });
-    if (isLoading) {
+    const assigneerStation = deptComStn.find((items) => {
+        return items.commId === assigneeData?.data?.commId && items.stnId === assigneeData?.data?.stnId && items.deptId === assigneeData.data.deptId;
+    });
+
+    if (isLoading || isLoadingAssignee) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
                 <DialogContent aria-describedby="" className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 max-w-4xl w-[90vw] md:w-[70vw] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
@@ -69,48 +74,50 @@ export default function OfficerDataModal({
                 </div> */}
 
                 {/* Officer Details Section */}
-                <div className=" dark:border-gray-700 rounded-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-                        {/* Personal Information */}
-                        <div className="space-y-4">
-                            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <h3 className="font-semibold text-blue-500 dark:text-blue-400">{t("case.officer_detail.personal_title")}</h3>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
-                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
-                                        </div>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
-                                            {userData?.data?.firstName && userData?.data?.lastName
-                                                ? `${userData.data.firstName} ${userData.data.lastName}`
-                                                : "N/A"
-                                            }
-                                        </p>
+                <div className=" md:grid-cols-2 grid gap-3">
+                    <div className=" dark:border-gray-700 rounded-2xl">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full bg-gray-50 dark:bg-gray-900 rounded-lg"> */}
+                        <div className="h-full bg-gray-50 dark:bg-gray-900 rounded-lg">
+                            {/* Personal Information */}
+                            <div className="space-y-4 ">
+                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <h3 className="font-semibold text-blue-500 dark:text-blue-400">{t("case.officer_detail.personal_title")}</h3>
                                     </div>
 
-                                    <div>
+                                    <div className="space-y-4 grid grid-cols-1 md:grid-cols-2">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                                {userData?.data?.firstName && userData?.data?.lastName
+                                                    ? `${userData.data.firstName} ${userData.data.lastName}`
+                                                    : "N/A"
+                                                }
+                                            </p>
+                                        </div>
+
+                                        {/* <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
                                             {officer?.unit?.username || "N/A"}
                                         </p>
-                                    </div>
+                                    </div> */}
 
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">                                                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
-                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">                                                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
+                                                {userData?.data?.mobileNo || "N/A"}
+                                            </p>
                                         </div>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
-                                            {userData?.data?.mobileNo || "N/A"}
-                                        </p>
-                                    </div>
 
-                                    <div>
+                                        {/* <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
@@ -118,20 +125,38 @@ export default function OfficerDataModal({
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
                                             {userData?.data?.email || "N/A"}
                                         </p>
-                                    </div>
+                                    </div> */}
 
-                                    {/* <div>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                                {officer?.unit?.unitId || "N/A"}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Building className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("userform.orgInfo")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                                {userStation && mergeDeptCommandStation(userStation) || "N/A"}
+                                            </p>
+                                        </div>
+                                        {/* <div>
                                         <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Department</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
                                             {userData?.data?.commId || "N/A"}
                                         </p>
                                     </div> */}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Service Information */}
-                        <div className="flex flex-col h-full">
+                            {/* Service Information */}
+                            {/* <div className="flex flex-col h-full">
                             <div className="space-y-4 mb-3">
                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                     <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
@@ -166,11 +191,14 @@ export default function OfficerDataModal({
                                     </div>
                                 </div>
                             </div>
+                        </div> */}
                         </div>
-                    </div>
 
-                    {/* Address Section - Full Width */}
-                    {/* {userData?.data?.address && (
+
+
+
+                        {/* Address Section - Full Width */}
+                        {/* {userData?.data?.address && (
                         <div className="mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -185,8 +213,98 @@ export default function OfficerDataModal({
                     )} */}
 
 
-                </div>
+                    </div>
 
+                    {/* assigneer Data */}
+                    <div className=" dark:border-gray-700 rounded-2xl">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full bg-gray-50 dark:bg-gray-900 rounded-lg"> */}
+                        <div className="h-full bg-gray-50 dark:bg-gray-900 rounded-lg">
+                            {/* Personal Information */}
+                            <div className="space-y-4 ">
+                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <h3 className="font-semibold text-blue-500 dark:text-blue-400">{t("case.officer_detail.assignee_title")}</h3>
+                                    </div>
+
+                                    <div className="space-y-4 grid grid-cols-1 md:grid-cols-2">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.fullname")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                                {assigneeData?.data?.firstName && assigneeData?.data?.lastName
+                                                    ? `${assigneeData.data.firstName} ${assigneeData.data.lastName}`
+                                                    : "N/A"
+                                                }
+                                            </p>
+                                        </div>
+
+                                        {/* <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
+                                            {assigneeData?.data?.username || "N/A"}
+                                        </p>
+                                    </div> */}
+
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">                                                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.mobile_number")}</label>
+                                            </div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
+                                                {assigneeData?.data?.mobileNo || "N/A"}
+                                            </p>
+                                        </div>
+
+                                        {/* <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                            {assigneeData?.data?.email || "N/A"}
+                                        </p>
+                                    </div> */}
+
+
+                                        <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Building className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("userform.orgInfo")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                            {assigneerStation && mergeDeptCommandStation(assigneerStation) || "N/A"}
+                                        </p>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+
+
+                        {/* Address Section - Full Width */}
+                        {/* {userData?.data?.address && (
+                        <div className="mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span className="text-gray-600 dark:text-gray-300 text-xs">📍</span>
+                                </div>
+                                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("case.officer_detail.address")}</label>
+                            </div>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-8">
+                                {userData.data.address}
+                            </p>
+                        </div>
+                    )} */}
+
+
+                    </div>
+                </div>
                 {/* Progress Steps Section */}
                 <div className="rounded-2xl">
                     <div className="flex items-center gap-2 mb-6">

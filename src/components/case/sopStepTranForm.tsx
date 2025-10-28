@@ -20,6 +20,7 @@ export interface ProgressSteps {
 
 export interface ProgressStepPreviewProps {
     progressSteps: ProgressSteps[];
+    sliceIndex?: boolean;
 }
 interface ProgressLane {
     id: string;

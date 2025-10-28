@@ -10,7 +10,6 @@ import { CaseDetails, CaseTypeSubType, FileItem } from "@/types/case";
 import { ChangeEvent, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { detailsStringLimit, source } from "./constants/caseConstants";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
-import { contractMethod, Custommer } from "@/types";
 import { REQUIRED_ELEMENT as requireElements, COMMON_INPUT_CSS as commonInputCss } from "./constants/caseConstants";
 import { useTranslation } from "@/hooks/useTranslation";
 import { findCaseTypeSubType } from "@/components/caseTypeSubType/findCaseTypeSubTypeByMergeName";
@@ -206,10 +205,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             if (!prev) return prev;
             return {
                 ...prev,
-                customerData: {
-                    ...prev.customerData,
-                    contractMethod: data
-                } as Custommer
+                source :data
             };
         });
     }, [setCaseState]);
@@ -318,11 +314,11 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                         <SearchableSelect
                             options={source.map(m => m.name)}
                             className="sm:my-3 sm:mb-3"
-                            value={caseState?.customerData?.contractMethod?.name ?? ""}
+                            value={caseState?.source?.name ?? ""}
                             onChange={(selectedName) => {
                                 const selectedMethod = source.find(method => method.name === selectedName);
                                 if (selectedMethod) handleContactMethodChange(selectedMethod);
-                                else  handleContactMethodChange({} as contractMethod)
+                                else  {}
                             }}
                             placeholder={t("case.display.contact_method_placeholder")}
                         />
