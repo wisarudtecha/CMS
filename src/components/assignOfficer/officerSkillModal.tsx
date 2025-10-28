@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation"
 import { DepartmentCommandStationDataMerged, mergeDeptCommandStation } from "@/store/api/caseApi"
 import { useGetUserByUserNameQuery } from "@/store/api/userApi"
 import { useMemo } from "react"
-import { User, AtSign, Phone, Mail, Truck, Tag, Building } from "lucide-react"
+import { User, Phone, Tag, Building } from "lucide-react"
 import { Unit } from "@/types/dispatch"
 
 interface CreateSubCaseModel {
@@ -26,7 +26,7 @@ export default function OfficerDetailModal({
     if (isLoading) {
         return (
             <Dialog open={!!officer} onOpenChange={onOpenChange}>
-                <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] z-1000001 rounded-lg shadow-2xl overflow-y-auto custom-scrollbar flex flex-col">
+                <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[30vh] z-1000001 rounded-lg shadow-2xl overflow-y-auto custom-scrollbar flex flex-col">
                     <DialogHeader>
                         <DialogTitle hidden={true}>
 
@@ -44,22 +44,22 @@ export default function OfficerDetailModal({
     }
     return (
         <Dialog open={!!officer} onOpenChange={onOpenChange}>
-            <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[70vh] flex flex-col z-1000001 rounded-lg shadow-2xl">
+            <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[30vh] flex flex-col z-1000001 rounded-lg shadow-2xl">
                 <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
                     <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
                         {t("case.officer_detail.personal_title")}
                     </DialogTitle>
                 </DialogHeader>
                 <div className=" dark:border-gray-700 rounded-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-                        {/* Personal Information */}
-                        <div className="space-y-4">
+                    <div className=" h-full">
+
+                        <div className="space-y-4 ">
                             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
                                 <div className="flex items-center gap-2 mb-3">
                                     <h3 className="font-semibold text-blue-500 dark:text-blue-400">{t("case.officer_detail.personal_title")}</h3>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 grid grid-cols-1 md:grid-cols-2">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <User className="w-3 h-3 text-gray-600 dark:text-gray-300" />
@@ -73,14 +73,14 @@ export default function OfficerDetailModal({
                                         </p>
                                     </div>
 
-                                    <div>
+                                    {/* <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <AtSign className="w-3 h-3 text-gray-600 dark:text-gray-300" />                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.username")}</label>
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 font-mono ml-6">
-                                            {officer?.username || "N/A"}
+                                            {officer?.unit?.username || "N/A"}
                                         </p>
-                                    </div>
+                                    </div> */}
 
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">                                                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-300" />
@@ -91,7 +91,7 @@ export default function OfficerDetailModal({
                                         </p>
                                     </div>
 
-                                    <div>
+                                    {/* <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <Mail className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                             <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.email")}</label>
@@ -99,52 +99,32 @@ export default function OfficerDetailModal({
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
                                             {userData?.data?.email || "N/A"}
                                         </p>
-                                    </div>
+                                    </div> */}
 
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                            {officer?.unitId || "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Building className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("userform.orgInfo")}</label>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
+                                            {userStation && mergeDeptCommandStation(userStation) || "N/A"}
+                                        </p>
+                                    </div>
                                     {/* <div>
                                         <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">Department</label>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 mt-1">
                                             {userData?.data?.commId || "N/A"}
                                         </p>
                                     </div> */}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Service Information */}
-                        <div className="flex flex-col h-full">
-                            <div className="space-y-4 mb-3">
-                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg  ">
-                                    <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                        <Truck className="w-4 h-4  " />
-                                        <h3 className="font-semibold ">{t("case.officer_detail.service_title")}</h3>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Tag className="w-3 h-3 text-gray-600 dark:text-gray-300" />
-                                                <label className="text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide">{t("case.officer_detail.vehicle")}</label>
-                                            </div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-400 ml-6">
-                                                {officer?.unitId || "N/A"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex-1 flex flex-col">
-                                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1 flex flex-col">
-                                    <div className="flex items-center gap-2 mb-3 text-blue-500 dark:text-blue-400">
-                                        <Building className="w-4 h-4" />
-                                        <h3 className="font-semibold">{t("userform.orgInfo")}</h3>
-                                    </div>
-
-                                    <div className="flex-1 flex ">
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-400">
-                                            {userStation && mergeDeptCommandStation(userStation) || "N/A"}
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
                         </div>

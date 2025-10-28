@@ -385,7 +385,7 @@ export default function AssignOfficerModal({
                                 <Avatar className="w-8 h-8">
                                   <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
                                     {officer.photo ?
-                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitId
+                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitName
                                         .split(" ")
                                         .map((n) => n[0])
                                         .join("")
@@ -393,7 +393,7 @@ export default function AssignOfficerModal({
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-gray-800 dark:text-white font-medium">
-                                  {officer.unitId}
+                                  {officer.unitName}
                                 </span>
                               </div>
                               <div className="flex items-center justify-center">
@@ -450,8 +450,8 @@ export default function AssignOfficerModal({
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge>
-                {getAvatarIconFromString(selectedOfficerObject.username, "bg-blue-600 dark:bg-blue-700 my-1")}
-                {selectedOfficerObject.unitId}
+                {getAvatarIconFromString(selectedOfficerObject.unitName, "bg-blue-600 dark:bg-blue-700 my-1")}
+                {selectedOfficerObject.unitName}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()

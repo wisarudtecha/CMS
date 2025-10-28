@@ -678,7 +678,7 @@ const ServiceDashboard: React.FC = () => {
         
         // Check if additionalJson exists
         if (!data.additionalJson) {
-          console.warn("⚠️ Message missing additionalJson:", data);
+          // console.warn("⚠️ Message missing additionalJson:", data);
           return;
         }
 
@@ -703,7 +703,7 @@ const ServiceDashboard: React.FC = () => {
             break;
             
           default:
-            console.warn("⚠️ Unknown message type:", messageType);
+            // console.warn("⚠️ Unknown message type:", messageType);
         }
       }
       catch (error) {
@@ -743,7 +743,7 @@ const ServiceDashboard: React.FC = () => {
     return () => {
       sender();
     };
-  }, [connectionState, isConnected, isMounted, send]);
+  });
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 cursor-default">

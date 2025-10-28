@@ -16,6 +16,7 @@ import { findCaseTypeSubType } from "@/components/caseTypeSubType/findCaseTypeSu
 import { TodayLocalDate } from "@/components/date/DateToString";
 import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
 import TextAreaWithCounter from "../form/input/TextAreaWithCounter";
+import { sourceInterface } from "@/types";
 
 interface CaseTypeFormSectionProps {
     handleGetTypeFormData: (getTypeData: FormField) => void;
@@ -316,9 +317,10 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                             className="sm:my-3 sm:mb-3"
                             value={caseState?.source?.name ?? ""}
                             onChange={(selectedName) => {
+
                                 const selectedMethod = source.find(method => method.name === selectedName);
                                 if (selectedMethod) handleContactMethodChange(selectedMethod);
-                                else  {}
+                                else { handleContactMethodChange({} as sourceInterface) }
                             }}
                             placeholder={t("case.display.contact_method_placeholder")}
                         />
