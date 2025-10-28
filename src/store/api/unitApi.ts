@@ -5,7 +5,7 @@
  */
 import { baseApi } from "@/store/api/baseApi";
 import type { ApiResponse } from "@/types";
-import type { Unit, UnitQueryParams, UnitStatus, UnitUpdateData } from "@/types/unit";
+import type { Unit, UnitQueryParams, UnitStatus, UnitUpdateData, Properties, PropertiesQueryParams } from "@/types/unit";
 
 export const unitApi = baseApi.injectEndpoints({
   endpoints: builder => ({
@@ -61,6 +61,19 @@ export const unitApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Unit"],
     }),
+
+    getProperties: builder.query<ApiResponse<Properties[]>, PropertiesQueryParams>({
+      query: params => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/mdm/properties?${searchParams.toString()}`;
+      },
+      providesTags: ["Unit"],
+    }),
   }),
 });
 
@@ -70,5 +83,6 @@ export const {
   useGetUnitsByIdQuery,
   useGetUnitsQuery,
   useUpdateUnitsMutation,
-  useGetUnitStatusQuery
+  useGetUnitStatusQuery,
+  useGetPropertiesQuery,
 } = unitApi;

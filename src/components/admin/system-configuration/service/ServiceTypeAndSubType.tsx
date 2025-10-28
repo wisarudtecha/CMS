@@ -1,34 +1,60 @@
 // /src/components/admin/system-configuration/service/ServiceTypeAndSubType.tsx
 import React, { useEffect, useState } from "react";
 import { Folder, Plus, RefreshCw } from "lucide-react";
-import { FolderIcon, ListIcon } from "@/icons";
+// import { FolderIcon, ListIcon } from "@/icons";
 import ServiceHierarchyView from "@/components/admin/system-configuration/service/ServiceHierarchyView";
 // import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 // import Select from "@/components/form/Select";
+import Button from "@/components/ui/button/Button";
 import type {
   CaseTypeManagementProps,
   EnhancedCaseSubType,
-  // EnhancedCaseType
+  EnhancedCaseType
 } from "@/types/case";
 
 const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   // analytics,
   caseSubTypes,
-  // caseTypes,
+  caseTypes,
   className,
   filteredTypes,
+  properties,
   searchQuery,
-  setSearchQuery
+  skills,
+  workflows,
+  handleSTypeDelete,
+  handleSTypeReset,
+  handleTypeDelete,
+  handleTypeReset,
+  setSearchQuery,
+  setCaseSla,
+  setMDeviceType,
+  setMWorkOrderType,
+  setPriority,
+  setSTypeCode,
+  setSTypeEn,
+  setSTypeId,
+  setSTypeIsOpen,
+  setSTypeTh,
+  setSTypeTypeId,
+  setTypeEn,
+  setTypeId,
+  setTypeIsOpen,
+  setTypeTh,
+  setUnitPropLists,
+  setUserSkillList,
+  setWfId
 }) => {
   // State management
   const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
-  // const [, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
+  const [caseType, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
   // const [searchQuery, setSearchQuery] = useState("");
   // const [filterCategory, setFilterCategory] = useState<string>("all");
   // const [showInactive, setShowInactive] = useState(false);
   const [showInactive, ] = useState(false);
-  const [viewMode, setViewMode] = useState<"hierarchy" | "list">("hierarchy");
+  // const [viewMode, setViewMode] = useState<"hierarchy" | "list">("hierarchy");
+  const [viewMode, ] = useState<"hierarchy" | "list">("hierarchy");
   // const [viewMode, setViewMode] = useState<"hierarchy" | "list" | "analytics">("hierarchy");
   // const [isLoading, setIsLoading] = useState(false);
   const [isLoading, ] = useState(false);
@@ -41,19 +67,47 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   };
 
   useEffect(() => {
+    setCaseType(caseTypes || []);
+  }, [caseTypes]);
+
+  useEffect(() => {
     setCaseSubType(caseSubTypes || []);
   }, [caseSubTypes]);
 
   // Render functions
   const renderTypeHierarchy = () => (
     <ServiceHierarchyView
-      // analytics={analytics || {}}
+      // analytics={mockAnalytics}
       caseSubTypes={caseSubType || []}
-      caseTypes={filteredTypes || []}
-      // filteredTypes={filteredTypes || []}
+      caseTypes={caseType || []}
+      filteredTypes={filteredTypes || []}
+      properties={properties}
+      searchQuery={searchQuery}
       showInactive={showInactive}
-      // setCaseTypes={setCaseType}
-      // setIsLoading={setIsLoading}
+      skills={skills}
+      workflows={workflows}
+      handleSTypeDelete={handleSTypeDelete!}
+      handleSTypeReset={handleSTypeReset!}
+      handleTypeDelete={handleTypeDelete!}
+      handleTypeReset={handleTypeReset!}
+      setSearchQuery={setSearchQuery}
+      setCaseSla={setCaseSla!}
+      setMDeviceType={setMDeviceType!}
+      setMWorkOrderType={setMWorkOrderType!}
+      setPriority={setPriority!}
+      setSTypeCode={setSTypeCode!}
+      setSTypeEn={setSTypeEn!}
+      setSTypeId={setSTypeId!}
+      setSTypeIsOpen={setSTypeIsOpen!}
+      setSTypeTh={setSTypeTh!}
+      setSTypeTypeId={setSTypeTypeId!}
+      setTypeEn={setTypeEn!}
+      setTypeId={setTypeId!}
+      setTypeIsOpen={setTypeIsOpen!}
+      setTypeTh={setTypeTh!}
+      setUnitPropLists={setUnitPropLists!}
+      setUserSkillList={setUserSkillList!}
+      setWfId={setWfId!}
     />
   );
 
@@ -63,6 +117,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="mt-4 sm:mt-0 xl:flex space-y-2 xl:space-y-0 items-center space-x-3">
+            {/*
             <div className="flex">
               <button
                 onClick={() => setViewMode("hierarchy")}
@@ -87,6 +142,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
                 <ListIcon className="w-4 h-4" />
               </button>
             </div>
+            */}
             
             {/* Toolbar */}
             <div className="xl:flex space-y-2 xl:space-y-0 items-center space-x-4">
@@ -126,6 +182,17 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
                 <span className="text-sm text-gray-500 dark:text-gray-400 w-28">Show Inactive</span>
               </label>
               */}
+            </div>
+          </div>
+          <div className="mt-4 sm:mt-0 xl:flex space-y-2 xl:space-y-0 items-center space-x-3">
+            <div className="xl:flex">
+              <Button
+                onClick={() => {
+                  handleTypeReset!();
+                  setTypeIsOpen!(true);
+                }} size="sm">
+                Create Type
+              </Button>
             </div>
           </div>
         </div>

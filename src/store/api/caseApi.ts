@@ -177,8 +177,11 @@ export interface CaseListParams extends PaginationParams {
     createBy?: string;
     countryId?: string;
     provId?: string;
+    statusId?:string;
     distId?: string;
     phoneNo?: string;
+    direction?:string;
+    orderBy?:string;
 }
 
 export interface CaseHistory {
@@ -255,7 +258,7 @@ export const caseApi = baseApi.injectEndpoints({
 
         getCaseByIdMutation: builder.mutation<ApiResponse<Case>, { caseId: string }>({
             query: (params) => ({
-                url: `/caseId/${params.caseId}`,
+                url: `/case/caseId/${params.caseId}`,
                 params,
             }),
             invalidatesTags: ["Cases"],
@@ -271,7 +274,7 @@ export const caseApi = baseApi.injectEndpoints({
 
         getCaseResults : builder.query<ApiResponse<caseResults[]>, PaginationParams>({
             query: (params) => ({
-                url: "/caseResult/",
+                url: "/case/result/",
                 params,
             }),
             providesTags: ["Cases"],

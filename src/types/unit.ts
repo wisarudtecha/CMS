@@ -147,3 +147,21 @@ export interface UnitStatus {
   createdBy: string;
   updatedBy: string;
 }
+
+export interface Properties {
+  id: string;
+  propId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface PropertiesQueryParams {
+  start?: number | 0;
+  length?: number | 10;
+}

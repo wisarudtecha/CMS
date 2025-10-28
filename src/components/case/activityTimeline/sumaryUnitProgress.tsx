@@ -52,7 +52,7 @@ export default function ProgressSummary({ progressSteps }: ProgressSummaryProps)
             totalDuration,
             totalDurationMinutes,
             slaUsagePercent,
-            completionRate: completed && totalSLA > 0 ? Math.round((completed / totalSLA) * 100) : 100
+            completionRate: completed && totalSLA > 0 ? Math.round((completed / totalSLA) * 100) : 0
         }
     }, [filteredSteps])
 

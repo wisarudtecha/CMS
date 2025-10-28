@@ -3,6 +3,9 @@ import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
 import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
 import type { BaseEntity, Custommer } from "@/types";
+import type { Properties } from "@/types/unit";
+import type { EnhancedSkill } from "@/types/user";
+import type { Workflow } from "@/types/workflow";
 import { CaseSop, DeviceMetaData } from "./dispatch";
 
 export interface Attachment {
@@ -18,7 +21,6 @@ export interface Attachment {
     createdBy: string;
     updatedBy: string;
 }
-
 
 export interface CaseEntity extends BaseEntity {
   orgId: string;
@@ -39,6 +41,7 @@ export interface CaseEntity extends BaseEntity {
   statusId: string;
   caseLat: string;
   caseLon: string;
+  caseLocAddr: string;
   caselocAddr: string;
   caselocAddrDecs: string;
   countryId: string;
@@ -95,8 +98,33 @@ export interface CaseTypeManagementProps {
   caseTypes?: EnhancedCaseType[];
   className?: string;
   filteredTypes?: EnhancedCaseType[];
+  properties?: Properties[];
   searchQuery?: string;
+  showInactive?: boolean;
+  skills?: EnhancedSkill[];
+  workflows?: Workflow[];
+  handleSTypeDelete?: (id: number) => void;
+  handleSTypeReset?: () => void;
+  handleTypeDelete?: (id: number) => void;
+  handleTypeReset?: () => void;
   setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
+  setCaseSla?: (sla: string) => void;
+  setMDeviceType?: (deviceType: string) => void;
+  setMWorkOrderType?: (workOrderType: string) => void;
+  setPriority?: (priority: string) => void;
+  setSTypeCode?: (code: string) => void;
+  setSTypeEn?: (en: string) => void;
+  setSTypeId?: (id: string) => void;
+  setSTypeIsOpen?: (isOpen: boolean) => void;
+  setSTypeTh?: (th: string) => void;
+  setSTypeTypeId?: (typeId: string) => void;
+  setTypeEn?: (th: string) => void;
+  setTypeId?: (id: string) => void;
+  setTypeIsOpen?: (isOpen: boolean) => void;
+  setTypeTh?: (en: string) => void;
+  setUnitPropLists?: (propId: string[]) => void;
+  setUserSkillList?: (skillId: string[]) => void;
+  setWfId?: (wfId: string) => void;
 }
 
 export interface CaseTypeSubType {
@@ -170,6 +198,8 @@ export interface EnhancedCaseSubType {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
+  mDeviceType: string;
+  mWorkOrderType: string;
   // Enhanced fields
   automationRules?: AutomationRule[];
   skillRequirements?: SkillRequirement[];
@@ -178,6 +208,41 @@ export interface EnhancedCaseSubType {
   costCenters?: string[];
   estimatedDuration?: number;
   complexity?: "low" | "medium" | "high" | "critical";
+}
+
+export interface CaseSubTypesCreateData {
+  active: boolean;
+  caseSla: string;
+  en: string;
+  priority: string;
+  sTypeCode: string;
+  th: string;
+  typeId: string;
+  unitPropLists: string[];
+  userSkillList: string[];
+  wfId: string;
+  mDeviceType: string;
+  mWorkOrderType: string;
+}
+
+export interface CaseSubTypesUpdateData {
+  active: boolean;
+  caseSla: string;
+  en: string;
+  priority: string;
+  sTypeCode: string;
+  th: string;
+  typeId: string;
+  unitPropLists: string[];
+  userSkillList: string[];
+  wfId: string;
+  mDeviceType: string;
+  mWorkOrderType: string;
+}
+
+export interface CaseSubTypesQueryParams {
+  start: number;
+  length: number;
 }
 
 export interface EscalationRule {
@@ -223,6 +288,23 @@ export interface EnhancedCaseType {
   parentTypeId?: string;
   level?: number;
   sortOrder?: number;
+}
+
+export interface CaseTypesCreateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
+export interface CaseTypesUpdateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
+export interface CaseTypesQueryParams {
+  start: number;
+  length: number;
 }
 
 export interface ProgressStep {
@@ -279,26 +361,25 @@ export interface CaseDetails {
   category: string
   formData?: FormField
   caseType?: formType
-  serviceCenter?:DepartmentCommandStationDataMerged
-  customerData?:Custommer
-  location?:string
-  attachFile?:FileItem[]
-  requireSchedule?:boolean
-  area?:Area
-  scheduleDate?:string
-  workOrderNummber?:string
-  workOrderRef?:string
-  workOrderDate?:string
-  iotDevice?:string
-  iotDate?:string
-  attachFileResult?:FileItem[]
-  updateBy?:string
-  lastUpdate?:string
-  deviceMetaData?:DeviceMetaData
-  resultDetail?:string
-  resultId?:string
+  serviceCenter?: DepartmentCommandStationDataMerged
+  customerData?: Custommer
+  location?: string
+  attachFile?: FileItem[]
+  requireSchedule?: boolean
+  area?: Area
+  scheduleDate?: string
+  workOrderNummber?: string
+  workOrderRef?: string
+  workOrderDate?: string
+  iotDevice?: string
+  iotDate?: string
+  attachFileResult?: FileItem[]
+  updateBy?: string
+  lastUpdate?: string
+  deviceMetaData?: DeviceMetaData
+  resultDetail?: string
+  resultId?: string
 }
-
 
 export interface caseResults {
   id: string;

@@ -21,11 +21,14 @@ import type {
   RoleQueryParams,
 } from "@/types/role";
 import type {
+  EnhancedSkill,
+  SkillQueryParams,
   // UserCreateData,
   UserGroup,
   UserGroupQueryParams,
   UserProfile,
   UserQueryParams,
+  UserUnitInfo,
   // UserUpdateData
 } from "@/types/user";
 
@@ -242,6 +245,13 @@ export const userApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    
+    getUserByUserNameForCaseInfo: builder.query<ApiResponse<UserUnitInfo>, { username: string }>({
+      query: ({ username }) => ({
+        url: `/users/username/ForCaseInfo/${username}`,
+        method: "GET",
+      }),
+    }),
 
     // Bulk operations
     bulkUpdateUsers: builder.mutation<ApiResponse<{ successful: string[]; failed: string[] }>, {
@@ -312,6 +322,20 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST",
       }),
     }),
+
+    // Skill
+    getSkills: builder.query<ApiResponse<EnhancedSkill[]>, SkillQueryParams>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/skill?${searchParams.toString()}`;
+      },
+      // providesTags: ["User"],
+    }),
   }),
 });
 
@@ -325,6 +349,7 @@ export const {
   useGetUserGroupQuery,
   useCreateUserRolesMutation,
   useGetUserRolesQuery,
+  useGetUserByUserNameForCaseInfoQuery,
   useUpdateUserRolesMutation,
   useDeleteUserRolesMutation,
   useGetUserRolesPermissionsQuery,
@@ -345,4 +370,5 @@ export const {
   useImpersonateUserMutation,
   useStopImpersonationMutation,
   useGetUserByUserNameQuery,
+  useGetSkillsQuery,
 } = userApi;

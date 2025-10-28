@@ -35,7 +35,7 @@ const CaseHistoryPage: React.FC = () => {
   const { data: areasData } = useGetAreaQuery(null);
   const areas = areasData?.data as unknown as Area[] || [];
 
-  const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
+  const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 10 });
   const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
 
   const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });

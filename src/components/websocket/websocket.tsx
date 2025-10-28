@@ -1,6 +1,6 @@
 // contexts/WebSocketContext.tsx
 import React, { createContext, useContext, useRef, useEffect, useState, ReactNode } from 'react';
-import { getNewCaseData, getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
+import {  getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
 import { CaseEntity } from '@/types/case';
 
 export interface WebSocketMessage {
@@ -57,7 +57,8 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
   switch (message.data?.EVENT) {
     case "CASE-CREATE":
       (async () => {
-        await getNewCaseData();
+        const caseId = message.data.additionalJson.caseId;
+        await getNewCaseDataByCaseId(caseId);
         window.dispatchEvent(new StorageEvent("storage", {
           key: "caseList",
           newValue: localStorage.getItem("caseList"),
@@ -67,8 +68,8 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
 
     case "CASE-UPDATE":
       (async () => {
-        const caseIdFromUrl = message.data.redirectUrl.split('/case/')[1];
-        await getNewCaseDataByCaseId(caseIdFromUrl);
+        const caseId = message.data.additionalJson.caseId;
+        await getNewCaseDataByCaseId(caseId);
         window.dispatchEvent(new StorageEvent("storage", {
           key: "caseList",
           newValue: localStorage.getItem("caseList"),
@@ -169,7 +170,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
 
     reconnectAttemptsRef.current++;
-    // console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
+    console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
 
     reconnectTimeoutRef.current = setTimeout(() => {
       websocket(config || defalutWebsocketConfig);
@@ -254,7 +255,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onclose = (event) => {
-        // console.log('WebSocket disconnected:', event.code, event.reason);
+        console.log('WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
         setConnectionState('disconnected');
         isConnectingRef.current = false;

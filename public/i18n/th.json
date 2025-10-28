@@ -794,7 +794,8 @@
       "not_match_officer": "ไม่ค้นพบเจ้าหน้าที่ที่ค้นหา",
       "assign_button": "มอบหมายงานให้เจ้าหน้าที่",
       "select": "มอบหมาย",
-      "officer": "เจ้าหน้าที่"
+      "officer": "เจ้าหน้าที่",
+      "end_of_action":"เสร็จสิ้น"
     },
     "officer_detail": {
       "personal_title": "ข้อมูลเจ้าหน้าที่",

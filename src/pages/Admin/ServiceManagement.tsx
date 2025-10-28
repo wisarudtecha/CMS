@@ -21,7 +21,13 @@
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi";
+import { useGetPropertiesQuery } from "@/store/api/unitApi";
+import { useGetSkillsQuery } from "@/store/api/userApi";
+import { useGetWorkflowsQuery } from "@/store/api/workflowApi";
 import type { EnhancedCaseSubType, EnhancedCaseType } from "@/types/case";
+import type { Properties } from "@/types/unit";
+import type { EnhancedSkill } from "@/types/user";
+import type { Workflow } from "@/types/workflow";
 import ServiceManagementComponent from "@/components/admin/system-configuration/service/ServiceManagement"; 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -36,6 +42,15 @@ const CaseManagementPage: React.FC = () => {
   const { data: caseTypesData } = useGetTypeQuery(null);
   const caseTypes = caseTypesData?.data as unknown as EnhancedCaseType[] || [];
 
+  const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 100 });
+  const properties = propertiesData?.data as unknown as Properties[] || [];
+
+  const { data: skillsData } = useGetSkillsQuery({ start: 0, length: 100 });
+  const skills = skillsData?.data as unknown as EnhancedSkill[] || [];
+
+  const { data: workflowsData } = useGetWorkflowsQuery("");
+  const workflows = workflowsData?.data as unknown as Workflow[] || [];
+
   return (
     <>
       <PageMeta
@@ -46,7 +61,13 @@ const CaseManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["service.view"]}>
         <PageBreadcrumb pageTitle="Service Management" />
 
-        <ServiceManagementComponent caseSubTypes={caseSubTypes} caseTypes={caseTypes} />
+        <ServiceManagementComponent
+          caseSubTypes={caseSubTypes}
+          caseTypes={caseTypes}
+          properties={properties}
+          skills={skills}
+          workflows={workflows}
+        />
       </ProtectedRoute>
     </>
   );

@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog/dialog"
-import { useGetUserByUserNameQuery } from "@/store/api/userApi"
+import { useGetUserByUserNameForCaseInfoQuery } from "@/store/api/userApi"
 import { mapSopToOrderedProgress } from "./sopStepTranForm"
 import { useMemo } from "react"
 import { DialogTitle } from "@radix-ui/react-dialog"
@@ -20,7 +20,7 @@ export default function OfficerDataModal({
     officer,
     onOpenChange,
 }: OfficerDataModal) {
-    const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username })
+    const { data: userData, isLoading } = useGetUserByUserNameForCaseInfoQuery({ username: officer.unit.username })
     const { t, language } = useTranslation();
     const permissions = usePermissions();
     const progressSteps = useMemo(() => {

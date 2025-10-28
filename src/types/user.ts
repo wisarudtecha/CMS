@@ -15,10 +15,10 @@ export interface EnhancedSkill {
   skillId: string;
   en: string;
   th: string;
-  category: "technical" | "operational" | "safety" | "certification" | "soft_skill";
-  level: "basic" | "intermediate" | "advanced" | "expert";
-  prerequisites: string[];
-  certificationRequired: boolean;
+  category?: "technical" | "operational" | "safety" | "certification" | "soft_skill";
+  level?: "basic" | "intermediate" | "advanced" | "expert";
+  prerequisites?: string[];
+  certificationRequired?: boolean;
   expirationPeriod?: number; // months
   active: boolean;
   icon?: string;
@@ -27,6 +27,11 @@ export interface EnhancedSkill {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
+}
+
+export interface SkillQueryParams {
+  start: number;
+  length: number;
 }
 
 export interface EnhancedUserSkill {
@@ -384,6 +389,31 @@ export interface UserProfile {
   updatedBy: string;
   meta?: Meta;
   permissions?: string[];
+}
+
+export interface UserUnitInfo {
+  id: string;
+  displayName: string;
+  title: string;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  gender: string;
+  mobileNo: string | null;
+  address: string | null;
+  photo: string | null;
+  username: string;
+  email: string | null;
+  empId: string;
+  deptId: string;
+  commId: string;
+  stnId: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  skills: Array<Record<string, any>> | null;
+  areas: Array<Record<string, any>> | null;
 }
 
 export interface UserInfoCardProps {

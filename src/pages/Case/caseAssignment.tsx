@@ -25,7 +25,6 @@ import { SearchableSelect, SearchableSelectApi } from "@/components/SearchInput/
 import { caseStatusGroup, CaseStatusInterface, statusIdToStatusTitle } from "@/components/ui/status/status"
 import { CaseEntity } from "@/types/case"
 import { useNavigate } from "react-router"
-import { getNewCaseData } from "@/components/case/caseLocalStorage.tsx/caseListUpdate"
 import { useTranslation } from "@/hooks/useTranslation"
 import { SLACountdownBadgeAssignment } from "@/components/Sla/Sla"
 import { Area, mergeArea } from "@/store/api/area"
@@ -161,14 +160,15 @@ export default function CasesView() {
     setAdvancedFilters(clearedFilters);
     localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
-    await getNewCaseData();
+    await fetchCase({});
     const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
   const handleRefreshCase = async () => {
     setIsRefreshing(true);
-    await getNewCaseData();
+    await fetchCase({});
+
     setTimeout(() => {
       setIsRefreshing(false);
     }, 5000);
@@ -420,7 +420,7 @@ export default function CasesView() {
 
         </div>
         {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
-        <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[40px]">{caseItem.caselocAddr}</p>
+        <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[40px]">{caseItem.caseLocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (
             <div className="flex items-center space-x-2">
@@ -526,7 +526,7 @@ export default function CasesView() {
                 <div className="col-span-2 flex items-center">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600 dark:text-gray-300 ">
-                      {caseItem.caselocAddr || '-'}
+                      {caseItem.caseLocAddr || '-'}
                     </span>
                   </div>
                 </div>

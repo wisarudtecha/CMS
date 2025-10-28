@@ -793,7 +793,8 @@
       "not_match_officer": "No officers match your search",
       "assign_button": "Assign Selected Officers",
       "select": "Selected",
-      "officer": "officer"
+      "officer": "officer",
+      "end_of_action":"Done"
     },
     "officer_detail": {
       "personal_title": "Personal Details",
@@ -802,7 +803,7 @@
       "mobile_number": "Mobile Number",
       "email": "EMAIL",
       "service_title": "Service Details",
-      "vehicle": "Vehicle ID",
+      "vehicle": "Unit ID",
       "address": "Address",
       "service_progress_title": "Service Progress"
     },

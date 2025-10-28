@@ -424,6 +424,11 @@ export interface ApiResponse<T> {
     timestamp: string;
     requestId: string;
   };
+  pageSize?: number;
+  totalFiltered?:number;
+  totalPage?:number;
+  totalRecords?:number
+  currentPage?:number
 }
 
 // ===================================================================

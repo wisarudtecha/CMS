@@ -1,4 +1,4 @@
-import { CaseDetails, CaseEntity, FileItem } from "@/types/case";
+import { CaseDetails, FileItem } from "@/types/case";
 import { memo, useCallback, useState } from "react";
 import { CaseFormFields } from "../caseFormFields";
 import { Customer } from "@/store/api/custommerApi";
@@ -11,7 +11,7 @@ import PreviewDataBeforeSubmit from "../PreviewCaseData";
 import { TodayDate, TodayLocalDate } from "@/components/date/DateToString";
 import { exampleCaseState } from "../constants/exampleData";
 import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataValidation/caseDataValidation";
-import { insertCaseToLocalStorage, updateCaseInLocalStorage } from "../caseLocalStorage.tsx/caseListUpdate";
+import { updateCaseInLocalStorage } from "../caseLocalStorage.tsx/caseListUpdate";
 import { TranslationParams } from "@/types/i18n";
 import { CaseLayout } from "./layout";
 import { ToastContainer } from "@/components/crud/ToastContainer";
@@ -289,13 +289,13 @@ const saveCase = useCallback(
                 setOriginalFiles(attachmentFiles);
                 console.log(`📎 Tracking ${attachmentFiles.length} attachments`);
 
-                const newCase = {
-                    ...(casePayload as object),
-                    caseId: newCaseId,
-                    createdAt: TodayDate(),
-                    createdBy: profile?.username || ""
-                } as CaseEntity;
-                insertCaseToLocalStorage(newCase);
+                // const newCase = {
+                //     ...(casePayload as object),
+                //     caseId: newCaseId,
+                //     createdAt: TodayDate(),
+                //     createdBy: profile?.username || ""
+                // } as CaseEntity;
+                // insertCaseToLocalStorage(newCase);
 
             } else {
                 // ===== UPDATE EXISTING CASE =====

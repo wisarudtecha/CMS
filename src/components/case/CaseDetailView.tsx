@@ -43,6 +43,7 @@ import removeCaseFromLocalStore from "./caseLocalStorage.tsx/removeCaseFromLocal
 import AttachedFiles from "../Attachment/AttachmentPreviewList"
 import { isAttachment, validateFile } from "../Attachment/AttachmentConv"
 import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from "@/store/api/file"
+import { updateCaseInLocalStorage } from "./caseLocalStorage.tsx/caseListUpdate"
 
 
 const CaseHeader = memo(({
@@ -146,7 +147,7 @@ const OfficerItem = memo(({
                         >
                             {caseStatus.find((item) =>
                                 officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
-                            )?.[language === "th" ? "th" : "en"] || "End"}
+                            )?.[language === "th" ? "th" : "en"] || t("case.assign_officer_modal.end_of_action")}
                         </Button>
                         {canCancel && <Button
                             className="ml-2"
@@ -378,7 +379,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
                 // const currentFiles = prev.attachFile ?? [];
 
-                updateCaseState({ attachFile: [...(caseState?.attachFile || []),...uploadedFiles] })
+                updateCaseState({ attachFile: [...(caseState?.attachFile || []), ...uploadedFiles] })
                 // addToast?.("success", t("case.display.toast.upload_file_success"));
             }
         } catch (error) {
@@ -646,37 +647,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [showOfficersData?.unit.unitId]);
 
 
-    const updateCaseInLocalStorage = useCallback((updateJson: CreateCase) => {
-        try {
-            const caseListData = localStorage.getItem("caseList");
-            const caseList: CaseEntity[] = caseListData ? JSON.parse(caseListData) : [];
-            const caseIdToUpdate = sopData?.data?.caseId;
-            if (!caseIdToUpdate) return false;
 
-            const caseIndex = caseList.findIndex(item => (item.caseId || item.caseId) === caseIdToUpdate);
-            if (caseIndex === -1) return false;
-
-            const originalCase = caseList[caseIndex];
-            const updatedCase = {
-                ...originalCase,
-                ...updateJson,
-                caseSla: Number(updateJson.caseSla),
-                id: originalCase.id,
-                caseId: originalCase.caseId,
-                createdAt: originalCase.createdAt,
-                createdBy: originalCase.createdBy,
-                updatedAt: TodayDate(),
-                updatedBy: profile?.username || "",
-            };
-
-            caseList[caseIndex] = updatedCase;
-            localStorage.setItem("caseList", JSON.stringify(caseList));
-            return true;
-        } catch (error) {
-            console.error("Error updating case in localStorage:", error);
-            return false;
-        }
-    }, [sopData?.data, profile]);
 
     // const handleFileChangeToServer = async (
     //     newFiles: FileItem[],
@@ -783,7 +754,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
             // await handleFileChangeToServer(caseState?.attachFile || [], sopData?.data?.attachments || [], caseState?.workOrderNummber || "");
             await updateCase({ caseId: caseState?.workOrderNummber || "", updateCase: updateJson }).unwrap();
-            updateCaseInLocalStorage(updateJson);
+            updateCaseInLocalStorage(updateJson, updateJson.caseId);
             if (caseState?.status === "S000") {
                 setCaseState(prev => prev ? { ...prev, status: "S001" } : prev);
                 if (caseState?.workOrderNummber) navigate("/case/" + caseState?.workOrderNummber);

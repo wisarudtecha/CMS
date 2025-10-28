@@ -453,13 +453,13 @@ export default function AuditLog() {
                 bg: 'bg-green-100 dark:bg-green-900/30', 
                 text: t("audit_log.success") || "Success" 
             };
-            case 1: return { 
+            case -1: return { 
                 icon: XCircle, 
                 color: 'text-red-500 dark:text-red-400', 
                 bg: 'bg-red-100 dark:bg-red-900/30', 
                 text: t("audit_log.failed") || "Failed" 
             };
-            case 2: return { 
+            case -2: return { 
                 icon: AlertCircle, 
                 color: 'text-yellow-500 dark:text-yellow-400', 
                 bg: 'bg-yellow-100 dark:bg-yellow-900/30', 

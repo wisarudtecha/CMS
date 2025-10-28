@@ -1,59 +1,47 @@
 // utils/caseUtils.ts
 import { TodayDate } from '@/components/date/DateToString';
-import distIdCommaSeparate from '@/components/profile/profileDistId';
 import { store } from '@/store';
-import { caseApi, CreateCase } from '@/store/api/caseApi';
+import { Case, caseApi, CreateCase } from '@/store/api/caseApi';
 import { CaseEntity } from '@/types/case';
 
-export const getNewCaseData = async () => {
-    try {
-        const result = await store.dispatch(
-            caseApi.endpoints.getListCaseMutation.initiate({distId:distIdCommaSeparate()})
-        );
-
-        if ('data' in result && result.data?.data) {
-            localStorage.setItem("caseList", JSON.stringify(result.data.data));
-            console.log('Case list updated successfully');
-        } else if ('error' in result) {
-            console.error('Failed to fetch case data:', result.error);
-        }
-    } catch (error) {
-        console.error('Error in getNewCaseData:', error);
-    }
-};
 
 export const getNewCaseDataByCaseId = async (caseId: string) => {
-    try {
+  try {
+    const result = await store.dispatch(
+      caseApi.endpoints.getCaseByIdMutation.initiate({ caseId })
+    );
 
-        const result = await store.dispatch(
-            caseApi.endpoints.getCaseByIdMutation.initiate({ caseId })
-        );
-        if (result?.data?.data) {
-            const caseList = JSON.parse(localStorage.getItem("caseList") ?? "{}") as CaseEntity[];
-            const updatedCaseList = caseList.map((item) =>
-                item.caseId === caseId
-                    ? result.data.data
-                    : item
-            );
-            localStorage.setItem("caseList", JSON.stringify(updatedCaseList))
-            console.log('Case list updated successfully');
-        } else if ('error' in result) {
-            console.error('Failed to fetch case data:', result.error);
-        }
-    } catch (error) {
-        console.error('Error in getNewCaseData:', error);
+    if (!result?.data?.data) {
+      if ('error' in result) {
+        console.error('Failed to fetch case data:', result.error);
+      }
+      return;
     }
+
+    const newCaseData = result.data.data;
+    const caseList = JSON.parse(localStorage.getItem("caseList") || "[]") as Case[];
+    const existingCaseIndex = caseList.findIndex((item) => item.caseId === caseId);
+
+    if (existingCaseIndex !== -1) {
+      caseList[existingCaseIndex] = newCaseData;
+      console.log('Case updated successfully');
+    } else {
+      caseList.push(newCaseData);
+      console.log('New case added successfully');
+    }
+
+    localStorage.setItem("caseList", JSON.stringify(caseList));
+
+  } catch (error) {
+    console.error('Error in getNewCaseDataByCaseId:', error);
+  }
 };
 
 
 export const clearCaseData = () => {
-    localStorage.removeItem("caseList");
+  localStorage.removeItem("caseList");
 };
 
-export const getCachedCaseData = () => {
-    const caseList = localStorage.getItem("caseList");
-    return caseList ? JSON.parse(caseList) : null;
-};
 
 
 function getPriorityOrder(priority: number): number {
@@ -112,7 +100,7 @@ export function updateCaseInLocalStorage(
     if (!caseIdToUpdate) return false;
 
     const caseIndex = caseList.findIndex(
-      (item) => (item.id || item.caseId) === caseIdToUpdate
+      (item) => item.caseId === caseIdToUpdate
     );
     if (caseIndex === -1) return false;
 
@@ -120,8 +108,9 @@ export function updateCaseInLocalStorage(
     const updatedCase: CaseEntity = {
       ...originalCase,
       ...updateJson,
-      caseSla:Number(updateJson.caseSla),
+      caseSla: Number(updateJson.caseSla),
       id: originalCase.id,
+      caseLocAddr: updateJson.caselocAddr,
       caseId: originalCase.caseId,
       createdAt: originalCase.createdAt,
       createdBy: originalCase.createdBy,

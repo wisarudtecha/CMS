@@ -174,13 +174,13 @@ const PrivilegeMatrixContent: React.FC<{
 
       <div className="overflow-x-auto overflow-y-auto" ref={containerRef} style={{maxHeight}}>
         <table className="min-w-full border-collapse">
-          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 cursor-default">
-            <tr className="bg-gray-100 dark:bg-gray-800">
-              <th className="bg-gray-100 dark:bg-gray-800 px-6 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider sticky left-0">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 cursor-default">
+            <tr className="bg-gray-100 dark:bg-gray-800 z-100">
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider sticky left-0 bg-gray-100 dark:bg-gray-800 z-100">
                 Permission
               </th>
               {roles.map(role => (
-                <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider min-w-24">
+                <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider min-w-24 bg-gray-100 dark:bg-gray-800 z-100">
                   <div className="flex flex-col items-center">
                     <span className="tracking-wider max-w-20 capitalize">{role.roleName.replace(/_/g, " ")}</span>
                   </div>
@@ -222,7 +222,7 @@ const PrivilegeMatrixContent: React.FC<{
                     // className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
                     className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300`}
                   >
-                    <td className="px-6 py-4 sticky left-0 bg-white dark:bg-gray-900 cursor-default z-100">
+                    <td className="px-6 py-4 sticky left-0 bg-gray-100 dark:bg-gray-800 z-100">
                       <div>
                         <div className="flex items-center">
                           <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize indent-6">
@@ -241,9 +241,12 @@ const PrivilegeMatrixContent: React.FC<{
                               disabled={SYSTEM_ROLE === role.id}
                               className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
                                 hasPermission 
-                                  ? "bg-green-500 border-green-500 text-white" 
+                                  // ? "bg-green-500 border-green-500 text-white" 
+                                  ? (
+                                    SYSTEM_ROLE === role.id ? "bg-green-300 border-green-300 text-white" : "bg-green-500 border-green-500 text-white"
+                                  )
                                   : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                              } ${SYSTEM_ROLE === role.id ? "opacity-50 cursor-not-allowed z-10" : "hover:border-green-400"}`}
+                              } ${SYSTEM_ROLE === role.id ? "cursor-not-allowed" : "hover:border-green-400"}`}
                             >
                               {hasPermission && <CheckLineIcon className="w-4 h-4" />}
                             </button>

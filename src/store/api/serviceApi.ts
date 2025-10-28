@@ -6,7 +6,19 @@
 
 import { baseApi } from "@/store/api/baseApi";
 import type { ApiResponse } from "@/types";
-import type { CaseStatus, CaseStatusQueryParams, CaseTypeSubType } from "@/types/case";
+import type {
+  CaseStatus,
+  CaseStatusQueryParams,
+  CaseSubTypesCreateData,
+  CaseSubTypesUpdateData,
+  CaseSubTypesQueryParams,
+  CaseTypesCreateData,
+  CaseTypesUpdateData,
+  CaseTypesQueryParams,
+  CaseTypeSubType,
+  EnhancedCaseSubType,
+  EnhancedCaseType
+} from "@/types/case";
 
 export const serviceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -32,10 +44,111 @@ export const serviceApi = baseApi.injectEndpoints({
       providesTags: ["Cases"],
     }),
 
+    // ===================================================================
+    // Case Type
+    // ===================================================================
+
+    // POST api/v1/casetypes/add
+    createCaseTypes: builder.mutation<ApiResponse<EnhancedCaseType>, CaseTypesCreateData>({
+      query: data => ({
+        url: "/casetypes/add",
+        method: "POST",
+        body: data,
+      }),
+      // providesTags: ["Cases"],
+    }),
+
+    // GET api/v1/casetypes
+    getCaseTypes: builder.query<ApiResponse<EnhancedCaseType[]>, CaseTypesQueryParams>({
+      query: params => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/casetypes?${searchParams.toString()}`;
+      },
+      // providesTags: ["Cases"],
+    }),
+
+    // PATCH api/v1/casetypes/{id}
+    updateCaseTypes: builder.mutation<ApiResponse<EnhancedCaseType>, { id: string; data: CaseTypesUpdateData }>({
+      query: ({ id, data }) => ({
+        url: `/casetypes/${id}`,
+        method: "PATCH",
+        body: data
+      }),
+      // providesTags: ["Cases"],
+    }),
+
+    // DELETE api/v1/casetypes/{id}
+    deleteCaseTypes: builder.mutation<ApiResponse<void>, number | string>({
+      query: id => ({
+        url: `/casetypes/${id}`,
+        method: "DELETE"
+      }),
+      // providesTags: ["Cases"],
+    }),
+
+    // ===================================================================
+    // Case Sub-Type
+    // ===================================================================
+
+    // POST api/v1/casesubtypes/add
+    createCaseSubTypes: builder.mutation<ApiResponse<EnhancedCaseSubType>, CaseSubTypesCreateData>({
+      query: data => ({
+        url: "/casesubtypes/add",
+        method: "POST",
+        body: data,
+      }),
+      // providesTags: ["Cases"],
+    }),
+
+    // GET api/v1/casesubtypes
+    getCaseSubTypes: builder.query<ApiResponse<EnhancedCaseSubType[]>, CaseSubTypesQueryParams>({
+      query: params => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, String(value));
+          }
+        });
+        return `/casesubtypes?${searchParams.toString()}`;
+      },
+      // providesTags: ["Cases"],
+    }),
+
+    // PATCH api/v1/casesubtypes/{id}
+    updateCaseSubTypes: builder.mutation<ApiResponse<EnhancedCaseSubType>, { id: string; data: CaseSubTypesUpdateData }>({
+      query: ({ id, data }) => ({
+        url: `/casesubtypes/${id}`,
+        method: "PATCH",
+        body: data
+      })
+    }),
+
+    // DELETE api/v1/casesubtypes/{id}
+    deleteCaseSubTypes: builder.mutation<ApiResponse<void>, number | string>({
+      query: id => ({
+        url: `/casesubtypes/${id}`,
+        method: "DELETE"
+      }),
+      // providesTags: ["Cases"],
+    }),
+
   }),
 });
 
 export const {
   useGetCaseStatusesQuery,
   useGetCaseTypesSubTypesQuery,
+  useCreateCaseTypesMutation,
+  useGetCaseTypesQuery,
+  useUpdateCaseTypesMutation,
+  useDeleteCaseTypesMutation,
+  useCreateCaseSubTypesMutation,
+  useGetCaseSubTypesQuery,
+  useUpdateCaseSubTypesMutation,
+  useDeleteCaseSubTypesMutation,
 } = serviceApi;
