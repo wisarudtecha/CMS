@@ -7,6 +7,8 @@ import { CaseTypeSubType } from "../../interface/CaseType";
 import { areaApi } from "@/store/api/area";
 import { unitApi } from "@/store/api/unitApi";
 import distIdCommaSeparate from "@/components/profile/profileDistId";
+import { caseStatusGroup } from "@/components/ui/status/status";
+import { idbStorage, setupIndexDatabase } from "@/components/idb/idb";
 
 export const fetchCustomers = async () => {
   const customerDataResult = await store.dispatch(
@@ -24,6 +26,7 @@ export const fetchUnitStatus = async () => {
 
 export const fetchCase = async (params: CaseListParams) => {
   const requestNumber = parseInt(import.meta.env.VITE_GET_CASE_PER_REQUEST || "100", 10);
+  const delay = parseInt(import.meta.env.VITE_GET_CASE_DELAY || "200", 10);
   if (!requestNumber || typeof requestNumber != "number") {
     return;
   }
@@ -32,16 +35,25 @@ export const fetchCase = async (params: CaseListParams) => {
   let start = 0;
   let currentPage = 0;
   let totalPages = 0;
+  const statusId = caseStatusGroup
+    .filter(item => item.show)
+    .flatMap(item => item.group)
+    .filter(Boolean)
+    .join(',');
 
+  const getListParams = {
+    statusId: statusId,
+    length: requestNumber,
+    distId: distIdCommaSeparate(),
+    orderBy: "priority,createdAt",
+    direction: "asc,desc"
+  }
 
   const firstResult = await store.dispatch(
     caseApi.endpoints.getListCase.initiate({
       ...params,
+      ...getListParams,
       start: 0,
-      length: requestNumber,
-      distId: distIdCommaSeparate(),
-      orderBy: "priority,createdAt",
-      direction: "asc,desc"
     })
   );
 
@@ -50,21 +62,18 @@ export const fetchCase = async (params: CaseListParams) => {
     currentPage = firstResult.data.currentPage || 1;
     totalPages = firstResult.data.totalPage || 0;
   } else {
-    localStorage.setItem("caseList", "[]");
+    idbStorage.setItem("caseList", "[]");
     return [];
   }
 
   // Fetch remaining pages using currentPage
-  while (currentPage < totalPages) {
+  while ((currentPage < totalPages)) {
     start = currentPage * requestNumber;
     const result = await store.dispatch(
       caseApi.endpoints.getListCase.initiate({
         ...params,
+        ...getListParams,
         start,
-        length: requestNumber,
-        distId: distIdCommaSeparate(),
-        orderBy: "priority,createdAt",
-        direction: "asc,desc"
       })
     );
 
@@ -74,9 +83,13 @@ export const fetchCase = async (params: CaseListParams) => {
     } else {
       break;
     }
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
-  localStorage.setItem("caseList", JSON.stringify(allData));
+  // const caseStore = await getStore("caseList")
+  // await caseStore.addBulk(allData);
+  
+  idbStorage.setItem("caseList", JSON.stringify(allData));
   return allData;
 };
 
@@ -144,6 +157,7 @@ export const fetchArea = async () => {
 };
 
 export const caseApiSetup = async () => {
+  await setupIndexDatabase();
   await fetchCase({});
   await fetchTypeSubType();
   await fetchDeptCommandStations();

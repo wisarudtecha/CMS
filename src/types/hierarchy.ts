@@ -52,6 +52,7 @@ export interface HierarchyConfig {
     metadataFields?: string[];
     primaryLabel: string;
     secondaryLabel?: string;
+    customLabel?: string;
   };
   // expandIcon?: React.ReactNode;
   levels: LevelConfig[]; // Configuration for each level [0, 1, 2, ...]
@@ -70,6 +71,7 @@ export interface HierarchyItem {
   metadata?: Record<string, unknown>;
   name: string;
   secondaryName?: string;
+  customName?: string;
   parentId?: string | number | null; // null for root items
   priority?: string | number;
   createdAt?: string;

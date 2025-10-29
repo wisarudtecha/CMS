@@ -193,6 +193,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
           parentId: parentType.typeId,
           name: subType.th,
           secondaryName: subType.en,
+          customName: `${subType.sTypeCode}-${subType.th || ""}`,
           active: subType.active,
           priority: subType.priority,
           level: 1,
@@ -324,6 +325,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     displayFields: {
       primaryLabel: "name",
       secondaryLabel: "secondaryName",
+      customLabel: "customName",
       metadataFields: []
       // metadataFields: ["metadata.caseSla", "metadata.skillRequirements.length"]
     },

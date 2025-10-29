@@ -1,5 +1,6 @@
 // utils/caseUtils.ts
 import { TodayDate } from '@/components/date/DateToString';
+import { idbStorage } from '@/components/idb/idb';
 import { store } from '@/store';
 import { Case, caseApi, CreateCase } from '@/store/api/caseApi';
 import { CaseEntity } from '@/types/case';
@@ -19,7 +20,7 @@ export const getNewCaseDataByCaseId = async (caseId: string) => {
     }
 
     const newCaseData = result.data.data;
-    const caseList = JSON.parse(localStorage.getItem("caseList") || "[]") as Case[];
+    const caseList = await idbStorage.getItem("caseList") as Case[];
     const existingCaseIndex = caseList.findIndex((item) => item.caseId === caseId);
 
     if (existingCaseIndex !== -1) {
@@ -30,7 +31,7 @@ export const getNewCaseDataByCaseId = async (caseId: string) => {
       console.log('New case added successfully');
     }
 
-    localStorage.setItem("caseList", JSON.stringify(caseList));
+    idbStorage.setItem("caseList", JSON.stringify(caseList));
 
   } catch (error) {
     console.error('Error in getNewCaseDataByCaseId:', error);

@@ -42,6 +42,7 @@ import { useToast } from "@/hooks/useToast";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import TextAreaWithCounter from "@/components/form/input/TextAreaWithCounter";
 import { CaseSop } from "@/types/dispatch";
+import { idbStorage } from "@/components/idb/idb";
 // const commonInputCss = "appearance-none border !border-1 rounded  text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-900 dark:disabled:text-gray-400 dark:disabled:border-gray-700"
 
 interface CaseTypeFormSectionProps {
@@ -639,7 +640,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             if (statusId === "S001") {
                 navigate(`/case/${data?.caseId}`)
             }
-            const caseListData = localStorage.getItem("caseList") || "[]";
+            const caseListData = await idbStorage.getItem("caseList") || "[]";
             if (caseListData) {
                 const caseList = JSON.parse(caseListData) as CaseEntity[];
                 const newCase = {
@@ -676,7 +677,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                     caseList.splice(insertIndex, 0, newCase);
                 }
 
-                localStorage.setItem("caseList", JSON.stringify(caseList));
+                idbStorage.setItem("caseList", JSON.stringify(caseList));
             }
         } catch (error: any) {
             addToast("error", isDraft ? t("case.display.toast.add_case_fail") : t("case.display.toast.savedaft_fail"));

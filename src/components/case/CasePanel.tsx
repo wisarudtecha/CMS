@@ -21,6 +21,7 @@ import { statusIdToStatusTitle } from "../ui/status/status"
 import { useNavigate } from "react-router"
 import { useTranslation } from "@/hooks/useTranslation"
 import { formatDate } from "@/utils/crud"
+import { idbStorage } from "../idb/idb"
 
 
 
@@ -49,21 +50,25 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
 
     useEffect(() => {
-        if (referCaseList) {
+        if (!referCaseList) return;
 
+        const fetchData = async () => {
             try {
-                const caseList = localStorage.getItem("caseList");
-                caseList && setReferCase(
-                    JSON.parse(caseList).filter((caseItem: CaseEntity) =>
-                        referCaseList.includes(caseItem.caseId)
-                    ) as CaseEntity[]
-                );
+                const caseList = await idbStorage.getItem("caseList");
+                if (caseList) {
+                    setReferCase(
+                        (caseList as CaseEntity[]).filter((caseItem: CaseEntity) =>
+                            referCaseList.includes(caseItem.caseId)
+                        )
+                    );
+                }
             } catch (error) {
-                console.log(error);
+                console.error("Failed to get caseList:", error);
             }
-        }
-    }, [referCaseList])
+        };
 
+        fetchData();
+    }, [referCaseList]);
 
     // const addTab = [
     //     // { id: "customer-info", label: "Info" },

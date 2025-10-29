@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import {
   Plus,
   List,
@@ -12,7 +12,6 @@ import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import PageMeta from "@/components/common/PageMeta"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-// import CaseDetailView from "../../components/case/main/CaseDetailView"
 
 import { getPriorityBorderColorClass, getPriorityColorClass, getTextPriority } from "@/components/function/Prioriy"
 import { Modal } from "@/components/ui/modal"
@@ -30,6 +29,7 @@ import { SLACountdownBadgeAssignment } from "@/components/Sla/Sla"
 import { Area, mergeArea } from "@/store/api/area"
 import { useGetUsersQuery } from "@/store/api/userApi"
 import { UserProfile } from "@/types/user"
+import { idbStorage } from "@/components/idb/idb"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
@@ -76,7 +76,6 @@ export default function CasesView() {
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // const [showDynamicForm, setShowDynamicForm] = useState(false)
   const caseTypeSupTypeData = JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[]
   const caseStatus = JSON.parse(localStorage.getItem("caseStatus") ?? "[]") as CaseStatusInterface[]
   const [searchText, setSearchText] = useState("")
@@ -85,18 +84,17 @@ export default function CasesView() {
   const [showAdvanceFilter, setShowAdvanceFilter] = useState<boolean>(false)
   const allowedStatusIds = statusColumns.flatMap(col => col.group);
   const navigate = useNavigate()
-  const [caseData, setCaseData] = useState<CaseEntity[]>(() => {
-    const savedCases = localStorage.getItem("caseList");
-    return savedCases
-      ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId)) : [];
-  });
+  const [caseData, setCaseData] = useState<CaseEntity[]>([]);
   const { t, language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState(getInitialFilters())
   const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
 
+  const [visibleListCount, setVisibleListCount] = useState(20);
+  const listLoadMoreRef = useRef(null);
+
   const getStatusKey = (caseItem: CaseEntity): string => {
     const statusColumn = statusColumns.find(column =>
-      column.group.includes((caseItem as any).statusId)
+      column.group.includes((caseItem as CaseEntity).statusId)
     );
     if (language === "th") {
       return statusColumn ? statusColumn.title.th : "";
@@ -110,7 +108,22 @@ export default function CasesView() {
     return matchingSubType ? mergeCaseTypeAndSubType(matchingSubType, language) : "Unknow";
   }
 
+  useEffect(() => {
+    const loadCases = async () => {
+      const savedCases = await idbStorage.getItem("caseList");
 
+      if (savedCases) {
+        const filteredCases = (savedCases as CaseEntity[]).filter(c =>
+          allowedStatusIds.includes(c.statusId)
+        );
+        setCaseData(filteredCases);
+      } else {
+        setCaseData([]);
+      }
+    };
+
+    loadCases();
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -161,7 +174,7 @@ export default function CasesView() {
     localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
     await fetchCase({});
-    const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+    const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
@@ -172,7 +185,7 @@ export default function CasesView() {
     setTimeout(() => {
       setIsRefreshing(false);
     }, 5000);
-    const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+    const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
   }
 
@@ -243,7 +256,7 @@ export default function CasesView() {
       } else {
         setSelectedStatus(null);
       }
-      const updatedCases = (JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+      const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
@@ -369,27 +382,9 @@ export default function CasesView() {
               valueKey="username"
               className="w-full border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
             />
-            {/* <input
-              id="createBy"
-              type="texts"
-              value={localFilters.createBy}
-              onChange={(e) => setLocalFilters({ ...localFilters, createBy: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
-            /> */}
           </div>
           <div>
             <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.phone")}</label>
-            {/* <SearchableSelectApi<UserProfile>
-              id="mobile"
-              value={localFilters.phoneNumber}
-              onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e })}
-              placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
-              apiQuery={useGetUsersQuery}
-              labelKey="mobileNo"
-              valueKey="mobileNo"
-              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-            /> */}
             <input
               id="phoneNo"
               type="texts"
@@ -419,7 +414,6 @@ export default function CasesView() {
           <h3 className="min-h-[40px] font-medium dark:text-gray-50 text-base leading-tight pr-2 text-gray-700">{matchingSubTypesNames(caseItem.caseTypeId, caseItem.caseSTypeId, caseTypeSupTypeData)}</h3>
 
         </div>
-        {/* <p className="text-sm text-gray-400 leading-relaxed">Case ID : {caseItem.caseId}</p> */}
         <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[40px]">{caseItem.caseLocAddr}</p>
         <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
           {caseItem.createdBy ? (
@@ -431,10 +425,6 @@ export default function CasesView() {
             </div>
           ) : <div></div>}
           <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
-          {/* <div className="flex items-center space-x-2">
-            <MessageCircle className="w-3 h-3" />
-            <span>{caseItem.comments ?? 0}</span>
-          </div> */}
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
           <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string, language)}</span>
@@ -450,16 +440,81 @@ export default function CasesView() {
     </div>
   )
 
+  const KanbanColumn = ({
+    title,
+    cases,
+  }: {
+    title: string;
+    cases: CaseEntity[];
+  }) => {
+    const [visibleCount, setVisibleCount] = useState(10);
+    const loadMoreRef = useRef(null);
+    const scrollContainerRef = useRef(null);
+
+    useEffect(() => {
+      const currentSentinel = loadMoreRef.current;
+      const currentScrollContainer = scrollContainerRef.current;
+
+      if (!currentSentinel || !currentScrollContainer) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount((prev) => Math.min(prev + 10, cases.length));
+          }
+        },
+        {
+          root: currentScrollContainer,
+          rootMargin: '200px',
+        }
+      );
+
+      observer.observe(currentSentinel);
+
+      return () => {
+        observer.unobserve(currentSentinel);
+      };
+    }, [cases.length, visibleCount]);
+
+    useEffect(() => {
+      setVisibleCount(10);
+    }, [cases]);
+
+    const visibleCases = cases.slice(0, visibleCount);
+
+    return (
+      <div className="flex-shrink-0 w-80 xl:w-full">
+        {!selectedStatus && (
+          <div className="flex items-center mb-4 px-2">
+            <h3 className="font-medium text-gray-700 dark:text-gray-200">{title}</h3>
+            <Badge color="primary" className="mx-2">{cases.length}</Badge>
+          </div>
+        )}
+        <div
+          ref={scrollContainerRef}
+          className="space-y-3 px-2 md:overflow-y-auto md:h-screen custom-scrollbar "
+        >
+          {visibleCases.map((caseItem) => (
+            <CaseCard key={caseItem.id} caseItem={caseItem} />
+          ))}
+
+          {visibleCount < cases.length && (
+            <div ref={loadMoreRef} className="h-10 w-full" />
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const KanbanView = () => {
     if (selectedStatus) {
-      const filteredCases = getCasesForColumn(selectedStatus);
+      const cases = getCasesForColumn(selectedStatus);
       return (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
-            {filteredCases.map((caseItem) => (
-              <CaseCard key={caseItem.id} caseItem={caseItem} />
-            ))}
-          </div>
+          <KanbanColumn
+            title={selectedStatus}
+            cases={cases}
+          />
         </div>
       );
     }
@@ -467,51 +522,47 @@ export default function CasesView() {
     return (<div className="flex flex-wrap xl:grid xl:grid-cols-4 gap-3 pb-6">
       {statusColumns.map((column) => {
         const localizedTitle = language === "th" ? column.title.th : column.title.en;
+        const cases = getCasesForColumn(localizedTitle);
+
         return (
           (selectedStatus === null || selectedStatus === localizedTitle) && (
-            <div key={localizedTitle} className="flex-shrink-0 w-80 xl:w-full">
-              {!selectedStatus && <div className="flex items-center mb-4 px-2">
-                <h3 className="font-medium text-gray-700 dark:text-gray-200">{localizedTitle}</h3>
-                <Badge color="primary" className="mx-2">{getCasesForColumn(localizedTitle).length}</Badge>
-              </div>}
-              <div className="space-y-3 px-2 md:overflow-y-auto md:h-screen  custom-scrollbar ">
-                {getCasesForColumn(localizedTitle).map((caseItem) => (
-                  <CaseCard key={caseItem.id} caseItem={caseItem} />
-                ))}
-              </div>
-            </div>
+            <KanbanColumn
+              key={localizedTitle}
+              title={localizedTitle}
+              cases={cases}
+            />
           )
         )
       })}
     </div>)
   }
 
-  const ListView = () => (
-    <div className="space-y-3  ">
-      {/* Desktop Header - Hidden on mobile */}
-      <div className="hidden md:grid grid-cols-14 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
-        <div className="col-span-3">{t("case.assignment.case_type")}</div>
-        <div className="col-span-2">{t("case.assignment.area")}</div>
-        <div className="col-span-2">{t("case.assignment.status")}</div>
-        <div className="col-span-2">SLA</div>
-        <div className="col-span-2">{t("case.assignment.piority")}</div>
-        <div className="col-span-2">{t("case.assignment.create_by")}</div>
-        <div className="col-span-1">{t("case.assignment.create_date")}</div>
-      </div>
+  const ListView = () => {
+    const allFilteredCases = getFilteredCases()
+      .filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus);
 
-      {/* Cases */}
-      <div className="space-y-2">
-        {getFilteredCases()
-          .filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus)
-          .map((caseItem) => (
+    const visibleCases = allFilteredCases.slice(0, visibleListCount);
+
+    return (
+      <div className="space-y-3  ">
+        <div className="hidden md:grid grid-cols-14 gap-4 px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300">
+          <div className="col-span-3">{t("case.assignment.case_type")}</div>
+          <div className="col-span-2">{t("case.assignment.area")}</div>
+          <div className="col-span-2">{t("case.assignment.status")}</div>
+          <div className="col-span-2">SLA</div>
+          <div className="col-span-2">{t("case.assignment.piority")}</div>
+          <div className="col-span-2">{t("case.assignment.create_by")}</div>
+          <div className="col-span-1">{t("case.assignment.create_date")}</div>
+        </div>
+
+        <div className="space-y-2">
+          {visibleCases.map((caseItem) => (
             <div
               key={caseItem.id}
               className="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:shadow-lg"
               onClick={() => handleCaseClick(caseItem)}
             >
-              {/* Desktop Layout */}
               <div className="hidden md:grid grid-cols-14 gap-4 px-4 py-4">
-                {/* Case Type */}
                 <div className="col-span-3 flex items-center">
                   <div className="flex items-center space-x-3">
                     <div>
@@ -522,7 +573,6 @@ export default function CasesView() {
                   </div>
                 </div>
 
-                {/* Location */}
                 <div className="col-span-2 flex items-center">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600 dark:text-gray-300 ">
@@ -531,7 +581,6 @@ export default function CasesView() {
                   </div>
                 </div>
 
-                {/* Status */}
                 <div className="col-span-2 flex items-center">
                   <Badge
                     color="primary"
@@ -545,12 +594,10 @@ export default function CasesView() {
                   </Badge>
                 </div>
 
-                {/* SLA */}
                 <div className="col-span-2 flex items-center">
                   <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
                 </div>
 
-                {/* Priority */}
                 <div className="col-span-2 flex items-center">
                   <div className="flex items-center space-x-2">
                     <div className={`w-3 h-3 rounded-full ${getPriorityColorClass(caseItem.priority)} shadow-sm`} />
@@ -560,7 +607,6 @@ export default function CasesView() {
                   </div>
                 </div>
 
-                {/* Assignee */}
                 <div className="col-span-2 flex items-center">
                   {caseItem.createdBy ? (
                     <div className="flex items-center space-x-2">
@@ -583,12 +629,8 @@ export default function CasesView() {
                   )}
                 </div>
 
-                {/* Date */}
                 <div className="col-span-1 flex items-center">
                   <div className="flex items-center space-x-1">
-                    {/* <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg> */}
                     <span className="text-sm text-gray-600 dark:text-gray-300">
                       {DateStringToAgoFormat(caseItem.createdAt as string, language)}
                     </span>
@@ -596,9 +638,7 @@ export default function CasesView() {
                 </div>
               </div>
 
-              {/* Mobile Layout */}
               <div className="md:hidden p-4 space-y-3">
-                {/* Mobile Header Row */}
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
@@ -619,7 +659,6 @@ export default function CasesView() {
                   </Badge>
                 </div>
 
-                {/* Mobile Location Row */}
                 {caseItem.caselocAddr && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                     <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -630,9 +669,7 @@ export default function CasesView() {
                   </div>
                 )}
 
-                {/* Mobile Bottom Row */}
                 <div className="flex items-center justify-between">
-                  {/* Assignee */}
                   <div className="flex items-center space-x-2">
                     {caseItem.createdBy ? (
                       <>
@@ -655,7 +692,6 @@ export default function CasesView() {
                     )}
                   </div>
 
-                  {/* Date */}
                   <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -666,46 +702,60 @@ export default function CasesView() {
               </div>
             </div>
           ))}
-      </div>
-
-      {/* Empty State */}
-      {getFilteredCases().filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus).length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-          <svg className="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="text-lg font-medium mb-1">No cases found</h3>
-          <p className="text-sm text-center px-4">Try adjusting your filters or create a new case.</p>
         </div>
-      )}
-    </div>
-  );
 
-  // const onBackDynamic = () => {
-  //   setShowDynamicForm(false)
-  //   const savedCases = localStorage.getItem("caseList");
-  //   setCaseData(savedCases
-  //     ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
-  //     : [])
-  // }
+        {visibleListCount < allFilteredCases.length && (
+          <div ref={listLoadMoreRef} className="h-20 w-full flex items-center justify-center">
+            <span className="text-gray-500 dark:text-gray-400">Loading more...</span>
+          </div>
+        )}
 
-  // const onBackSelectedCase = () => {
-  //   setSelectedCase(null)
-  //   const savedCases = localStorage.getItem("caseList");
-  //   setCaseData(savedCases
-  //     ? (JSON.parse(savedCases) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId))
-  //     : [])
-  // }
+        {allFilteredCases.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+            <svg className="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 className="text-lg font-medium mb-1">No cases found</h3>
+            <p className="text-sm text-center px-4">Try adjusting your filters or create a new case.</p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
-  // if (selectedCase) {
-  //   navigate(`/case/${selectedCase.caseId}`)
-  //   // return <CaseDetailView onBack={onBackSelectedCase} caseData={selectedCase} isCreate={false}/>
-  // }
   useEffect(() => {
     if (selectedCase) {
       navigate(`/case/${selectedCase.caseId}`)
     }
   }, [selectedCase, navigate])
+
+  useEffect(() => {
+    setVisibleListCount(20);
+  }, [searchText, selectedStatus, advancedFilters]);
+
+  useEffect(() => {
+    if (viewMode !== 'list') return;
+
+    const currentRef = listLoadMoreRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleListCount((prevCount) => prevCount + 20);
+        }
+      },
+      {
+        rootMargin: '500px',
+      }
+    );
+
+    observer.observe(currentRef);
+
+    return () => {
+      observer.unobserve(currentRef);
+    };
+  }, [viewMode, listLoadMoreRef, visibleListCount]);
 
   const hasActiveFilters = () => {
     return Object.entries(advancedFilters).some(([key, value]) => {
@@ -722,11 +772,8 @@ export default function CasesView() {
       <PageBreadcrumb pageTitle={t("case.assignment.pageheader")} />
       <div className="relative px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-y-4 mb-6">
-          {/* Top Section - Mobile Responsive */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Left Side - View Mode & Search */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-              {/* View Mode Buttons */}
               <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
                 <Button
                   variant="ghost"
@@ -754,7 +801,6 @@ export default function CasesView() {
                 </Button>
               </div>
 
-              {/* Search & Filter */}
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <input
                   type="text"
@@ -794,7 +840,6 @@ export default function CasesView() {
               >
                 <RefreshCcw className="w-4 h-4" />
               </Button>
-              {/* Add New Case Button */}
               <Button
                 className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
                 onClick={() => navigate("/case/creation")}
@@ -806,7 +851,6 @@ export default function CasesView() {
             </div>
           </div>
 
-          {/* Status Filter Tabs - Mobile Responsive */}
           <div className="w-full overflow-x-auto custom-scrollbar">
             <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
               <div
@@ -841,13 +885,11 @@ export default function CasesView() {
           </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="relative w-full h-full">
           {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
 
-      {/* Advanced Filter Modal */}
       {showAdvanceFilter && <AdvanceFilter />}
     </div >
   );

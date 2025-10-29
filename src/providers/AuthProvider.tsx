@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { authReducer } from "@/hooks/useAuthContext";
 import { AuthService } from "@/utils/authService";
+import { SESSION_TIMEOUT_TIMER, SESSION_TIMEOUT_WARNING } from "@/utils/constants";
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
 import { caseApiSetup } from "@/components/case/uitls/CaseApiManager";
@@ -137,17 +138,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearTimeout(sessionTimer);
       }
 
-      const minutes = 60;
-      // const minutes = 2;
+      const minutes = SESSION_TIMEOUT_TIMER;
+      const logoutInMinutes = minutes * 60 * 1000;
+      const warningInMinutes = SESSION_TIMEOUT_WARNING * 60 * 1000;
 
       const timer = setTimeout(() => {
-        dispatch({ type: "SET_SESSION_TIMEOUT", payload: Date.now() + 60000 }); // 1 minute warning
+        // dispatch({ type: "SET_SESSION_TIMEOUT", payload: Date.now() + 60000 }); // 1 minute warning
+        dispatch({ type: "SET_SESSION_TIMEOUT", payload: Date.now() + warningInMinutes });
 
+        // setTimeout(() => {
+        //   logout();
+        // }, 60000);
         setTimeout(() => {
           logout();
-        }, 60000);
+        }, warningInMinutes);
       },
-      minutes * 60 * 1000);
+        // minutes * 60 * 1000
+        logoutInMinutes
+      );
 
       setSessionTimer(timer);
     };
@@ -194,7 +202,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // const refreshTime = expiryTime - Date.now() - (5 * 60 * 1000);
 
       // Refresh token 1 minute before expiry
-      const refreshTime = expiryTime - Date.now() - (1 * 60 * 1000);
+      // const refreshTime = expiryTime - Date.now() - (1 * 60 * 1000);
+      const refreshTime = expiryTime - Date.now() - (SESSION_TIMEOUT_WARNING * 60 * 1000);
       
       if (refreshTime > 0) {
         // console.log("🔄 Refreshing token in:", (refreshTime / 1000 / 60).toFixed(2), "minutes");
@@ -297,7 +306,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    console.log("🔄 Refreshing token...");
+    // console.log("🔄 Refreshing token...");
     dispatch({ type: "REFRESH_START" });
 
     try {

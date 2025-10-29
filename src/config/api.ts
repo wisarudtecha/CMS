@@ -1,7 +1,7 @@
 // src/config/api.ts
 const getApiBaseUrl = (): string => {
   const envApi = import.meta.env.VITE_API_BASE_URL || "/api/v1";
-  console.log("API_BASE_URL:", envApi);
+  // console.log("API_BASE_URL:", envApi);
   if (envApi) {
     return envApi;
   }

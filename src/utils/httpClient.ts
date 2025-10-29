@@ -153,11 +153,18 @@ export class HttpClient {
         return false;
       }
 
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const token = TokenManager.getToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REFRESH}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        // headers: {
+        //   "Content-Type": "application/json",
+        // },
+        headers: headers,
         body: JSON.stringify({ refreshToken }),
         credentials: "include",
         mode: "cors"

@@ -107,7 +107,7 @@ export const SearchableSelect: React.FC<{
                 >
                     <span className="truncate">{selectedLabel}</span>
                     <div className="flex items-center gap-2">
-                        {value && (
+                        {value && ! disabled && (
                             <div
                                 onClick={handleClear}
                                 className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 transition-colors"

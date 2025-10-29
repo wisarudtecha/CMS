@@ -10,7 +10,7 @@ export const APP_CONFIG = {
   // Environment-based API configuration
   API_BASE_URL: (() => {
     const envApi = import.meta.env.VITE_API_BASE_URL || "/api/v1";
-    console.log("API_BASE_URL:", envApi);
+    // console.log("API_BASE_URL:", envApi);
     return envApi;
   })(),
 
@@ -157,6 +157,10 @@ export const ROUTES = {
   SETTINGS: "/settings",
   PROFILE: "/profile",
 } as const;
+
+// export const SESSION_TIMEOUT_TIMER = 2; // 2 min.
+export const SESSION_TIMEOUT_TIMER = 60; // 60 min.
+export const SESSION_TIMEOUT_WARNING = 1; // 1 min.
 
 export const SLA_STATUS_COLORS = {
   on_time: "text-green-600 bg-green-50",

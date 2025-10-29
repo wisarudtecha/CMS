@@ -52,7 +52,10 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
     p => p.value.toString() === item.priority?.toString()
   );
 
-  const getDisplayValue = (field: string) => {
+  const getDisplayValue = (field?: string) => {
+    if (!field) {
+      return undefined;
+    }
     const keys = field.split(".");
     let value: unknown = item;
     for (const key of keys) {
@@ -100,7 +103,7 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
     return undefined;
   };
 
-
+  const customLabel = getDisplayValue(config.displayFields.customLabel);
   const primaryLabel = getDisplayValue(config.displayFields.primaryLabel);
   const secondaryLabel = config.displayFields.secondaryLabel 
     ? getDisplayValue(config.displayFields.secondaryLabel)
@@ -238,7 +241,7 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
                 className={`font-semibold text-gray-800 dark:text-gray-100`}
                 // className={`font-${isParent ? "semibold" : "medium"} text-gray-800 dark:text-gray-100`}
               >
-                {primaryLabel as React.ReactNode}
+                {customLabel as React.ReactNode || primaryLabel as React.ReactNode}
               </span>
               {secondaryLabel as React.ReactNode && (
                 <span className="text-sm text-gray-500 dark:text-gray-400">

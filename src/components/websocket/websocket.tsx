@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useRef, useEffect, useState, ReactNode } from 'react';
 import {  getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
 import { CaseEntity } from '@/types/case';
+import { idbStorage } from '../idb/idb';
 
 export interface WebSocketMessage {
   type: string;
@@ -61,7 +62,7 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
         await getNewCaseDataByCaseId(caseId);
         window.dispatchEvent(new StorageEvent("storage", {
           key: "caseList",
-          newValue: localStorage.getItem("caseList"),
+          newValue: JSON.stringify(await idbStorage.getItem("caseList")),
         }));
       })();
       break;
@@ -72,15 +73,15 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
         await getNewCaseDataByCaseId(caseId);
         window.dispatchEvent(new StorageEvent("storage", {
           key: "caseList",
-          newValue: localStorage.getItem("caseList"),
+          newValue: JSON.stringify(await idbStorage.getItem("caseList")),
         }));
       })();
       break;
 
     case "CASE-STATUS-UPDATE":
-      (() => {
+      (async () => {
         try {
-          const caseList = JSON.parse(localStorage.getItem("caseList") ?? "[]") as CaseEntity[];
+          const caseList = JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[];
           const targetCaseId = message?.data?.additionalJson?.caseId;
           const newStatus = message?.data?.additionalJson?.status;
 
@@ -91,12 +92,12 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
                 : item
             );
 
-            localStorage.setItem("caseList", JSON.stringify(updatedCaseList));
+            idbStorage.setItem("caseList", JSON.stringify(updatedCaseList));
 
 
             window.dispatchEvent(new StorageEvent("storage", {
               key: "caseList",
-              newValue: localStorage.getItem("caseList"),
+              newValue: JSON.stringify(await idbStorage.getItem("caseList")),
             }));
           }
         } catch (error) {
@@ -160,7 +161,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     const config = configRef.current;
     // if (!config) return;
 
-    const maxAttempts = config?.maxReconnectAttempts || 5;
+    // const maxAttempts = config?.maxReconnectAttempts || 5;
+    const maxAttempts = config?.maxReconnectAttempts || 10;
     const interval = config?.reconnectInterval || 3000;
 
     if (reconnectAttemptsRef.current >= maxAttempts) {
@@ -211,7 +213,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         // setIsConnected(true);
         // setConnectionState('connected');
         isConnectingRef.current = false;
-        reconnectAttemptsRef.current = 0;
+        // reconnectAttemptsRef.current = 0;
         startHeartbeat();
       };
 
@@ -272,6 +274,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         setConnectionState('error');
         isConnectingRef.current = false;
         // connect(defalutWebsocketConfig)
+        reconnectAttemptsRef.current = 0;
         attemptReconnect();
 
       };

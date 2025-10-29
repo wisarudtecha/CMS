@@ -9,7 +9,8 @@ interface TextAreaWithCounterProps {
     className?: string;
     rows?: number;
     required?: boolean;
-    containnerClass?: string
+    containnerClass?: string;
+    disable?:boolean;
 }
 
 const TextAreaWithCounter: React.FC<TextAreaWithCounterProps> = ({
@@ -21,6 +22,7 @@ const TextAreaWithCounter: React.FC<TextAreaWithCounterProps> = ({
     rows = 6,
     required = false,
     containnerClass = "",
+    disable=false
 }) => {
     const { t } = useTranslation();
     const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -42,6 +44,7 @@ const TextAreaWithCounter: React.FC<TextAreaWithCounterProps> = ({
                     className={className}
                     rows={rows}
                     required={required}
+                    disabled={disable}
                 />
                 <div className="flex justify-between items-center mt-2 text-sm">
                     <span className="text-gray-500 dark:text-gray-400">

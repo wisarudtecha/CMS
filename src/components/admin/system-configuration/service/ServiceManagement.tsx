@@ -134,8 +134,10 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // Modals and dialogs
   // ===================================================================
 
-  const [typeIsOpen, setTypeIsOpen] = useState(false);
   const [sTypeIsOpen, setSTypeIsOpen] = useState(false);
+  const [sTypeConfirmIsOpen, setSTypeConfirmIsOpen] = useState(false);
+  const [typeIsOpen, setTypeIsOpen] = useState(false);
+  const [typeConfirmIsOpen, setTypeConfirmIsOpen] = useState(false);
 
   // ===================================================================
   // Fill select option
@@ -623,8 +625,9 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       <Modal
         isOpen={typeIsOpen}
         onClose={() => {
-          setTypeIsOpen(false);
           handleTypeReset();
+          setTypeConfirmIsOpen(false);
+          setTypeIsOpen(false);
         }}
         className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
       >
@@ -633,7 +636,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             {typeId && "Edit" || "Create"} Type
           </h3>
           <Button
-            onClick={() => setTypeIsOpen(false)}
+            onClick={() => {
+              handleTypeReset();
+              setTypeConfirmIsOpen(false);
+              setTypeIsOpen(false);
+            }}
             variant="ghost"
             size="sm"
           >
@@ -668,10 +675,63 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
-            <Button onClick={handleTypeReset} variant="outline">
-              Reset
+            {!typeId && (
+              <Button onClick={handleTypeReset} variant="outline">
+                Reset
+              </Button>
+            )}
+            <Button 
+              onClick={() => {
+                setTypeConfirmIsOpen(true);
+                setTypeIsOpen(false);
+              }}
+              variant="primary"
+            >
+              Save
             </Button>
-            <Button onClick={handleTypeSave} variant="primary">
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Type */}
+      <Modal
+        isOpen={typeConfirmIsOpen}
+        onClose={() => {
+          setTypeConfirmIsOpen(false);
+          setTypeIsOpen(true);
+        }}
+        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            Confirm {typeId && "Edit" || "Create"} Type
+          </h3>
+          <Button
+            onClick={() => {
+              setTypeConfirmIsOpen(false);
+              setTypeIsOpen(true);
+            }}
+            variant="ghost"
+            size="sm"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4">
+          Please confirm to {typeId && "edit" || "create"} {typeTh} {typeEn}.
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => {
+                setTypeConfirmIsOpen(false);
+                setTypeIsOpen(true);
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleTypeSave} variant="success">
               Confirm
             </Button>
           </div>
@@ -682,8 +742,9 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       <Modal
         isOpen={sTypeIsOpen}
         onClose={() => {
-          setSTypeIsOpen(false);
           handleSTypeReset();
+          setSTypeConfirmIsOpen(false);
+          setSTypeIsOpen(false);
         }}
         className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
       >
@@ -692,7 +753,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             {sTypeId && "Edit" || "Create"} Sub-Type
           </h3>
           <Button
-            onClick={() => setSTypeIsOpen(false)}
+            onClick={() => {
+              handleSTypeReset();
+              setSTypeConfirmIsOpen(false);
+              setSTypeIsOpen(false);
+            }}
             variant="ghost"
             size="sm"
           >
@@ -840,10 +905,63 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
-            <Button onClick={handleSTypeReset} variant="outline">
-              Reset
+            {!sTypeId && (
+              <Button onClick={handleSTypeReset} variant="outline">
+                Reset
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                setSTypeConfirmIsOpen(true);
+                setSTypeIsOpen(false);
+              }}
+              variant="primary"
+            >
+              Save
             </Button>
-            <Button onClick={handleSTypeSave} variant="primary">
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Sub-Type */}
+      <Modal
+        isOpen={sTypeConfirmIsOpen}
+        onClose={() => {
+          setSTypeConfirmIsOpen(false);
+          setSTypeIsOpen(true);
+        }}
+        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            Confirm {sTypeId && "Edit" || "Create"} Sub-Type
+          </h3>
+          <Button
+            onClick={() => {
+              setSTypeConfirmIsOpen(false);
+              setSTypeIsOpen(true);
+            }}
+            variant="ghost"
+            size="sm"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4">
+          Please confirm to {sTypeId && "edit" || "create"} {sTypeCode} {sTypeTh} {sTypeEn}.
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => {
+                setSTypeConfirmIsOpen(false);
+                setSTypeIsOpen(true);
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSTypeSave} variant="success">
               Confirm
             </Button>
           </div>

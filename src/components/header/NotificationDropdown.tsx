@@ -2,12 +2,12 @@
 import axios, { AxiosError } from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Menu } from "@headlessui/react";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { useWebSocket } from "@/components/websocket/websocket";
-import { Menu } from "@headlessui/react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS, } from "@/utils/constants";
+import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/utils/constants";
 import { isValidImageUrl } from "@/utils/resourceValidators";
 import { formatLastNotification } from "@/utils/utils";
 import type { Notification, PopupItem } from "@/types/notification";
@@ -17,13 +17,13 @@ const NotificationDropdown = () => {
   const navigate = useNavigate();
 
   // Use main WebSocket context instead of creating own socket
-  const { isConnected, onMessage, websocket, connectionState } = useWebSocket();
+  const { connectionState, isConnected, onMessage, websocket } = useWebSocket();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const closeAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const hasInitialized = useRef(false);
+  const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
   const visibleIdsRef = useRef<Set<string>>(new Set());
   
@@ -78,21 +78,25 @@ const NotificationDropdown = () => {
     };
     const saved = localStorage.getItem("notification_preferences");
     if (saved) {
-      try { return { ...defaultPreferences, ...JSON.parse(saved) }; }
-      catch (err) { console.error("Failed to parse notification preferences:", err); }
+      try {
+        return { ...defaultPreferences, ...JSON.parse(saved) };
+      }
+      catch (err) {
+        console.error("Failed to parse notification preferences:", err);
+      }
     }
     return defaultPreferences;
   };
 
   const closeAllPopups = () => {
-    popupQueue.forEach((i) => {
+    popupQueue.forEach(i => {
       visibleIdsRef.current.delete(i.id);
       if (itemTimersRef.current[i.id]) {
         clearTimeout(itemTimersRef.current[i.id]);
         delete itemTimersRef.current[i.id];
       }
     });
-    setPopupQueue((q) => [...q]);
+    setPopupQueue(q => [...q]);
     clearGroupCloseTimer();
     setTimeout(() => setPopupQueue([]), POPUP_TRANSITION_MS);
   };
@@ -106,7 +110,7 @@ const NotificationDropdown = () => {
 
   const closePopup = (popupId: string) => {
     visibleIdsRef.current.delete(popupId);
-    setPopupQueue((q) => [...q]);
+    setPopupQueue(q => [...q]);
 
     if (itemTimersRef.current[popupId]) {
       clearTimeout(itemTimersRef.current[popupId]);
@@ -114,14 +118,14 @@ const NotificationDropdown = () => {
     }
 
     setTimeout(() => {
-      setPopupQueue((q) => {
-        const next = q.filter((i) => i.id !== popupId);
+      setPopupQueue(q => {
+        const next = q.filter(i => i.id !== popupId);
         if (next.length === 0) clearGroupCloseTimer();
         if (next.length > 0) {
           const nextItem = next[0];
           setTimeout(() => {
             visibleIdsRef.current.add(nextItem.id);
-            setPopupQueue((q) => [...q]);
+            setPopupQueue(q => [...q]);
           }, 10);
           const t = setTimeout(() => closePopup(nextItem.id), POPUP_AUTO_DISMISS_MS);
           itemTimersRef.current[nextItem.id] = t;
@@ -132,15 +136,17 @@ const NotificationDropdown = () => {
   };
 
   const enqueuePopup = (noti: Notification) => {
-    if (!noti || !noti.id) return;
+    if (!noti || !noti.id) {
+      return;
+    }
     const popupId = `${noti.id}-${Date.now()}`;
     const item: PopupItem = { id: popupId, noti };
 
-    setPopupQueue((q) => [...q, item]);
+    setPopupQueue(q => [...q, item]);
 
     setTimeout(() => {
       visibleIdsRef.current.add(popupId);
-      setPopupQueue((q) => [...q]);
+      setPopupQueue(q => [...q]);
     }, 10);
 
     const t = setTimeout(() => closePopup(popupId), POPUP_AUTO_DISMISS_MS);
@@ -165,21 +171,23 @@ const NotificationDropdown = () => {
   const isUserRecipient = (_noti: Notification) => true;
 
   const startGroupCloseTimer = () => {
-    if (closeAllTimerRef.current) clearTimeout(closeAllTimerRef.current);
+    if (closeAllTimerRef.current) {
+      clearTimeout(closeAllTimerRef.current);
+    }
     closeAllTimerRef.current = setTimeout(() => {
       closeAllPopups();
     }, POPUP_GROUP_AUTO_CLOSE_MS);
   };
 
   const toggleDropdown = () => {
-    setIsOpen((prev) => {
+    setIsOpen(prev => {
       setNotifying(false);
       return !prev;
     });
   };
 
   const toggleExpand = (id: string) => {
-    setExpandedId((cur) => cur === id ? null : id);
+    setExpandedId(cur => cur === id ? null : id);
   };
 
   const handleMarkAllRead = () => {
@@ -187,10 +195,11 @@ const NotificationDropdown = () => {
     if (!profile) {
       return;
     }
-    const updated = notifications.map((n) => ({ ...n, read: true }));
+    const updated = notifications.map(n => ({ ...n, read: true }));
     setNotifications(updated);
     setUnread(0);
-    localStorage.setItem(`notifications`, JSON.stringify(updated));
+
+    // localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
   const handleMarkAsRead = (id: string) => {
@@ -198,14 +207,15 @@ const NotificationDropdown = () => {
     if (!profile) {
       return;
     }
-    const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
+    const updated = notifications.map(n => n.id === id ? { ...n, read: true } : n);
     setNotifications(updated);
-    setUnread(updated.filter((n) => !n.read).length);
-    localStorage.setItem(`notifications`, JSON.stringify(updated));
+    setUnread(updated.filter(n => !n.read).length);
+
+    // localStorage.setItem(`notifications`, JSON.stringify(updated));
   };
 
   const badgeCount = popupQueue.length > 0 ? popupQueue.length : unread;
-  const filteredNotifications = notifications.filter((n) => {
+  const filteredNotifications = notifications.filter(n => {
     const prefs = getPreferences();
     if (prefs.hideRead && n.read) {
       return false;
@@ -234,7 +244,7 @@ const NotificationDropdown = () => {
     if (!profile) {
       return;
     }
-    setUnread(notifications.filter((n) => !n.read).length);
+    setUnread(notifications.filter(n => !n.read).length);
   }, [notifications, profile]);
 
   useEffect(() => {
@@ -269,18 +279,25 @@ const NotificationDropdown = () => {
     const filtered = notifications.filter(n => (now - new Date(n.createdAt).getTime()) / 86400000 < prefs.autoDeleteDays);
     if (filtered.length < notifications.length) {
       setNotifications(filtered);
-      if (profile) localStorage.setItem(`notifications`, JSON.stringify(filtered));
+
+      // if (profile) {
+      //   localStorage.setItem(`notifications`, JSON.stringify(filtered));
+      // }
     }
   }, [notifications, profile]);
 
   useEffect(() => {
     const newIsOverflow: { [key: string]: boolean } = {};
-    filteredNotifications.forEach((noti) => {
+    filteredNotifications.forEach(noti => {
       const el = textRefs.current[noti.id];
-      if (el) newIsOverflow[noti.id] = el.scrollHeight > el.clientHeight + 1;
+      if (el) {
+        newIsOverflow[noti.id] = el.scrollHeight > el.clientHeight + 1;
+      }
     });
-    const changed = Object.keys(newIsOverflow).some((k) => newIsOverflow[k] !== isOverflow[k]);
-    if (changed) setIsOverflow(newIsOverflow);
+    const changed = Object.keys(newIsOverflow).some(k => newIsOverflow[k] !== isOverflow[k]);
+    if (changed) {
+      setIsOverflow(newIsOverflow);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredNotifications, expandedId]);
 
@@ -289,11 +306,14 @@ const NotificationDropdown = () => {
       hasInitialized.current = true;
       return;
     }
-    if (profile) {
-      const key = `notifications`;
-      const existing = localStorage.getItem(key);
-      if (existing === null) localStorage.setItem(key, JSON.stringify(notifications));
-    }
+
+    // if (profile) {
+    //   const key = `notifications`;
+    //   const existing = localStorage.getItem(key);
+    //   if (existing === null) {
+    //     localStorage.setItem(key, JSON.stringify(notifications));
+    //   }
+    // }
   }, [notifications, profile]);
 
   // ====== Use WebSocket from context instead of creating own socket ======
@@ -319,16 +339,20 @@ const NotificationDropdown = () => {
     // }
 
     // Subscribe to WebSocket messages
-    const unsubscribe = onMessage((message) => {
+    const unsubscribe = onMessage(message => {
       try {
         const data: Notification = message.data;
         const prefs = getPreferences();
 
         if (data.eventType && data.message && data.eventType != "hidden") {
-          // setNotifications((prev) => {
-          //   if (prev.some((n) => n.id === data.id)) return prev;
+          // setNotifications(prev => {
+          //   if (prev.some(n => n.id === data.id)) {
+          //     return prev;
+          //   }
           //   const updated = [{ ...data, read: false }, ...prev];
-          //   if (profile) localStorage.setItem(`notifications`, JSON.stringify(updated));
+          //   if (profile) {
+          //     localStorage.setItem(`notifications`, JSON.stringify(updated));
+          //   }
           //   return updated;
           // });
 
@@ -336,15 +360,18 @@ const NotificationDropdown = () => {
             if (prev.some(n => n.id === data.id)) {
               return prev;
             }
+
             // const updated = [{ ...data, read: false }, ...prev].slice(0, MAX_NOTIFICATIONS);
             const updated = [{ ...data, read: false }, ...prev];
+
             if (profile) {
               try {
-                localStorage.setItem("notifications", JSON.stringify(updated));
+                // localStorage.setItem("notifications", JSON.stringify(updated));
               }
               catch (e) {
                 if (e && typeof e === "object" && "name" in e && e.name === "QuotaExceededError") {
                   console.warn("LocalStorage quota exceeded, clearing old notifications...");
+
                   // Optionally, remove some old items
                   // updated.pop(); // Remove oldest
                   // localStorage.setItem("notifications", JSON.stringify(updated));
@@ -357,9 +384,11 @@ const NotificationDropdown = () => {
             return updated;
           });
 
-          setUnread((prev) => prev + 1);
+          setUnread(prev => prev + 1);
 
-          if (prefs.popupEnabled) enqueuePopup(data);
+          if (prefs.popupEnabled) {
+            enqueuePopup(data);
+          }
 
           setNotifying(true);
           setTimeout(() => setNotifying(false), 3000);
@@ -375,7 +404,8 @@ const NotificationDropdown = () => {
             setFilterType((current) => current);
           }
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error("Parse WebSocket message error:", message, err);
       }
     });
@@ -383,7 +413,7 @@ const NotificationDropdown = () => {
     // Cleanup subscription on unmount
     return () => {
       unsubscribe();
-      Object.keys(itemTimersRef.current).forEach((id) => {
+      Object.keys(itemTimersRef.current).forEach(id => {
         clearTimeout(itemTimersRef.current[id]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
         delete itemTimersRef.current[id];
@@ -401,22 +431,21 @@ const NotificationDropdown = () => {
         return;
       }
 
-      const key = `notifications`;
-      const saved = localStorage.getItem(key);
-
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            setNotifications(parsed);
-            setUnread(parsed.filter((n: Notification) => !n.read).length);
-            return;
-          }
-        }
-        catch {
-          //
-        }
-      }
+      // const key = `notifications`;
+      // const saved = localStorage.getItem(key);
+      // if (saved) {
+      //   try {
+      //     const parsed = JSON.parse(saved);
+      //     if (Array.isArray(parsed)) {
+      //       setNotifications(parsed);
+      //       setUnread(parsed.filter((n: Notification) => !n.read).length);
+      //       return;
+      //     }
+      //   }
+      //   catch {
+      //     //
+      //   }
+      // }
 
       if (!token) {
         return;
@@ -430,7 +459,9 @@ const NotificationDropdown = () => {
         if (Array.isArray(res.data)) {
           const notificationsAsRead = res.data.map((noti: Notification) => ({ ...noti, read: true }));
           setNotifications(notificationsAsRead);
-          localStorage.setItem(key, JSON.stringify(notificationsAsRead));
+
+          // localStorage.setItem(key, JSON.stringify(notificationsAsRead));
+
           setUnread(0);
         }
       }
@@ -524,9 +555,7 @@ const NotificationDropdown = () => {
                   className="cursor-pointer p-3"
                   onClick={() => {
                     const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
-                    
                     const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
-                    
                     if (finalRedirectURL && finalRedirectURL.trim() !== "") {
                       navigate(finalRedirectURL);
                     }
@@ -672,16 +701,16 @@ const NotificationDropdown = () => {
               placeholder="🔍 Search notifications..."
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
             />
           )}
           <div className="relative">
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              onChange={e => setFilterType(e.target.value)}
               className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
-              {uniqueEventTypes.map((type) => (
+              {uniqueEventTypes.map(type => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -728,9 +757,11 @@ const NotificationDropdown = () => {
               <li
                 key={noti.id}
                 className="relative cursor-pointer group"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
-                  if (!noti.read) handleMarkAsRead(noti.id);
+                  if (!noti.read) {
+                    handleMarkAsRead(noti.id);
+                  }
                   const redirectFromData = noti.data?.find(d => d.key === "redirectURL")?.value;
                   const finalRedirectURL = noti.redirectURL || noti.redirectUrl || redirectFromData;
                   if (finalRedirectURL && finalRedirectURL.trim() !== "") {
@@ -785,7 +816,7 @@ const NotificationDropdown = () => {
 
                       <div className="text-xs font-medium text-gray-900 dark:text-gray-100 leading-relaxed relative">
                         <p
-                          ref={(el) => { textRefs.current[noti.id] = el; }}
+                          ref={el => { textRefs.current[noti.id] = el; }}
                           style={{
                             display: expandedId === noti.id ? "block" : "-webkit-box",
                             WebkitLineClamp: expandedId === noti.id ? "unset" : 2,
@@ -804,7 +835,10 @@ const NotificationDropdown = () => {
 
                         {(isOverflow[noti.id] || expandedId === noti.id) && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); toggleExpand(noti.id); }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              toggleExpand(noti.id);
+                            }}
                             className={`mt-1 ${expandedId === noti.id ? "text-red-500 dark:text-red-300" : "text-blue-500 dark:text-blue-300"} bg-white dark:bg-gray-900 px-1 rounded text-[10px]`}
                           >
                             {expandedId === noti.id ? "แสดงน้อยลง" : "แสดงทั้งหมด"}
@@ -834,7 +868,7 @@ const NotificationDropdown = () => {
 
         <button
           className="block mt-4 rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 w-full"
-          onClick={() => setShowAll((prev) => !prev)}
+          onClick={() => setShowAll(prev => !prev)}
         >
           {showAll ? "Hide" : t("navigation.topbar.settings.notification.view_all_notifications")}
         </button>
