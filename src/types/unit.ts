@@ -1,8 +1,9 @@
 // /src/types/unit.ts
 import type { BaseEntity } from "@/types";
+import type { Department, Command, Station } from "@/types/organization";
+import type { UserProfile } from "@/types/user";
 
-export interface EnhancedUnit {
-  id: string;
+export interface EnhancedUnit extends BaseEntity {
   orgId: string;
   unitId: string;
   unitName: string;
@@ -34,10 +35,6 @@ export interface EnhancedUnit {
   healthChk: string;
   healthChkTime: string;
   sttId: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
   // Enhanced fields for advanced management
   unitStructure?: {
     parentUnitId?: string;
@@ -120,6 +117,55 @@ export interface Unit extends BaseEntity {
   sttId: string;
 }
 
+export interface UnitFormData {
+  active: boolean;
+  breakDuration: number;
+  commId: string;
+  compId: string;
+  deptId: string;
+  healthChk: string;
+  healthChkTime: string;
+  isFreeze: boolean;
+  isLogin: boolean;
+  isOutArea: boolean;
+  locAccuracy: number;
+  locAlt: number;
+  locBearing: number;
+  locGpsTime: string;
+  locLastUpdateTime: string;
+  locLat: number;
+  locLon: number;
+  locProvider: string;
+  locSatellites: number;
+  locSpeed: number;
+  orgId: string;
+  plateNo: string;
+  priority: number;
+  provinceCode: string;
+  stnId: string;
+  sttId: string;
+  unitId: string;
+  unitName: string;
+  unitSourceId: string;
+  unitTypeId: string;
+  username: string;
+}
+
+export interface UnitFormProps {
+  commands?: Command[];
+  companies?: Company[];
+  departments?: Department[];
+  initialData?: Partial<UnitFormData>;
+  isLoading?: boolean;
+  mode?: "create" | "update";
+  sources: Source[];
+  stations: Station[];
+  unitTypes: UnitType[];
+  users: UserProfile[];
+  onCancel?: () => void;
+  onSubmit: (data: UnitFormData) => Promise<void>;
+}
+
 export interface UnitMetrics {
   activeUnits: number | string;
   avgResponse: number | string;
@@ -137,18 +183,59 @@ export type UnitUpdateData = Omit<Unit, keyof BaseEntity>;
 export type ViewMode = "overview" | "hierarchy" | "performance" | "matrix";
 export type DisplayMode = "cards" | "table";
 
-
-export interface UnitStatus {
-  id: string;
+export interface UnitStatus extends BaseEntity {
   sttId: string;
   sttName: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
 }
 
-export interface Properties {
+export interface UnitStatusQueryParams {
+  start?: number | 0;
+  length?: number | 10;
+}
+
+export interface UnitType extends BaseEntity {
+  unitTypeId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+}
+
+export interface UnitTypeQueryParams {
+  start?: number | 0;
+  length?: number | 10;
+}
+
+export interface CompanyAddress {
+  building: string;
+  country: string;
+  district: string;
+  floor: string;
+  postalCode: string;
+  province: string;
+  road: string;
+  street: string;
+  subDistrict: string;
+}
+
+export interface Company extends BaseEntity {
+  name: string;
+  legalName: string;
+  domain: string;
+  email: string;
+  phoneNumber: string;
+  address: CompanyAddress;
+  logoUrl: string;
+  websiteUrl: string;
+  description: string;
+}
+
+export interface CompanyQueryParams {
+  start?: number | 0;
+  length?: number | 10;
+}
+
+export interface Property {
   id: string;
   propId: string;
   orgId: string;
@@ -161,7 +248,20 @@ export interface Properties {
   updatedBy: string;
 }
 
-export interface PropertiesQueryParams {
+export interface PropertyQueryParams {
+  start?: number | 0;
+  length?: number | 10;
+}
+
+export interface Source extends BaseEntity {
+  unitSourceId: string;
+  orgId: string;
+  en: string;
+  th: string;
+  active: boolean;
+}
+
+export interface SourceQueryParams {
   start?: number | 0;
   length?: number | 10;
 }

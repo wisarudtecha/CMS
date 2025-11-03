@@ -8,7 +8,7 @@ import { areaApi } from "@/store/api/area";
 import { unitApi } from "@/store/api/unitApi";
 import distIdCommaSeparate from "@/components/profile/profileDistId";
 import { caseStatusGroup } from "@/components/ui/status/status";
-import { idbStorage, setupIndexDatabase } from "@/components/idb/idb";
+import { idbStorage } from "@/components/idb/idb";
 
 export const fetchCustomers = async () => {
   const customerDataResult = await store.dispatch(
@@ -19,7 +19,7 @@ export const fetchCustomers = async () => {
 
 export const fetchUnitStatus = async () => {
   const unitStatusDataResult = await store.dispatch(
-    unitApi.endpoints.getUnitStatus.initiate({ start: 0, length: 100 })
+    unitApi.endpoints.getUnitStatuses.initiate({ start: 0, length: 100 })
   );
   localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data));
 };
@@ -157,7 +157,6 @@ export const fetchArea = async () => {
 };
 
 export const caseApiSetup = async () => {
-  await setupIndexDatabase();
   await fetchCase({});
   await fetchTypeSubType();
   await fetchDeptCommandStations();

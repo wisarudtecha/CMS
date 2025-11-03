@@ -32,7 +32,8 @@
     "home": "Home",
     "retry": "Retry",
     "no_result":"No results found.",
-    "charater":"Characters"
+    "charater":"Characters",
+    "noOption": "No Option."
   },
   "auth": {
     "signin": {
@@ -194,7 +195,19 @@
             "service_management": "Service Management",
             "unit_management": {
               "title": "Unit Management",
-              "header": "Unit Management"
+              "header": "Unit Management",
+              "create": {
+                "title": "Create Unit",
+                "header": "Create Unit"
+              },
+              "read": {
+                "title": "Unit's Detail",
+                "header": "Unit's Detail"
+              },
+              "update": {
+                "title": "Edit Unit",
+                "header": "Edit Unit"
+              }
             },
             "skill_management": "Skill Management",
             "property_management": "Property Management",
@@ -409,6 +422,76 @@
           "unit": "Unit #",
           "status": "Status",
           "location": "Location"
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "Basic Information",
+          "sections": {
+            "unitId": {
+              "label": "Unit ID",
+              "placeholder": "Enter unit ID"
+            },
+            "unitName": {
+              "label": "Unit Name",
+              "placeholder": "Enter unit name"
+            },
+            "unitTypeId": {
+              "label": "Unit Type",
+              "placeholder": "Select unit type"
+            },
+            "unitSourceId": {
+              "label": "Unit Source",
+              "placeholder": "Select unit's source"
+            },
+            "username": {
+              "label": "Username",
+              "placeholder": "Select username"
+            },
+            "priority": {
+              "label": "Priority"
+            },
+            "plateNo": {
+              "label": "Plate Number",
+              "placeholder": "Enter plate number"
+            },
+            "breakDuration": {
+              "label": "Break Duration (min.)"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "Organization Details",
+          "sections": {
+            "compId": {
+              "label": "Company",
+              "placeholder": "Select company"
+            },
+            "deptId": {
+              "label": "Department",
+              "placeholder": "Select department"
+            },
+            "commId": {
+              "label": "Command",
+              "placeholder": "Select command"
+            },
+            "stnId": {
+              "label": "Station",
+              "placeholder": "Select station"
+            },
+            "provinceCode": {
+              "label": "Province",
+              "placeholder": "Select province"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "Status",
+          "sections": {
+            "active": {
+              "label": "Active"
+            }
+          }
         }
       }
     }

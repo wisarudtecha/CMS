@@ -13,25 +13,19 @@ import Button from "@/components/ui/button/Button";
 import {
   AlertIcon,
   CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
   CloseIcon,
   ErrorIcon,
   GridIcon,
   ListIcon,
 } from "@/icons";
 import OnBackOnly from "@/components/ui/pagesTemplate/onBackOnly"
-// Import the new TicketCard component
 import FormCard from './formCard';
-// Import the new TableRowActions component
-import ButtonAction from './ButtonAction';
-import { statusConfig } from '../ui/status/status';
+
 import { FormField, FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
-import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
 import { useGetAllFormsQuery, useUpdateStatusMutation } from '@/store/api/formApi';
-// TypeScript interfaces
 import { v4 as uuidv4 } from 'uuid';
+import ListViewFormManager from './ListView';
 
 
 interface SortConfig {
@@ -67,7 +61,7 @@ interface Toast {
 
 
 
-const FormListComponent: React.FC = () => {
+const FormManagerComponent: React.FC = () => {
   const [showDynamicForm, setShowDynamicForm] = useState<boolean>(false);
   const [dynamicEditFormAction, setDynamicEditFormAction] = useState<boolean>(false);
   const [dynamicEditDataFormAction, setDynamicEditDataFormAction] = useState<boolean>(false);
@@ -91,7 +85,7 @@ const FormListComponent: React.FC = () => {
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
-
+  
   const filterOptions = [
     { value: "active", label: "Active", status: true },
     { value: "inactive", label: "Inactive", status: false },
@@ -110,6 +104,7 @@ const FormListComponent: React.FC = () => {
     setDynamicEditDataFormAction(true)
     setShowDynamicForm(true)
   }
+  
   const handleOnView = (form: FormField) => {
     setSelectForm(form)
     setDynamicEditFormAction(false)
@@ -126,14 +121,7 @@ const FormListComponent: React.FC = () => {
     setSelectForm(undefined)
     setShowDynamicForm(false)
   }
-  // The `dropdownChild` function is no longer needed since actions are handled within TicketCard/TableRowActions
-  // const dropdownChild = (): ReactNode => {
-  //   const downdownClassName = "flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300";
-  //   return (
-  //     <>
-  //     </>
-  //   );
-  // };
+
 
   useEffect(() => {
     const loadFormManagers = async () => {
@@ -153,13 +141,14 @@ const FormListComponent: React.FC = () => {
 
     loadFormManagers();
   }, [AllFormsData]);
-  // Add toast notification
+
   const addToast = (type: Toast['type'], message: string) => {
     const id = Date.now().toString();
     const newToast: Toast = { id, type, message };
     setToasts(prev => [...prev, newToast]);
-
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setTimeout(() => {
+      removeToast(id);
+    }, 5000);
   };
 
   // Remove toast
@@ -295,24 +284,9 @@ const FormListComponent: React.FC = () => {
 
 
 
-  // const getUniqueCategories = () => {
-  //   return [...new Set(forms.map(w => w.type).filter(Boolean))];
-  // };
 
-  // const getUniqueCategoriesOptions = getUniqueCategories()
-  //   .filter((category): category is string => typeof category === 'string')
-  //   .map(category => ({
-  //     value: category,
-  //     label: category
-  //   }));
   const onSetStatusInactive = async (formId: string, formName: string, newStatus: FormManager['active']) => {
-    // setConfirmDialog({
-    //   isOpen: true,
-    //   type: 'status', // Set type to 'status' for status updates
-    //   FormManagerId: formId,
-    //   FormManagerName: formName,
-    //   newStatus: newStatus, // Pass 'inactive' as the new status
-    // });
+
     handleUpdateStatus(formId, formName, newStatus)
 
   };
@@ -322,15 +296,7 @@ const FormListComponent: React.FC = () => {
     }
   };
 
-  // const onSetStatusInactive = (formId: string, formName: string, newStatus: FormManager['active']) => {)
-  //   setConfirmDialog({
-  //     isOpen: true,
-  //     type: 'status', // Set type to 'status' for status updates
-  //     FormManagerId: formId,
-  //     FormManagerName: formName,
-  //     newStatus: newStatus, // Pass 'inactive' as the new status
-  //   });
-  // };
+ 
   if (showDynamicForm) {
     return <OnBackOnly onBack={onBack}>
       <div className='rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12'>
@@ -507,102 +473,15 @@ const FormListComponent: React.FC = () => {
                 </div>
               ) : (
                 /* Table View */
-                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
-                  <div className="overflow-x-auto"> {/* Added overflow-x-auto for horizontal scrolling on small screens */}
-                    <table className="w-full table-auto"><thead className="bg-gray-100 dark:bg-gray-800">
-                      <tr>
-                        <th className="px-6 py-3 text-left whitespace-nowrap">
-                          <button
-                            onClick={() => handleSort('formName')}
-                            className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
-                          >
-                            Name
-                            {sortConfig.key === 'formName' && (
-                              sortConfig.direction === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />
-                            )}
-                          </button>
-                        </th>
-                        <th className="px-6 py-3 text-left whitespace-nowrap">
-                          <button
-                            onClick={() => handleSort('active')}
-                            className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
-                          >
-                            Status
-                            {sortConfig.key === 'active' && (
-                              sortConfig.direction === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />
-                            )}
-                          </button>
-                        </th>
-                        <th className="px-6 py-3 text-left whitespace-nowrap">
-                          <button
-                            onClick={() => handleSort('createdAt')}
-                            className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
-                          >
-                            Created
-                            {sortConfig.key === 'createdAt' && (
-                              sortConfig.direction === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />
-                            )}
-                          </button>
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                          Create By
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                        {paginatedFormManagers.map((form) => {
-                          const status = form.active === true ? "active" : "inactive"
-                          const config = statusConfig[status]
-
-                          return (
-                            <tr key={uuidv4()} className="hover:bg-gray-100 dark:hover:bg-gray-800">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center gap-3">
-                                  <div>
-                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{form.formName}</div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[150px] sm:max-w-xs">
-                                      {/* {form.description} */}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className={`px-6 py-4 whitespace-nowrap`}>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
-                                  {status}
-                                </span>
-                                {form.versions === "draft" && <span className={`px-2 py-1 mx-2 rounded-full text-xs font-medium ${statusConfig["draft"].color}`}>
-                                  draft
-                                </span>}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                {formatDate(form.createdAt)}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                <div className="flex items-left  gap-2">
-                                  {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700")}
-                                  {form.createdBy}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center justify-center gap-2">
-                                  <ButtonAction
-                                    form={form}
-                                    type='list'
-                                    onSetStatusChange={onSetStatusInactive}
-                                    handleOnEdit={() => handleOnEdit(form)}
-                                    handleOnView={() => handleOnView(form)} />
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                <ListViewFormManager
+                  forms={paginatedFormManagers}
+                  handleSort={handleSort}
+                  sortConfig={sortConfig}
+                  formatDate={formatDate}
+                  onSetStatusInactive={onSetStatusInactive}
+                  handleOnEdit={handleOnEdit}
+                  handleOnView={handleOnView}
+                />
               )}
 
               {/* Pagination */}
@@ -672,52 +551,10 @@ const FormListComponent: React.FC = () => {
             </div>
           </div>
 
-          {/* Confirmation Dialog */}
-          {/* {confirmDialog.isOpen && (
-            <Modal isOpen={confirmDialog.isOpen} onClose={() => setConfirmDialog({ isOpen: false, type: 'delete', FormManagerId: '', FormManagerName: '' })} className="max-w-4xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {confirmDialog.type === 'delete' ? 'Delete Workflow' : 'Update Status'}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {confirmDialog.type === 'delete'
-                      ? 'This action cannot be undone'
-                      : 'Change workflow status'
-                    }
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-gray-700 dark:text-gray-200 mb-6">
-                {confirmDialog.type === 'delete'
-                  ? `Are you sure you want to delete "${confirmDialog.FormManagerName}"?`
-                  : `Change "${confirmDialog.FormManagerName}" status to ${confirmDialog.newStatus}?`
-                }
-              </p>
-
-              <div className="flex items-center gap-3 justify-end">
-                <Button
-                  onClick={() => setConfirmDialog({ isOpen: false, type: 'delete', FormManagerId: '', FormManagerName: '' })}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleUpdateStatus}
-                  variant={`${confirmDialog.type === 'delete'
-                    ? 'error'
-                    : 'primary'
-                    }`}
-                >
-                  {confirmDialog.type === 'delete' ? 'Delete' : 'Update'}
-                </Button>
-              </div>
-            </Modal>
-          )} */}
         </div>
       </div>
     </>
   );
 };
 
-export default FormListComponent;
+export default FormManagerComponent;

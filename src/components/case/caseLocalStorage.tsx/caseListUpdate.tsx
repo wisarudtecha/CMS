@@ -25,10 +25,8 @@ export const getNewCaseDataByCaseId = async (caseId: string) => {
 
     if (existingCaseIndex !== -1) {
       caseList[existingCaseIndex] = newCaseData;
-      console.log('Case updated successfully');
     } else {
       caseList.push(newCaseData);
-      console.log('New case added successfully');
     }
 
     idbStorage.setItem("caseList", JSON.stringify(caseList));

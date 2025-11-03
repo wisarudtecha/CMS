@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
 export const AUTO_DELETE_OPTIONS = [1, 3, 5, 7, 15, 30] as const;
 
 export const CASE_CANNOT_DELETE = ["S007", "S013", "S014", "S016"] as const;
+export const CASE_CANNOT_UPDATE = ["S007", "S013", "S014", "S016"] as const;
 
 export const DEFAULT_PAGINATION = {
   page: 1,
@@ -114,11 +115,17 @@ export const POPUP_TRANSITION_MS = 300 as const; // animation 300ms (ต้อ�
 //   urgent: "text-red-600 bg-red-50",
 // } as const;
 
+// export const PRIORITY_COLORS = {
+//   low: "bg-transparent border-blue-600 dark:border-blue-300 text-blue-600 dark:text-blue-300",
+//   medium: "bg-transparent border-yellow-600 dark:border-yellow-300 text-yellow-600 dark:text-yellow-300",
+//   high: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
+//   urgent: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
+// } as const;
 export const PRIORITY_COLORS = {
-  low: "bg-transparent border-blue-600 dark:border-blue-300 text-blue-600 dark:text-blue-300",
-  medium: "bg-transparent border-yellow-600 dark:border-yellow-300 text-yellow-600 dark:text-yellow-300",
-  high: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
-  urgent: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
+  low: "bg-transparent border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400",
+  medium: "bg-transparent border-yellow-500 dark:border-yellow-400 text-yellow-500 dark:text-yellow-400",
+  high: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
+  urgent: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
 } as const;
 
 export const PRIORITY_LABELS = {

@@ -23,7 +23,7 @@ import type {
   EnhancedCaseType,
   // TypeAnalytics
 } from "@/types/case";
-import type { Properties } from "@/types/unit";
+import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
 import ServiceTypeAndSubTypeComponent from "@/components/admin/system-configuration/service/ServiceTypeAndSubType";
@@ -114,7 +114,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   }>({ typeTh: "", typeEn: "" });
 
   // Property
-  const [property, setProperty] = useState<Properties[]>(properties || []);
+  const [property, setProperty] = useState<Property[]>(properties || []);
 
   // Skill
   const [, setSkill] = useState<EnhancedSkill[]>(skills || []);

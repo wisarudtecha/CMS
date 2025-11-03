@@ -8,6 +8,7 @@ interface TableRowActionsProps {
   form: FormManager;
   handleOnEdit?: (form: FormField) => void;
   handleOnView?: () => void;
+  handleOnDelete?: (form: FormField) => void;
   type?: "button" | "list";
   onSetStatusChange: (formId: string, formName: string, newStatus: boolean) => void;
 }
@@ -45,6 +46,13 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
         >
           Edit
         </Button>
+        {/* <Button
+          onClick={() => handleOnDelete?.(form)}
+          variant={`${style}-error`}
+          title="Edit"
+        >
+          Delete
+        </Button> */}
       </div>
       <Switch
         label="Active"

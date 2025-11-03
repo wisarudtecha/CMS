@@ -185,7 +185,7 @@ const UnitOverviewContent: React.FC<{
               displayMode === "cards" ? (
                 <UnitCardContent
                   key={unit.id}
-                  isSelected={selectedUnits.has(unit.id)}
+                  isSelected={selectedUnits.has(unit.id.toString())}
                   unit={unit}
                   handleSelectUnit={handleSelectUnit}
                   setPreviewUnit={setPreviewUnit}

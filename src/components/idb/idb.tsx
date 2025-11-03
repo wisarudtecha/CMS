@@ -3,11 +3,13 @@ import { IDBPDatabase, openDB } from "idb";
 
 const DB_NAME = import.meta.env.VITE_DB_NAME || "CMS";
 const KV_STORE = "KeyValueStore";
+const MIN_VERSION = 1; // Always start at version 1
 
 const createdStores = new Set<string>();
 const storeCache = new Map<string, any>();
 const storeCreationPromises = new Map<string, Promise<any>>();
 let currentDbVersion: number | undefined;
+let dbInstance: IDBPDatabase | null = null;
 
 export interface IndexConfig {
     name: string;
@@ -32,43 +34,51 @@ async function getCurrentVersion(): Promise<number> {
         return currentDbVersion;
     }
 
-    // Open without version to get current version
-    const db = await openDB(DB_NAME);
-    currentDbVersion = db.version;
-    db.close();
-    return currentDbVersion;
+    try {
+
+        const db = await openDB(DB_NAME, MIN_VERSION, {
+            upgrade(db, oldVersion) {
+                if (oldVersion < 1 && !db.objectStoreNames.contains(KV_STORE)) {
+                    db.createObjectStore(KV_STORE);
+                    console.log(`✅ Created ${KV_STORE} store`);
+                }
+            },
+        });
+        currentDbVersion = db.version;
+        db.close();
+        return currentDbVersion;
+    } catch (error) {
+        console.error("Failed to get current version:", error);
+        throw error;
+    }
 }
 
-/**
- * Get current database instance
- */
-async function getDB() {
-    const version = await getCurrentVersion();
-    return openDB(DB_NAME, version);
-}
 
-/**
- * Setup main object store (table-style)
- */
-export async function setupIndexDatabase() {
+async function getDB(): Promise<IDBPDatabase> {
+    if (dbInstance && dbInstance.version === currentDbVersion) {
+        return dbInstance;
+    }
+
     const version = await getCurrentVersion();
-    return openDB(DB_NAME, version, {
+    
+    dbInstance = await openDB(DB_NAME, version, {
         upgrade(db) {
             if (!db.objectStoreNames.contains(KV_STORE)) {
                 db.createObjectStore(KV_STORE);
+                console.log(`✅ Created ${KV_STORE} store during upgrade`);
             }
         },
     });
+
+    return dbInstance;
 }
 
-/**
- * Create a new object store
- */
+
 export async function createStore<T>(
     storeName: string,
     config: StoreConfig = {}
 ): Promise<Repository<T>> {
-    // Check for in-progress creation
+
     if (storeCreationPromises.has(storeName)) {
         return storeCreationPromises.get(storeName)!;
     }
@@ -76,6 +86,12 @@ export async function createStore<T>(
     const creationPromise = (async () => {
         try {
             const version = await getCurrentVersion();
+            
+            if (dbInstance) {
+                dbInstance.close();
+                dbInstance = null;
+            }
+
             const checkDb = await openDB(DB_NAME, version);
 
             if (checkDb.objectStoreNames.contains(storeName)) {
@@ -86,19 +102,24 @@ export async function createStore<T>(
 
                 const repo = createRepository<T>(checkDb, storeName);
                 storeCache.set(storeName, repo);
+                dbInstance = checkDb;
                 return repo;
             }
+            
             checkDb.close();
+
             const { primaryKey = "id", autoIncrement = false, indexes = [] } = config;
             createdStores.add(storeName);
 
             const newVersion = version + 1;
-            currentDbVersion = newVersion; // Update tracked version
+            currentDbVersion = newVersion;
 
             const db = await openDB(DB_NAME, newVersion, {
                 upgrade(db) {
+
                     if (!db.objectStoreNames.contains(KV_STORE)) {
                         db.createObjectStore(KV_STORE);
+                        console.log(`✅ Created ${KV_STORE} store during upgrade`);
                     }
 
                     if (!db.objectStoreNames.contains(storeName)) {
@@ -119,6 +140,7 @@ export async function createStore<T>(
                 },
             });
 
+            dbInstance = db; // Cache the new instance
             const repository = createRepository<T>(db, storeName);
             storeCache.set(storeName, repository);
             return repository;
@@ -185,7 +207,6 @@ function createRepository<T>(db: IDBPDatabase, storeName: string) {
             return Promise.all(promises);
         },
 
-
         async get(key: IDBValidKey): Promise<T | undefined> {
             return db.get(storeName, key);
         },
@@ -243,21 +264,20 @@ function createRepository<T>(db: IDBPDatabase, storeName: string) {
     };
 }
 
-
 /**
  * LocalStorage-like API using IndexedDB
  */
 export const idbStorage = {
     async setItem(key: string, value: any) {
-        const db = await setupIndexDatabase();
-        // Auto stringify non-string data
+        const db = await getDB();
         const storedValue = typeof value === "string" ? value : JSON.stringify(value);
         await db.put(KV_STORE, storedValue, key);
     },
 
     async getItem<T = any>(key: string): Promise<T | null> {
-        const db = await setupIndexDatabase();
+        const db = await getDB();
         const value = await db.get(KV_STORE, key);
+        if (value === undefined) return null;
         try {
             return JSON.parse(value);
         } catch {
@@ -266,17 +286,17 @@ export const idbStorage = {
     },
 
     async removeItem(key: string) {
-        const db = await setupIndexDatabase();
+        const db = await getDB();
         await db.delete(KV_STORE, key);
     },
 
     async clear() {
-        const db = await setupIndexDatabase();
+        const db = await getDB();
         await db.clear(KV_STORE);
     },
 
     async keys() {
-        const db = await setupIndexDatabase();
+        const db = await getDB();
         return db.getAllKeys(KV_STORE);
     },
 };

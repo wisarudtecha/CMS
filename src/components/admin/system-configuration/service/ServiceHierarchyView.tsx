@@ -8,7 +8,7 @@ import type {
   // TypeAnalytics
 } from "@/types/case";
 import type { HierarchyItem, HierarchyConfig, PriorityLevel } from "@/types/hierarchy";
-import type { Properties } from "@/types/unit";
+import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
 import HierarchyView from "@/components/admin/HierarchyView";
@@ -33,7 +33,7 @@ interface ServiceHierarchyViewProps {
     caseTypes?: EnhancedCaseType[];
     className?: string;
     filteredTypes?: EnhancedCaseType[];
-    properties?: Properties[];
+    properties?: Property[];
     searchQuery?: string;
     showInactive?: boolean;
     skills?: EnhancedSkill[];

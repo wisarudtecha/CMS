@@ -3,7 +3,7 @@ import { FormField, formType } from "@/components/interface/FormField";
 import { Area } from "@/store/api/area";
 import type { DepartmentCommandStationDataMerged } from "@/store/api/caseApi";
 import type { BaseEntity, Custommer, sourceInterface } from "@/types";
-import type { Properties } from "@/types/unit";
+import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
 import { CaseSop, DeviceMetaData } from "./dispatch";
@@ -98,7 +98,7 @@ export interface CaseTypeManagementProps {
   caseTypes?: EnhancedCaseType[];
   className?: string;
   filteredTypes?: EnhancedCaseType[];
-  properties?: Properties[];
+  properties?: Property[];
   searchQuery?: string;
   showInactive?: boolean;
   skills?: EnhancedSkill[];

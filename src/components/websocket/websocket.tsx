@@ -81,7 +81,7 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
     case "CASE-STATUS-UPDATE":
       (async () => {
         try {
-          const caseList = JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[];
+          const caseList = JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[];
           const targetCaseId = message?.data?.additionalJson?.caseId;
           const newStatus = message?.data?.additionalJson?.status;
 

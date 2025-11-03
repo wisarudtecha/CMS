@@ -248,7 +248,10 @@ export const PreviewDialog = <T extends { id: string }>({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
+        <div
+          // className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900"
+          className="flex-1 p-6 bg-white dark:bg-gray-900"
+        >
           {currentTab.render ? (
             currentTab.render(item)
           ) : (

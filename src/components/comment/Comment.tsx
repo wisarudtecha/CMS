@@ -62,18 +62,20 @@ export const Comments: React.FC<CommentsProps> = ({
 
                     case "CASE-STATUS-UPDATE": {
                         const data = message.data;
-                        const optimisticComment: CaseHistory = {
-                            id: Date.now(),
-                            orgId: data.org || "",
-                            caseId: data?.additionalJson?.caseId,
-                            username: data?.createdBy,
-                            type: "comment",
-                            fullMsg: data?.additionalJson?.ms_alert,
-                            jsonData: "",
-                            createdAt: data?.createdAt,
-                            createdBy: data?.createdBy,
-                        };
-                        setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+                        if (data?.additionalJson?.caseId === caseId) {
+                            const optimisticComment: CaseHistory = {
+                                id: Date.now(),
+                                orgId: data.org || "",
+                                caseId: data?.additionalJson?.caseId,
+                                username: data?.createdBy,
+                                type: "comment",
+                                fullMsg: data?.additionalJson?.ms_alert,
+                                jsonData: "",
+                                createdAt: data?.createdAt,
+                                createdBy: data?.createdBy,
+                            };
+                            setCommentsData((prevComments) => [...prevComments, optimisticComment]);
+                        }
                         break;
                     }
 
@@ -270,22 +272,22 @@ export const Comments: React.FC<CommentsProps> = ({
                     onClick={handleNewComment}
                     disabled={newCommentMessage.trim() === '' || isAddingComment}
                 >
-                        <div className="flex text-gray-600 dark:text-gray-300">
-                            <svg
-                                className="w-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                                />
-                            </svg>
-                            <span>{t("case.sop_card.send_activity")}</span>
-                        </div>
+                    <div className="flex text-gray-600 dark:text-gray-300">
+                        <svg
+                            className="w-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                            />
+                        </svg>
+                        <span>{t("case.sop_card.send_activity")}</span>
+                    </div>
                 </Button>
             </div>
         </div>

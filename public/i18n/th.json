@@ -32,7 +32,8 @@
     "home": "หน้าหลัก",
     "retry": "ลองใหม่อีกครั้ง",
     "no_result": "ไม่เจอผลลัพธ์",
-    "charater": "ตัวอักษร"
+    "charater": "ตัวอักษร",
+    "noOption": "ไม่มีตัวเลือก"
   },
   "auth": {
     "signin": {
@@ -194,7 +195,19 @@
             "service_management": "การจัดการบริการ",
             "unit_management": {
               "title": "การจัดการหน่วย",
-              "header": "การจัดการหน่วย"
+              "header": "การจัดการหน่วย",
+              "create": {
+                "title": "สร้างหน่วย",
+                "header": "สร้างหน่วย"
+              },
+              "read": {
+                "title": "รายละเอียดหน่วย",
+                "header": "รายละเอียดหน่วย"
+              },
+              "update": {
+                "title": "แก้ไขหน่วย",
+                "header": "แก้ไขหน่วย"
+              }
             },
             "skill_management": "การจัดการทักษะ",
             "property_management": "การจัดการคุณสมบัติ",
@@ -409,6 +422,76 @@
           "unit": "หน่วย",
           "status": "สถานะ",
           "location": "สถานที่"
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "ข้อมูลพื้นฐาน",
+          "sections": {
+            "unitId": {
+              "label": "รหัสหน่วย",
+              "placeholder": "กรอกรหัสหน่วย"
+            },
+            "unitName": {
+              "label": "ชื่อหน่วย",
+              "placeholder": "กรอกชื่อหน่วย"
+            },
+            "unitTypeId": {
+              "label": "ประเภทหน่วย",
+              "placeholder": "เลือกประเภทหน่วย"
+            },
+            "unitSourceId": {
+              "label": "แหล่งที่มาของหน่วย",
+              "placeholder": "เลือกแหล่งที่มาของหน่วย"
+            },
+            "username": {
+              "label": "ชื่อผู้ใช้",
+              "placeholder": "เลือกชื่อผู้ใช้"
+            },
+            "priority": {
+              "label": "ความสำคัญ"
+            },
+            "plateNo": {
+              "label": "เลขป้ายทะเบียน",
+              "placeholder": "กรอกเลขป้ายทะเบียน"
+            },
+            "breakDuration": {
+              "label": "ระยะเวลาการพัก (นาที)"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "รายละเอียดองค์กร",
+          "sections": {
+            "compId": {
+              "label": "หน่วยงาน",
+              "placeholder": "เลือกหน่วยงาน"
+            },
+            "deptId": {
+              "label": "แผนก",
+              "placeholder": "เลือกแผนก"
+            },
+            "commId": {
+              "label": "กลุ่มสั่งการ",
+              "placeholder": "เลือกกลุ่มสั่งการ"
+            },
+            "stnId": {
+              "label": "สถานี",
+              "placeholder": "เลือกสถานี"
+            },
+            "provinceCode": {
+              "label": "จังหวัด",
+              "placeholder": "เลือกจังหวัด"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "สถานะ",
+          "sections": {
+            "active": {
+              "label": "ใช้งานอยู่"
+            }
+          }
         }
       }
     }

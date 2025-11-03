@@ -25,7 +25,7 @@ import { useGetPropertiesQuery } from "@/store/api/unitApi";
 import { useGetSkillsQuery } from "@/store/api/userApi";
 import { useGetWorkflowsQuery } from "@/store/api/workflowApi";
 import type { EnhancedCaseSubType, EnhancedCaseType } from "@/types/case";
-import type { Properties } from "@/types/unit";
+import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
 import ServiceManagementComponent from "@/components/admin/system-configuration/service/ServiceManagement"; 
@@ -43,7 +43,7 @@ const CaseManagementPage: React.FC = () => {
   const caseTypes = caseTypesData?.data as unknown as EnhancedCaseType[] || [];
 
   const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 100 });
-  const properties = propertiesData?.data as unknown as Properties[] || [];
+  const properties = propertiesData?.data as unknown as Property[] || [];
 
   const { data: skillsData } = useGetSkillsQuery({ start: 0, length: 100 });
   const skills = skillsData?.data as unknown as EnhancedSkill[] || [];

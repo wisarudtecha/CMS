@@ -82,6 +82,16 @@ export const formApi = baseApi.injectEndpoints({
             invalidatesTags: ["Form and Workflow"],
         }),
 
+        deleteForm: builder.mutation<UpdataFormResponse, { //
+            id: string;
+        }>({
+            query: ({ id }) => ({
+                url: `/forms/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Form and Workflow"],
+        }),
+
         postSubTypeForm: builder.mutation<ApiResponse<FormField>, string>({
             query: (subType) => ({
                 url: "/forms/casesubtype",
@@ -296,5 +306,6 @@ export const {
     usePostSubTypeFormMutation,
     useGetTypeSubTypeQuery,
     useLazyGetTypeSubTypeQuery,
+    useDeleteFormMutation,
 } = formApi;
 

@@ -88,7 +88,7 @@ export default function CasesView() {
   const { t, language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState(getInitialFilters())
   const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
-
+  const [loadingCase, setLoadingCase] = useState<boolean>(false)
   const [visibleListCount, setVisibleListCount] = useState(20);
   const listLoadMoreRef = useRef(null);
 
@@ -129,12 +129,12 @@ export default function CasesView() {
     const handleStorageChange = (e: StorageEvent) => {
 
       if (e.key === 'caseList' && e.newValue) {
-        console.log('Case list updated in localStorage');
+        // console.log('Case list updated in localStorage');
         try {
           const updatedCases = JSON.parse(e.newValue) as CaseEntity[];
           const filteredCases = updatedCases.filter(c => allowedStatusIds.includes(c.statusId));
           setCaseData(filteredCases);
-          console.log('Local case data refreshed from storage event');
+          // console.log('Local case data refreshed from storage event');
         } catch (error) {
           console.error('Failed to parse updated case list:', error);
         }
@@ -173,19 +173,23 @@ export default function CasesView() {
     setAdvancedFilters(clearedFilters);
     localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
+    setLoadingCase(true)
     await fetchCase({});
-    const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+    setLoadingCase(false)
+    const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
   const handleRefreshCase = async () => {
     setIsRefreshing(true);
+    setLoadingCase(true)
     await fetchCase({});
+    setLoadingCase(false)
 
     setTimeout(() => {
       setIsRefreshing(false);
     }, 5000);
-    const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+    const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
   }
 
@@ -239,6 +243,7 @@ export default function CasesView() {
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
       localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
+      setLoadingCase(true)
       await fetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
@@ -251,12 +256,13 @@ export default function CasesView() {
         countryId: localFilters.area.countryId,
         phoneNo: localFilters.phoneNumber
       });
+      setLoadingCase(false)
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);
       } else {
         setSelectedStatus(null);
       }
-      const updatedCases = (JSON.parse(await idbStorage.getItem("caseList") ?? "[]") as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+      const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
       setCaseData(updatedCases);
       handleAdvanceFilterClose();
     };
@@ -482,6 +488,21 @@ export default function CasesView() {
 
     const visibleCases = cases.slice(0, visibleCount);
 
+    if (selectedStatus) {
+      return (
+          <div ref={scrollContainerRef} className="space-y-3 px-2 overflow-y-auto h-screen custom-scrollbar">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
+              {visibleCases.map((caseItem) => (
+                <CaseCard key={caseItem.caseId} caseItem={caseItem} />
+              ))}
+              {visibleCount < cases.length && (
+                <div ref={loadMoreRef} className="h-10 w-full" />
+              )}
+            </div>
+          </div>
+      );
+    }
+
     return (
       <div className="flex-shrink-0 w-80 xl:w-full">
         {!selectedStatus && (
@@ -492,10 +513,10 @@ export default function CasesView() {
         )}
         <div
           ref={scrollContainerRef}
-          className="space-y-3 px-2 md:overflow-y-auto md:h-screen custom-scrollbar "
+          className="space-y-3 px-2 overflow-y-auto h-screen custom-scrollbar "
         >
           {visibleCases.map((caseItem) => (
-            <CaseCard key={caseItem.id} caseItem={caseItem} />
+            <CaseCard key={caseItem.caseId} caseItem={caseItem} />
           ))}
 
           {visibleCount < cases.length && (
@@ -537,6 +558,24 @@ export default function CasesView() {
     </div>)
   }
 
+  const Loading = () => {
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100000">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">{t("common.loading")}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const ListView = () => {
     const allFilteredCases = getFilteredCases()
       .filter(c => selectedStatus === null || getStatusKey(c) === selectedStatus);
@@ -558,7 +597,7 @@ export default function CasesView() {
         <div className="space-y-2">
           {visibleCases.map((caseItem) => (
             <div
-              key={caseItem.id}
+              key={caseItem.caseId}
               className="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:shadow-lg"
               onClick={() => handleCaseClick(caseItem)}
             >
@@ -889,7 +928,7 @@ export default function CasesView() {
           {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
-
+      {loadingCase && <Loading />}
       {showAdvanceFilter && <AdvanceFilter />}
     </div >
   );

@@ -2,14 +2,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AtSign,
+  // AtSign,
   Building,
   ChartColumnStacked,
   CheckCircle,
   ClockArrowUp,
   Contact,
   Cpu,
-  Mail,
+  // Mail,
   MapPin,
   MapPinHouse,
   Phone,
@@ -17,17 +17,17 @@ import {
   Siren,
   Tag,
   Ticket,
-  Truck,
+  // Truck,
   User
 } from "lucide-react";
 import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
-import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
+// import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
 import { mapSopToOrderedProgress } from "@/components/case/sopStepTranForm";
 import { source } from "@/components/case/constants/caseConstants";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
-import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
+// import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Area } from "@/store/api/area";
@@ -35,11 +35,12 @@ import { DepartmentCommandStationDataMerged, mergeDeptCommandStation, useGetCase
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { useGetUserByUserNameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
-import { CASE_CANNOT_DELETE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
+import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
 import type { CaseSop, UnitWithSop } from "@/types/dispatch";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import ProgressStepPreview from "@/components/case/activityTimeline/caseActivityTimeline";
 import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
 import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -60,10 +61,15 @@ const CaseHistoryComponent: React.FC<{
   const permissions = usePermissions();
   
   const [crudOpen, ] = useState("block");
-  const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
+
+  const [selectedCaseForAssignee, setSelectedCaseForAssignee] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
+  const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForUnit, setSelectedCaseForUnit] = useState<string | null>(null);
+  
   const [sopData, setSopData] = useState<CaseSop | null>(null);
+
+  const [, setAssigneeData] = useState<UnitWithSop | null>(null);
   const [, setUnitData] = useState<UnitWithSop | null>(null);
 
   const { data: dispatchSOPsData } = useGetCaseSopQuery(
@@ -81,8 +87,17 @@ const CaseHistoryComponent: React.FC<{
     { skip: !selectedCaseForUnit }
   );
 
+  const { data: assigneesData } = useGetUserByUserNameQuery(
+    { username: selectedCaseForAssignee ?? "" }, 
+    { skip: !selectedCaseForAssignee }
+  );
+
   const isCancelAvailable = (data: CaseEntity) => {
     return (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean && !CASE_CANNOT_DELETE.includes(data.statusId as typeof CASE_CANNOT_DELETE[number])
+  }
+
+  const isEditAvailable = (data: CaseEntity) => {
+    return (permissions.hasPermission("case.update") || isSystemAdmin) as boolean && !CASE_CANNOT_UPDATE.includes(data.statusId as typeof CASE_CANNOT_UPDATE[number])
   }
 
   // ===================================================================
@@ -220,9 +235,12 @@ const CaseHistoryComponent: React.FC<{
 
   const areaConfigs = generateAreaConfigs(areas);
 
-  const getAreaConfig = (caseItem: CaseEntity) => {
+  const getAreaConfig = (
+    // caseItem: CaseEntity
+    caseItem: CaseSop
+  ) => {
     const found = areaConfigs?.find(config => 
-      config.distId === caseItem.distId
+      config?.distId === caseItem?.distId
     ) || null;
     return found || {
       distId: "",
@@ -368,7 +386,8 @@ const CaseHistoryComponent: React.FC<{
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (caseItem: CaseEntity) => navigate(`/case/${caseItem.caseId}`),
-        condition: () => (permissions.hasPermission("case.update") || isSystemAdmin) as boolean
+        // condition: () => (permissions.hasPermission("case.update") || isSystemAdmin) as boolean
+        condition: (caseItem: CaseEntity) => isEditAvailable(caseItem)
       },
       {
         key: "delete",
@@ -378,7 +397,8 @@ const CaseHistoryComponent: React.FC<{
         onClick: (caseItem: CaseEntity) => {
           console.log("Delete case:", caseItem.id);
         },
-        condition: (caseItem: CaseEntity) => isCancelAvailable(caseItem) && (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean
+        // condition: (caseItem: CaseEntity) => isCancelAvailable(caseItem) && (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean
+        condition: (caseItem: CaseEntity) => isCancelAvailable(caseItem)
       }
     ]
   };
@@ -399,8 +419,9 @@ const CaseHistoryComponent: React.FC<{
             {getPriorityConfig(caseItem)?.label}
           </Badge>
           <span
-            className="inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-md border text-sm"
-            style={getStatusConfig(caseItem)?.style}
+            className="border border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400 inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-md text-sm"
+            // className="inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium text-md border text-sm"
+            // style={getStatusConfig(caseItem)?.style}
           >
             {getStatusConfig(caseItem)?.label}
           </span>
@@ -409,15 +430,19 @@ const CaseHistoryComponent: React.FC<{
     );
   };
 
-  const getTimelineSteps = (
-    // caseItem: CaseEntity
-  ) => {
-    // const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
-    const timelineSteps = CaseTimelineSteps(sopData || undefined, caseStatuses);
-    return timelineSteps;
-  };
+  // const getTimelineSteps = (
+  //   // caseItem: CaseEntity
+  // ) => {
+  //   // const sopData = (selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : undefined;
+  //   const timelineSteps = CaseTimelineSteps(sopData || undefined, caseStatuses);
+  //   return timelineSteps;
+  // };
 
   const OverviewTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
+    useEffect(() => {
+      setSelectedCaseForAssignee(sopData?.unitLists?.length && sopData?.unitLists[0]?.createdBy || null);
+    }, []);
+
     useEffect(() => {
       setSelectedCaseForSop(caseItem.caseId);
     }, [caseItem.caseId]);
@@ -431,11 +456,17 @@ const CaseHistoryComponent: React.FC<{
     }, [caseItem.caseId]);
 
     useEffect(() => {
+      setAssigneeData((sopData?.unitLists?.length && selectedCaseForAssignee === sopData?.unitLists[0].createdBy) ? assigneesData?.data as unknown as UnitWithSop : null);
+    }, [caseItem.caseId]);
+
+    useEffect(() => {
       setUnitData((sopData?.unitLists?.length && selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
     }, [caseItem.caseId]);
 
-    const dpcConfig = getAreaConfig(caseItem);
-    const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
+    // const dpcConfig = getAreaConfig(caseItem);
+    const dpcConfig = getAreaConfig(sopData as CaseSop);
+    // const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
+    const dpcDisplay = `${dpcConfig.country || ""}-${dpcConfig.province || ""}-${dpcConfig.district || ""}`;
 
     const progressSteps = useMemo(() => {
       return mapSopToOrderedProgress(sopData as CaseSop, language);
@@ -443,19 +474,27 @@ const CaseHistoryComponent: React.FC<{
     const deptComStn = useMemo(() =>
       JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
     );
+
+    const assigneeStation = deptComStn?.find(items => {
+      return items.commId === assigneesData?.data?.commId && items.stnId === assigneesData?.data?.stnId && items.deptId === assigneesData.data.deptId;
+    }) || null;
     const userStation = deptComStn?.find(items => {
       return items.commId === unitsData?.data?.commId && items.stnId === unitsData?.data?.stnId && items.deptId === unitsData.data.deptId;
     }) || null;
 
-    const contactMethod = source?.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+    // const contactMethod = source?.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+    const contactMethod = source?.find(cm => cm.id === sopData?.source) || { name: "-" };
 
-    const timelineSteps = getTimelineSteps();
+    // const timelineSteps = getTimelineSteps();
 
     return (
       <>
         <PermissionGate module="case" action="view_timeline">
+          {/* Progress Timeline and Progress Line */}
+          <ProgressStepPreview progressSteps={progressSteps} />
+
+          {/*
           <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
-            {/* Progress Timeline and Progress Line */}
             {
               // getTimelineSteps(caseItem).length
               timelineSteps.length
@@ -487,6 +526,7 @@ const CaseHistoryComponent: React.FC<{
               </>
             ) : ""}
           </div>
+          */}
         </PermissionGate>
 
         {/* Content */}
@@ -504,7 +544,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.display.no")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseId || ""}
+                    {caseItem.caseId || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-start justify-left gap-1">
@@ -515,10 +555,10 @@ const CaseHistoryComponent: React.FC<{
                         <ChartColumnStacked className="block xl:hidden w-4 h-4" />
                         <div className="text-sm font-medium">{t("case.display.types")}:</div>
                       </div>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || ""}</div>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || "-"}</div>
                     </div>
                     <div className="xl:flex items-center justify-left gap-1 text-sm">
-                      {sopData?.formAnswer && <FormViewer formData={sopData.formAnswer} />}
+                      {sopData?.formAnswer && <FormViewer formData={sopData.formAnswer} /> || "-"}
                     </div>
                   </div>
                 </div>
@@ -528,7 +568,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.display.service_center")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {dpcDisplay || ""}
+                    {dpcDisplay || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -537,7 +577,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {formatDate(sopData?.startedDate as string) || ""}
+                    {formatDate(sopData?.startedDate as string) || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -546,7 +586,8 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-red-500 dark:text-red-400 text-sm font-medium">{t("case.display.updateAt")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {formatDate(sopData?.updatedAt as string) || ""} {t("case.display.updateBy")} {caseItem.updatedBy || ""}
+                    {/* {formatDate(sopData?.updatedAt as string) || ""} {t("case.display.updateBy")} {caseItem.updatedBy || ""} */}
+                    {formatDate(sopData?.updatedAt as string) || ""} {t("userform.by")} {sopData?.updatedBy || "-"}
                   </div>
                 </div>
               </div>
@@ -563,7 +604,7 @@ const CaseHistoryComponent: React.FC<{
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || ""}
+                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || "-"}
                   </div>
                 </div>
               </div>
@@ -584,7 +625,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.phoneNo || ""}
+                    {caseItem.phoneNo || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
@@ -593,7 +634,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {contactMethod?.name || ""}
+                    {contactMethod?.name || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">
@@ -602,7 +643,8 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.deviceId || ""}
+                    {/* {caseItem.deviceId || ""} */}
+                    {sopData?.deviceId || "-"}
                   </div>
                 </div>
               </div>
@@ -616,13 +658,20 @@ const CaseHistoryComponent: React.FC<{
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseDetail || ""}
+                    {caseItem.caseDetail || "-"}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Unit Information */}
+            <div className="relative my-4 text-center w-full">
+              <div className="absolute bg-gray-300 dark:bg-gray-600 h-px w-full left-0 top-1/2 -translate-y-1/2" />
+              <span className="relative bg-white dark:bg-gray-900 font-medium px-4 text-gray-600 dark:text-gray-300">
+                {t("case.display.Assigned Officer")}
+              </span>
+            </div>
+
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
                 {t("case.officer_detail.personal_title")}
@@ -639,15 +688,6 @@ const CaseHistoryComponent: React.FC<{
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
                   <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <AtSign className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.username")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {unitsData?.data?.username || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                     <Phone className="w-4 h-4" />
                     <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
                   </div>
@@ -657,50 +697,25 @@ const CaseHistoryComponent: React.FC<{
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
                   <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.email")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {unitsData?.data?.email || ""}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="xl:flex items-left justify-left gap-2 mb-4">
-                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
-                  <Truck className="w-4 h-4" />
-                  {t("case.officer_detail.service_title")}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    {/* <AtSign className="w-4 h-4" /> */}
+                    {/* <span className="text-sm font-medium">{t("case.officer_detail.username")}:</span> */}
                     <Tag className="w-4 h-4" />
                     <span className="text-sm font-medium">{t("case.officer_detail.vehicle")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {/* {unitsData?.data?.username || ""} */}
                     {sopData?.unitLists?.length && sopData?.unitLists[0]?.unitId || ""}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="xl:flex items-left justify-left gap-2 mb-4">
-                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
-                  <Truck className="w-4 h-4" />
-                  {t("case.officer_detail.service_title")}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left gap-2">
                   <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    {/* <Mail className="w-4 h-4" /> */}
+                    {/* <span className="text-sm font-medium">{t("case.officer_detail.email")}:</span> */}
                     <Building className="w-4 h-4" />
                     <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {/* {unitsData?.data?.email || ""} */}
                     {userStation && mergeDeptCommandStation(userStation) || ""}
                   </div>
                 </div>
@@ -708,6 +723,41 @@ const CaseHistoryComponent: React.FC<{
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                {t("case.officer_detail.assignee_title")}
+              </h4>
+              <div className="grid grid-cols-1 space-y-3">
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {assigneesData?.data?.firstName || ""}{" "}{assigneesData?.data?.lastName || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {assigneesData?.data?.mobileNo || ""}
+                  </div>
+                </div>
+                <div className="xl:flex items-left justify-left gap-2">
+                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+                    <Building className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    {assigneeStation && mergeDeptCommandStation(assigneeStation) || ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 pt-4">
               <div className="xl:flex items-left justify-left gap-2 mb-4">
                 <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
                   <CheckCircle className="w-4 h-4" />
@@ -899,7 +949,8 @@ const CaseHistoryComponent: React.FC<{
           closePreview();
           navigate(`/case/${caseItem.caseId}`);
         },
-        condition: () => permissions.hasPermission("case.update")
+        // condition: () => permissions.hasPermission("case.update")
+        condition: (caseItem: CaseEntity) => isEditAvailable(caseItem)
       },
       {
         key: "cancel",

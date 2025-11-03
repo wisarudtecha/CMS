@@ -192,7 +192,19 @@
             "service_management": "服务管理",
             "unit_management": {
               "title": "单位管理",
-              "header": "单位管理"
+              "header": "单位管理",
+              "create": {
+                "title": "创建单元",
+                "header": "创建单元"
+              },
+              "read": {
+                "title": "单元详情",
+                "header": "单元详情"
+              },
+              "update": {
+                "title": "编辑单元",
+                "header": "编辑单元"
+              }
             },
             "skill_management": "技能管理",
             "property_management": "属性管理",
@@ -407,6 +419,76 @@
           "unit": "单位编号",
           "status": "状态",
           "location": "位置"
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "基本信息",
+          "sections": {
+            "unitId": {
+              "label": "单元 ID",
+              "placeholder": "输入单元 ID"
+            },
+            "unitName": {
+              "label": "单元名称",
+              "placeholder": "输入单元名称"
+            },
+            "unitTypeId": {
+              "label": "单元类型",
+              "placeholder": "选择单元类型"
+            },
+            "unitSourceId": {
+              "label": "单元来源",
+              "placeholder": "选择单元来源"
+            },
+            "username": {
+              "label": "用户名",
+              "placeholder": "选择用户名"
+            },
+            "priority": {
+              "label": "优先级"
+            },
+            "plateNo": {
+              "label": "车牌号",
+              "placeholder": "请输入车牌号"
+            },
+            "breakDuration": {
+              "label": "休息时长（分钟）"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "组织详情",
+          "sections": {
+            "compId": {
+              "label": "公司",
+              "placeholder": "选择公司"
+            },
+            "deptId": {
+              "label": "部门",
+              "placeholder": "选择部门"
+            },
+            "commId": {
+              "label": "指挥部",
+              "placeholder": "选择指挥部"
+            },
+            "stnId": {
+              "label": "站点",
+              "placeholder": "选择站点"
+            },
+            "provinceCode": {
+              "label": "省份",
+              "placeholder": "选择省份"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "状态",
+          "sections": {
+            "active": {
+              "label": "是否处于活动状态"
+            }
+          }
         }
       }
     }

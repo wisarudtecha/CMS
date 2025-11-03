@@ -2,7 +2,7 @@
 import React from 'react';
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
-import FormListComponent from "@/components/formsManagents/List";
+import FormManagerComponent from '@/components/formsManagents/formManagerComponent';
 
 const FormManagentListPage: React.FC = () => {
   return (
@@ -14,7 +14,7 @@ const FormManagentListPage: React.FC = () => {
 
       <PageBreadcrumb pageTitle="Forms Management" />
 
-      <FormListComponent/>
+      <FormManagerComponent/>
     </>
   );
 };
