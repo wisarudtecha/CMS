@@ -1,8 +1,7 @@
 import type React from "react";
-import { Link } from "react-router"; 
+import { Link } from "react-router";
 
 interface DropdownItemProps {
-
   tag?: "a" | "button" | "div";
   to?: string;
   onClick?: (event: React.MouseEvent | React.KeyboardEvent) => void;
@@ -13,8 +12,7 @@ interface DropdownItemProps {
 }
 
 export const DropdownItem: React.FC<DropdownItemProps> = ({
-
-  tag = "div", 
+  tag = "div",
   to,
   onClick,
   onItemClick,

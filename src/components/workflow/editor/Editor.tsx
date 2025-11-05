@@ -4,12 +4,14 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AngleLeftIcon, AngleRightIcon, BoxCubeIcon, CheckLineIcon, CloseIcon, CopyIcon, DownloadIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { ToastContainer } from "@/components/crud/ToastContainer";
+import { FormField } from "@/components/interface/FormField";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import { useCreateWorkflowMutation, useUpdateWorkflowMutation } from "@/store/api/workflowApi";
 import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
+import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
@@ -316,20 +318,26 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         type: "process";
         label: string;
         action?: string
-        formId?: string;
+        // formId?: string;
+        form?: FormField;
         sla?: string | number;
-        group?: string[];
-        pic?: string[];
+        // group?: string[];
+        group?: string;
+        // pic?: string[];
+        pic?: string;
       } |
       {
         id: string;
         type: "dispatch";
         label: string;
         action?: string
-        formId?: string;
+        // formId?: string;
+        form?: FormField;
         sla?: string | number;
-        group?: string[];
-        pic?: string[];
+        // group?: string[];
+        group?: string;
+        // pic?: string[];
+        pic?: string;
       } |
       {
         id: string;
@@ -392,10 +400,26 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           // type: "process",
           type: node.type === "dispatch" ? "dispatch" : "process",
           label: node.data.label,
-          formId: typeof node.data.config?.formId === "string" ? node.data.config.formId : "",
+          action: caseStatuses?.find(a => a.statusId === node.data.config?.action)?.en || caseStatuses?.find(a => a.statusId === node.data.config?.action)?.th,
+          // formId: typeof node.data.config?.formId === "string" ? node.data.config.formId : "",
+          form: forms?.find(f => f.formId === node.data.config?.formId),
           sla: typeof node.data.config?.sla === "number" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
-          pic: Array.isArray(node.data.config?.pic) ? node.data.config.pic : undefined,
-          group: Array.isArray(node.data.config?.group) ? node.data.config.group : undefined
+          // pic: Array.isArray(node.data.config?.pic) ? node.data.config.pic : undefined,
+          pic: Array.isArray(node.data.config?.pic)
+            ? node.data.config.pic.map((pid: string) => users?.find(u => u.id === pid)?.displayName || users?.find(u => u.id === pid)?.username || pid).join(", ")
+            : (typeof node.data.config?.pic === "string"
+              ? users?.find(u => u.id === node.data.config?.pic)?.displayName || 
+                users?.find(u => u.id === node.data.config?.pic)?.username || 
+                node.data.config?.pic
+              : undefined),
+          // group: Array.isArray(node.data.config?.group) ? node.data.config.group : undefined
+          group: Array.isArray(node.data.config?.group)
+            ? node.data.config.group.map((gid: string) => userGroup?.find(ug => ug.grpId === gid)?.en || userGroup?.find(ug => ug.grpId === gid)?.th || gid).join(", ")
+            : (typeof node.data.config?.group === "string"
+              ? userGroup?.find(ug => ug.grpId === node.data.config?.group)?.en ||
+                userGroup?.find(ug => ug.grpId === node.data.config?.group)?.th ||
+                node.data.config?.group
+              : undefined),
         });
       }
       else if (node.type === "sla") {
@@ -428,8 +452,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     
     return components;
   }, [
+    caseStatuses,
+    forms,
     nodes,
     decisionSelections,
+    userGroup,
+    users,
     getWorkflowPath,
     // getFormComponentConfig
   ]);
@@ -2160,19 +2188,19 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                         */}
                         {component.type === "process" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Action: {component?.action || "N/A"}{" "}
-                            Form: {component?.formId || "N/A"}{" "}
-                            SLA: {component?.sla || "0"} minutes{" "}
-                            Group: {component?.group || "N/A"}{" "}
+                            Action: {component?.action || "N/A"}{" | "}
+                            {/* Form: {component?.formId || "N/A"}{" | "} */}
+                            SLA: {component?.sla || "0"} minutes{" | "}
+                            Group: {component?.group || "N/A"}{" | "}
                             PIC: {component?.pic || "N/A"}
                           </span>
                         )}
                         {component.type === "dispatch" && (
                           <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Dispatch: {component?.action || "N/A"}{" "}
-                            Form: {component?.formId || "N/A"}{" "}
-                            SLA: {component?.sla || "0"} minutes{" "}
-                            Group: {component?.group || "N/A"}{" "}
+                            Dispatch: {component?.action || "N/A"}{" | "}
+                            {/* Form: {component?.formId || "N/A"}{" | "} */}
+                            SLA: {component?.sla || "0"} minutes{" | "}
+                            Group: {component?.group || "N/A"}{" | "}
                             PIC: {component?.pic || "N/A"}
                           </span>
                         )}
@@ -2219,6 +2247,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       )}
                       
                       {/* Form Component */}
+                      {(component.type === "process" || component.type === "dispatch") && component?.form && (
+                        <DynamicForm edit={false} editFormData={true} enableFormTitle={false} initialForm={component?.form} />
+                      )}
                       {/*
                       {component.type === "form" && (
                         <div>
@@ -2308,12 +2339,14 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                           */}
                           {component.group && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>Group:</strong> {component.group.join(", ")}
+                              {/* <strong>Group:</strong> {component.group.join(", ")} */}
+                              <strong>Group:</strong> {component.group}
                             </div>
                           )}
                           {component.pic && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>PIC:</strong> {component.pic.join(", ")}
+                              {/* <strong>PIC:</strong> {component.pic.join(", ")} */}
+                              <strong>PIC:</strong> {component.pic}
                             </div>
                           )}
                         </div>

@@ -8,7 +8,7 @@ import { Modal } from "../ui/modal";
 
 interface FilePreviewCardProps {
     file: FileItem
-    index: number
+    index?: number
     onRemove?: (index: number) => void
     getFileIcon: (file: FileItem) => React.ReactNode
     formatFileSize: (bytes: number) => string
@@ -82,7 +82,7 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
     const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
 
     const handleRemove = async () => {
-        if (onRemove && !isRemoving) {
+        if (onRemove && !isRemoving && index) {
             setIsRemoving(true);
             try {
                 await onRemove(index);
@@ -131,7 +131,7 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
         <>
             <div className="relative group rounded-lg overflow-hidden">
                 {/* Remove Button - Only show if not disabled */}
-                {!disabled && (
+                {!disabled && onRemove && (
                     <Button
                         onClick={handleRemove}
                         className="absolute top-2 right-2 z-10 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white disabled:bg-red-400"
@@ -188,7 +188,7 @@ export const FilePreviewCardWithDownload: React.FC<FilePreviewCardProps> = ({
     const [isRemoving, setIsRemoving] = useState<boolean>(false)
 
     const handleRemove = async () => {
-        if (onRemove && !isRemoving) {
+        if (onRemove && !isRemoving && index) {
             setIsRemoving(true)
             try {
                 await onRemove(index)

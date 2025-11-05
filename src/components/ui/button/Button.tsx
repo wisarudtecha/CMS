@@ -15,6 +15,7 @@ interface ButtonProps {
   title?: string; // Button title
   role?: string; // Button role
   priority?: string;
+  endIconClass?:string
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -28,7 +29,8 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   title = "",
   role = "",
-  priority = "normal"
+  priority = "normal",
+  endIconClass = ""
 }) => {
   // Size Classes
   const sizeClasses = {
@@ -112,7 +114,7 @@ const Button: React.FC<ButtonProps> = ({
     >
       {startIcon && <span className="flex items-center">{startIcon}</span>}
        {isIconOnlyChild ? <span className="flex items-center">{children}</span> : children}
-      {endIcon && <span className="flex items-center">{endIcon}</span>}
+      {endIcon && <span className={`flex items-center ${endIconClass}`}>{endIcon}</span>}
     </button>
   );
 };

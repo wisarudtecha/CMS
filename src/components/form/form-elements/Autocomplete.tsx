@@ -1,25 +1,25 @@
 // /src/components/form/form-elements/Autocomplete.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Input from "@/components/form/input/InputField";
 
 type AutocompleteProps = {
+  disabled?: boolean;
   id?: string;
-  // suggestions: string[];
+  placeholder?: string;
+  required?: boolean;
+  // suggestions?: string[];
   value?: string;
   onSelect: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  required?: boolean;
 };
 
 export const Autocomplete: React.FC<AutocompleteProps> = ({
+  disabled,
   id = "",
+  placeholder = "Start typing...",
+  required,
   // suggestions,
   value = "",
   onSelect,
-  placeholder = "Start typing...",
-  disabled,
-  required,
 }) => {
   // const [query, setQuery] = useState("");
   const [query, setQuery] = useState(value);
@@ -28,13 +28,22 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
+  const debounceLengthWating = 0;
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const debounceTimeWaiting = 3; // Second
+  const debounceTimeWaiting = 0; // Second
   // const suggestions = ["bma", "skyai"];
   const suggestions = ["BMA", "SKY-AI"];
 
+  const handleSelect = useCallback((val: string) => {
+    setQuery(val);
+    setShowList(false);
+    onSelect(val);
+  }, [onSelect]);
+
   useEffect(() => {
     setQuery(value);
+    handleSelect(value);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
@@ -59,16 +68,16 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         // setFiltered(results);
         // setShowList(true);
 
-        if (query.length < 3) {
-          setFiltered([]);
-          setShowList(false);
-          setLoading(false);
-          return;
-        }
+        // if (query.length < debounceLengthWating) {
+        //   setFiltered([]);
+        //   setShowList(false);
+        //   setLoading(false);
+        //   return;
+        // }
 
-        // Only trigger suggestions if user stopped typing for 3 seconds
+        // Only trigger suggestions if user stopped typing in seconds
         debounceTimer.current = setTimeout(() => {
-          if (query.length >= 3) {
+          if (query.length >= debounceLengthWating) {
             setLoading(true);
             setTimeout(() => {
               const result = suggestions.filter((s) =>
@@ -97,11 +106,11 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
-  const handleSelect = (value: string) => {
-    setQuery(value);
-    setShowList(false);
-    onSelect(value);
-  };
+  // const handleSelect = (val: string) => {
+  //   setQuery(val);
+  //   setShowList(false);
+  //   onSelect(val);
+  // };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
@@ -126,7 +135,8 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         placeholder={placeholder}
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
+          // setQuery(e.target.value);
+          handleSelect(e.target.value);
           setActiveIndex(-1);
         }}
         onKeyDown={handleKeyDown}

@@ -373,7 +373,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 scheduleDate: "",
                 customerData: {} as Custommer,
                 attachFile: [] as File[],
-                attachFileResult: [] as File[]
+                attachFileResult: [] as File[],
+                source:{id:"06",name:"OTHER"},
             } as CaseDetails;
         }
         return undefined;
