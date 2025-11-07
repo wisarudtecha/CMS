@@ -145,7 +145,6 @@ export interface EditComment {
     type: string;
 }
 
-
 interface ApiResponseCreateCase<T> {
     status: string
     msg: string
@@ -168,20 +167,23 @@ export interface CaseStatus {
 }
 
 export interface CaseListParams extends PaginationParams {
-    detail?: string;
+    start?: number;
+    length?: number;
     start_date?: string;
     end_date?: string;
-    category?: string;
     caseType?: string;
     caseSType?: string;
-    createBy?: string;
+    statusId?:string;
+    detail?: string;
+    caseId?: string;
     countryId?: string;
     provId?: string;
-    statusId?:string;
     distId?: string;
-    phoneNo?: string;
+    category?: string;
+    createBy?: string;
+    orderBy?: string;
     direction?:string;
-    orderBy?:string;
+    phoneNo?: string;
 }
 
 export interface CaseHistory {
@@ -194,6 +196,15 @@ export interface CaseHistory {
     jsonData: any;
     createdAt: string;
     createdBy: string;
+}
+
+export interface CaseListResponse {
+    data: Case[];
+    totalRecords: number;
+    totalFiltered: number;
+    currentPage: number;
+    pageSize: number;
+    draw?: number;
 }
 
 export const caseApi = baseApi.injectEndpoints({
@@ -256,6 +267,37 @@ export const caseApi = baseApi.injectEndpoints({
             invalidatesTags: ["Cases"],
         }),
 
+        getListCaseHistory: builder.query<CaseListResponse, CaseListParams>({
+            query: (params) => ({
+                url: "/case",
+                params: {
+                    start: params.start,
+                    length: params.length,
+                    detail: params.detail,
+                    start_date: params.start_date,
+                    end_date: params.end_date,
+                    caseType: params.caseType,
+                    caseSType: params.caseSType,
+                    statusId: params.statusId,
+                    orderBy: params.orderBy,
+                    direction: params.direction
+                }
+            }),
+            transformResponse: (response: ApiResponse<Case[]>) => {
+                const start = response.pagination?.page ?? 0;
+                const length = response.pagination?.limit ?? 10;
+                return {
+                    currentPage: Math.floor(start / length) + 1,
+                    data: response.data || [],
+                    pageSize: length,
+                    totalFiltered: response.totalFiltered || 0,
+                    totalPage: Math.ceil((response.totalFiltered || 0) / (length || 10)),
+                    totalRecords: response.totalRecords || 0
+                };
+            },
+            providesTags: ["Cases"]
+        }),
+
         getCaseByIdMutation: builder.mutation<ApiResponse<Case>, { caseId: string }>({
             query: (params) => ({
                 url: `/case/caseId/${params.caseId}`,
@@ -306,6 +348,7 @@ export const caseApi = baseApi.injectEndpoints({
         }),
     }),
 });
+
 export const {
     useGetSubTypeQuery,
     useGetTypeQuery,
@@ -314,6 +357,7 @@ export const {
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,
+    useGetListCaseHistoryQuery,
     useGetCaseHistoryQuery,
     usePostAddCaseHistoryMutation,
     useGetListCaseMutationMutation,

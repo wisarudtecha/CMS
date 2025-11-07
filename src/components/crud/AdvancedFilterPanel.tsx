@@ -16,23 +16,25 @@ import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 
 interface AdvancedFilterPanelProps {
-  filters: AdvancedFilter[];
-  values: FilterConfig;
-  onChange: (filters: FilterConfig) => void;
-  onApply: () => void;
-  onReset: () => void;
-  // title?: string;
   className?: string;
+  filters: AdvancedFilter[];
+  // title?: string;
+  values: FilterConfig;
+  onApply: () => void;
+  onChange: (filters: FilterConfig) => void;
+  onClearFilters?: () => void;
+  onReset: () => void;
 }
 
 export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
+  className = "",
   filters,
-  values,
-  onChange,
-  onApply,
-  onReset,
   // title = "Advanced Filters",
-  className = ""
+  values,
+  onApply,
+  onChange,
+  onClearFilters,
+  onReset
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +61,8 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
     setLocalValues({});
     onReset();
     setIsOpen(false);
+    
+    onClearFilters?.();
   };
 
   useEffect(() => {

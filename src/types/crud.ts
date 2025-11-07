@@ -14,6 +14,7 @@ export interface PaginationConfig {
   page: number;
   pageSize: number;
   total?: number;
+  totalPage?: number;
 }
 
 export interface ConfirmDialog {

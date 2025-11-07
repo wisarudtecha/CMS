@@ -28,7 +28,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { apiService } from "@/services/api";
 import { SYSTEM_ROLE } from "@/utils/constants";
 // import { exportToCSV, exportToJSON } from "@/utils/export";
-import type { CrudConfig } from "@/types/crud";
+import type {
+  CrudConfig,
+  // PaginationConfig
+} from "@/types/crud";
 import type { AdvancedFilter, ApiConfig, BulkAction, CrudFeatures, ExportOption, KeyboardShortcut, PreviewConfig } from "@/types/enhanced-crud";
 import Button from "@/components/ui/button/Button";
 
@@ -50,11 +53,18 @@ interface EnhancedCrudContainerProps<T> {
   previewConfig?: PreviewConfig<T>;
   searchFields?: (keyof T)[];
   customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
+  // onAdvancedFilter?: (filters: Record<string, unknown>) => void;
+  onChangePageSize?: (size: number) => void;
+  onClearFilters?: () => void;
   onCreate?: () => void;
   onDelete?: (id: string) => void;
+  onFilter?: (key: string, value: string | number | boolean | null | undefined) => void;
+  onGoToPage?: (page: number) => void;
   onItemAction?: (action: string, item: T) => void;
   onItemClick?: (item: T) => void;
   onRefresh?: () => void;
+  onSearch?: (searchText: string) => void;
+  onSort?: (key: string, direction: string) => void;
   onUpdate?: (item: T) => void;
   renderCard?: (item: T) => React.ReactNode;
   renderHierarchy?: (item: T) => React.ReactNode;
@@ -79,11 +89,18 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   previewConfig,
   searchFields = [],
   customFilterFunction,
+  // onAdvancedFilter,
+  onChangePageSize,
+  onClearFilters,
   onCreate,
   onDelete,
+  onFilter,
+  onGoToPage,
   onItemAction,
   onItemClick,
   onRefresh,
+  onSearch,
+  // onSort,
   onUpdate,
   renderCard,
   renderHierarchy,
@@ -119,7 +136,15 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   const { filterConfig, filteredData, hasActiveFilters, clearFilters, handleFilter } = useFilter(data, customFilterFunction, searchFields);
   const { sortConfig, sortedData, handleSort } = useSort(filteredData);
   const { isAllSelected, selectedItems, deselectAll, getSelectedCount, selectItem, selectAll, toggleSelectAll } = useBulkSelection(sortedData);
+
   const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(sortedData.length);
+  // const { endEntry, pagination, startEntry, totalPages, changePageSize, goToPage } = usePagination(
+  //   apiConfig?.serverSide && data.length || sortedData.length,
+  //   apiConfig?.pageSize ?? 10,
+  //   apiConfig?.currentPage ?? 0,
+  //   apiConfig?.totalPage ?? 0
+  // );
+
   const { toasts, addToast, removeToast } = useToast();
 
   // Preview functionality
@@ -166,8 +191,11 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // ===================================================================
 
   const startIndex = enabledFeatures.pagination ? (pagination.page - 1) * pagination.pageSize : 0;
+  // const startIndex = !apiConfig?.serverSide && enabledFeatures.pagination ? (pagination.page - 1) * pagination.pageSize : 0;
   const endIndex = enabledFeatures.pagination ? startIndex + pagination.pageSize : sortedData.length;
-  const paginatedData = sortedData.slice(startIndex, endIndex);
+  // const endIndex = !apiConfig?.serverSide && enabledFeatures.pagination ? startIndex + pagination.pageSize : sortedData.length;
+  // const paginatedData = sortedData.slice(startIndex, endIndex);
+  const paginatedData = apiConfig?.serverSide && data || sortedData.slice(startIndex, endIndex);
 
   // ===================================================================
   // Handlers
@@ -449,7 +477,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                       <SearchBar
                         value={searchInput}
                         onChange={setSearchInput}
-                        onSearch={handleSearch}
+                        // onSearch={handleSearch}
+                        onSearch={() => apiConfig?.serverSide &&onSearch?.(searchInput.trim()) || handleSearch}
                         onClear={handleClearSearch}
                         placeholder={`${t("crud.common.search")} ${config.entityNamePlural.toLowerCase()}...`}
                       />
@@ -462,8 +491,10 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                       <FilterBar
                         filters={config.filters}
                         values={filterConfig}
-                        onChange={handleFilter}
+                        // onChange={handleFilter}
+                        onChange={apiConfig?.serverSide && (onFilter as (key: string, value: string | number | boolean | undefined) => void) || handleFilter}
                         onClear={clearFilters}
+                        onClearFilters={apiConfig?.serverSide && onClearFilters || clearFilters}
                         hasActiveFilters={hasActiveFilters}
                       />
                     </div>
@@ -476,10 +507,14 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                         filters={advancedFilters}
                         values={filterConfig}
                         onChange={(filters) => Object.entries(filters).forEach(([key, value]) => 
-                          handleFilter(key, value as string | number | boolean | null | undefined)
+                          // handleFilter(key, value as string | number | boolean | null | undefined)
+                          apiConfig?.serverSide
+                            && onFilter?.(key, value as string | number | boolean | null | undefined)
+                            || handleFilter(key, value as string | number | boolean | null | undefined)
                         )}
                         onApply={() => {}}
                         onReset={clearFilters}
+                        onClearFilters={apiConfig?.serverSide && onClearFilters || clearFilters}
                       />
                     </div>
                   )}
@@ -536,7 +571,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
             </p>
 
             {hasActiveFilters && (
-              <Button onClick={clearFilters} variant="primary">
+              <Button onClick={apiConfig?.serverSide && onClearFilters || clearFilters} variant="primary">
                 {t("common.clear_filters")}
               </Button>
             )}
@@ -595,12 +630,47 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         {/* Pagination */}
         {enabledFeatures.pagination && displayMode !== "matrix" && displayMode !== "hierarchy" && (
           <Pagination
-            endEntry={endEntry}
-            pagination={{ ...pagination, total: sortedData.length }}
-            startEntry={startEntry}
-            totalPages={totalPages}
-            onPageChange={goToPage}
-            onPageSizeChange={changePageSize}
+            // endEntry={endEntry}
+            endEntry={
+              apiConfig?.serverSide && Math.min(
+                (apiConfig.currentPage ?? 0) * (apiConfig.pageSize ?? 0), (apiConfig.totalFiltered ?? 0)
+              ) || endEntry
+            }
+            // pagination={{
+            //   ...pagination,
+            //   total: sortedData.length
+            //   // total: apiConfig?.serverSide && data.length || sortedData.length
+            // }}
+            pagination={
+              apiConfig?.serverSide && {
+                page: apiConfig?.currentPage ?? 0,
+                pageSize: apiConfig?.pageSize ?? 0,
+                total: apiConfig?.totalFiltered ?? 0
+              } || {
+                ...pagination,
+                total: sortedData.length
+              }
+            }
+            // startEntry={startEntry}
+            startEntry={
+              apiConfig?.serverSide && (
+                (((apiConfig?.currentPage ?? 0) - 1) * (apiConfig?.pageSize ?? 0)) + 1
+              ) || startEntry
+            }
+            // totalFiltered={apiConfig?.totalFiltered || sortedData.length}
+            // totalPages={totalPages}
+            totalPages={
+              apiConfig?.serverSide && apiConfig?.totalPage || totalPages
+              // apiConfig?.serverSide && Math.ceil(
+              //   (apiConfig?.totalFiltered ?? 0) / (apiConfig?.pageSize ?? 0)
+              // ) || totalPages
+            }
+            // onPageChange={goToPage}
+            // onPageChange={(page: number, dir?: string) => onGoToPage?.(page, dir) || goToPage}
+            onPageChange={apiConfig?.serverSide && onGoToPage || goToPage}
+            // onPageSizeChange={changePageSize}
+            // onPageSizeChange={(size: number) => onChangePageSize?.(size) || changePageSize}
+            onPageSizeChange={apiConfig?.serverSide && onChangePageSize || changePageSize}
           />
         )}
 
@@ -644,7 +714,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Debug Info (only in development) */}
-        {enableDebug && SYSTEM_ROLE && (
+        {!enableDebug && SYSTEM_ROLE && (
           <div
             className="
               bg-gray-200

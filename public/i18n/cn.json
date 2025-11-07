@@ -379,9 +379,41 @@
             "priority": "选择优先级"
           },
           "advanced_filter": {
-            "type": {
+            "start_date": {
+              "label": "开始日期",
+              "placeholder": "选择开始日期"
+            },
+            "end_date": {
+              "label": "结束日期",
+              "placeholder": "选择结束日期"
+            },
+            "caseType": {
               "label": "类型",
               "placeholder": "选择类型"
+            },
+            "caseSType": {
+              "label": "子类型",
+              "placeholder": "选择子类型"
+            },
+            "countryId": {
+              "label": "国家",
+              "placeholder": "选择国家"
+            },
+            "provId": {
+              "label": "省份",
+              "placeholder": "选择省份"
+            },
+            "distId": {
+              "label": "区",
+              "placeholder": "选择区"
+            },
+            "category": {
+              "label": "类别",
+              "placeholder": "输入类别"
+            },
+            "createBy": {
+              "label": "创建通过",
+              "placeholder": "选择用户名"
             }
           }
         },

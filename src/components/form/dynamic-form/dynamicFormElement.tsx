@@ -3,7 +3,7 @@ import Button from "@/components/ui/button/Button";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { useSortable, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
-import { Settings, ChevronDownIcon, ChevronUpIcon, ChevronRightIcon, ChevronLeftIcon } from "lucide-react";
+import { Settings, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { formConfigurations, maxGridCol } from "./constant";
@@ -290,16 +290,16 @@ export const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
                                     dark:border-gray-600 pt-2">
                                         <div className="flex justify-between items-center flex-wrap gap-2">
                                             <div className="flex space-x-3">
-                                                {isExpanded ? <ChevronLeftIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} /> : <ChevronRightIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)}/>}
+                                                {isExpanded ? <ChevronUpIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} /> : <ChevronDownIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} />}
                                                 <p className="text-gray-700 dark:text-white break-all">{optionValue}</p>
                                             </div>
                                             <div className="flex items-center gap-2 flex-shrink-0">
-                                                <div className="">
+                                                {isDynamicField && <div className="">
                                                     <Button className="dropdown-toggle" size="sm" onClick={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: !prev[optionValue] }))}>Add Field</Button>
                                                     <Dropdown className="right-1 overflow-auto max-h-96 custom-scrollbar" isOpen={isOptionDropdownOpen} onClose={() => setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false }))}>
                                                         {childFormFields.map(formItem => (<DropdownItem className="text-gray-700 text-sm dark:text-gray-400" key={formItem.formType} onClick={() => { addFieldToDynamicOption(field.id, optionValue, formItem.formType); setDynamicOptionDropdown(prev => ({ ...prev, [optionValue]: false })); }}>{formItem.title}</DropdownItem>))}
                                                     </Dropdown>
-                                                </div>
+                                                </div>}
                                                 {/* {isDynamicField && (<Button onClick={() => toggleDynamicFieldExpansion(optionValue)} className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs">{isExpanded ? 'Hide' : 'Show'}</Button>)} */}
                                                 <Button onClick={() => handleRemoveOption(field.id, index)} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 text-sm" disabled={!editFormData} size="sm">-</Button>
                                             </div>
@@ -339,7 +339,7 @@ export const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
                                     <Button className="dropdown-toggle" size="sm" onClick={() => setAddDropdownOpen(prev => !prev)}>Add Field</Button>
                                     <Dropdown isOpen={isAddDropdownOpen} onClose={() => setAddDropdownOpen(false)}>
                                         {childFormFields.map(item => (<DropdownItem key={item.formType} className="text-gray-700 text-sm dark:text-gray-400"
-                                        onClick={() => { addField(item.formType, field.id); setAddDropdownOpen(false); }}>{item.title}</DropdownItem>))}
+                                            onClick={() => { addField(item.formType, field.id); setAddDropdownOpen(false); }}>{item.title}</DropdownItem>))}
                                     </Dropdown>
                                 </div>
                             </div>

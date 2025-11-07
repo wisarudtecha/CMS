@@ -67,6 +67,15 @@ export interface CaseEntity extends BaseEntity {
   attachments:Attachment[]
 }
 
+export interface CaseHistories {
+  data: CaseEntity[];
+  currentPage: number;
+  pageSize: number;
+  totalFiltered: number;
+  totalPage: number;
+  totalRecords: number;
+}
+
 export interface CaseHistory {
   id: number | string;
   orgId: string;

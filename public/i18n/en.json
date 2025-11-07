@@ -6,6 +6,7 @@
     "yes": "Yes",
     "no": "No",
     "save": "Save",
+    "saving": "Saving",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
@@ -382,9 +383,41 @@
             "priority": "Select Priority"
           },
           "advanced_filter": {
-            "type": {
+            "start_date": {
+              "label": "Start Date",
+              "placeholder": "Select start date"
+            },
+            "end_date": {
+              "label": "End Date",
+              "placeholder": "Select end date"
+            },
+            "caseType": {
               "label": "Type",
-              "placeholder": "Select Type"
+              "placeholder": "Select type"
+            },
+            "caseSType": {
+              "label": "Sub-Type",
+              "placeholder": "Select sub-type"
+            },
+            "countryId": {
+              "label": "Country",
+              "placeholder": "Select country"
+            },
+            "provId": {
+              "label": "Province",
+              "placeholder": "Select province"
+            },
+            "distId": {
+              "label": "District",
+              "placeholder": "Select district"
+            },
+            "category": {
+              "label": "Category",
+              "placeholder": "Enter category"
+            },
+            "createBy": {
+              "label": "Create By",
+              "placeholder": "Select username"
             }
           }
         },

@@ -8,18 +8,20 @@ import Button from "@/components/ui/button/Button";
 
 interface FilterBarProps {
   filters: FilterDefinition[];
+  hasActiveFilters?: boolean;
   values: FilterConfig;
   onChange: (key: string, value: string | number | boolean | undefined) => void;
   onClear: () => void;
-  hasActiveFilters: boolean;
+  onClearFilters?: () => void;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
+  hasActiveFilters,
   values,
   onChange,
   onClear,
-  hasActiveFilters
+  onClearFilters
 }) => {
   const { t } = useTranslation();
 
@@ -41,7 +43,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {hasActiveFilters && (
         <Button
-          onClick={onClear}
+          // onClick={() => onClear}
+          onClick={() => {
+            onClear();
+            onClearFilters?.();
+          }}
           className="h-11"
         >
           <CloseIcon className="w-4 h-4" />

@@ -86,6 +86,12 @@ export interface ApiConfig {
     export?: string;
   };
   headers?: Record<string, string>;
+  currentPage?: number;
+  pageSize?: number;
+  serverSide?: boolean;
+  totalFiltered?: number;
+  totalPage?: number;
+  totalRecords?: number;
 }
 
 export interface PreviewField<T = string> {

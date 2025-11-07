@@ -6,28 +6,30 @@ import Select from "@/components/form/Select";
 import type { PaginationConfig } from "@/types/crud";
 
 interface PaginationProps {
-  pagination: PaginationConfig;
-  totalPages: number;
-  startEntry: number;
   endEntry: number;
+  pageSizeOptions?: { value: string; label: string }[];
+  pagination: PaginationConfig;
+  startEntry: number;
+  // totalFiltered?: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  pageSizeOptions?: { value: string; label: string }[];
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
-  pagination,
-  totalPages,
-  startEntry,
   endEntry,
-  onPageChange,
-  onPageSizeChange,
   pageSizeOptions = [
     { value: "10", label: "10" },
     { value: "20", label: "20" },
     { value: "50", label: "50" },
     { value: "100", label: "100" },
-  ]
+  ],
+  pagination,
+  startEntry,
+  // totalFiltered,
+  totalPages,
+  onPageChange,
+  onPageSizeChange
 }) => {
   const { t } = useTranslation();
 
@@ -65,6 +67,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     .replace("_START_", `${startEntry}`)
     .replace("_END_", `${endEntry}`)
     .replace("_TOTAL_", `${pagination.total || 0}`);
+    // .replace("_TOTAL_", `${totalFiltered || 0}`);
 
   const paginationInfo = t("crud.common.paginate.info")
     .replace("_PAGE_", `${pagination.page}`)

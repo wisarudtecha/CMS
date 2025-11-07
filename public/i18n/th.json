@@ -6,6 +6,7 @@
     "yes": "ใช่",
     "no": "ไม่",
     "save": "บันทึก",
+    "saving": "กำลังบันทึก",
     "cancel": "ยกเลิก",
     "confirm": "ยืนยัน",
     "delete": "ลบ",
@@ -382,9 +383,41 @@
             "priority": "เลือกลำดับความสำคัญ"
           },
           "advanced_filter": {
-            "type": {
-              "label": "ประเภทใบสั่งงาน",
-              "placeholder": "เลือกประเภทใบสั่งงาน"
+            "start_date": {
+              "label": "วันที่เริ่มต้น",
+              "placeholder": "กรอกวันที่เริ่มต้น"
+            },
+            "end_date": {
+              "label": "วันที่สิ้นสุด",
+              "placeholder": "กรอกวันที่สิ้นสุด"
+            },
+            "caseType": {
+              "label": "ประเภท",
+              "placeholder": "เลือกประเภท"
+            },
+            "caseSType": {
+              "label": "ประเภทย่อย",
+              "placeholder": "เลือกประเภทย่อย"
+            },
+            "countryId": {
+              "label": "ประเทศ",
+              "placeholder": "เลือกประเทศ"
+            },
+            "provId": {
+              "label": "จังหวัด",
+              "placeholder": "เลือกจังหวัด"
+            },
+            "distId": {
+              "label": "เขต/อำเภอ",
+              "placeholder": "เลือกเขต/อำเภอ"
+            },
+            "category": {
+              "label": "หมวดหมู่",
+              "placeholder": "กรอกหมวดหมู่"
+            },
+            "createBy": {
+              "label": "สร้างโดย",
+              "placeholder": "เลือกชื่อผู้ใช้"
             }
           }
         },

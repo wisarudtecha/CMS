@@ -14,6 +14,7 @@ interface FilePreviewCardProps {
     formatFileSize: (bytes: number) => string
     disabled?: boolean
     type?: string
+    className?:string
 }
 
 
@@ -75,14 +76,15 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
     onRemove,
     getFileIcon,
     disabled = false,
-    type = ""
+    type = "",
+    className,
 }) => {
     const [preview, setPreview] = useState<string | null>(null);
     const [isRemoving, setIsRemoving] = useState<boolean>(false);
     const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
 
     const handleRemove = async () => {
-        if (onRemove && !isRemoving && index) {
+        if (onRemove && !isRemoving && index !== undefined) {
             setIsRemoving(true);
             try {
                 await onRemove(index);
@@ -148,7 +150,7 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
                             <img
                                 src={preview}
                                 alt={fileName}
-                                className="w-full h-50 aspect-[3/4] object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" onClick={handleZoom}
+                                className={`w-full h-50 aspect-[3/4] object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${className}`} onClick={handleZoom}
                             />
                         </div>
                     ) : (
@@ -188,7 +190,8 @@ export const FilePreviewCardWithDownload: React.FC<FilePreviewCardProps> = ({
     const [isRemoving, setIsRemoving] = useState<boolean>(false)
 
     const handleRemove = async () => {
-        if (onRemove && !isRemoving && index) {
+        console.log(index)
+        if (onRemove && !isRemoving && index !== undefined) {
             setIsRemoving(true)
             try {
                 await onRemove(index)

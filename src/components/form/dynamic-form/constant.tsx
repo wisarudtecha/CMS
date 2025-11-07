@@ -49,7 +49,7 @@ export const formConfigurations: FormConfigItem[] = [
   { formType: "dndImage", title: "DnD Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
   { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
   { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
-  { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
+  // { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
   { formType: "dateInput", title: "Date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
   { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minLocalDate", "maxLocalDate", "futureDateOnly", "pastDateOnly"] },
   { formType: "radio", title: "Radio", options: [], canBeChild: true },

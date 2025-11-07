@@ -183,6 +183,7 @@ export default function CasesView() {
   const handleRefreshCase = async () => {
     setIsRefreshing(true);
     setLoadingCase(true)
+    handleClear()
     await fetchCase({});
     setLoadingCase(false)
 

@@ -30,6 +30,9 @@ import { FormEdit } from "./dynamicFormEditMode.tsx";
 import RenderFormField from "./renderFormField.tsx";
 import { ImportDynamicFormModal } from "./importDynamicFormModal.tsx";
 import AddFormSelector from "./addFormSelector.tsx";
+import { useTranslation } from "@/hooks/useTranslation.ts";
+import { ArrowLeft, Download, Upload } from "lucide-react";
+import ExportDynamicFormModal from "./exportDynamicForm.tsx";
 export type CountryCode = ReturnType<typeof getCountries>[number]
 
 
@@ -65,8 +68,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const { toasts, addToast, removeToast } = useToast();
   const [updateFormData] = useUpdateFormMutation();
   const [createFormData] = useCreateFormMutation();
+  const [isSaving, setIsSaving] = useState(false);
   const [hide, setHide] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
       {
@@ -102,7 +107,23 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       }
   );
 
+  const Saving = () => {
 
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100000">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">{t("common.saving")}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (initialForm) {
@@ -142,6 +163,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   }, [initialForm]);
 
   const [isImport, setImport] = useState(false);
+  const [isExport, setExport] = useState(false);
 
 
   const getAllFieldIds = (fields: IndividualFormFieldWithChildren[]): string[] => {
@@ -255,6 +277,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const saveSchema = async () => {
     let response
     try {
+      setIsSaving(true)
       if (initialForm) {
         response = await updateFormData({
           formId: currentForm.formId,
@@ -288,7 +311,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         addToast("success", response.desc)
         console.log("error")
       }
+      setIsSaving(true)
     } catch (e: any) {
+      setIsSaving(false)
       addToast("error", e.data.desc)
     }
   }
@@ -492,18 +517,18 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     <div
       className={
         !isPreview
-          ? `grid ${
-              hide ? "" : "grid-cols-[2fr_8fr]"
-            } md:block`
+          ? `grid ${hide ? "" : "grid-cols-[2fr_8fr]"
+          } md:block`
           : ""
       }
     >
       <PageMeta title="Dynamic Form Builder" description="" />
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+      {isSaving && <Saving />}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
 
-      <AddFormSelector
+        <AddFormSelector
           isOpen={!isPreview}
           addField={addField}
           hide={hide}
@@ -520,21 +545,39 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               showValidationErrors={showValidationErrors}
             />
             <ImportDynamicFormModal isImport={isImport} setImport={setImport} setCurrentForm={setCurrentForm} />
-            <div className="flex justify-end sticky bottom-2 space-x-2 mt-6">
-              <Button onClick={() => setImport(true)} disabled={!editFormData}>Import</Button>
-              <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
-            </div>
-          </div>
-          <div hidden={!isPreview} className={enableSelfBg ? " h-fit relative rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
-            {FormPreview()}
-            <div className="flex justify-between flex-wrap gap-2 mt-6">
-              <Button onClick={saveSchema} disabled={!editFormData}>{initialForm ? "Save Change" : "Save Schema"}</Button>
-              <div className="flex gap-2">
-                <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>Edit</Button>
-                {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}
+            <ExportDynamicFormModal  isOpen={isExport}  onClose={()=>{setExport(false)}} currentForm={currentForm}/>
+            <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
+              <div className="flex space-x-2">
+                <Button onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />Import</Button>
+                <Button onClick={() => setExport(true)} disabled={!editFormData}><Download className="w-4 h-4 mr-2" />Export</Button>
+                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
               </div>
             </div>
           </div>
+          {enableSelfBg && isPreview && <div><Button variant="ghost" size="sm" onClick={() => setIsPreview(false)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t("case.back")}
+          </Button></div>}
+          <div hidden={!isPreview} className={enableSelfBg ? " h-fit relative rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
+            {FormPreview()}
+            <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
+              <div className="flex space-x-2">
+                {/* <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>
+                  Edit
+                </Button> */}
+                <Button onClick={saveSchema} disabled={!editFormData} variant="success">
+                  {initialForm ? "Save Change" : "Save Form"}
+                </Button>
+                <div className="flex gap-2">
+
+                  {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
         </div>
       </DndContext>
     </div>

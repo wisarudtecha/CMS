@@ -1,5 +1,5 @@
 // /src/components/case/CaseHistory.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   // AtSign,
@@ -31,15 +31,30 @@ import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Area } from "@/store/api/area";
-import { DepartmentCommandStationDataMerged, mergeDeptCommandStation, useGetCaseHistoryQuery } from "@/store/api/caseApi";
+import {
+  DepartmentCommandStationDataMerged,
+  mergeDeptCommandStation,
+  useGetCaseHistoryQuery,
+  useGetListCaseQuery
+} from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { useGetUserByUserNameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
-import type { CaseEntity, CaseHistory, CaseStatus, CaseTypeSubType } from "@/types/case";
+import type { CaseListParams } from "@/store/api/caseApi";
+import type {
+  CaseEntity,
+  // CaseHistories,
+  CaseHistory,
+  CaseStatus,
+  CaseTypeSubType,
+  EnhancedCaseSubType,
+  EnhancedCaseType
+} from "@/types/case";
 import type { CaseSop, UnitWithSop } from "@/types/dispatch";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { UserProfile } from "@/types/user";
 import ProgressStepPreview from "@/components/case/activityTimeline/caseActivityTimeline";
 import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
 import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
@@ -50,33 +65,257 @@ import Badge from "@/components/ui/badge/Badge";
 
 const CaseHistoryComponent: React.FC<{
   areas: Area[];
-  caseHistories: CaseEntity[];
+  // caseHistories: CaseEntity[];
+  // caseHistories: CaseHistories;
   caseStatuses: CaseStatus[];
+  caseSubTypes: EnhancedCaseSubType[];
+  caseTypes: EnhancedCaseType[];
   caseTypesSubTypes: CaseTypeSubType[];
-}> = ({ areas, caseHistories, caseStatuses, caseTypesSubTypes }) => {
+  users: UserProfile[];
+}> = ({
+  areas,
+  // caseHistories,
+  caseStatuses,
+  caseSubTypes,
+  caseTypes,
+  caseTypesSubTypes,
+  users
+}) => {
   const { t, language } = useTranslation();
-  // const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username });
+
   const isSystemAdmin = AuthService.isSystemAdmin();
+
+  // const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username });
   const navigate = useNavigate();
   const permissions = usePermissions();
   
   const [crudOpen, ] = useState("block");
-
   const [selectedCaseForAssignee, setSelectedCaseForAssignee] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
   const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
   const [selectedCaseForUnit, setSelectedCaseForUnit] = useState<string | null>(null);
-  
   const [sopData, setSopData] = useState<CaseSop | null>(null);
-
   const [, setAssigneeData] = useState<UnitWithSop | null>(null);
   const [, setUnitData] = useState<UnitWithSop | null>(null);
 
+  // ===================================================================
+  // Fill select option
+  // ===================================================================
+
+  const [caseSubTypesOptions, setCaseSubTypesOptions] = useState<{ value: string; label: string }[]>([]);
+  const [caseTypesOptions, setCaseTypesOptions] = useState<{ value: string; label: string }[]>([]);
+  const [countryIdOptions, setCountryIdOptions] = useState<{ value: string; label: string }[]>([]);
+  const [distIdOptions, setDistIdOptions] = useState<{ value: string; label: string }[]>([]);
+  const [provIdOptions, setProvIdOptions] = useState<{ value: string; label: string }[]>([]);
+  const [usersOptions, setUsersOptions] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    setCaseSubTypesOptions(caseSubTypes?.length && caseSubTypes?.map(cst => ({
+      value: String(cst.sTypeId),
+      label: `${cst.sTypeCode}-${language === "th" ? cst.th : cst.en}`
+    })) || []);
+  }, [caseSubTypes, language]);
+
+  useEffect(() => {
+    setCaseTypesOptions(caseTypes?.length && caseTypes?.map(ct => ({
+      value: String(ct.typeId),
+      label: language === "th" ? ct.th : ct.en
+    })) || []);
+  }, [caseTypes, language]);
+
+  useEffect(() => {
+    setCountryIdOptions(areas?.length && areas.filter(
+      (item, index, self) => index === self.findIndex(t => t.countryId === item.countryId)
+    )?.map(a => ({
+      value: String(a.countryId),
+      label: language === "th" ? a.countryTh : a.countryEn
+    })) || []);
+
+    setDistIdOptions(areas?.length && areas.filter(
+      (item, index, self) => index === self.findIndex(t => t.distId === item.distId)
+    )?.map(a => ({
+      value: String(a.distId),
+      label: language === "th" ? a.districtTh : a.districtEn
+    })) || []);
+
+    setProvIdOptions(areas?.length && areas.filter(
+      (item, index, self) => index === self.findIndex(t => t.provId === item.provId)
+    )?.map(a => ({
+      value: String(a.provId),
+      label: language === "th" ? a.provinceTh : a.provinceEn
+    })) || []);
+  }, [areas, language]);
+
+  useEffect(() => {
+    setUsersOptions(users?.length && users?.map(u => ({
+      value: String(u.username),
+      label: `${u.username} (${u.firstName} ${u.lastName})`
+    })) || []);
+  }, [users]);
+
+  // API query params state
+  const [queryParams, setQueryParams] = useState<CaseListParams>({
+    start: 0,
+    length: 10,
+    start_date: "",
+    end_date: "", 
+    caseType: "",
+    caseSType: "",
+    statusId: "",
+    detail: "",
+    caseId: "",
+    countryId: "",
+    provId: "",
+    distId: "",
+    category: "",
+    createBy: "",
+    orderBy: "",
+    direction: ""
+  });
+
+  // const [data, setData] = useState<(CaseEntity & { id: string; title?: string })[] | []>([]);
+  // const [currentPage, setCurrentPage] = useState<number>(1);
+  // const [pageSize, setPageSize] = useState<number>(10);
+  // const [totalFiltered, setTotalFiltered] = useState<number>(0);
+  // const [totalPage, setTotalPage] = useState<number>(1);
+  // const [totalRecords, setTotalRecords] = useState<number>(0);
+
+  // const [start, setStart] = useState<number>(0);
+  // const [length, setLength] = useState<number>(pageSize);
+  // const [start_date, setStart_date] = useState<string>("");
+  // const [end_date, setEnd_date] = useState<string>("");
+  // const [caseType, setCaseType] = useState<string>("");
+  // const [caseSType, setCaseSType] = useState<string>("");
+  // const [statusId, setStatusId] = useState<string>("");
+  // const [detail, setDetail] = useState<string>("");
+  // // const [caseId, setCaseId] = useState<string>("");
+  // const [countryId, setCountryId] = useState<string>("");
+  // const [provId, setProvId] = useState<string>("");
+  // const [distId, setDistId] = useState<string>("");
+  // const [category, setCategory] = useState<string>("");
+  // const [createBy, setCreateBy] = useState<string>("");
+  // const [orderBy, setOrderBy] = useState<string>("");
+  // const [direction, setDirection] = useState<string>("");
+
+  // const caseHistoriesResponse = useGetListCaseQuery({
+  //   start: start ?? 0,
+  //   length: length ?? 10,
+  //   start_date: start_date ?? "",
+  //   end_date: end_date ?? "",
+  //   caseType: caseType ?? "",
+  //   caseSType: caseSType ?? "",
+  //   statusId: statusId ?? "",
+  //   detail: detail ?? "",
+  //   caseId: selectedCaseForHistory ?? "",
+  //   countryId: countryId ?? "",
+  //   provId: provId ?? "",
+  //   distId: distId ?? "",
+  //   category: category ?? "",
+  //   createBy: createBy ?? "",
+  //   orderBy: orderBy ?? "",
+  //   direction: direction ?? ""
+  // });
+
+  const { data: response, isLoading } = useGetListCaseQuery(queryParams);
+
+  // const { data: caseHistoriesResponse, isLoading } = useGetListCaseQuery(queryParams);
+  // const caseHistories = caseHistoriesResponse?.data as unknown as CaseEntity[] || [];
+
+  // const { data: caseHistoriesResponse } = useGetListCaseQuery({ start: 0, length: 10 });
+  // const caseHistories = caseHistoriesResponse?.data as unknown as CaseEntity[] || [];
+
+  // Extract pagination data from response
+  const caseHistories = response?.data as unknown as CaseEntity[] || [];
+  // const caseHistories = response?.data || [];
+  
+  const queryStart = queryParams.start ?? 0;
+  const queryLength = queryParams.length ?? 10;
+
+  const currentPage = Math.floor(queryStart / queryLength) + 1;
+  const pageSize = queryParams.length;
+  const totalFiltered = response?.totalFiltered || 0;
+  const totalPages = Math.ceil(totalFiltered / queryLength);
+  const totalRecords = response?.totalRecords || 0;
+
+  const clearFilters = () => {
+    setQueryParams({
+      start: 0,
+      length: queryParams.length,
+      start_date: "",
+      end_date: "", 
+      caseType: "",
+      caseSType: "",
+      statusId: "",
+      detail: "",
+      caseId: "",
+      countryId: "",
+      provId: "",
+      distId: "",
+      category: "",
+      createBy: "",
+      orderBy: "",
+      direction: ""
+    });
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setQueryParams(prev => ({
+      ...prev,
+      start: (page - 1) * (pageSize || 10)
+    }));
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setQueryParams(prev => ({
+      ...prev,
+      length: size,
+      start: 0
+    }));
+  };
+
+  // Handle search
+  const handleSearch = (searchText: string) => {
+    setQueryParams(prev => ({
+      ...prev,
+      // detail: searchText,
+      caseId: searchText,
+      start: 0
+    }));
+  };
+
+  // Handle filter change
+  const handleFilterChange = (key: string, value: string | number | boolean | null | undefined) => {
+    setQueryParams(prev => ({
+      ...prev,
+      [key]: value,
+      start: 0 
+    }));
+  };
+
+  // Handle sort
+  const handleSort = (field: string, direction: string) => {
+    setQueryParams(prev => ({
+      ...prev,
+      orderBy: field,
+      direction: direction
+    }));
+  };
+
+  // const handleAdvancedFilter = (filters: Record<string, unknown>) => {
+  //   setQueryParams(prev => ({
+  //     ...prev,
+  //     ...filters,
+  //     start: 0
+  //   }));
+  // };
+  
   const { data: dispatchSOPsData } = useGetCaseSopQuery(
     { caseId: selectedCaseForSop ?? "" }, 
     { skip: !selectedCaseForSop }
   );
-  
+
   const { data: caseHistoriesData } = useGetCaseHistoryQuery(
     { caseId: selectedCaseForHistory ?? ""  }, 
     { skip: !selectedCaseForHistory }
@@ -140,13 +379,25 @@ const CaseHistoryComponent: React.FC<{
 
   const getStatusConfig = (caseItem: CaseEntity) => {
     // console.log("🚀 ~ getStatusConfig ~ statusConfigs:", statusConfigs[caseItem.statusId]);
-    return statusConfigs[caseItem.statusId as keyof typeof statusConfigs] || statusConfigs['S000'];
+    return statusConfigs[caseItem.statusId as keyof typeof statusConfigs] || statusConfigs["S000"];
   };
 
-  const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
-    value: caseStatus?.statusId || "",
-    label: caseStatus[language as keyof CaseStatus] as string || caseStatus?.th || caseStatus?.en
-  })) : [];
+  const caseStatusOptions = [{
+    value: "",
+    label: language === "th" ? "ทั้งหมด" : "All"
+  }]
+
+  // const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
+  //   value: caseStatus?.statusId || "",
+  //   label: caseStatus[language as keyof CaseStatus] as string || caseStatus?.th || caseStatus?.en
+  // })) : [];
+
+  caseStatuses.map(caseStatus => {
+    caseStatusOptions.push({
+      value: caseStatus?.statusId || "",
+      label: caseStatus[language as keyof CaseStatus] as string || caseStatus?.th || caseStatus?.en
+    });
+  });
 
   // ===================================================================
   // Case Priority Properties
@@ -186,7 +437,20 @@ const CaseHistoryComponent: React.FC<{
 
   const typeSubTypeConfigs = generateTypeSubTypeConfigs(caseTypesSubTypes);
 
-  const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
+  // const getTypeSubTypeConfig = (caseItem: CaseEntity) => {
+  //   const found = typeSubTypeConfigs?.find(config => 
+  //     config.sTypeId === caseItem.caseSTypeId
+  //   ) || null;
+  //   return found || { 
+  //     en: "", 
+  //     th: "", 
+  //     subTypeEn: "", 
+  //     subTypeTh: "", 
+  //     sTypeCode: "" 
+  //   };
+  // };
+
+  const getTypeSubTypeConfig = useCallback((caseItem: CaseEntity) => {
     const found = typeSubTypeConfigs?.find(config => 
       config.sTypeId === caseItem.caseSTypeId
     ) || null;
@@ -197,28 +461,35 @@ const CaseHistoryComponent: React.FC<{
       subTypeTh: "", 
       sTypeCode: "" 
     };
-  };
+  }, [typeSubTypeConfigs]);
 
-  const caseTitle = (data: CaseEntity) => {
+  // const caseTitle = (data: CaseEntity) => {
+  //   const config = getTypeSubTypeConfig(data);
+  //   const sTypeCode = config.sTypeCode || "";
+  //   const displayName = `${(language === "th" && config.th) || config.en || ""}-${(language === "th" && config.subTypeTh) || config.subTypeEn || ""}`;
+  //   return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
+  // };
+
+  const caseTitle = useCallback((data: CaseEntity) => {
     const config = getTypeSubTypeConfig(data);
     const sTypeCode = config.sTypeCode || "";
     const displayName = `${(language === "th" && config.th) || config.en || ""}-${(language === "th" && config.subTypeTh) || config.subTypeEn || ""}`;
     return sTypeCode && displayName && `${sTypeCode}-${displayName}` || <TableSkeleton rows={0} columns={1} />;
-  };
+  }, [language, getTypeSubTypeConfig]);
 
-  const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes)
-    ? caseTypesSubTypes
-        .slice() // make a shallow copy to avoid mutating the original array
-        .sort((a, b) => (a.sTypeCode || "").localeCompare(b.sTypeCode || ""))
-        .map((caseTypeSubType) => ({
-          value: caseTypeSubType?.sTypeId || "",
-          label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${
-            caseTypeSubType[language as keyof CaseTypeSubType] as string || caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
-          }-${
-            (language === "th" && caseTypeSubType?.subTypeTh) || caseTypeSubType?.subTypeEn || "Unknown:Name"
-          }`,
-        }))
-    : [];
+  // const caseTypesSubTypesOptions = Array.isArray(caseTypesSubTypes)
+  //   ? caseTypesSubTypes
+  //     .slice() // make a shallow copy to avoid mutating the original array
+  //     .sort((a, b) => (a.sTypeCode || "").localeCompare(b.sTypeCode || ""))
+  //     .map((caseTypeSubType) => ({
+  //       value: caseTypeSubType?.sTypeId || "",
+  //       label: `${caseTypeSubType.sTypeCode || "Unknown:Code"}-${
+  //         caseTypeSubType[language as keyof CaseTypeSubType] as string || caseTypeSubType?.th || caseTypeSubType?.en || "Unknown:Type"
+  //       }-${
+  //         (language === "th" && caseTypeSubType?.subTypeTh) || caseTypeSubType?.subTypeEn || "Unknown:Name"
+  //       }`,
+  //     }))
+  //   : [];
 
   // ===================================================================
   // Areas Properties
@@ -266,6 +537,68 @@ const CaseHistoryComponent: React.FC<{
     title: caseTitle(c),
   }));
 
+  // const caseHistories = useMemo(() => (
+  //   caseHistoriesResponse?.data as unknown as CaseHistories || null
+  // ), [caseHistoriesResponse]);
+
+  // useEffect(() => {
+  //   const items = Array.isArray(caseHistories?.data) ? caseHistories.data : Array.isArray(caseHistoriesResponse?.data) ? caseHistoriesResponse.data : [];
+  //   if (Array.isArray(items)) {
+  //     const mapped = (items as CaseEntity[]).map(c => ({
+  //       ...c,
+  //       id: typeof c.id === "string" ? c.id : c.caseId?.toString?.() ?? c.id?.toString?.() ?? "",
+  //       title: caseTitle(c),
+  //     })) as (CaseEntity & { id: string; title?: string })[] | [];
+  //     setData(mapped ?? []);
+  //   }
+  //   else {
+  //     setData([]);
+  //   }
+  // }, [caseHistoriesResponse, caseHistories, caseTitle]);
+
+  // useEffect(() => {
+  //   const items = Array.isArray(caseHistories?.data)
+  //     ? caseHistories.data
+  //     : Array.isArray(caseHistoriesResponse?.data)
+  //     ? caseHistoriesResponse.data
+  //     : [];
+
+  //   const mapped = items.map(c => ({
+  //     ...c,
+  //     id: typeof c.id === "string" ? c.id : c.caseId?.toString?.() ?? c.id?.toString?.() ?? "",
+  //     title: caseTitle(c),
+  //   }));
+
+  //   setData(prevData => {
+  //     const same = JSON.stringify(prevData) === JSON.stringify(mapped);
+  //     return same ? prevData : mapped;
+  //   });
+  // }, [caseHistoriesResponse, caseHistories, caseTitle]);
+
+  // useEffect(() => {
+  //   setCurrentPage(caseHistories?.currentPage as number || 1);
+  // }, [caseHistories?.currentPage]);
+
+  // useEffect(() => {
+  //   setPageSize(caseHistories?.pageSize as number || 10);
+  // }, [caseHistories?.pageSize]);
+
+  // useEffect(() => {
+  //   setTotalFiltered(caseHistories?.totalFiltered as number || 0);
+  // }, [caseHistories?.totalFiltered]);
+
+  // useEffect(() => {
+  //   setTotalPage(caseHistories?.totalPage as number || 1);
+  // }, [caseHistories?.totalPage]);
+
+  // useEffect(() => {
+  //   setTotalRecords(caseHistories?.totalRecords as number || 0);
+  // }, [caseHistories?.totalRecords]);
+
+  // const goToPage = (page: number) => {
+  //   setStart((page - 1) * pageSize);
+  // }
+
   // ===================================================================
   // CRUD Configuration
   // ===================================================================
@@ -284,7 +617,7 @@ const CaseHistoryComponent: React.FC<{
     },
     columns: [
       {
-        key: "caseNumber",
+        key: "caseId",
         label: t("crud.case_history.list.header.case"),
         sortable: true,
         render: (caseItem: CaseEntity) => (
@@ -305,7 +638,7 @@ const CaseHistoryComponent: React.FC<{
         )
       },
       {
-        key: "status",
+        key: "statusId",
         label: t("crud.case_history.list.header.status"),
         sortable: true,
         render: (caseItem: CaseEntity) => {
@@ -353,23 +686,23 @@ const CaseHistoryComponent: React.FC<{
     ],
     filters: [
       {
-        key: "status",
+        key: "statusId",
         label: "Status",
         type: "select" as const,
         options: caseStatusOptions,
         placeholder: t("crud.case_history.list.toolbar.filter.status")
       },
-      {
-        key: "priority",
-        label: "Priority",
-        type: "select" as const,
-        options: [
-          { value: "low", label: "Low" },
-          { value: "medium", label: "Medium" },
-          { value: "high", label: "High" },
-        ],
-        placeholder: t("crud.case_history.list.toolbar.filter.priority")
-      }
+      // {
+      //   key: "priority",
+      //   label: "Priority",
+      //   type: "select" as const,
+      //   options: [
+      //     { value: "low", label: "Low" },
+      //     { value: "medium", label: "Medium" },
+      //     { value: "high", label: "High" },
+      //   ],
+      //   placeholder: t("crud.case_history.list.toolbar.filter.priority")
+      // }
     ],
     actions: [
       {
@@ -972,12 +1305,64 @@ const CaseHistoryComponent: React.FC<{
 
   const advancedFilters = [
     {
-      key: "caseSTypeId",
-      label: t("crud.case_history.list.toolbar.advanced_filter.type.label"),
+      key: "start_date",
+      label: t("crud.case_history.list.toolbar.advanced_filter.start_date.label"),
+      type: "date" as const,
+    },
+    {
+      key: "end_date", 
+      label: t("crud.case_history.list.toolbar.advanced_filter.end_date.label"),
+      type: "date" as const,
+    },
+    {
+      key: "caseType",
+      label: t("crud.case_history.list.toolbar.advanced_filter.caseType.label"),
       type: "select" as const,
-      options: caseTypesSubTypesOptions,
-      placeholder: t("crud.case_history.list.toolbar.advanced_filter.type.placeholder"),
-    }
+      options: caseTypesOptions?.length && caseTypesOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.caseType.placeholder"),
+    },
+    {
+      key: "caseSType",
+      label: t("crud.case_history.list.toolbar.advanced_filter.caseSType.label"),
+      type: "select" as const,
+      // options: caseTypesSubTypesOptions,
+      options: caseSubTypesOptions?.length && caseSubTypesOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.caseSType.placeholder"),
+    },
+    {
+      key: "countryId",
+      label: t("crud.case_history.list.toolbar.advanced_filter.countryId.label"),
+      type: "select" as const,
+      options: countryIdOptions?.length && countryIdOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.countryId.placeholder"),
+    },
+    {
+      key: "provId",
+      label: t("crud.case_history.list.toolbar.advanced_filter.provId.label"),
+      type: "select" as const,
+      options: provIdOptions?.length && provIdOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.provId.placeholder"),
+    },
+    {
+      key: "distId",
+      label: t("crud.case_history.list.toolbar.advanced_filter.distId.label"),
+      type: "select" as const,
+      options: distIdOptions?.length && distIdOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.distId.placeholder"),
+    },
+    {
+      key: "category",
+      label: t("crud.case_history.list.toolbar.advanced_filter.category.label"),
+      type: "text" as const,
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.category.placeholder"),
+    },
+    {
+      key: "createBy",
+      label: t("crud.case_history.list.toolbar.advanced_filter.createBy.label"),
+      type: "select" as const,
+      options: usersOptions?.length && usersOptions || [],
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.createBy.placeholder"),
+    },
   ];
 
   // ===================================================================
@@ -1185,12 +1570,26 @@ const CaseHistoryComponent: React.FC<{
               delete: "/case/:id",
               // bulkDelete: "/case/bulk",
               export: "/case/export"
-            }
+            },
+            serverSide: true,
+            currentPage: currentPage,
+            // pageSize: pageSize,
+            pageSize: queryLength,
+            totalFiltered: totalFiltered,
+            totalPage: totalPages,
+            totalRecords: totalRecords
+            // currentPage: currentPage,
+            // pageSize: pageSize,
+            // serverSide: true,
+            // totalFiltered: totalFiltered,
+            // totalPage: totalPage,
+            // totalRecords: totalRecords,
           }}
           bulkActions={bulkActions}
           config={config}
           customFilterFunction={customCaseFilterFunction}
           data={data}
+          // data={caseHistoriesResponse?.data || []}
           displayModes={["card", "table"]}
           displayModeDefault="table"
           enableDebug={true} // Enable debug mode to troubleshoot
@@ -1208,15 +1607,23 @@ const CaseHistoryComponent: React.FC<{
           }}
           // keyboardShortcuts={[]}
           // loading={false}
+          loading={isLoading}
           module="case"
           previewConfig={previewConfig as PreviewConfig<CaseEntity & { id: string }>}
           searchFields={["caseId", "caseDetail", "createdBy", "createdAt"]}
           // customFilterFunction={() => true}
+          // onAdvancedFilter={handleAdvancedFilter}
+          onChangePageSize={handlePageSizeChange}
+          onClearFilters={clearFilters}
           onCreate={() => navigate("/case/creation")}
           onDelete={handleDelete}
+          onFilter={handleFilterChange}
+          onGoToPage={handlePageChange}
           onItemAction={handleAction}
           // onItemClick={(item) => navigate(`/role/${item.id}`)}
           onRefresh={() => window.location.reload()}
+          onSearch={handleSearch}
+          onSort={handleSort}
           // onUpdate={() => {}}
           renderCard={renderCard}
         />

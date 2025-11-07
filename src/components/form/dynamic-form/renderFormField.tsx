@@ -1,5 +1,4 @@
-import Button from '@/components/ui/button/Button';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import DndImageUploader from '../input/DndImageUploader';
 import PhoneInput from 'react-phone-number-input/input';
 import { CountryCode } from './DynamicForm';
@@ -11,6 +10,13 @@ import MultiImageUpload from '../input/MultiImageUpload';
 import { FormFieldWithChildren, IndividualFormFieldWithChildren } from '@/components/interface/FormField';
 import { getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from './dynamicFormFunction.ts';
 import { validateFieldValue } from './validateDynamicForm.tsx';
+import { FilePreviewCard } from '@/components/Attachment/AttachmentPreviewList.tsx';
+import { formatFileSize, getFileIcon, validateFile } from '@/components/Attachment/AttachmentConv.tsx';
+import { usePostUploadFileMutationMutation } from '@/store/api/file.ts';
+import { FileItem } from '@/types/case.ts';
+import { useToast } from '@/hooks/useToast.ts';
+import { ToastContainer } from '@/components/crud/ToastContainer.tsx';
+import { useTranslation } from '@/hooks/useTranslation.ts';
 
 interface renderRenderFormFieldProps {
     field: IndividualFormFieldWithChildren;
@@ -31,10 +37,81 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         placeholder: field.placeholder || (field.label && `Enter ${field.label.toLowerCase()}`),
         required: field.required,
         disabled: !editFormData,
+    };
+    
+    const { t } = useTranslation();
+    const [postUploadFile] = usePostUploadFileMutationMutation();
+    const { toasts, addToast, removeToast } = useToast();
+    const uploadingRef = useRef<Set<string>>(new Set());
 
+    const handleFileUpload = async (fieldId: string, files: File[], isMultiple: boolean = false) => {
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        const uploadKey = `${fieldId}-${files.map(f => `${f.name}-${f.size}`).join('-')}-${Date.now()}`;
+        
+        if (uploadingRef.current.has(uploadKey)) {
+            console.log('⚠️ Upload already in progress, skipping');
+            return;
+        }
+
+        uploadingRef.current.add(uploadKey);
+
+        const uploadedFiles: FileItem[] = [];
+
+        try {
+            for (const file of files) {
+                try {
+                    if (!validateFile(file)) {
+                        addToast("error", `File "${file.name}" is too large.`);
+                        continue;
+                    }
+
+                    const result = await postUploadFile({
+                        path: "dynamicForm",
+                        file: file,
+                    }).unwrap();
+
+                    if (result.data) {
+                        uploadedFiles.push(result.data);
+                        console.log(`✅ Uploaded ${file.name}`);
+                    } else {
+                        console.error(`❌ Failed to upload ${file.name}`);
+                        addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error uploading ${file.name}:`, error);
+                    addToast?.("error", `${t("case.display.toast.upload_file_fail")}: ${file.name}`);
+                }
+            }
+
+            if (uploadedFiles.length > 0) {
+                setCurrentForm(prevForm => ({
+                    ...prevForm,
+                    formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
+                        if (isMultiple) {
+                            const currentFiles = Array.isArray(field.value) ? field.value : [];
+                            const existingFileItems = currentFiles.filter((f: any) => !(f instanceof File));
+                            return { ...field, value: [...existingFileItems, ...uploadedFiles] };
+                        } else {
+                            return { ...field, value: uploadedFiles[0] };
+                        }
+                    }),
+                }));
+            }
+        } catch (error) {
+            console.error("Error during file upload process:", error);
+            addToast?.("error", t("case.display.toast.upload_file_fail"));
+        } finally {
+            setTimeout(() => {
+                uploadingRef.current.delete(uploadKey);
+            }, 500);
+        }
     };
 
-    const handleRemoveFile = useCallback((fieldId: string, indexToRemove?: number) => {
+    const handleRemoveFile = (fieldId: string, indexToRemove?: number) => {
+
         setCurrentForm(prevForm => ({
             ...prevForm,
             formFieldJson: updateFieldRecursively(prevForm.formFieldJson, fieldId, (field) => {
@@ -49,7 +126,7 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
                 return field;
             }),
         }));
-    }, [updateFieldRecursively]);
+    };
 
     const labelComponent = field.showLabel ? (
         <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">
@@ -58,8 +135,6 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     ) : (
         field.required && <span className="text-red-500">*</span>
     );
-
-
 
     const FieldError: React.FC<{ field: IndividualFormFieldWithChildren }> = useCallback(({ field }) => {
         if (!showValidationErrors) {
@@ -73,30 +148,39 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     }, [showValidationErrors]);
 
     const handleFieldChange = useCallback((id: string, newValue: any) => {
+        if (field.type === "image" || field.type === "dndImage") {
+            let fileToUpload: File | null = null;
+            
+            if (newValue instanceof FileList && newValue.length > 0) {
+                fileToUpload = newValue[0];
+            } else if (newValue instanceof File) {
+                fileToUpload = newValue;
+            }
+            
+            if (fileToUpload) {
+                handleFileUpload(id, [fileToUpload], false);
+                return;
+            }
+        }
+        
+        if (field.type === "multiImage" || field.type === "dndMultiImage") {
+            let filesToUpload: File[] = [];
+            
+            if (newValue instanceof FileList) {
+                filesToUpload = Array.from(newValue);
+            } else if (Array.isArray(newValue)) {
+                filesToUpload = newValue.filter((f): f is File => f instanceof File);
+            }
+            
+            if (filesToUpload.length > 0) {
+                handleFileUpload(id, filesToUpload, true);
+                return;
+            }
+        }
+
         setCurrentForm(prevForm => ({
             ...prevForm,
             formFieldJson: updateFieldRecursively(prevForm.formFieldJson, id, (field) => {
-                if (field.type === "image" || field.type === "dndImage") {
-                    const valueToStore = newValue instanceof FileList
-                        ? newValue[0] || null
-                        : newValue;
-                    return { ...field, value: valueToStore };
-                }
-                if (field.type === "multiImage" || field.type === "dndMultiImage") {
-                    const currentFiles = Array.isArray(field.value) ? field.value : [];
-
-                    let newFilesToAdd: File[] = [];
-                    if (newValue instanceof FileList) {
-                        newFilesToAdd = Array.from(newValue);
-                    } else if (Array.isArray(newValue)) {
-                        newFilesToAdd = newValue.filter((f): f is File => f instanceof File);
-                    }
-
-                    if (newFilesToAdd.length > 0) {
-                        return { ...field, value: [...currentFiles, ...newFilesToAdd] };
-                    }
-                    return field;
-                }
                 if (field.type === "phoneNumber") {
                     return { ...field, value: newValue ?? "" }
                 }
@@ -119,7 +203,7 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
                 return { ...field, value: newValue };
             }),
         }));
-    }, [updateFieldRecursively]);
+    }, [field.type]);
 
     const renderTextInput = () => (
         <>
@@ -296,7 +380,6 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
                 countries={field.formRule?.allowedCountries as CountryCode[]}
                 value={field.value || ""}
                 onChange={(value) => handleFieldChange(field.id, value)}
-
                 defaultCountry="TH"
                 className={commonClasses + " !p-3"}
             />
@@ -305,7 +388,8 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     );
 
     const renderDndImage = () => (
-        <div >
+        <div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
             {labelComponent}
             <DndImageUploader
                 onFileSelect={(file) => handleFieldChange(field.id, file)}
@@ -314,40 +398,49 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
                 disabled={!editFormData}
                 accept={field.formRule?.allowedFileTypes?.join(',')}
             />
+            {field.value && !(field.value instanceof File) && (
+                <div className="mt-2">
+                    <FilePreviewCard
+                        file={field.value as FileItem}
+                        disabled={!editFormData}
+                        index={0}
+                        getFileIcon={getFileIcon}
+                        formatFileSize={formatFileSize}
+                        onRemove={() => handleRemoveFile(field.id)}
+                    />
+                </div>
+            )}
             <FieldError field={field} />
         </div>
     );
 
     const renderImage = () => (
         <>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
             {labelComponent}
             <div>
                 <input
                     id={field.id}
                     type="file"
                     accept={field.formRule?.allowedFileTypes?.join(',') || 'image/*'}
-                    onChange={(e) => handleFieldChange(field.id, e.target.files)}
+                    onChange={(e) => {
+                        handleFieldChange(field.id, e.target.files);
+                        e.target.value = ''; // Reset to allow re-upload
+                    }}
                     className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-500 dark:file:text-white hover:dark:file:bg-gray-600"
                     required={field.required && !field.value}
                     disabled={!editFormData}
-
                 />
-                {field.value instanceof File && (
-                    <div className="relative group mt-2 w-20 h-20">
-                        <img
-                            src={URL.createObjectURL(field.value)}
-                            alt="Selected"
-                            className="w-full h-full object-cover rounded border border-gray-600"
-                        />
-                        <Button
-                            onClick={() => handleRemoveFile(field.id)}
-                            className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                {field.value && !(field.value instanceof File) && (
+                    <div className="mt-2">
+                        <FilePreviewCard
+                            file={field.value as FileItem}
                             disabled={!editFormData}
-                            size="sm"
-                            variant="error"
-                        >
-                            ×
-                        </Button>
+                            getFileIcon={getFileIcon}
+                            index={0}
+                            formatFileSize={formatFileSize}
+                            onRemove={() => handleRemoveFile(field.id)}
+                        />
                     </div>
                 )}
             </div>
@@ -355,63 +448,116 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         </>
     );
 
-    const renderMultiImage = () => (
-        <div >
-            {labelComponent}
+    const renderMultiImage = () => {
+        // Get actual indices for FileItem objects in the original array
+        const fileItemIndices: number[] = [];
+        if (Array.isArray(field.value)) {
+            field.value.forEach((file, index) => {
+                if (!(file instanceof File)) {
+                    fileItemIndices.push(index);
+                }
+            });
+        }
+
+        return (
             <div>
-                <MultiImageUpload
-                    field={field}
-                    labelComponent={null}
+                <ToastContainer toasts={toasts} onRemove={removeToast} />
+                {labelComponent}
+                <div>
+                    <MultiImageUpload
+                        field={field}
+                        labelComponent={null}
+                        onFilesSelect={(files) => handleFieldChange(field.id, files)}
+                        disabled={!editFormData}
+                    />
+                    {Array.isArray(field.value) && fileItemIndices.length > 0 && (
+                        <div className="mt-2">
+                            <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                {fileItemIndices.map((actualIndex) => {
+                                    const file = field.value[actualIndex];
+                                    return (
+                                        <FilePreviewCard
+                                            key={actualIndex}
+                                            file={file as FileItem}
+                                            index={actualIndex}
+                                            disabled={!editFormData}
+                                            getFileIcon={getFileIcon}
+                                            formatFileSize={formatFileSize}
+                                            onRemove={() => handleRemoveFile(field.id, actualIndex)}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <FieldError field={field} />
+            </div>
+        );
+    };
+
+    const renderDndMultiImage = () => {
+        // Get actual indices for FileItem objects
+        const fileItemIndices: number[] = [];
+        if (Array.isArray(field.value)) {
+            field.value.forEach((file, index) => {
+                if (!(file instanceof File)) {
+                    fileItemIndices.push(index);
+                }
+            });
+        }
+
+        return (
+            <div>
+                <ToastContainer toasts={toasts} onRemove={removeToast} />
+                {labelComponent}
+                <DndMultiImageUploader
                     onFilesSelect={(files) => handleFieldChange(field.id, files)}
+                    existingFiles={Array.isArray(field.value) ? field.value.filter((f: any) => f instanceof File) : []}
+                    handleRemoveFile={(index) => {
+                        // This removes File objects from DndMultiImageUploader
+                        // Find the actual index of File objects
+                        const fileIndices: number[] = [];
+                        if (Array.isArray(field.value)) {
+                            field.value.forEach((file, i) => {
+                                if (file instanceof File) {
+                                    fileIndices.push(i);
+                                }
+                            });
+                        }
+                        if (fileIndices[index] !== undefined) {
+                            handleRemoveFile(field.id, fileIndices[index]);
+                        }
+                    }}
                     disabled={!editFormData}
+                    accept={field.formRule?.allowedFileTypes?.join(',')}
                 />
-                {Array.isArray(field.value) && field.value.length > 0 && (
+                {Array.isArray(field.value) && fileItemIndices.length > 0 && (
                     <div className="mt-2">
-                        <p className="text-gray-700 dark:text-white text-sm mb-1">Selected Files:</p>
+                        <p className="text-gray-700 dark:text-white text-sm mb-1">Uploaded Files:</p>
                         <div className="grid grid-cols-3 gap-2">
-                            {field.value.map((file: File, index: number) => (
-                                <div key={file.name + index} className="relative group">
-                                    {file instanceof File && (
-                                        <>
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt={`Upload ${index + 1}`}
-                                                className="w-full h-20 object-cover rounded border border-gray-600"
-                                            />
-                                            <Button
-                                                onClick={() => handleRemoveFile(field.id, index)}
-                                                className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                disabled={!editFormData}
-                                                size="sm"
-                                                variant="error"
-                                            >
-                                                ×
-                                            </Button>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
+                            {fileItemIndices.map((actualIndex) => {
+                                const file = field.value[actualIndex];
+                                return (
+                                    <FilePreviewCard
+                                        key={actualIndex}
+                                        file={file as FileItem}
+                                        index={actualIndex}
+                                        disabled={!editFormData}
+                                        getFileIcon={getFileIcon}
+                                        formatFileSize={formatFileSize}
+                                        onRemove={() => handleRemoveFile(field.id, actualIndex)}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 )}
+                <FieldError field={field} />
             </div>
-            <FieldError field={field} />
-        </div>
-    );
-
-    const renderDndMultiImage = () => (
-        <div >
-            {labelComponent}
-            <DndMultiImageUploader
-                onFilesSelect={(files) => handleFieldChange(field.id, files)}
-                existingFiles={Array.isArray(field.value) ? field.value : []}
-                handleRemoveFile={(index) => handleRemoveFile(field.id, index)}
-                disabled={!editFormData}
-                accept={field.formRule?.allowedFileTypes?.join(',')}
-            />
-            <FieldError field={field} />
-        </div>
-    );
+        );
+    };
 
     const renderInputGroup = () => (
         <div>
@@ -516,42 +662,48 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         );
     };
 
-    switch (field.type) {
-        case "textInput":
-        case "emailInput":
-        case "passwordInput":
-            return renderTextInput();
-        case "Integer":
-            return renderInteger();
-        case "dateInput":
-            return renderDateInput();
-        case "dateLocal":
-            return renderDateLocal();
-        case "textAreaInput":
-            return renderTextArea();
-        case "select":
-            return renderSelect();
-        case "option":
-            return renderOption();
-        case "radio":
-            return renderRadio();
-        case "phoneNumber":
-            return renderPhoneNumber();
-        case "dndImage":
-            return renderDndImage();
-        case "image":
-            return renderImage();
-        case "multiImage":
-            return renderMultiImage();
-        case "dndMultiImage":
-            return renderDndMultiImage();
-        case "InputGroup":
-            return renderInputGroup();
-        case "dynamicField":
-            return renderDynamicField();
-        default:
-            return <p className="text-red-500">Unsupported field type: {field.type}</p>;
-    }
+    return (
+        <>
+            {(() => {
+                switch (field.type) {
+                    case "textInput":
+                    case "emailInput":
+                    case "passwordInput":
+                        return renderTextInput();
+                    case "Integer":
+                        return renderInteger();
+                    case "dateInput":
+                        return renderDateInput();
+                    case "dateLocal":
+                        return renderDateLocal();
+                    case "textAreaInput":
+                        return renderTextArea();
+                    case "select":
+                        return renderSelect();
+                    case "option":
+                        return renderOption();
+                    case "radio":
+                        return renderRadio();
+                    case "phoneNumber":
+                        return renderPhoneNumber();
+                    case "dndImage":
+                        return renderDndImage();
+                    case "image":
+                        return renderImage();
+                    case "multiImage":
+                        return renderMultiImage();
+                    case "dndMultiImage":
+                        return renderDndMultiImage();
+                    case "InputGroup":
+                        return renderInputGroup();
+                    case "dynamicField":
+                        return renderDynamicField();
+                    default:
+                        return <p className="text-red-500">Unsupported field type: {field.type}</p>;
+                }
+            })()}
+        </>
+    );
 };
 
 export default RenderFormField;

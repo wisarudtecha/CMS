@@ -1,10 +1,11 @@
-import Button from "@/components/ui/button/Button";
+import { formatFileSize, getFileIcon } from "@/components/Attachment/AttachmentConv";
+import { FilePreviewCard } from "@/components/Attachment/AttachmentPreviewList";
 import { ImageIcon } from "lucide-react";
 import { useState, useRef } from "react";
 
 const DndMultiImageUploader: React.FC<{
   onFilesSelect: (files: File[]) => void;
-  existingFiles: (File | { name: string; url: string;[key: string]: any })[]; // Updated type for existingFiles
+  existingFiles: (File)[]; // Updated type for existingFiles
   handleRemoveFile: (index: number) => void;
   disabled?: boolean;
   accept?: string;
@@ -87,30 +88,32 @@ const DndMultiImageUploader: React.FC<{
         <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Drag & drop images here, or click to select</p>
       </div>
       {existingFiles.length > 0 && (
-        <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
+        // <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-2">
+        <div className="grid grid-cols-3">
           {existingFiles.map((file, index: number) => { // 'file' can now be File or an object
-            let imageUrl: string = "";
-            if (file instanceof File || file instanceof Blob) {
-              imageUrl = URL.createObjectURL(file);
-            } else if (typeof file === 'object' && file !== null && 'url' in file && typeof file.url === 'string') {
-              imageUrl = file.url;
-            } else {
-              console.warn("Unexpected file format in existingFiles, cannot determine image URL:", file);
-              imageUrl = "";
-            }
+            // let imageUrl: string = "";
+            // if (file instanceof File || file instanceof Blob) {
+            //   imageUrl = URL.createObjectURL(file);
+            // } else if (typeof file === 'object' && file !== null && 'url' in file && typeof file.url === 'string') {
+            //   imageUrl = file.url;
+            // } else {
+            //   console.warn("Unexpected file format in existingFiles, cannot determine image URL:", file);
+            //   imageUrl = "";
+            // }
 
-            return (
-              <div key={`${file.name}-${index}`} className="relative group aspect-square">
-                <img
+            return <FilePreviewCard file={file} disabled={disabled} getFileIcon={getFileIcon} formatFileSize={formatFileSize} onRemove={() => handleRemoveFile(index)} />
+
+            {/* <img
                   src={imageUrl}
                   alt={`Upload ${index + 1}`}
                   className="w-full h-full object-cover rounded border border-gray-300 dark:border-gray-600"
                 />
-                <Button onClick={() => handleRemoveFile(index)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button>
-              </div>
-            );
+                <Button onClick={() => handleRemoveFile(index)} className="absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" disabled={disabled} size="xxs" variant="error">×</Button> */}
+
+
+
           })}
-        </div>
+        </ div>
       )}
     </div>
   );
