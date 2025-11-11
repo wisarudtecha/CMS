@@ -16,16 +16,15 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import Button from "@/components/ui/button/Button";
-import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormFieldWithChildren } from "@/components/interface/FormField";
+import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormFieldWithChildren, FormManager, formMetaData } from "@/components/interface/FormField";
 import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
-import { useNavigate } from "react-router";
 import { formConfigurations } from "./constant";
 import 'react-phone-number-input/style.css'
 import { getCountries } from 'react-phone-number-input/input'
 import { validateInput } from "./validateDynamicForm";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { useToast } from "@/hooks/useToast";
-import { createDynamicFormField, getResponsiveColSpanClass, getResponsiveGridClass } from "./dynamicFormFunction.ts";
+import { createDynamicFormField, getResponsiveColSpanClass, getResponsiveGridClass } from "./function.ts";
 import { FormEdit } from "./dynamicFormEditMode.tsx";
 import RenderFormField from "./renderFormField.tsx";
 import { ImportDynamicFormModal } from "./importDynamicFormModal.tsx";
@@ -39,7 +38,7 @@ export type CountryCode = ReturnType<typeof getCountries>[number]
 
 
 interface DynamicFormProps {
-  initialForm?: FormField;
+  initialForm?: FormManager | FormField;
   edit?: boolean;
   editFormData?: boolean;
   showDynamicForm?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -70,8 +69,11 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const [createFormData] = useCreateFormMutation();
   const [isSaving, setIsSaving] = useState(false);
   const [hide, setHide] = useState<boolean>(false);
-  const navigate = useNavigate();
   const { t } = useTranslation();
+  const [formMeta, setFormMeta] = useState<formMetaData | undefined>(
+    initialForm && "versions" in initialForm ?
+      { versions: initialForm.versions, publish: initialForm.publish } : undefined);
+
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     initialForm ?
       {
@@ -275,48 +277,52 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
 
   const saveSchema = async () => {
-    let response
     try {
-      setIsSaving(true)
-      if (initialForm) {
-        response = await updateFormData({
-          formId: currentForm.formId,
-          formColSpan: currentForm.formColSpan,
-          formFieldJson: currentForm.formFieldJson,
-          formName: currentForm.formName,
-          locks: false,
-          publish: false,
-          active: true,
-        }).unwrap();
+      setIsSaving(true);
 
-      } else {
-        if (currentForm.formFieldJson.length != 0) {
-          response = await createFormData({
-            active: true,
-            formColSpan: currentForm.formColSpan,
-            formFieldJson: currentForm.formFieldJson,
-            formName: currentForm.formName,
-            locks: false,
-            publish: false,
-          }).unwrap();
-        }
-        else {
-          addToast("error", "There are no element in form.")
-          return
-        }
+      const hasFields = currentForm.formFieldJson?.length > 0;
+      if (!hasFields) {
+        addToast("error", "There are no elements in the form.");
+        return;
       }
+
+      const payload = {
+        active: true,
+        formColSpan: currentForm.formColSpan,
+        formFieldJson: currentForm.formFieldJson,
+        formName: currentForm.formName,
+        locks: false,
+        publish: initialForm ? formMeta?.publish || false : false,
+      };
+
+      //Checking for update or create
+      const response: any = initialForm
+        ? await updateFormData({ formId: currentForm.formId, ...payload }).unwrap()
+        : await createFormData(payload).unwrap();
+
+      // Handle missing formId that gen form backend (for create)
+      if (!initialForm && !response?.data) {
+        addToast("error", response?.desc || "Unexpected response.");
+        return;
+      }
+
+      // If form is newly created, store formId and metadata
+      if (!initialForm && response?.data) {
+        setCurrentForm((prev) => ({ ...prev, formId: response?.data?.formId }));
+        setFormMeta({ versions: response?.data?.version, publish: false });
+      }
+
       if (response.msg === "Success") {
-        navigate(0);
+        addToast("success", "Success.");
       } else {
-        addToast("success", response.desc)
-        console.log("error")
+        addToast("error", response?.desc || "Something went wrong.");
       }
-      setIsSaving(true)
-    } catch (e: any) {
-      setIsSaving(false)
-      addToast("error", e.data.desc)
+    } catch (error: any) {
+      addToast("error", error?.data?.desc || "An unexpected error occurred.");
+    } finally {
+      setIsSaving(false);
     }
-  }
+  };
 
 
   const transformFieldForSubmission = useCallback((field: IndividualFormFieldWithChildren): IndividualFormField => {
@@ -543,9 +549,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               editFormData={editFormData}
               setCurrentForm={setCurrentForm}
               showValidationErrors={showValidationErrors}
+              formMetaData={formMeta}
             />
             <ImportDynamicFormModal isImport={isImport} setImport={setImport} setCurrentForm={setCurrentForm} />
-            <ExportDynamicFormModal  isOpen={isExport}  onClose={()=>{setExport(false)}} currentForm={currentForm}/>
+            <ExportDynamicFormModal isOpen={isExport} onClose={() => { setExport(false) }} currentForm={currentForm} />
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
                 <Button onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />Import</Button>
@@ -562,9 +569,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             {FormPreview()}
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
-                {/* <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>
+                <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>
                   Edit
-                </Button> */}
+                </Button>
                 <Button onClick={saveSchema} disabled={!editFormData} variant="success">
                   {initialForm ? "Save Change" : "Save Form"}
                 </Button>

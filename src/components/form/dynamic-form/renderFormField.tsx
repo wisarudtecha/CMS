@@ -8,7 +8,7 @@ import Input from '../input/InputField';
 import DndMultiImageUploader from '../input/DndMultiImageUploader.tsx';
 import MultiImageUpload from '../input/MultiImageUpload';
 import { FormFieldWithChildren, IndividualFormFieldWithChildren } from '@/components/interface/FormField';
-import { getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from './dynamicFormFunction.ts';
+import { getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from './function.ts';
 import { validateFieldValue } from './validateDynamicForm.tsx';
 import { FilePreviewCard } from '@/components/Attachment/AttachmentPreviewList.tsx';
 import { formatFileSize, getFileIcon, validateFile } from '@/components/Attachment/AttachmentConv.tsx';

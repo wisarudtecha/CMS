@@ -2,17 +2,21 @@
 import React from "react";
 import { CheckCircleIcon, ErrorIcon, AlertIcon, CloseIcon } from "@/icons";
 import type { Toast } from "@/types/crud";
+import { useTranslation } from "@/hooks/useTranslation";
 // import Button from "@/components/ui/button/Button";
 
 interface ToastContainerProps {
   toasts: Toast[];
   onRemove: (id: string) => void;
+  disbleCloseButton?: boolean;
 }
 
 export const ToastContainer: React.FC<ToastContainerProps> = ({
   toasts,
-  onRemove
+  onRemove,
+  disbleCloseButton = false
 }) => {
+  const { t } = useTranslation();
   const getToastIcon = (type: Toast["type"]) => {
     switch (type) {
       case "success":
@@ -55,15 +59,15 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
           className={`flex items-center gap-3 p-4 rounded-lg shadow-lg transition-all duration-300 ${getToastClasses(toast.type)}`}
         >
           {getToastIcon(toast.type)}
-          <span className="text-sm font-medium">{toast.message}</span>
-          <button
+          <span className="text-sm font-medium">{toast.isI18N ? t(toast.message) : toast.message}</span>
+          {!disbleCloseButton && <button
             onClick={() => onRemove(toast.id)}
             className="text-gray-700 dark:text-white hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-            // variant={getButtonClasses(toast.type)}
-            // size="xs"
+          // variant={getButtonClasses(toast.type)}
+          // size="xs"
           >
             <CloseIcon className="w-4 h-4" />
-          </button>
+          </button>}
         </div>
       ))}
     </div>

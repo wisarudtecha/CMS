@@ -6,7 +6,7 @@ import { getTimeDifference } from "../case/sopStepTranForm";
 import { useFormatDuration } from "./formatSlaDuration";
 
 
-export const SLACountdownBadgeAssignment = ({ createdAt, sla }: { createdAt: string, sla: number }) => {
+export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: string, sla: number }) => {
     const [timeRemaining, setTimeRemaining] = useState<{
         isOverdue: boolean;
         days: number;
@@ -23,7 +23,7 @@ export const SLACountdownBadgeAssignment = ({ createdAt, sla }: { createdAt: str
 
     useEffect(() => {
         const calculateTimeRemaining = () => {
-            const createdDate = new Date(createdAt);
+            const createdDate = new Date(createDate);
             const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000));
             const now = new Date();
             const diffMs = slaDeadline.getTime() - now.getTime();
@@ -67,7 +67,7 @@ export const SLACountdownBadgeAssignment = ({ createdAt, sla }: { createdAt: str
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [createdAt, sla]);
+    }, [createDate, sla]);
 
     if (!timeRemaining) {
         return null;

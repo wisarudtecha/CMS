@@ -83,7 +83,8 @@ const Select: React.FC<SelectProps> = ({
       {/* Map over options */}
       {options.map((option) => (
         <option
-          key={option.value}
+          // key={option.value}
+          key={`${option.value}-${Math.random().toString(36).slice(2, 9)}`}
           value={option.value}
           className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
         >

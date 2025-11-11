@@ -33,6 +33,7 @@ export interface Toast {
   type: "success" | "error" | "warning" | "info";
   message: string;
   duration?: number;
+  isI18N?:boolean
 }
 
 export interface CrudConfig<T> {

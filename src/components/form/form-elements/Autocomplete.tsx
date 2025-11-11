@@ -7,7 +7,7 @@ type AutocompleteProps = {
   id?: string;
   placeholder?: string;
   required?: boolean;
-  // suggestions?: string[];
+  suggestions?: string[];
   value?: string;
   onSelect: (value: string) => void;
 };
@@ -17,7 +17,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   id = "",
   placeholder = "Start typing...",
   required,
-  // suggestions,
+  suggestions,
   value = "",
   onSelect,
 }) => {
@@ -32,7 +32,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeWaiting = 0; // Second
   // const suggestions = ["bma", "skyai"];
-  const suggestions = ["BMA", "SKY-AI"];
+  const defaultSuggestions = ["BMA", "SKY-AI"];
 
   const handleSelect = useCallback((val: string) => {
     setQuery(val);
@@ -52,7 +52,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
     }
 
     if (query) {
-      const result = suggestions.filter((s) =>
+      const result = (suggestions || defaultSuggestions).filter(s =>
         s === query
       );
       if (result.length > 0) {
@@ -62,7 +62,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         return;
       }
       else {
-        // const results = suggestions.filter((s) =>
+        // const results = suggestions.filter(s =>
         //   s.toLowerCase().includes(query.toLowerCase())
         // );
         // setFiltered(results);
@@ -80,7 +80,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
           if (query.length >= debounceLengthWating) {
             setLoading(true);
             setTimeout(() => {
-              const result = suggestions.filter((s) =>
+              const result = (suggestions || defaultSuggestions).filter((s) =>
                 s.toLowerCase().includes(query.toLowerCase())
               );
               setFiltered(result);
@@ -114,10 +114,10 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
-      setActiveIndex((prev) => Math.min(prev + 1, filtered.length - 1));
+      setActiveIndex(prev => Math.min(prev + 1, filtered.length - 1));
     }
     else if (e.key === "ArrowUp") {
-      setActiveIndex((prev) => Math.max(prev - 1, 0));
+      setActiveIndex(prev => Math.max(prev - 1, 0));
     }
     else if (e.key === "Enter" && activeIndex >= 0) {
       handleSelect(filtered[activeIndex]);
@@ -134,7 +134,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         // className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         placeholder={placeholder}
         value={query}
-        onChange={(e) => {
+        onChange={e => {
           // setQuery(e.target.value);
           handleSelect(e.target.value);
           setActiveIndex(-1);

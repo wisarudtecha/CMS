@@ -1,4 +1,5 @@
 // /src/types/unit.ts
+import type { Area} from "@/store/api/area";
 import type { BaseEntity } from "@/types";
 import type { Department, Command, Station } from "@/types/organization";
 import type { UserProfile } from "@/types/user";
@@ -119,31 +120,31 @@ export interface Unit extends BaseEntity {
 
 export interface UnitFormData {
   active: boolean;
-  breakDuration: number;
+  breakDuration?: number;
   commId: string;
   compId: string;
   deptId: string;
-  healthChk: string;
-  healthChkTime: string;
-  isFreeze: boolean;
-  isLogin: boolean;
-  isOutArea: boolean;
-  locAccuracy: number;
-  locAlt: number;
-  locBearing: number;
-  locGpsTime: string;
-  locLastUpdateTime: string;
-  locLat: number;
-  locLon: number;
-  locProvider: string;
-  locSatellites: number;
-  locSpeed: number;
-  orgId: string;
-  plateNo: string;
+  healthChk?: string;
+  healthChkTime?: string;
+  isFreeze?: boolean;
+  isLogin?: boolean;
+  isOutArea?: boolean;
+  locAccuracy?: number;
+  locAlt?: number;
+  locBearing?: number;
+  locGpsTime?: string;
+  locLastUpdateTime?: string;
+  locLat?: number;
+  locLon?: number;
+  locProvider?: string;
+  locSatellites?: number;
+  locSpeed?: number;
+  orgId?: string;
+  plateNo?: string;
   priority: number;
-  provinceCode: string;
+  provinceCode?: string;
   stnId: string;
-  sttId: string;
+  sttId?: string;
   unitId: string;
   unitName: string;
   unitSourceId: string;
@@ -152,9 +153,11 @@ export interface UnitFormData {
 }
 
 export interface UnitFormProps {
+  areas?: Area[];
   commands?: Command[];
   companies?: Company[];
   departments?: Department[];
+  id?: number;
   initialData?: Partial<UnitFormData>;
   isLoading?: boolean;
   mode?: "create" | "update";
@@ -163,7 +166,7 @@ export interface UnitFormProps {
   unitTypes: UnitType[];
   users: UserProfile[];
   onCancel?: () => void;
-  onSubmit: (data: UnitFormData) => Promise<void>;
+  onSubmit: (data: UnitFormData, id?: number) => Promise<void>;
 }
 
 export interface UnitMetrics {
@@ -178,7 +181,8 @@ export interface UnitQueryParams {
   length?: number | 10;
 }
 
-export type UnitUpdateData = Omit<Unit, keyof BaseEntity>;
+// export type UnitUpdateData = Omit<Unit, keyof BaseEntity>;
+export type UnitUpdateData = Omit<UnitFormData, keyof BaseEntity>;
 
 export type ViewMode = "overview" | "hierarchy" | "performance" | "matrix";
 export type DisplayMode = "cards" | "table";

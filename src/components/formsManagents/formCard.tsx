@@ -4,10 +4,10 @@ import React from 'react';
 import {
   CalenderIcon,
 } from "@/icons";
-import { statusConfig } from '../ui/status/status';
 import { FormManager } from '../interface/FormField';
 import ButtonAction from './ButtonAction';
 import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
+import Badge from '../ui/badge/Badge';
 
 interface FormCardProps {
   form: FormManager;
@@ -43,9 +43,12 @@ const FormCard: React.FC<FormCardProps> = ({
             {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
               {config.label}
             </span> */}
-            {form.versions=="draft"&&<span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig["draft"].color}`}>
-              draft
-            </span>}
+            {form.publish && <Badge color='success' variant='solid' className={`px-2 py-1 rounded-full text-xs font-medium`}>
+              Pubilsh
+            </Badge>}
+            <Badge color='warning' className={`px-2 py-1 rounded-full text-xs font-medium `}>
+              {form.versions}
+            </Badge>
           </div>
         </div>
 
@@ -58,9 +61,9 @@ const FormCard: React.FC<FormCardProps> = ({
           </div>
         </div>
       </div>
-      
+
       <div className="mt-auto pt-4">
-        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>Create By : {getAvatarIconFromString(form.createdBy,"bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
+        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>Create By : {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
         <ButtonAction
           type="button"
           form={form}

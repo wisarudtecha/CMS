@@ -64,6 +64,7 @@ import AreaManagementPage from "@/pages/Admin/AreaManagement";
 import PropertyManagementPage from "@/pages/Admin/PropertyManagement";
 import ServiceManagementPage from "@/pages/Admin/ServiceManagement";
 import SkillManagementPage from "@/pages/Admin/SkillManagement";
+import UnitFormPage from "@/pages/Admin/UnitForm";
 import UnitManagementPage from "@/pages/Admin/UnitManagement";
 
 // Authentication Imports
@@ -156,6 +157,9 @@ export default function App() {
           <Route path="/service" element={<ServiceManagementPage />} />
           <Route path="/skill" element={<SkillManagementPage />} />
           <Route path="/unit" element={<UnitManagementPage />} />
+          <Route path="/unit/create" element={<UnitFormPage />} />
+          <Route path="/unit/:id" element={<UnitFormPage />} />
+          <Route path="/unit/:id/edit" element={<UnitFormPage />} />
 
           {/* Others Page */}
           <Route path="/profile" element={<UserProfiles />} />

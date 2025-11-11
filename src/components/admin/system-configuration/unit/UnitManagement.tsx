@@ -1,10 +1,12 @@
 // /src/components/admin/system-configuration/unit/UnitManagement.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CircleCheck, CircleX, MapPinCheck, MapPinX } from "lucide-react";
 // import { CheckLineIcon, ListIcon, PieChartIcon, TimeIcon } from "@/icons";
+import { ToastContainer } from "@/components/crud/ToastContainer";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthService } from "@/utils/authService";
 import type { PreviewConfig } from "@/types/enhanced-crud";
@@ -47,11 +49,12 @@ const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline
 }
 
 const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
-  const { t } = useTranslation();
-
   const isSystemAdmin = AuthService.isSystemAdmin();
+  
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const permissions = usePermissions();
+  const { toasts, addToast, removeToast } = useToast();
 
   // ===================================================================
   // Real Functionality Data
@@ -68,6 +71,17 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     ...u,
     id: typeof u.id === "string" ? u.id : u.id?.toString?.() ?? u.id?.toString?.() ?? "",
   }));
+
+  useEffect(() => {
+    const storage = localStorage || sessionStorage;
+    const toastStatus = JSON.parse(storage.getItem("toast") || "{}");
+    storage.removeItem("toast");
+
+    if (toastStatus?.status) {
+      addToast(toastStatus?.status, toastStatus?.msg || toastStatus?.status);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ===================================================================
   // CRUD Configuration
@@ -235,7 +249,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Last Update</label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                    {new Date(unitItem.locLastUpdateTime).toLocaleString()}
+                    {unitItem.locLastUpdateTime && new Date(unitItem.locLastUpdateTime).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -339,6 +353,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   const handleDelete = (id: string) => {
     // Handle unit delete
     console.log("Unit deleted:", id);
+    window.location.replace("/unit");
   };
 
   // ===================================================================
@@ -393,6 +408,8 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         onRefresh={() => window.location.reload()}
         renderCard={renderCard as unknown as (item: { id: string }) => React.ReactNode}
       />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>
   );
 };

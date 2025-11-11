@@ -12,16 +12,18 @@ import { idbStorage } from "@/components/idb/idb";
 
 export const fetchCustomers = async () => {
   const customerDataResult = await store.dispatch(
-    customerApi.endpoints.getCustommers.initiate({ start: 0, length: 100 })
+    customerApi.endpoints.getCustommers.initiate({ start: 0, length: 100 }, { forceRefetch: true })
   );
-  localStorage.setItem("customer_data", JSON.stringify(customerDataResult.data?.data));
+  if (customerDataResult.data?.data)
+    localStorage.setItem("customer_data", JSON.stringify(customerDataResult.data?.data));
 };
 
 export const fetchUnitStatus = async () => {
   const unitStatusDataResult = await store.dispatch(
-    unitApi.endpoints.getUnitStatuses.initiate({ start: 0, length: 100 })
+    unitApi.endpoints.getUnitStatuses.initiate({ start: 0, length: 100 }, { forceRefetch: true })
   );
-  localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data));
+  if (unitStatusDataResult.data?.data)
+    localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data));
 };
 
 export const fetchCase = async (params: CaseListParams) => {
@@ -30,7 +32,9 @@ export const fetchCase = async (params: CaseListParams) => {
   if (!requestNumber || typeof requestNumber != "number") {
     return;
   }
-
+   // Dispatch loading start event
+  window.dispatchEvent(new CustomEvent("caseLoadingStart"));
+  
   let allData: any[] = [];
   let start = 0;
   let currentPage = 0;
@@ -61,8 +65,16 @@ export const fetchCase = async (params: CaseListParams) => {
     allData = [...firstResult.data.data];
     currentPage = firstResult.data.currentPage || 1;
     totalPages = firstResult.data.totalPage || 0;
+
+    // Save first batch to IDB
+    idbStorage.setItem("caseList", JSON.stringify(allData));
+    window.dispatchEvent(new StorageEvent("storage", {
+      key: "caseList",
+      newValue: JSON.stringify(await idbStorage.getItem("caseList")),
+    }));
   } else {
     idbStorage.setItem("caseList", "[]");
+    window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
     return [];
   }
 
@@ -74,28 +86,30 @@ export const fetchCase = async (params: CaseListParams) => {
         ...params,
         ...getListParams,
         start,
-      })
+      }, { forceRefetch: true })
     );
 
     if (result.data?.data) {
       allData = [...allData, ...result.data.data];
       currentPage = result.data.currentPage || currentPage + 1;
+
+      // Save updated data to IDB after each fetch
+      idbStorage.setItem("caseList", JSON.stringify(allData));
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "caseList",
+        newValue: JSON.stringify(await idbStorage.getItem("caseList")),
+      }));
     } else {
       break;
     }
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-
-  // const caseStore = await getStore("caseList")
-  // await caseStore.addBulk(allData);
-  
-  idbStorage.setItem("caseList", JSON.stringify(allData));
+  window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
   return allData;
 };
-
 export const fetchCaseResults = async () => {
   const result = await store.dispatch(
-    caseApi.endpoints.getCaseResults.initiate({})
+    caseApi.endpoints.getCaseResults.initiate({}, { forceRefetch: true })
   );
   if (result.data?.data) {
     localStorage.setItem("caseResultsList", JSON.stringify(result.data?.data));
@@ -106,16 +120,18 @@ export const fetchCaseResults = async () => {
 
 export const fetchTypeSubType = async () => {
   const caseTypeSubType = await store.dispatch(
-    caseApi.endpoints.postTypeSubType.initiate(null)
+    caseApi.endpoints.postTypeSubType.initiate(null, { forceRefetch: true })
   );
-  localStorage.setItem("caseTypeSubType", JSON.stringify(caseTypeSubType.data?.data));
+  if (caseTypeSubType.data?.data)
+    localStorage.setItem("caseTypeSubType", JSON.stringify(caseTypeSubType.data?.data));
 };
 
 export const fetchSubTypeForm = async (subType: string) => {
   const SubTypeForm = await store.dispatch(
     formApi.endpoints.postSubTypeForm.initiate(subType)
   );
-  localStorage.setItem("subTypeForm-" + subType, JSON.stringify(SubTypeForm.data?.data));
+  if (SubTypeForm.data?.data)
+    localStorage.setItem("subTypeForm-" + subType, JSON.stringify(SubTypeForm.data?.data));
 };
 
 export const fetchSubTypeAllForm = async () => {
@@ -129,7 +145,8 @@ export const fetchSubTypeAllForm = async () => {
         const SubTypeForm = await store.dispatch(
           formApi.endpoints.postSubTypeForm.initiate(item.sTypeId)
         );
-        localStorage.setItem("subTypeForm-" + item.sTypeId, JSON.stringify(SubTypeForm.data?.data));
+        if (SubTypeForm.data?.data)
+          localStorage.setItem("subTypeForm-" + item.sTypeId, JSON.stringify(SubTypeForm.data?.data));
       })
     );
   }
@@ -137,31 +154,34 @@ export const fetchSubTypeAllForm = async () => {
 
 export const fetchDeptCommandStations = async () => {
   const result = await store.dispatch(
-    caseApi.endpoints.getDeptCommandStations.initiate(null)
+    caseApi.endpoints.getDeptCommandStations.initiate(null, { forceRefetch: true })
   );
-  localStorage.setItem("DeptCommandStations", JSON.stringify(result.data?.data));
+  if (result.data?.data)
+    localStorage.setItem("DeptCommandStations", JSON.stringify(result.data?.data));
 };
 
 export const fetchCaseStatus = async () => {
   const result = await store.dispatch(
-    caseApi.endpoints.getStatus.initiate({ start: 0, length: 100 })
+    caseApi.endpoints.getStatus.initiate({ start: 0, length: 100 }, { forceRefetch: true })
   );
-  localStorage.setItem("caseStatus", JSON.stringify(result.data?.data));
+  if (result.data?.data)
+    localStorage.setItem("caseStatus", JSON.stringify(result.data?.data));
 };
 
 export const fetchArea = async () => {
   const result = await store.dispatch(
     areaApi.endpoints.getArea.initiate(null)
   );
-  localStorage.setItem("area", JSON.stringify(result.data?.data));
+  if (result.data?.data)
+    localStorage.setItem("area", JSON.stringify(result.data?.data));
 };
 
 export const caseApiSetup = async () => {
-  await fetchCase({});
   await fetchTypeSubType();
   await fetchDeptCommandStations();
   await fetchCaseStatus();
   await fetchCaseResults();
   await fetchUnitStatus();
   await fetchArea();
+  fetchCase({});
 };

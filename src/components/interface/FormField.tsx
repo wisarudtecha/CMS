@@ -3,10 +3,10 @@ import { CaseTypeSubType } from "./CaseType";
 export interface IndividualFormField {
   id: string;
   label: string;
-  showLabel?:boolean;
+  showLabel?: boolean;
   type: string;
   value: any;
-  enableSearch?:boolean
+  enableSearch?: boolean
   options?: any[];
   placeholder?: string;
   required: boolean;
@@ -14,7 +14,7 @@ export interface IndividualFormField {
   isChild?: boolean;
   GroupColSpan?: number;
   DynamicFieldColSpan?: number;
-  formRule?:FormRule
+  formRule?: FormRule
 }
 
 export interface FormRule {
@@ -36,8 +36,8 @@ export interface FormRule {
   noWhitespace?: boolean;
   minDate?: string;
   maxDate?: string;
-  minLocalDate?:string
-  maxLocalDate?:string
+  minLocalDate?: string
+  maxLocalDate?: string
   futureDateOnly?: boolean;
   pastDateOnly?: boolean;
   minFiles?: number;
@@ -59,7 +59,7 @@ export interface FormField {
 export interface FormFieldWithNode extends FormField {
   versions: string;
   nextNodeId: string;
-  wfId:string;
+  wfId: string;
 }
 
 export interface FormFieldWithChildren extends FormField {
@@ -71,27 +71,32 @@ export interface FormConfigItem {
   title: string;
   options?: any[];
   canBeChild?: boolean;
-  property?:string[];
+  property?: string[];
+}
+
+export interface formMetaData {
+  versions: string,
+  publish: boolean
 }
 
 
 export interface FormManager extends FormField {
-  active:boolean;
-  publish:boolean;
+  active: boolean;
+  publish: boolean;
   versions: string;
   createdAt: string;
-  type:string;
-  createdBy:string
+  type?: string;
+  createdBy: string
 }
 
-export interface formType  extends CaseTypeSubType {
-  formField : FormFieldWithNode
-  caseType:string
+export interface formType extends CaseTypeSubType {
+  formField: FormFieldWithNode
+  caseType: string
 }
 
 export interface CustomerData {
   customerName: string;
   contractMethod: "Email" | "Chat" | "Iot Alert" | "Phone Number" | "";
   phoneNumber?: number;
-  email?: string; 
+  email?: string;
 }

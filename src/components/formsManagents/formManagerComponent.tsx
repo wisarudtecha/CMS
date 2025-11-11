@@ -205,7 +205,7 @@ const FormManagerComponent: React.FC = () => {
         active: newStatus,
       }).unwrap();
 
-      if (response?.data?.msg === "Success") {
+      if (response?.msg === "Success") {
         setForms(prev =>
           prev.map(f =>
             f.formId === formId

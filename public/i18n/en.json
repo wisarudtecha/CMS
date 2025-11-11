@@ -369,7 +369,8 @@
           "status": "",
           "other": "Confirm"
         }
-      }
+      },
+      "permission_denied": "You do not have permission to perform this action."
     },
     "case_history": {
       "name": "Work Order",
@@ -463,11 +464,13 @@
           "sections": {
             "unitId": {
               "label": "Unit ID",
-              "placeholder": "Enter unit ID"
+              "placeholder": "Enter unit ID",
+              "required": "Unit ID is required"
             },
             "unitName": {
               "label": "Unit Name",
-              "placeholder": "Enter unit name"
+              "placeholder": "Enter unit name",
+              "required": "Unit name is required"
             },
             "unitTypeId": {
               "label": "Unit Type",
@@ -519,12 +522,93 @@
           }
         },
         "status_and_health": {
-          "header": "Status",
+          "header": "Status and Health",
           "sections": {
+            "healthChk": {
+              "label": "Health Check",
+              "placeholder": "Enter health check status"
+            },
+            "healthChkTime": {
+              "label": "Health Check Time",
+              "placeholder": "Enter health check time"
+            },
+            "sttId": {
+              "label": "Status ID",
+              "placeholder": "Enter status ID"
+            },
             "active": {
               "label": "Active"
+            },
+            "isFreeze": {
+              "label": "Is Frozen"
+            },
+            "isLogin": {
+              "label": "Is Logged In"
+            },
+            "isOutArea": {
+              "label": "Is Out of Area"
             }
           }
+        },
+        "location_information": {
+          "header": "Location Information",
+          "sections": {
+            "locLat": {
+              "label": "Latitude",
+              "error": "Latitude must be between -90 and 90"
+            },
+            "locLon": {
+              "label": "Longitude",
+              "error": "Longitude must be between -180 and 180"
+            },
+            "locAlt": {
+              "label": "Altitude"
+            },
+            "locAccuracy": {
+              "label": "Accuracy"
+            },
+            "locBearing": {
+              "label": "Bearing"
+            },
+            "locSpeed": {
+              "label": "Speed"
+            },
+            "locSatellites": {
+              "label": "Satellites"
+            },
+            "locProvider": {
+              "label": "Provider",
+              "placeholder": "Enter location provider"
+            },
+            "locGpsTime": {
+              "label": "GPS Time"
+            },
+            "locLastUpdateTime": {
+              "label": "Last Update Time"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "Cancel",
+        "reset": "Reset",
+        "save": "Save",
+        "saving": "Saving...",
+        "confirmDialog": {
+          "titleCreate": "Confirm Create Unit",
+          "titleUpdate": "Confirm Edit Unit",
+          "descriptionCreate": "Please confirm to create ",
+          "descriptionUpdate": "Please confirm to edit ",
+          "cancel": "Cancel",
+          "confirm": "Confirm"
+        },
+        "create": {
+          "success": "Unit created successfully",
+          "error": "Failed to create unit"
+        },
+        "update": {
+          "success": "Unit updated successfully",
+          "error": "Failed to update unit"
         }
       }
     }
@@ -860,7 +944,10 @@
         "savedaft_fail":"SaveDraft fail.",
         "missing_close_case_data":"Missing Close Details Data.",
         "upload_file_success":"Upload file Success.",
-        "upload_file_fail":"Upload file fail."
+        "upload_file_fail":"Upload file fail.",
+        "loading_case" : "Loading WorkOrder.",
+        "loading_case_success" : "Loading WorkOrder Successfully.",
+        "loading_case_fail" : "Loading WorkOrder Failed."
       }
     },
     "sop_card": {

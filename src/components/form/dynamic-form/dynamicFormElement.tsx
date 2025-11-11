@@ -8,7 +8,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { formConfigurations, maxGridCol } from "./constant";
 import { CSS } from '@dnd-kit/utilities';
-import { getColSpanPercentage, getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from "./dynamicFormFunction";
+import { getColSpanPercentage, getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from "./function";
 import Input from "../input/InputField";
 import RenderFormField from "./renderFormField";
 
@@ -290,7 +290,10 @@ export const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
                                     dark:border-gray-600 pt-2">
                                         <div className="flex justify-between items-center flex-wrap gap-2">
                                             <div className="flex space-x-3">
-                                                {isExpanded ? <ChevronUpIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} /> : <ChevronDownIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} />}
+                                                {isDynamicField &&
+                                                    <div>
+                                                        {isExpanded ? <ChevronUpIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} /> : <ChevronDownIcon className="w-4 h-6" onClick={() => toggleDynamicFieldExpansion(optionValue)} />}
+                                                    </div>}
                                                 <p className="text-gray-700 dark:text-white break-all">{optionValue}</p>
                                             </div>
                                             <div className="flex items-center gap-2 flex-shrink-0">

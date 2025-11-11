@@ -88,7 +88,7 @@ export default function CasesView() {
   const { t, language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState(getInitialFilters())
   const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
-  const [loadingCase, setLoadingCase] = useState<boolean>(false)
+  // const [loadingCase, setLoadingCase] = useState<boolean>(false)
   const [visibleListCount, setVisibleListCount] = useState(20);
   const listLoadMoreRef = useRef(null);
 
@@ -173,19 +173,19 @@ export default function CasesView() {
     setAdvancedFilters(clearedFilters);
     localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
-    setLoadingCase(true)
+    //setLoadingCase(true)
     await fetchCase({});
-    setLoadingCase(false)
+    //setLoadingCase(false)
     const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
     handleAdvanceFilterClose();
   };
   const handleRefreshCase = async () => {
     setIsRefreshing(true);
-    setLoadingCase(true)
+    //setLoadingCase(true)
     handleClear()
     await fetchCase({});
-    setLoadingCase(false)
+    //setLoadingCase(false)
 
     setTimeout(() => {
       setIsRefreshing(false);
@@ -244,7 +244,7 @@ export default function CasesView() {
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
       localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
-      setLoadingCase(true)
+      //setLoadingCase(true)
       await fetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
@@ -257,7 +257,7 @@ export default function CasesView() {
         countryId: localFilters.area.countryId,
         phoneNo: localFilters.phoneNumber
       });
-      setLoadingCase(false)
+      //setLoadingCase(false)
       if (localFilters.category !== "") {
         setSelectedStatus(localFilters.category);
       } else {
@@ -431,10 +431,10 @@ export default function CasesView() {
               <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
-          <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
+          <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} />
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
-          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdAt as string, language)}</span>
+          <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdDate as string, language)}</span>
           <Badge className="flex flex-col justify-center items-center text-center truncate">
             {language === "th" ?
               caseStatus.find((item) => caseItem?.statusId === item.statusId)?.th :
@@ -559,23 +559,23 @@ export default function CasesView() {
     </div>)
   }
 
-  const Loading = () => {
+  // const Loading = () => {
 
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100000">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">{t("common.loading")}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //   return (
+  //     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-100000">
+  //       <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl">
+  //         <div className="flex flex-col items-center space-y-4">
+  //           <div className="relative">
+  //             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+  //           </div>
+  //           <div className="text-center">
+  //             <div className="text-lg text-gray-700 dark:text-gray-200 font-semibold">{t("common.loading")}</div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const ListView = () => {
     const allFilteredCases = getFilteredCases()
@@ -635,7 +635,7 @@ export default function CasesView() {
                 </div>
 
                 <div className="col-span-2 flex items-center">
-                  <SLACountdownBadgeAssignment createdAt={caseItem.createdAt as string} sla={caseItem.caseSla} />
+                  <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} />
                 </div>
 
                 <div className="col-span-2 flex items-center">
@@ -672,7 +672,7 @@ export default function CasesView() {
                 <div className="col-span-1 flex items-center">
                   <div className="flex items-center space-x-1">
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {DateStringToAgoFormat(caseItem.createdAt as string, language)}
+                      {DateStringToAgoFormat(caseItem.createdDate as string, language)}
                     </span>
                   </div>
                 </div>
@@ -736,7 +736,7 @@ export default function CasesView() {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>{DateStringToAgoFormat(caseItem.createdAt as string, language)}</span>
+                    <span>{DateStringToAgoFormat(caseItem.createdDate as string, language)}</span>
                   </div>
                 </div>
               </div>
@@ -929,7 +929,7 @@ export default function CasesView() {
           {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
-      {loadingCase && <Loading />}
+      {/* {loadingCase && <Loading />} */}
       {showAdvanceFilter && <AdvanceFilter />}
     </div >
   );

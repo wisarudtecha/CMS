@@ -369,7 +369,8 @@
           "status": "",
           "other": "ยืนยัน"
         }
-      }
+      },
+      "permission_denied": "คุณไม่มีสิทธิ์ในการดำเนินการนี้"
     },
     "case_history": {
       "name": "ใบสั่งงาน",
@@ -463,11 +464,13 @@
           "sections": {
             "unitId": {
               "label": "รหัสหน่วย",
-              "placeholder": "กรอกรหัสหน่วย"
+              "placeholder": "กรอกรหัสหน่วย",
+              "required": "ต้องกรอกรหัสหน่วย"
             },
             "unitName": {
               "label": "ชื่อหน่วย",
-              "placeholder": "กรอกชื่อหน่วย"
+              "placeholder": "กรอกชื่อหน่วย",
+              "required": "ต้องกรอกชื่อหน่วย"
             },
             "unitTypeId": {
               "label": "ประเภทหน่วย",
@@ -521,10 +524,91 @@
         "status_and_health": {
           "header": "สถานะ",
           "sections": {
+            "healthChk": {
+              "label": "ตรวจสอบสถานะระบบ",
+              "placeholder": "กรอกการตรวจสอบสถานะระบบ"
+            },
+            "healthChkTime": {
+              "label": "เวลาตรวจสอบสถานะระบบ",
+              "placeholder": "กรอกเวลาตรวจสอบสถานะระบบ"
+            },
+            "sttId": {
+              "label": "สถานะ",
+              "placeholder": "กรอกสถานะ"
+            },
             "active": {
               "label": "ใช้งานอยู่"
+            },
+            "isFreeze": {
+              "label": "ไม่ตอบสนอง"
+            },
+            "isLogin": {
+              "label": "เข้าสู่ระบบแล้ว"
+            },
+            "isOutArea": {
+              "label": "อยู่นอกพื้นที่"
             }
           }
+        },
+        "location_information": {
+          "header": "ข้อมูลตำแหน่ง",
+          "sections": {
+            "locLat": {
+              "label": "ละติจูด",
+              "error": "ละติจูดต้องอยู่ระหว่าง -90 ถึง 90"
+            },
+            "locLon": {
+              "label": "ลองจิจูด",
+              "error": "ลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180"
+            },
+            "locAlt": {
+              "label": "ระดับความสูง"
+            },
+            "locAccuracy": {
+              "label": "ความแม่นยำ"
+            },
+            "locBearing": {
+              "label": "Bearing"
+            },
+            "locSpeed": {
+              "label": "ความเร็ว"
+            },
+            "locSatellites": {
+              "label": "ดาวเทียม"
+            },
+            "locProvider": {
+              "label": "ผู้ให้บริการ",
+              "placeholder": "ระบุผู้ให้บริการตำแหน่ง"
+            },
+            "locGpsTime": {
+              "label": "เวลา GPS"
+            },
+            "locLastUpdateTime": {
+              "label": "เวลาอัปเดตล่าสุด"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "ยกเลิก",
+        "reset": "รีเซ็ต",
+        "save": "บันทึก",
+        "saving": "กำลังบันทึก...",
+        "confirmDialog": {
+          "titleCreate": "ยืนยันการสร้างหน่วย",
+          "titleUpdate": "ยืนยันการแก้ไขหน่วย",
+          "descriptionCreate": "กรุณายืนยันการสร้าง",
+          "descriptionUpdate": "กรุณายืนยันการแก้ไข",
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน"
+        },
+        "create": {
+          "success": "สร้างหน่วยสำเร็จ",
+          "error": "สร้างหน่วยไม่สำเร็จ"
+        },
+        "update": {
+          "success": "อัปเดตหน่วยสำเร็จ",
+          "error": "อัปเดตหน่วยไม่สำเร็จ"
         }
       }
     }
@@ -861,7 +945,10 @@
         "savedaft_fail": "สร้างแบบร่างไม่สำเร็จ",
         "missing_close_case_data": "กรุณาใส่ข้อมูลให้ครบ",
         "upload_file_success": "อัพโหลดไฟล์สำเร็จ",
-        "upload_file_fail": "อัพโหลดไฟล์ไม่สำเร็จ"
+        "upload_file_fail": "อัพโหลดไฟล์ไม่สำเร็จ",
+        "loading_case" : "กำลังโหลดใบงาน",
+        "loading_case_success" : "โหลดใบงานสำเร็จ",
+        "loading_case_fail" : "โหลดใบงานไม่ สำเร็จ"
       }
     },
     "sop_card": {

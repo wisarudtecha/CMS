@@ -18,7 +18,7 @@ export const unitApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     createUnits: builder.mutation<ApiResponse<Unit>, UnitUpdateData>({
       query: data => ({
-        url: "/mdm/units",
+        url: "/mdm/units/add",
         method: "POST",
         body: data,
       }),

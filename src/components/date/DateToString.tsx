@@ -20,18 +20,18 @@ type SupportedLanguage = keyof typeof monthNames;
 export default function DateStringToDateFormat(
     dateString: string,
     simplifiedMonth: boolean = false,
-    language:string="en"
+    language: string = "en"
 ): string {
     const date = new Date(dateString);
-    
-    
+
+
     // Validate if date is valid
     if (isNaN(date.getTime())) {
         console.warn("invail date format")
     }
 
     // Ensure language is supported, fallback to 'en' if not
-    const supportedLanguage: SupportedLanguage = 
+    const supportedLanguage: SupportedLanguage =
         language in monthNames ? language as SupportedLanguage : 'en';
 
     // Select the correct month name array based on language and simplifiedMonth flag
@@ -58,15 +58,17 @@ export default function DateStringToDateFormat(
 
 
 export function DateStringToAgoFormat(dateString: string, language: string) {
-    const date = new Date(dateString);
-    const shiftedDate = new Date(date.getTime());
-
-    const locale = language === 'th' ? th : undefined;
-
-    return formatDistanceToNow(shiftedDate, { 
-        addSuffix: true,
-        locale: locale,
-    });
+    try {
+        const date = new Date(dateString);
+        const shiftedDate = new Date(date.getTime());
+        const locale = language === 'th' ? th : undefined;
+        return formatDistanceToNow(shiftedDate, {
+            addSuffix: true,
+            locale: locale,
+        })
+    } catch (error) {
+        return "Invail Date";
+    }
 }
 
 export function TodayDate() {
@@ -83,27 +85,27 @@ export function TodayDate() {
 }
 
 export function TodayLocalDate() {
-  const now = new Date();
-  const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  };
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    };
 
-  const formatter = new Intl.DateTimeFormat('en-US', options);
-  const parts = formatter.formatToParts(now);
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const parts = formatter.formatToParts(now);
 
-  const year = parts.find(part => part.type === 'year')?.value ?? '';
-  const month = parts.find(part => part.type === 'month')?.value ?? '';
-  const day = parts.find(part => part.type === 'day')?.value ?? '';
-  const hour = parts.find(part => part.type === 'hour')?.value ?? '';
-  const minute = parts.find(part => part.type === 'minute')?.value ?? '';
+    const year = parts.find(part => part.type === 'year')?.value ?? '';
+    const month = parts.find(part => part.type === 'month')?.value ?? '';
+    const day = parts.find(part => part.type === 'day')?.value ?? '';
+    const hour = parts.find(part => part.type === 'hour')?.value ?? '';
+    const minute = parts.find(part => part.type === 'minute')?.value ?? '';
 
-  return `${year}-${month}-${day}T${hour}:${minute}`;
+    return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
 
@@ -148,6 +150,6 @@ export const getTodayDate = (language: string): Date => {
 };
 
 export function toDateInputString(date: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }

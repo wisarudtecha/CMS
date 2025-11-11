@@ -114,6 +114,18 @@ export const formApi = baseApi.injectEndpoints({
             providesTags: ["Form and Workflow"],
         }),
 
+        publishForm: builder.mutation<ApiResponse<null>, { //
+            formId: string;
+            publish: boolean;
+        }>({
+            query: (params) => ({ //
+                url: `/forms/publish`,
+                method: "PATCH",
+                body: params,
+            }),
+            invalidatesTags: ["Form and Workflow"],
+        }),
+
         // getTicket: builder.query<FormField, string>({
         //   query: (id) => `/tickets/${id}`,
         //   providesTags: (_result, _error, id) => [{ type: "Ticket", id }],
@@ -307,5 +319,6 @@ export const {
     useGetTypeSubTypeQuery,
     useLazyGetTypeSubTypeQuery,
     useDeleteFormMutation,
+    usePublishFormMutation,
 } = formApi;
 

@@ -1,4 +1,4 @@
-import { FormFieldWithChildren, FormRule, IndividualFormFieldWithChildren } from "@/components/interface/FormField";
+import { FormFieldWithChildren, formMetaData, FormRule, IndividualFormFieldWithChildren } from "@/components/interface/FormField";
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
@@ -7,7 +7,10 @@ import { getCountries } from "react-phone-number-input";
 import { maxGridCol, formConfigurations } from "./constant";
 import Input from "../input/InputField";
 import { SortableFieldEditItem } from "./dynamicFormElement";
-import { createDynamicFormField, getResponsiveColSpanClass, getResponsiveGridClass, removeFieldRecursively, updateFieldRecursively } from "./dynamicFormFunction";
+
+import { ConfirmationModal } from "@/components/case/modal/ConfirmationModal";
+import { usePublishFormMutation } from "@/store/api/formApi";
+import { updateFieldRecursively, removeFieldRecursively, createDynamicFormField, getResponsiveGridClass, getResponsiveColSpanClass } from "./function";
 
 
 interface FormEditProps {
@@ -16,6 +19,7 @@ interface FormEditProps {
     editFormData: boolean;
     setCurrentForm: React.Dispatch<React.SetStateAction<FormFieldWithChildren>>;
     showValidationErrors: boolean,
+    formMetaData?: formMetaData,
 }
 
 export const FormEdit: React.FC<FormEditProps> = ({
@@ -24,6 +28,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     editFormData,
     setCurrentForm,
     showValidationErrors,
+    formMetaData
 }) => {
     const [modalRules, setModalRules] = useState<FormRule>({});
     const [countrySearch, setCountrySearch] = useState('');
@@ -31,6 +36,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     const [hiddenCardIds, setHiddenCardIds] = useState<Set<string>>(new Set());
     const [showSettingModal, setShowSettingModal] = useState(false);
     const [expandedDynamicFields, setExpandedDynamicFields] = useState<Record<string, boolean>>({});
+    const [showConfirmPubish, setShowConfirmPubish] = useState(false);
     const commonImageTypes = [
         { name: 'JPEG', mime: 'image/jpeg' },
         { name: 'PNG', mime: 'image/png' },
@@ -40,11 +46,18 @@ export const FormEdit: React.FC<FormEditProps> = ({
         { name: 'BMP', mime: 'image/bmp' },
     ];
     const [currentEditingField, setCurrentEditingField] = useState<IndividualFormFieldWithChildren | null>(null);
+    const [pusblishForm] = usePublishFormMutation()
+    const [formMeta, setFormMeta] = useState<formMetaData | undefined>(formMetaData ?? undefined)
+    
     useEffect(() => {
         if (currentEditingField) {
             setModalRules(currentEditingField.formRule || {});
         }
     }, [currentEditingField]);
+
+    useEffect(() => {
+        setFormMeta(formMetaData)
+    }, [formMetaData]);
 
     if (!currentEditingField && showSettingModal) return null;
 
@@ -126,9 +139,9 @@ export const FormEdit: React.FC<FormEditProps> = ({
         setShowSettingModal(true);
     }
 
-    const handleFormIdChange = useCallback((newId: string) => {
-        setCurrentForm(prevForm => ({ ...prevForm, formId: newId }));
-    }, []);
+    // const handleFormIdChange = useCallback((newId: string) => {
+    //     setCurrentForm(prevForm => ({ ...prevForm, formId: newId }));
+    // }, []);
 
     const handleFormNameChange = useCallback((newName: string) => {
         setCurrentForm(prevForm => ({ ...prevForm, formName: newName }));
@@ -495,16 +508,42 @@ export const FormEdit: React.FC<FormEditProps> = ({
     };
 
     return (
-        <>
+        <>  <ConfirmationModal
+            title=""
+            description="Confirm Publish?"
+            onConfirm={() => {
+                pusblishForm({ formId: currentForm.formId, publish: true });
+                setFormMeta((prev) => (prev ? {
+                    ...(prev),
+                    publish: true,
+                } : undefined));
+                setShowConfirmPubish(false);
+            }}
+            isOpen={showConfirmPubish}
+            onClose={() => setShowConfirmPubish(false)}
+        />
+
             <div className="mb-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
                 <h2 className="text-lg font-bold mb-4">Form Settings</h2>
-                <div className="space-y-4">
-                    <label className="block text-gray-600 text-sm font-bold dark:text-gray-400">Form Name:
+                <div className=" relative space-y-4">
+                    <label className={`block text-gray-600 text-sm font-bold dark:text-gray-400`}>Form Name:
+
+                    </label>
+                    <div className={`${formMeta && "grid grid-cols-[1fr_auto_auto] space-x-3"} text-gray-600 text-sm font-bold dark:text-gray-400`}>
                         <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter form name" disabled={!editFormData} />
-                    </label>
-                    <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Form ID:
+                        {formMeta?.versions && <div className=" flex items-center">
+                            Version :
+                            <label className={` items-center justify-center`}>{formMetaData?.versions}</label>
+                        </div>
+                        }
+                        {!formMeta?.publish && formMeta?.publish !== undefined && <div className="flex justify-end">
+                            <Button onClick={() => { setShowConfirmPubish(true) }}>Publish</Button>
+                        </div>}
+                    </div>
+
+                    {/* <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Form ID:
                         <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter unique form ID" disabled={true} />
-                    </label>
+                    </label> */}
                     <div className="flex flex-wrap items-center gap-2">
                         <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Grid Columns:</label>
                         <Input id={`overallColSpan-input`} type="number" min="1" max={maxGridCol.toString()} value={currentForm.formColSpan} onChange={handleOverallFormColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-gray-800 dark:text-gray-400 w-20" disabled={!editFormData} />

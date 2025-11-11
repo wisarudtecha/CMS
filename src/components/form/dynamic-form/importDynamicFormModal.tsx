@@ -6,7 +6,7 @@ import TextArea from "../input/TextArea";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { useToast } from "@/hooks/useToast";
 import { FileIcon } from "lucide-react";
-import { isFormFieldWithChildren } from "./dynamicFormFunction";
+import { isFormFieldWithChildren } from "./function";
 
 
 interface importDynamicFormModal {
@@ -29,7 +29,11 @@ export const ImportDynamicFormModal: React.FC<importDynamicFormModal> = ({
         try {
             const parsedJson = JSON.parse(importJsonText);
             if (isFormFieldWithChildren(parsedJson)) {
-                setCurrentForm(parsedJson);
+                setCurrentForm((prev) => ({
+                    ...parsedJson,
+                    formName: prev.formName,
+                }));
+
                 setImport(false);
             }
             addToast("error", "Invail Import Data.")

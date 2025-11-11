@@ -4,7 +4,7 @@ import type { Toast } from "@/types/crud";
 
 export interface UseToastResult {
   toasts: Toast[];
-  addToast: (type: Toast["type"], message: string, duration?: number) => void;
+  addToast: (type: Toast["type"], message: string, duration?: number , isI18N?: boolean) => void;
   removeToast: (id: string) => void;
   clearToasts: () => void;
 }
@@ -15,10 +15,11 @@ export const useToast = (): UseToastResult => {
   const addToast = (
     type: Toast["type"], 
     message: string, 
-    duration: number = 4000
+    duration: number = 4000,
+    isI18N : boolean = false
   ) => {
     const id = Date.now().toString();
-    const newToast: Toast = { id, type, message, duration };
+    const newToast: Toast = { id, type, message, duration ,isI18N};
     
     setToasts(prev => [...prev, newToast]);
     

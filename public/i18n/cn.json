@@ -365,7 +365,8 @@
           "status": "",
           "other": "确认"
         }
-      }
+      },
+      "permission_denied": "您没有执行此操作的权限。"
     },
     "case_history": {
       "name": "工作订单",
@@ -459,11 +460,13 @@
           "sections": {
             "unitId": {
               "label": "单元 ID",
-              "placeholder": "输入单元 ID"
+              "placeholder": "输入单元 ID",
+              "required": "单元 ID 为必填项"
             },
             "unitName": {
               "label": "单元名称",
-              "placeholder": "输入单元名称"
+              "placeholder": "输入单元名称",
+              "required": "单元名称为必填项"
             },
             "unitTypeId": {
               "label": "单元类型",
@@ -515,12 +518,93 @@
           }
         },
         "status_and_health": {
-          "header": "状态",
+          "header": "状态和健康状况",
           "sections": {
+            "healthChk": {
+              "label": "健康检查",
+              "placeholder": "输入健康检查状态"
+            },
+            "healthChkTime": {
+              "label": "健康检查时间",
+              "placeholder": "输入健康检查时间"
+            },
+            "sttId": {
+              "label": "状态 ID",
+              "placeholder": "输入状态 ID"
+            },
             "active": {
-              "label": "是否处于活动状态"
+              "label": "已激活"
+            },
+            "isFreeze": {
+              "label": "已冻结"
+            },
+            "isLogin": {
+              "label": "已登录"
+            },
+            "isOutArea": {
+              "label": "超出区域"
             }
           }
+        },
+        "location_information": {
+          "header": "位置信息",
+          "sections": {
+            "locLat": {
+              "label": "纬度",
+              "error": "纬度必须介于 -90 和 90 之间"
+            },
+            "locLon": {
+              "label": "经度",
+              "error": "经度必须介于 -180 和 180 之间"
+            },
+            "locAlt": {
+              "label": "海拔"
+            },
+            "locAccuracy": {
+              "label": "精度"
+            },
+            "locBearing": {
+              "label": "方位角"
+            },
+            "locSpeed": {
+              "label": "速度"
+            },
+            "locSatellites": {
+              "label": "卫星"
+            },
+            "locProvider": {
+              "label": "提供商",
+              "placeholder": "输入位置提供商"
+            },
+            "locGpsTime": {
+              "label": "GPS时间"
+            },
+            "locLastUpdateTime": {
+              "label": "上次更新时间"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "取消",
+        "reset": "重置",
+        "save": "保存",
+        "saving": "正在保存...",
+        "confirmDialog": {
+          "titleCreate": "确认创建单元",
+          "titleUpdate": "确认编辑单元",
+          "descriptionCreate": "请确认创建",
+          "descriptionUpdate": "请确认编辑",
+          "cancel": "取消",
+          "confirm": "确认"
+        },
+        "create": {
+          "success": "单元创建成功",
+          "error": "单元创建失败"
+        },
+        "update": {
+          "success": "单元更新成功",
+          "error": "单元更新失败"
         }
       }
     }

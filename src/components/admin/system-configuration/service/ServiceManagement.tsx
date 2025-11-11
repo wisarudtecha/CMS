@@ -848,7 +848,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             <CustomizableSelect
               options={propertiesOptions}
               value={Array.isArray(unitPropLists) ? unitPropLists : []}
-              onChange={value => setUnitPropLists(value)}
+              onChange={value => setUnitPropLists(value as string[])}
               placeholder="Select Properties"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.unitPropLists}</span>
@@ -860,7 +860,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             <CustomizableSelect
               options={skillsOptions}
               value={Array.isArray(userSkillList) ? userSkillList : []}
-              onChange={value => setUserSkillList(value)}
+              onChange={value => setUserSkillList(value as string[])}
               placeholder="Select Skills"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.userSkillList}</span>

@@ -319,6 +319,7 @@ export const LoginForm: React.FC = () => {
                         placeholder={t("auth.signin.organization.placeholder")}
                         disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
                         required
+                        suggestions={["BMA", "SKY-AI"]}
                       />
                     </div>
                     {validationErrors.organization && (
