@@ -2,9 +2,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UnitFormData } from "@/types/unit";
-// import Checkbox from "@/components/common/Checkbox";
-// import FormField from "@/components/common/FormField";
-// import Input from "@/components/common/Input";
 import Label from "@/components/form/Label";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";

@@ -72,41 +72,15 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const { t } = useTranslation();
   const [formMeta, setFormMeta] = useState<formMetaData | undefined>(
     initialForm && "versions" in initialForm ?
-      { versions: initialForm.versions, publish: initialForm.publish } : undefined);
+      { currentVersions: initialForm.versions, publish: initialForm.publish, versionsList: initialForm?.versionsList || [] } : undefined);
 
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
-    initialForm ?
-      {
-        ...initialForm,
-        formFieldJson: initialForm.formFieldJson?.map(field => {
-          let updatedField: IndividualFormFieldWithChildren = { ...field as IndividualFormFieldWithChildren };
-
-          if (updatedField.type === "InputGroup" && Array.isArray(updatedField.value)) {
-            updatedField.value = updatedField.value as IndividualFormFieldWithChildren[];
-          } else if (updatedField.type === "dynamicField") {
-            updatedField.value = typeof updatedField.value === 'string' ? updatedField.value : "";
-            updatedField.options = updatedField.options?.map(option => ({
-              ...option,
-              form: Array.isArray(option.form) ? option.form as IndividualFormFieldWithChildren[] : []
-            }));
-          }
-
-          if (updatedField.type === "InputGroup" && updatedField.GroupColSpan === undefined) {
-            updatedField.GroupColSpan = 1;
-          }
-          if (updatedField.type === "dynamicField" && updatedField.DynamicFieldColSpan === undefined) {
-            updatedField.DynamicFieldColSpan = 1;
-          }
-
-          return updatedField;
-        }) ?? []
-      } :
-      {
-        formId: uuidv4(),
-        formName: "New Dynamic Form",
-        formColSpan: 1,
-        formFieldJson: [],
-      }
+    {
+      formId: uuidv4(),
+      formName: "New Dynamic Form",
+      formColSpan: 1,
+      formFieldJson: [],
+    }
   );
 
   const Saving = () => {
@@ -309,7 +283,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       // If form is newly created, store formId and metadata
       if (!initialForm && response?.data) {
         setCurrentForm((prev) => ({ ...prev, formId: response?.data?.formId }));
-        setFormMeta({ versions: response?.data?.version, publish: false });
+        setFormMeta((prev) => ({ ...prev, currentVersions: response?.data?.version, publish: false, versionsList: [...(prev?.versionsList ?? []), response?.data?.version].sort((a, b) => a - b) }));
       }
 
       if (response.msg === "Success") {
@@ -552,11 +526,16 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
               formMetaData={formMeta}
             />
             <ImportDynamicFormModal isImport={isImport} setImport={setImport} setCurrentForm={setCurrentForm} />
-            <ExportDynamicFormModal isOpen={isExport} onClose={() => { setExport(false) }} currentForm={currentForm} />
+            <ExportDynamicFormModal isOpen={isExport} onClose={() => { setExport(false) }} currentForm={{
+              formColSpan: currentForm.formColSpan,
+              formFieldJson: currentForm.formFieldJson,
+              formId: currentForm.formId,
+              formName: currentForm.formName
+            }} />
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
-                <Button onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />Import</Button>
-                <Button onClick={() => setExport(true)} disabled={!editFormData}><Download className="w-4 h-4 mr-2" />Export</Button>
+                <Button variant="outline-no-transparent" onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />Import</Button>
+                <Button variant="outline-no-transparent" onClick={() => setExport(true)} disabled={!editFormData}><Download className="w-4 h-4 mr-2" />Export</Button>
                 <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
               </div>
             </div>
@@ -569,10 +548,10 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             {FormPreview()}
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
-                <Button onClick={() => setIsPreview(false)} disabled={!editFormData}>
+                <Button variant="outline-no-transparent" onClick={() => setIsPreview(false)} disabled={!editFormData}>
                   Edit
                 </Button>
-                <Button onClick={saveSchema} disabled={!editFormData} variant="success">
+                <Button onClick={saveSchema} disabled={!editFormData}>
                   {initialForm ? "Save Change" : "Save Form"}
                 </Button>
                 <div className="flex gap-2">

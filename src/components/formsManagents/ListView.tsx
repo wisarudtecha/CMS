@@ -1,5 +1,5 @@
 // /src/components/workflow/list/FormTableView.tsx
-import React from 'react';
+import React, { SetStateAction } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
     ChevronDownIcon,
@@ -17,6 +17,7 @@ interface SortConfig {
 
 interface FormTableViewProps {
     forms: FormManager[];
+    setForms: React.Dispatch<SetStateAction<FormManager[]>>
     handleSort: (key: keyof FormManager) => void;
     sortConfig: SortConfig;
     formatDate: (dateString: string) => string;
@@ -31,6 +32,7 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
     sortConfig,
     formatDate,
     onSetStatusInactive,
+    setForms,
     handleOnEdit,
     handleOnView,
 }) => {
@@ -120,6 +122,7 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                                             <ButtonAction
                                                 form={form}
                                                 type='list'
+                                                setForms={setForms}
                                                 onSetStatusChange={onSetStatusInactive}
                                                 handleOnEdit={() => handleOnEdit(form)}
                                                 handleOnView={() => handleOnView(form)} />

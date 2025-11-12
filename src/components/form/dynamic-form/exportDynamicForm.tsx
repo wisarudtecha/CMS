@@ -1,10 +1,11 @@
-import { FormFieldWithChildren } from "@/components/interface/FormField";
 import { Modal } from "@/components/ui/modal";
 import TextArea from "../input/TextArea";
+import { FormField } from "@/components/interface/FormField";
+
 
 
 interface exportDynamicFormModal {
-    currentForm: FormFieldWithChildren;
+    currentForm: FormField
     isOpen: boolean,
     onClose: () => void;
 }

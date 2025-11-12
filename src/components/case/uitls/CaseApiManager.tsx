@@ -130,8 +130,7 @@ export const fetchSubTypeForm = async (subType: string) => {
   const SubTypeForm = await store.dispatch(
     formApi.endpoints.postSubTypeForm.initiate(subType)
   );
-  if (SubTypeForm.data?.data)
-    localStorage.setItem("subTypeForm-" + subType, JSON.stringify(SubTypeForm.data?.data));
+ return SubTypeForm
 };
 
 export const fetchSubTypeAllForm = async () => {
@@ -145,8 +144,7 @@ export const fetchSubTypeAllForm = async () => {
         const SubTypeForm = await store.dispatch(
           formApi.endpoints.postSubTypeForm.initiate(item.sTypeId)
         );
-        if (SubTypeForm.data?.data)
-          localStorage.setItem("subTypeForm-" + item.sTypeId, JSON.stringify(SubTypeForm.data?.data));
+       return SubTypeForm
       })
     );
   }

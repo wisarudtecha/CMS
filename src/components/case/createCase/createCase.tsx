@@ -84,7 +84,7 @@ export default function CaseCreation() {
     const [postUploadFile] = usePostUploadFileMutationMutation();
     const [originalFiles, setOriginalFiles] = useState<FileItem[]>([]);
     const [delFileApi] = useDeleteFileMutationMutation();
-
+    
     const uploadFileToServer = async (files: File[], caseId?: string): Promise<UploadFileRes[]> => {
         const results: UploadFileRes[] = [];
 
@@ -211,6 +211,7 @@ const saveCase = useCallback(
             countryId: caseState?.area?.countryId || "",
             createdDate: todayDate,
             distId: caseState?.area?.distId || "",
+            deviceId: caseState?.iotDevice,
             extReceive: "",
             phoneNoHide: true,
             phoneNo: caseState?.customerData?.mobileNo || "",
@@ -433,15 +434,15 @@ const saveCase = useCallback(
 
             <div className="flex justify-between items-center m-3 w-full">
                 <div>
-                    <Button onClick={handleExampleData} size="sm">
+                    <Button variant="outline-no-transparent" onClick={handleExampleData} size="sm">
                         <FileText className="h-4 w-4" />
                     </Button>
                 </div>
                 <div className="flex px-6">
-                    <Button onClick={handleSaveDraft} className="mx-3">
+                    <Button variant="outline-no-transparent" onClick={handleSaveDraft} className="mx-3">
                         {t("case.display.save_as_draft")}
                     </Button>
-                    <Button variant="success" onClick={handlePreviewShow}>
+                    <Button onClick={handlePreviewShow}>
                         {t("case.display.submit")}
                     </Button>
                 </div>

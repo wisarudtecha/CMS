@@ -1,8 +1,40 @@
-import React from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import Button from '@/components/ui/button/Button';
-import { FormField, FormManager } from '../interface/FormField';
-import Switch from '../form/switch/Switch';
+import { FormField, FormLinkWf, FormManager } from '../interface/FormField';
+import { ConfirmationModal } from '../case/modal/ConfirmationModal';
+import { useLazyGetFormLinkWfQuery, useLazyPublishFormQuery } from '@/store/api/formApi';
+import { ToastContainer } from '../crud/ToastContainer';
+import { useToast } from '@/hooks';
+import Badge from '../ui/badge/Badge';
+import { useTranslation } from '@/hooks/useTranslation';
+// import { TranslationKey } from '@/types/i18n';
 
+
+const ListOfWf: React.FC<{ formLinkWf: FormLinkWf[] }> = ({ formLinkWf }) => {
+  return <div> กรุณาเอา form ออกจาก workflow ด่างล่าง เพื่อทำการ Unpublish
+    <div>{formLinkWf.length > 0 && (
+      <div className=" rounded-lg ">
+        <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
+          {formLinkWf.map((item) => (
+            <Badge key={item.wfId}>
+              {item.title}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    )}</div>
+  </div>
+}
+
+const LoadingSpinner: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center py-4">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <span className="ml-2">{t("common.loading")}...</span>
+    </div>
+  );
+}
 
 interface TableRowActionsProps {
   form: FormManager;
@@ -11,6 +43,7 @@ interface TableRowActionsProps {
   handleOnDelete?: (form: FormField) => void;
   type?: "button" | "list";
   onSetStatusChange: (formId: string, formName: string, newStatus: boolean) => void;
+  setForms: React.Dispatch<SetStateAction<FormManager[]>>
 }
 
 const ButtonAction: React.FC<TableRowActionsProps> = ({
@@ -18,50 +51,145 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
   type = "list",
   handleOnEdit,
   handleOnView,
-  onSetStatusChange,
+  setForms
 }) => {
+  const [showPubModal, setShowPubModal] = useState<boolean>(false);
+  const [isLoadingWfData, setIsLoadingWfData] = useState<boolean>(false);
+  const style = type === "list" ? "outline" : "outline";
+  const [pusblishForm] = useLazyPublishFormQuery({})
+  const [getFormLinkWf] = useLazyGetFormLinkWfQuery()
+  const { toasts, addToast, removeToast } = useToast();
+  const [SelectFormLinkWf, setSelectFormLinkWf] = useState<FormLinkWf[] | undefined>(undefined)
+  // const { t } = useTranslation();
+  const handleOnPubUnPub = async (form: FormManager) => {
+    try {
+      const response = await pusblishForm({ formId: form.formId, publish: !form.publish })
 
-  const style = type === "list" ? "ghost" : "outline";
+      if (response?.data?.msg === "Success") {
+        addToast(
+          'success',
+          `${!form.publish ? "Publish" : "Unpublish"} Complete.`
+        );
+        setForms((prev) =>
+          prev.map((f) =>
+            f.formId === form.formId ? { ...f, publish: !form.publish } : f
+          )
+        );
+        setShowPubModal(false);
+        return
+      }
+    } catch (error: any) {
+      addToast(
+        'error',
+        `${!form.publish ? "Publish" : "Unpublish"} Failed.`
+      );
+    }
+  }
 
-  // Handles toggling the active status of the form
-  const handleToggleStatus = () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingWfData(true);
+      try {
+        const response = await getFormLinkWf({ formId: form.formId }).unwrap();
+        if (response?.data) {
+          setSelectFormLinkWf(response.data);
+        }
+      } catch (error: any) {
+        if (error.data?.msg === "No data found") {
+          setSelectFormLinkWf([]);
+          return;
+        }
+        addToast('error', `${error.data?.msg || 'Failed to fetch workflow data'}`);
+      } finally {
+        setIsLoadingWfData(false);
+      }
+    };
 
-    onSetStatusChange(form.formId, form.formName, !form.active);
+    if (showPubModal && form.publish) {
+      fetchData();
+    }
+  }, [showPubModal, form.publish, form.formId]);
+
+  const getModalDescription = () => {
+    if (!form?.publish) {
+      return "คุณต้องการที่จะเปิดใช้งานฟอร์มนี้ใช่ไหม";
+    }
+
+    if (isLoadingWfData) {
+      return <LoadingSpinner />;
+    }
+
+    if (SelectFormLinkWf?.length) {
+      return <ListOfWf formLinkWf={SelectFormLinkWf} />;
+    }
+
+    return "คุณต้องการที่จะปิดใช้งานฟอร์มนี้ใช่ไหม";
+  };
+
+  const canConfirm = () => {
+    // For publish action, always allow
+    if (!form.publish) return true;
+
+    // For unpublish, only allow if not loading and no workflows linked
+    if (isLoadingWfData) return false;
+    if (SelectFormLinkWf?.length) return false;
+
+    return true;
   };
 
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className={`flex items-center ${type!=="list"?"justify-between":"justify-center"} w-full`}>
       <div className="flex items-center gap-2">
         <Button
           onClick={() => handleOnView?.()}
-          variant={`${style}-primary`}
+          variant={`${style}`}
           title="View"
         >
           View
         </Button>
         <Button
           onClick={() => handleOnEdit?.(form)}
-          variant={`${style}-warning`}
+          variant={`${style}`}
           title="Edit"
         >
           Edit
         </Button>
-        {/* <Button
-          onClick={() => handleOnDelete?.(form)}
-          variant={`${style}-error`}
-          title="Edit"
+
+        {type === "list" && <Button
+          onClick={() => { setShowPubModal(true) }}
+          variant={`${!form.publish ? "success" : "error"}`}
+          className="min-w-[110px]"
         >
-          Delete
-        </Button> */}
+          {!form.publish ? "Publish" : "UnPublish"}
+        </Button>
+        }
       </div>
-      <Switch
-        label="Active"
-        defaultChecked={form.active}
-        onChange={handleToggleStatus}
+      {type != "list" && <Button
+        onClick={() => { setShowPubModal(true) }}
+        variant={`${!form.publish ? "success" : "error"}`}
+        className="min-w-[110px]"
+      >
+        {!form.publish ? "Publish" : "UnPublish"}
+      </Button>
+      }
+
+
+      <ConfirmationModal
+        isOpen={showPubModal}
+        onClose={() => {
+          setShowPubModal(false);
+          setSelectFormLinkWf(undefined);
+          setIsLoadingWfData(false);
+        }}
+        onConfirm={canConfirm() ? () => handleOnPubUnPub(form) : undefined}
+        title={!form?.publish ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+        description={getModalDescription()}
+        confirmButtonVariant={!form?.publish ? "success" : "error"}
       />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
-
 };
 
 export default ButtonAction;

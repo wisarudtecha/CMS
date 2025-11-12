@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/types";
 import { baseApi } from "./baseApi";
-import { FormField, FormManager, IndividualFormField } from "@/components/interface/FormField";
+import { FormField, FormLinkWf, FormManager, IndividualFormField } from "@/components/interface/FormField";
 
 export interface UpdataStatusResponse {
     status: string;
@@ -21,6 +21,36 @@ export const formApi = baseApi.injectEndpoints({
         getAllForms: builder.query<ApiResponse<FormManager[]>, null>({
             query: () => "/forms/getAllForms",
             providesTags: ["Form and Workflow"],
+            keepUnusedDataFor: 0,
+        }),
+
+        getFormLinkWfMutation: builder.mutation<ApiResponse<FormLinkWf[]>, { formId: string }>({
+            query: (params) => ({
+                url: "/forms/GetFormlinkWf",
+                params:params
+            }),
+
+            invalidatesTags: ["Form and Workflow"],
+        }),
+
+        getFormLinkWf: builder.query<ApiResponse<FormLinkWf[]>, { formId: string }>({
+            query: (params) => ({
+                url: "/forms/GetFormlinkWf",
+                params:params
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
+        getFormByFormId: builder.mutation<ApiResponse<FormManager>, { //
+            version: string;
+            formId: string;
+        }>({
+            query: ({ formId, version }) => ({ //
+                url: "/forms",
+                method: "GET",
+                params: { formId, version }
+            }),
+            invalidatesTags: ["Form and Workflow"],
         }),
 
         updateStatus: builder.mutation<ApiResponse<UpdataStatusResponse>, { //
@@ -114,7 +144,19 @@ export const formApi = baseApi.injectEndpoints({
             providesTags: ["Form and Workflow"],
         }),
 
-        publishForm: builder.mutation<ApiResponse<null>, { //
+        publishForm: builder.query<ApiResponse<null>, { //
+            formId: string;
+            publish: boolean;
+        }>({
+            query: (params) => ({ //
+                url: `/forms/publish`,
+                method: "PATCH",
+                body: params,
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
+        publishFormMutation: builder.mutation<ApiResponse<null>, { //
             formId: string;
             publish: boolean;
         }>({
@@ -319,6 +361,14 @@ export const {
     useGetTypeSubTypeQuery,
     useLazyGetTypeSubTypeQuery,
     useDeleteFormMutation,
-    usePublishFormMutation,
+    useLazyPublishFormQuery,
+    usePrefetch,
+    usePublishFormMutationMutation,
+    usePublishFormQuery,
+    useGetFormByFormIdMutation,
+    useGetFormLinkWfMutationMutation,
+    useGetFormLinkWfQuery,
+    useLazyGetAllFormsQuery,
+    useLazyGetFormLinkWfQuery
 } = formApi;
 

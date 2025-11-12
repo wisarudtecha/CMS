@@ -320,7 +320,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
         <div className="flex justify-between items-center m-3">
             {/* Left side: Example button */}
             <div>
-                <Button onClick={handleExampleData} size="sm">
+                <Button onClick={handleExampleData} variant="outline-no-transparent" size="sm">
                     <FileText className=" h-4 w-4" />
                 </Button>
             </div>
@@ -328,10 +328,10 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
             {/* Right side: Action Buttons */}
 
             <div className="flex">
-                <Button onClick={handleSaveDrafts} className="mx-3">
+                <Button variant="outline-no-transparent" onClick={handleSaveDrafts} className="mx-3">
                     {t("case.display.save_as_draft")}
                 </Button>
-                <Button variant="success" onClick={handlePreviewShow}>
+                <Button  onClick={handlePreviewShow}>
                     {t("case.display.submit")}
                 </Button>
             </div>
@@ -358,7 +358,6 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
     }, [onBack, navigate]);
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
-    const [formDataUpdated, setFormDataUpdated] = useState(0);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(() => {
         if (!initialCaseData) {
             return {
@@ -374,11 +373,12 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                 customerData: {} as Custommer,
                 attachFile: [] as File[],
                 attachFileResult: [] as File[],
-                source:{id:"06",name:"OTHER"},
+                source: { id: "06", name: "OTHER" },
             } as CaseDetails;
         }
         return undefined;
     });
+    const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>();
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     // const [isValueFill, setIsValueFill] = useState({ getType: false, dynamicForm: false });
     const [showPreviewData, setShowPreviewData] = useState(false);
@@ -426,31 +426,15 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         const fetchFormData = async () => {
             if (!caseState?.caseType?.sTypeId) return;
 
-            // Check if data already exists in localStorage
-            const existingData = localStorage.getItem("subTypeForm-" + caseState.caseType.sTypeId);
-            if (existingData && existingData !== "undefined") {
-                return; // Data already exists, no need to fetch
-            }
 
-            try {
-                const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
-                if (result) {
-                    localStorage.setItem(
-                        "subTypeForm-" + caseState.caseType.sTypeId,
-                        JSON.stringify(result.data)
-                    );
-                    // Trigger re-evaluation
-                    setFormDataUpdated(prev => prev + 1);
-                }
-            } catch (error) {
-                console.error('Error fetching form data:', error);
-            }
+            const form = await getFormByCaseType();
+            setSelectedCaseTypeForm(form);
         };
 
         fetchFormData();
     }, [caseState?.caseType?.sTypeId, getTypeSubType]);
 
-    const getFormByCaseType = useCallback(() => {
+    const getFormByCaseType = useCallback(async () => {
         if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
             return undefined;
         }
@@ -460,23 +444,17 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         if (!newCaseType?.sTypeId) {
             return undefined;
         }
-
-        // Check localStorage first
-        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
-        if (formFieldStr && formFieldStr !== "undefined") {
-            try {
-                const formField: FormField = JSON.parse(formFieldStr);
+        try {
+            const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
+            if (result) {
                 return {
                     ...newCaseType,
                     caseType: mergeCaseTypeAndSubType(newCaseType, language),
-                    formField,
-                    isLoading: false,
-                    error: null,
-                } as formType & { isLoading: boolean; error: any };
-            } catch (e) {
-                console.error("Failed to parse formField JSON:", e);
-                localStorage.removeItem("subTypeForm-" + newCaseType.sTypeId);
+                    formField: result?.data
+                } as formType;
             }
+        } catch (error) {
+            console.error('Error fetching form data:', error);
         }
 
         // Return data without formField if not found
@@ -484,18 +462,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType, language),
         } as formType;
-    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, formDataUpdated]);
+    }, [caseState?.caseType?.caseType, caseTypeSupTypeData]);
 
-    const selectedCaseTypeForm = useMemo(() => {
-        if (caseState?.caseType?.formField) {
-            const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType, language);
-            if (currentCaseType?.typeId === caseState.caseType.typeId &&
-                currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
-                return caseState.caseType;
-            }
-        }
-        return getFormByCaseType();
-    }, [getFormByCaseType]);
 
     useEffect(() => {
         if (initialCaseData && sopLocal && areaList.length > 0 && !caseState && caseTypeSupTypeData.length > 0) {
@@ -514,7 +482,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
 
             const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData, language);
             const newCaseState: CaseDetails = {
-                location: sopLocal?.caselocAddr || "",
+                location: sopLocal?.caseLocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
                 caseType: {
                     ...initialCaseTypeData,
@@ -570,9 +538,9 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             } as CaseDetails : prev);
         }
         setCaseState(prev => prev ? {
-                ...prev,
-                status: prev.status || "",
-            } as CaseDetails : prev);
+            ...prev,
+            status: prev.status || "",
+        } as CaseDetails : prev);
     }, [listCustomerData.length, sopLocal, initialCaseData?.phoneNo]);
 
     // File handling function for DragDropFileUpload (new cases - attachFile)
@@ -710,9 +678,9 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue, language);
 
         if (!newCaseType) return updateCaseState({
-                priority: undefined,
-                caseType: undefined
-            });;
+            priority: undefined,
+            caseType: undefined
+        });;
 
         // Always update for new cases, or when the case type is actually different
         const shouldUpdate = isCreate ||
@@ -880,7 +848,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                         caseType: caseState?.caseType?.caseType ?? "",
                         priority: caseState?.priority ?? 0
                     }}
-                    selectedCaseTypeForm={selectedCaseTypeForm}
+                    selectedCaseTypeForm={selectedCaseTypeForm as formType}
                     caseTypeSupTypeData={caseTypeSupTypeData}
                     areaList={areaList}
                     listCustomerData={listCustomerData}

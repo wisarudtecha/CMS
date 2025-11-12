@@ -68,7 +68,6 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 }) => {
     const { t, language } = useTranslation();
     const [getTypeSubType] = useLazyGetTypeSubTypeQuery();
-    const [formDataUpdated, setFormDataUpdated] = useState(0);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -81,7 +80,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             mergeCaseTypeAndSubType(item, language)
         );
     }, [caseTypeSupTypeData]);
-    const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>();
+    const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>(undefined);
 
     const caseType = useMemo(() => ({
         caseType: caseState?.caseType?.caseType ?? "",
@@ -89,73 +88,66 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     }), [caseState?.caseType?.caseType, caseState?.priority]);
 
     // Form data fetching effect
+
     useEffect(() => {
         const fetchFormData = async () => {
-            if (!caseState?.caseType?.sTypeId) return;
-
-            const existingData = localStorage.getItem("subTypeForm-" + caseState.caseType.sTypeId);
-            if (existingData && existingData !== "undefined") {
-                return;
-            }
-
-            try {
-                const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
-                if (result) {
-                    localStorage.setItem(
-                        "subTypeForm-" + caseState.caseType.sTypeId,
-                        JSON.stringify(result.data)
-                    );
-                    setFormDataUpdated(prev => prev + 1);
+            if (!caseState.caseType?.sTypeCode) return;
+            // for initail form answer when not create
+            if (caseState?.caseType?.formField) {
+                const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType, language);
+                if (currentCaseType?.typeId === caseState.caseType.typeId &&
+                    currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
+                    setSelectedCaseTypeForm(caseState.caseType);
+                    return;
                 }
-            } catch (error) {
-                console.error('Error fetching form data:', error);
             }
+            const form = await getFormByCaseType();
+            setSelectedCaseTypeForm(form);
         };
-
         fetchFormData();
     }, [caseState?.caseType?.sTypeId, getTypeSubType]);
 
-    // Get form by case type
-    const getFormByCaseType = useCallback(() => {
+    const getFormByCaseType = useCallback(async () => {
         if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
             return undefined;
         }
 
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState.caseType.caseType, language);
-        if (!newCaseType?.sTypeId) return undefined;
 
-        const formFieldStr = localStorage.getItem("subTypeForm-" + newCaseType.sTypeId);
-        if (formFieldStr && formFieldStr !== "undefined") {
-            try {
-                const formField: FormField = JSON.parse(formFieldStr);
+        if (!newCaseType?.sTypeId) {
+            return undefined;
+        }
+        try {
+            const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
+            if (result) {
                 return {
                     ...newCaseType,
                     caseType: mergeCaseTypeAndSubType(newCaseType, language),
-                    formField,
-                };
-            } catch (e) {
-                console.error("Failed to parse formField JSON:", e);
-                localStorage.removeItem("subTypeForm-" + newCaseType.sTypeId);
+                    formField: result?.data
+                } as formType;
             }
+        } catch (error) {
+            console.error('Error fetching form data:', error);
         }
 
+        // Return data without formField if not found
         return {
             ...newCaseType,
             caseType: mergeCaseTypeAndSubType(newCaseType, language),
         } as formType;
-    }, [caseState?.caseType?.caseType, caseTypeSupTypeData, formDataUpdated, language]);
+    }, [caseState?.caseType?.caseType, caseTypeSupTypeData]);
 
-    useEffect(() => {
-        if (caseState?.caseType?.formField) {
-            const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType, language);
-            if (currentCaseType?.typeId === caseState.caseType.typeId &&
-                currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
-                setSelectedCaseTypeForm(caseState.caseType);
-                return;
-            }
-        }
-        setSelectedCaseTypeForm(getFormByCaseType() as formType);
-    }, [getFormByCaseType]);
+    // useEffect(() => {
+    //     if (caseState?.caseType?.formField) {
+    //         const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType, language);
+    //         if (currentCaseType?.typeId === caseState.caseType.typeId &&
+    //             currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
+    //             setSelectedCaseTypeForm(caseState.caseType);
+    //             return;
+    //         }
+    //     }
+    //     setSelectedCaseTypeForm(getFormByCaseType() as unknown as formType);
+    // }, [getFormByCaseType]);
 
     useEffect(() => {
         if (isCreate && caseState && !caseState.iotDate) {
@@ -182,9 +174,9 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     const handleCaseTypeChange = useCallback((newValue: string) => {
         const newCaseType = findCaseTypeSubType(caseTypeSupTypeData, newValue, language);
         if (!newCaseType) return updateCaseState({
-                priority: undefined,
-                caseType: undefined
-            });;
+            priority: undefined,
+            caseType: undefined
+        });;
 
         const shouldUpdate = isCreate ||
             newCaseType?.typeId !== caseState?.caseType?.typeId ||
@@ -198,7 +190,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     caseType: mergeCaseTypeAndSubType(newCaseType, language)
                 } as formType
             });
-        } 
+        }
     }, [caseTypeSupTypeData, caseState?.caseType, isCreate, language, updateCaseState]);
 
     const handleContactMethodChange = useCallback((data: { name: string, id: string }) => {
@@ -206,7 +198,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             if (!prev) return prev;
             return {
                 ...prev,
-                source :data
+                source: data
             };
         });
     }, [setCaseState]);
@@ -245,7 +237,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         updateCaseState({ attachFile: newFiles });
     }, [updateCaseState]);
 
-    
+
 
     const handleGetTypeFormData = useCallback((getTypeData: FormField) => {
         const newData = {

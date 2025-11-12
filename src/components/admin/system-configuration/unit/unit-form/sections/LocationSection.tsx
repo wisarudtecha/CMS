@@ -2,8 +2,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UnitFormData } from "@/types/unit";
-// import FormField from "@/components/common/FormField";
-// import Input from "@/components/common/Input";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 
@@ -36,7 +34,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locLat || 0}
             onChange={e => onChange("locLat", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locLat.placeholder")}
             step={0.000001}
             error={!!errors.locLat}
           />
@@ -52,7 +49,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locLon || 0}
             onChange={e => onChange("locLon", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locLon.placeholder")}
             step={0.000001}
             error={!!errors.locLon}
           />
@@ -68,7 +64,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locAlt || 0}
             onChange={e => onChange("locAlt", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locAlt.placeholder")}
             step={0.000001}
             error={!!errors.locAlt}
           />
@@ -83,7 +78,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locAccuracy || 0}
             onChange={e => onChange("locAccuracy", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locAccuracy.placeholder")}
             step={0.01}
             error={!!errors.locAccuracy}
           />
@@ -98,7 +92,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locBearing || 0}
             onChange={e => onChange("locBearing", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locBearing.placeholder")}
             step={0.01}
             error={!!errors.locBearing}
           />
@@ -113,7 +106,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locSpeed || 0}
             onChange={e => onChange("locSpeed", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locSpeed.placeholder")}
             // step="0.01"
             error={!!errors.locSpeed}
           />
@@ -128,7 +120,6 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             type="number"
             value={formData.locSatellites || 0}
             onChange={e => onChange("locSatellites", Number(e.target.value))}
-            // placeholder={t("crud.unit.form.location_information.sections.locSatellites.placeholder")}
             error={!!errors.locSatellites}
           />
         </div>

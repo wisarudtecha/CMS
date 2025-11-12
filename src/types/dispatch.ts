@@ -132,8 +132,8 @@ export interface CaseSop {
     statusId: string;
     caseLat: string;
     caseLon: string;
-    caselocAddr: string | CaselocAddr;
-    caselocAddrDecs: string;
+    caseLocAddr: string | CaselocAddr;
+    caseLocAddrDecs: string;
     countryId: string;
     provId: string;
     distId: string;

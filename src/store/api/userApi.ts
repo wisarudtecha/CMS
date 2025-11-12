@@ -26,6 +26,7 @@ import type {
   // UserCreateData,
   UserGroup,
   UserGroupQueryParams,
+  UserSkill,
   UserProfile,
   UserQueryParams,
   UserUnitInfo,
@@ -323,6 +324,10 @@ export const userApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // ===================================================================
+    // Skill
+    // ===================================================================
+
     // Skill
     getSkills: builder.query<ApiResponse<EnhancedSkill[]>, SkillQueryParams>({
       query: (params) => {
@@ -335,6 +340,12 @@ export const userApi = baseApi.injectEndpoints({
         return `/skill?${searchParams.toString()}`;
       },
       // providesTags: ["User"],
+    }),
+
+    // Get User Skills by Username
+    getUserSkillsByUsername: builder.query<ApiResponse<UserSkill[]>, string>({
+      query: (username) => `/users_with_skills/username/${username}`,
+      // providesTags: (_result, _error, username) => [{ type: "User", username }],
     }),
   }),
 });
@@ -371,4 +382,5 @@ export const {
   useStopImpersonationMutation,
   useGetUserByUserNameQuery,
   useGetSkillsQuery,
+  useGetUserSkillsByUsernameQuery
 } = userApi;

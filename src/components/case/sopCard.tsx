@@ -50,7 +50,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     editFormData,
     setCaseData,
     showCommentButton = true,
-    showAttachButton = true
+    showAttachButton = true,
 }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // **NEW**: Modal state
@@ -229,8 +229,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         />
                     </div>}</>
                 }
-                {permissions.hasPermission("case.assign") && caseData?.unitLists === null && caseData.caseVersion !== "draft" && onAssignClick && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
-                    <User_Icon className="w-4 h-4" />
+                {permissions.hasPermission("case.assign") && caseData?.unitLists === null && caseData.caseVersion !== "draft" && onAssignClick && !cancelAndCloseStatus.includes(caseData.statusId) && <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1 sm:ml-auto">
+                   <User_Icon className="w-4 h-4" />
                     <span>{t("case.sop_card.assign_officer")}</span>
                 </Button>}
             </div>

@@ -53,6 +53,19 @@ export interface EnhancedUserSkill {
   updatedBy: string;
 }
 
+export interface UserSkill {
+  orgId: string;
+  userName: string;
+  skillId: string;
+  th?: string;
+  en?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
 export type Preferences = {
   popupEnabled: boolean;
   soundEnabled: boolean;

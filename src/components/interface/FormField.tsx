@@ -75,8 +75,9 @@ export interface FormConfigItem {
 }
 
 export interface formMetaData {
-  versions: string,
-  publish: boolean
+  currentVersions: string,
+  publish: boolean,
+  versionsList: string[]
 }
 
 
@@ -87,6 +88,13 @@ export interface FormManager extends FormField {
   createdAt: string;
   type?: string;
   createdBy: string
+  versionsList?: []
+}
+
+export interface FormLinkWf {
+  formId: string,
+  wfId: string,
+  title: string
 }
 
 export interface formType extends CaseTypeSubType {

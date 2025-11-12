@@ -21,7 +21,7 @@ import {
 import OnBackOnly from "@/components/ui/pagesTemplate/onBackOnly"
 import FormCard from './formCard';
 
-import { FormField, FormManager } from '../interface/FormField';
+import { FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
 import { useGetAllFormsQuery, useUpdateStatusMutation } from '@/store/api/formApi';
 import { v4 as uuidv4 } from 'uuid';
@@ -66,10 +66,13 @@ const FormManagerComponent: React.FC = () => {
   const [dynamicEditFormAction, setDynamicEditFormAction] = useState<boolean>(false);
   const [dynamicEditDataFormAction, setDynamicEditDataFormAction] = useState<boolean>(false);
   const [forms, setForms] = useState<FormManager[]>([]);
-  const [SelectForm, setSelectForm] = useState<FormField | undefined>(undefined);
+  const [SelectForm, setSelectForm] = useState<FormManager | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { data: AllFormsData, isLoading } = useGetAllFormsQuery(null);
+  const { data: AllFormsData, isLoading } = useGetAllFormsQuery(null
+    , { refetchOnMountOrArgChange: true }
+  );
+
   const [displayMode, setDisplayMode] = useState<'card' | 'table'>('card');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
@@ -85,7 +88,6 @@ const FormManagerComponent: React.FC = () => {
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
-  
   const filterOptions = [
     { value: "active", label: "Active", status: true },
     { value: "inactive", label: "Inactive", status: false },
@@ -98,14 +100,14 @@ const FormManagerComponent: React.FC = () => {
     { value: "50", label: "50" },
     { value: "100", label: "100" },
   ];
-  const handleOnEdit = (form: FormField) => {
+  const handleOnEdit = (form: FormManager) => {
     setSelectForm(form)
     setDynamicEditFormAction(true)
     setDynamicEditDataFormAction(true)
     setShowDynamicForm(true)
   }
-  
-  const handleOnView = (form: FormField) => {
+
+  const handleOnView = (form: FormManager) => {
     setSelectForm(form)
     setDynamicEditFormAction(false)
     setDynamicEditDataFormAction(false)
@@ -121,6 +123,7 @@ const FormManagerComponent: React.FC = () => {
     setSelectForm(undefined)
     setShowDynamicForm(false)
   }
+
 
 
   useEffect(() => {
@@ -141,6 +144,22 @@ const FormManagerComponent: React.FC = () => {
 
     loadFormManagers();
   }, [AllFormsData]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await getFormLinkWf(null);
+  //       if (response?.data?.data) {
+  //         setSelectFormLinkWf(response.data.data);
+  //       }
+  //     } catch (error) {
+  //       addToast('error', `${error}`);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [SelectForm]);
+
 
   const addToast = (type: Toast['type'], message: string) => {
     const id = Date.now().toString();
@@ -296,7 +315,7 @@ const FormManagerComponent: React.FC = () => {
     }
   };
 
- 
+
   if (showDynamicForm) {
     return <OnBackOnly onBack={onBack}>
       <div className='rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12'>
@@ -464,6 +483,7 @@ const FormManagerComponent: React.FC = () => {
                     <FormCard
                       key={uuidv4()}
                       form={form}
+                      setForms={setForms}
                       handleOnEdit={() => handleOnEdit(form)}
                       handleOnView={() => handleOnView(form)}
                       formatDate={formatDate}
@@ -478,6 +498,7 @@ const FormManagerComponent: React.FC = () => {
                   handleSort={handleSort}
                   sortConfig={sortConfig}
                   formatDate={formatDate}
+                  setForms={setForms}
                   onSetStatusInactive={onSetStatusInactive}
                   handleOnEdit={handleOnEdit}
                   handleOnView={handleOnView}
@@ -550,7 +571,22 @@ const FormManagerComponent: React.FC = () => {
               )}
             </div>
           </div>
+          {/* <ConfirmationModal
+            isOpen={showPubModal}
+            onClose={() => {
+              setSelectForm(undefined)
+              setShowPubModal(false)
+            }}
+            onConfirm={() => {
+              SelectForm && handleOnPubUnPub(SelectForm)
+              setSelectForm(undefined)
+            }}
+            title={SelectForm?.publish ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+            description={SelectForm?.publish ? "คุณต้องการที่จะเปิดใช้งานฟอร์มนี้ใช่ไหม" : "คุณต้องการที่จะปิดใช้งานฟอร์มนี้ใช่ไหม"}
 
+            confirmButtonVariant="error"
+
+          /> */}
         </div>
       </div>
     </>

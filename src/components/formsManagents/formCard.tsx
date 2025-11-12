@@ -1,5 +1,5 @@
 // src/components/workflow/list/formCard.tsx
-import React from 'react';
+import React, { SetStateAction } from 'react';
 
 import {
   CalenderIcon,
@@ -11,9 +11,11 @@ import Badge from '../ui/badge/Badge';
 
 interface FormCardProps {
   form: FormManager;
+  setForms: React.Dispatch<SetStateAction<FormManager[]>>
   formatDate: (dateString: string) => string;
   handleOnEdit?: () => void;
   handleOnView?: () => void;
+  setShowPubModal?: React.Dispatch<React.SetStateAction<boolean>>;
   onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['active']) => void; // Add this line
 }
 
@@ -21,6 +23,7 @@ interface FormCardProps {
 
 const FormCard: React.FC<FormCardProps> = ({
   form,
+  setForms,
   formatDate,
   handleOnEdit,
   handleOnView,
@@ -43,11 +46,11 @@ const FormCard: React.FC<FormCardProps> = ({
             {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
               {config.label}
             </span> */}
-            {form.publish && <Badge color='success' variant='solid' className={`px-2 py-1 rounded-full text-xs font-medium`}>
+            {/* {form.publish && <Badge color='success' variant='solid' className={`px-2 py-1 rounded-full text-xs font-medium`}>
               Pubilsh
-            </Badge>}
+            </Badge>} */}
             <Badge color='warning' className={`px-2 py-1 rounded-full text-xs font-medium `}>
-              {form.versions}
+              v.{form.versions}
             </Badge>
           </div>
         </div>
@@ -67,6 +70,7 @@ const FormCard: React.FC<FormCardProps> = ({
         <ButtonAction
           type="button"
           form={form}
+          setForms={setForms}
           handleOnEdit={handleOnEdit}
           handleOnView={handleOnView}
           onSetStatusChange={onSetStatusInactive}

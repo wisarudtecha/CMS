@@ -165,7 +165,7 @@ const CustomizableSelect: React.FC<CustomSelectProps> = ({
                   {label}
                 </span>
               );
-            }) || <span className="text-gray-800 dark:text-white/90">{value}</span>}
+            }) || <span className="text-gray-800 dark:text-white/90">{getOptionLabel(value as string)}</span>}
           </div>
         ) : (
           <span className="text-gray-400 dark:text-gray-500">{placeholder}</span>

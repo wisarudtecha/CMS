@@ -93,16 +93,18 @@ const OfficerItem = memo(({
     officer,
     onSelectOfficer,
     handleDispatch,
-    caseStatus,
+    unitStatus,
     handleCancel,
-    canCancel
+    canCancel,
+    caseStatus,
 }: {
     officer: UnitWithSop;
     onSelectOfficer: (officer: UnitWithSop) => void;
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
-    caseStatus: CaseStatusInterface[]
-    canCancel: boolean
+    unitStatus: CaseStatusInterface[]
+    canCancel: boolean,
+    caseStatus:string,
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
@@ -143,9 +145,9 @@ const OfficerItem = memo(({
                             size="xxs"
                             className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
                             variant="success"
-                            disabled={disableButton || !hasAction}
+                            disabled={disableButton || !hasAction || cancelAndCloseStatus.includes(caseStatus) }
                         >
-                            {caseStatus.find((item) =>
+                            {unitStatus.find((item) =>
                                 officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
                             )?.[language === "th" ? "th" : "en"] || t("case.assign_officer_modal.end_of_action")}
                         </Button>
@@ -171,17 +173,19 @@ const AssignedOfficers = memo(({
     SopUnit,
     onSelectOfficer,
     handleDispatch,
-    caseStatus,
+    unitStatus,
     handleCancel,
-    canCancel
+    canCancel,
+    caseStatus,
 }: {
     SopUnit: UnitWithSop[] | null;
     onSelectOfficer: (officer: UnitWithSop) => void;
     onRemoveOfficer: (officer: UnitWithSop) => void;
     handleDispatch: (officer: UnitWithSop, setDisableButton: React.Dispatch<React.SetStateAction<boolean>>) => void;
     handleCancel: (officer: UnitWithSop) => void;
-    caseStatus: CaseStatusInterface[];
+    unitStatus: CaseStatusInterface[];
     canCancel: boolean;
+    caseStatus:string
 }) => {
     if (!SopUnit?.length) return null;
     const { t } = useTranslation();
@@ -198,9 +202,10 @@ const AssignedOfficers = memo(({
                     officer={officer}
                     onSelectOfficer={onSelectOfficer}
                     handleDispatch={handleDispatch}
-                    caseStatus={caseStatus}
+                    unitStatus={unitStatus}
                     handleCancel={handleCancel}
                     canCancel={canCancel}
+                    caseStatus={caseStatus}
                 />
             ))}
         </div>
@@ -529,7 +534,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
 
             const initialMergedCaseType = mergeCaseTypeAndSubType(initialCaseTypeData, language);
             const newCaseState: CaseDetails = {
-                location: sopData.data?.caselocAddr || "",
+                location: sopData.data?.caseLocAddr || "",
                 date: utcTimestamp ? getLocalISOString(utcTimestamp) : "",
                 caseType: {
                     ...initialCaseTypeData,
@@ -914,9 +919,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     onSelectOfficer={handleSelectOfficer}
                                     onRemoveOfficer={handleRemoveOfficer}
                                     handleDispatch={handleUnitSopDispatch}
-                                    caseStatus={caseStatus}
+                                    unitStatus={caseStatus}
                                     handleCancel={handleCancelUnitClick}
                                     canCancel={canCancelUnit}
+                                    caseStatus={caseState?.status ||""}
                                 />
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
@@ -930,7 +936,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                             listCustomerData={listCustomerData}
                                         />
                                         <div className="flex justify-end items-center m-3">
-                                            <Button variant="success" onClick={handlePreviewShow} disabled={isSaving}>
+                                            <Button onClick={handlePreviewShow} disabled={isSaving}>
                                                 {t("case.display.save_change")}
                                             </Button>
                                         </div>

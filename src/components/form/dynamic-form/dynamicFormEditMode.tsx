@@ -9,9 +9,9 @@ import Input from "../input/InputField";
 import { SortableFieldEditItem } from "./dynamicFormElement";
 
 import { ConfirmationModal } from "@/components/case/modal/ConfirmationModal";
-import { usePublishFormMutation } from "@/store/api/formApi";
+import { useGetFormByFormIdMutation } from "@/store/api/formApi";
 import { updateFieldRecursively, removeFieldRecursively, createDynamicFormField, getResponsiveGridClass, getResponsiveColSpanClass } from "./function";
-
+import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
 
 interface FormEditProps {
     currentForm: FormFieldWithChildren;
@@ -46,9 +46,9 @@ export const FormEdit: React.FC<FormEditProps> = ({
         { name: 'BMP', mime: 'image/bmp' },
     ];
     const [currentEditingField, setCurrentEditingField] = useState<IndividualFormFieldWithChildren | null>(null);
-    const [pusblishForm] = usePublishFormMutation()
+  
     const [formMeta, setFormMeta] = useState<formMetaData | undefined>(formMetaData ?? undefined)
-    
+    const [getForm] = useGetFormByFormIdMutation()
     useEffect(() => {
         if (currentEditingField) {
             setModalRules(currentEditingField.formRule || {});
@@ -77,8 +77,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
             }
             if (field.type === "dynamicField" && Array.isArray(field.options)) {
                 for (const option of field.options) {
-                    if (Array.isArray(option.form)) {
-                        ids = ids.concat(getAllFieldIds(option.form));
+                    if (Array.isArray(option.formMeta)) {
+                        ids = ids.concat(getAllFieldIds(option.formMeta));
                     }
                 }
             }
@@ -212,7 +212,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 }
                 if (field.type === "dynamicField" && Array.isArray(field.options)) {
                     for (const option of field.options) {
-                        if (Array.isArray(option.form) && checkIdExistsRecursively(option.form)) {
+                        if (Array.isArray(option.formMeta) && checkIdExistsRecursively(option.formMeta)) {
                             return true;
                         }
                     }
@@ -243,7 +243,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                     if (field.type === "dynamicField") {
                         const newOption = {
                             value: newOptionValue,
-                            form: []
+                            formMeta: []
                         };
                         if (field.options && !field.options.some(o => o.value === newOptionValue)) {
                             return { ...field, options: [...field.options, newOption] };
@@ -329,8 +329,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
             if (field.id === dynamicFieldId && field.type === "dynamicField") {
                 const updatedOptions = field.options?.map(option => {
                     if (option.value === optionValue) {
-                        const newForm = Array.isArray(option.form) ? [...option.form, newField] : [newField];
-                        return { ...option, form: newForm };
+                        const newForm = Array.isArray(option.formMeta) ? [...option.formMeta, newField] : [newField];
+                        return { ...option, formMeta: newForm };
                     }
                     return option;
                 });
@@ -370,14 +370,14 @@ export const FormEdit: React.FC<FormEditProps> = ({
                         return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
                     } else if (containerType === "dynamicField") {
                         const updatedOptions = field.options?.map(option => {
-                            if (Array.isArray(option.form)) {
-                                const updatedOptionForm = option.form.map((childField: IndividualFormFieldWithChildren) => {
+                            if (Array.isArray(option.formMeta)) {
+                                const updatedOptionForm = option.formMeta.map((childField: IndividualFormFieldWithChildren) => {
                                     if (childField.colSpan && childField.colSpan > newColSpan) {
                                         return { ...childField, colSpan: newColSpan };
                                     }
                                     return childField;
                                 });
-                                return { ...option, form: updatedOptionForm };
+                                return { ...option, formMeta: updatedOptionForm };
                             }
                             return option;
                         });
@@ -392,7 +392,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     const renderRuleInput = (ruleName: string, value: any) => {
         const label = getRuleLabel(ruleName);
         const commonInputClass = "mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400";
-        const commonCheckboxClass = "form-checkbox h-4 w-4 text-blue-600 rounded";
+        const commonCheckboxClass = "formMeta-checkbox h-4 w-4 text-blue-600 rounded";
 
         switch (ruleName) {
             case 'minLength':
@@ -507,12 +507,25 @@ export const FormEdit: React.FC<FormEditProps> = ({
         }
     };
 
+    const handleChangeVersion = async (versions: string) => {
+        setCurrentForm((prev) => ({
+            ...(prev),
+            formFieldJson: [],
+        }));
+        const result = await getForm({ formId: currentForm.formId, version: versions }).unwrap()
+        setCurrentForm(result?.data as FormFieldWithChildren)
+        setFormMeta((prev) => (prev ? {
+            ...(prev),
+            currentVersions: versions,
+        } : undefined));
+    }
+
     return (
         <>  <ConfirmationModal
             title=""
             description="Confirm Publish?"
             onConfirm={() => {
-                pusblishForm({ formId: currentForm.formId, publish: true });
+                // pusblishForm({ formId: currentForm.formId, publish: true });
                 setFormMeta((prev) => (prev ? {
                     ...(prev),
                     publish: true,
@@ -524,25 +537,37 @@ export const FormEdit: React.FC<FormEditProps> = ({
         />
 
             <div className="mb-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                <h2 className="text-lg font-bold mb-4">Form Settings</h2>
+                <div className=" flex justify-between">
+                    <div className="flex space-x-3">
+                        <h2 className="text-lg font-bold mb-4">Form Settings</h2>
+                      
+                    </div>
+                    {formMeta?.versionsList && <SearchableSelect className='px-2 py-1 rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion} disabledChevronsIcon={true} disabledRemoveButton={true} />}
+                </div>
                 <div className=" relative space-y-4">
                     <label className={`block text-gray-600 text-sm font-bold dark:text-gray-400`}>Form Name:
 
                     </label>
                     <div className={`${formMeta && "grid grid-cols-[1fr_auto_auto] space-x-3"} text-gray-600 text-sm font-bold dark:text-gray-400`}>
-                        <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter form name" disabled={!editFormData} />
-                        {formMeta?.versions && <div className=" flex items-center">
+                        <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter formMeta name" disabled={!editFormData} />
+                        {/* {formMeta?.currentVersions && <div className=" flex items-center">
                             Version :
-                            <label className={` items-center justify-center`}>{formMetaData?.versions}</label>
+                            <label className={` items-center justify-center`}>{formMetaData?.currentVersions}</label>
                         </div>
-                        }
-                        {!formMeta?.publish && formMeta?.publish !== undefined && <div className="flex justify-end">
-                            <Button onClick={() => { setShowConfirmPubish(true) }}>Publish</Button>
+                        } */}
+
+                        {formMeta != undefined && <div className="flex justify-end">
+
+
+                            {/* {!formMeta?.publish ?
+                                <Button onClick={() => { setShowConfirmPubish(true) }}>Publish</Button>
+                                : <Button onClick={() => { setShowConfirmPubish(true) }}>Unpublish</Button>} */}
                         </div>}
+
                     </div>
 
                     {/* <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Form ID:
-                        <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter unique form ID" disabled={true} />
+                        <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter unique formMeta ID" disabled={true} />
                     </label> */}
                     <div className="flex flex-wrap items-center gap-2">
                         <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Grid Columns:</label>
@@ -555,8 +580,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
                     <h2 className="text-lg font-bold">Form Layout Editor</h2>
                     <div className="flex gap-2">
-                        <Button onClick={hideAllCards} className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Hide All</Button>
-                        <Button onClick={showAllCards} className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Show All</Button>
+                        <Button onClick={hideAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Hide All</Button>
+                        <Button onClick={showAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Show All</Button>
                     </div>
                 </div>
 

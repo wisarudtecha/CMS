@@ -2,11 +2,8 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UnitFormData } from "@/types/unit";
-// import FormField from "@/components/common/FormField";
-// import Input from "@/components/common/Input";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Label from "@/components/form/Label";
-// import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
 
 interface BasicInfoSectionProps {
@@ -35,17 +32,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       </h3>
       
       <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">
-        {/*
-        <FormField label="Unit ID" required error={errors.unitId}>
-          <Input
-            type="text"
-            value={formData.unitId}
-            onChange={e => onChange("unitId", e.target.value)}
-            placeholder="Enter unit ID"
-          />
-        </FormField>
-        */}
-
         <div>
           <Label htmlFor="unitId">
             {t("crud.unit.form.basic_information.sections.unitId.label")}
@@ -82,18 +68,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Label>
             {t("crud.unit.form.basic_information.sections.unitTypeId.label")}
           </Label>
-          {/*
-          <Select
-            value={formData.unitTypeId}
-            onChange={value => onChange("unitTypeId", value)}
-            placeholder={t("crud.unit.form.basic_information.sections.unitTypeId.placeholder")}
-            options={unitTypes}
-            className="cursor-pointer"
-          />
-          */}
           <CustomizableSelect
             options={unitTypes}
-            // value={Array.isArray(formData.unitTypeId) ? formData.unitTypeId : []}
             value={formData.unitTypeId}
             onChange={value => onChange("unitTypeId", value)}
             placeholder={t("crud.unit.form.basic_information.sections.unitTypeId.placeholder")}
@@ -105,18 +81,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Label>
             {t("crud.unit.form.basic_information.sections.unitSourceId.label")}
           </Label>
-          {/*
-          <Select
-            value={formData.unitSourceId}
-            onChange={value => onChange("unitSourceId", value)}
-            placeholder={t("crud.unit.form.basic_information.sections.unitSourceId.placeholder")}
-            options={sources}
-            className="cursor-pointer"
-          />
-          */}
           <CustomizableSelect
             options={sources}
-            // value={Array.isArray(formData.unitSourceId) ? formData.unitSourceId : []}
             value={formData.unitSourceId}
             onChange={value => onChange("unitSourceId", value)}
             placeholder={t("crud.unit.form.basic_information.sections.unitSourceId.placeholder")}
@@ -128,18 +94,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Label>
             {t("crud.unit.form.basic_information.sections.username.label")}
           </Label>
-          {/*
-          <Select
-            value={formData.username}
-            onChange={value => onChange("username", value)}
-            placeholder={t("crud.unit.form.basic_information.sections.username.placeholder")}
-            options={users}
-            className="cursor-pointer"
-          />
-          */}
           <CustomizableSelect
             options={users}
-            // value={Array.isArray(formData.username) ? formData.username : []}
             value={formData.username}
             onChange={value => onChange("username", value)}
             placeholder={t("crud.unit.form.basic_information.sections.username.placeholder")}

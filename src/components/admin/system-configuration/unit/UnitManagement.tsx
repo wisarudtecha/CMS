@@ -1,20 +1,17 @@
 // /src/components/admin/system-configuration/unit/UnitManagement.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { CircleCheck, CircleX, MapPinCheck, MapPinX } from "lucide-react";
-// import { CheckLineIcon, ListIcon, PieChartIcon, TimeIcon } from "@/icons";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useGetUserSkillsByUsernameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import type { PreviewConfig } from "@/types/enhanced-crud";
-import type {
-  Unit,
-  // UnitMetrics
-} from "@/types/unit";
-// import MetricsView from "@/components/admin/MetricsView";
+import type { Unit } from "@/types/unit";
+import type { UserSkill } from "@/types/user";
 import UnitCardContent from "@/components/admin/system-configuration/unit/UnitCard";
 import Badge from "@/components/ui/badge/Badge";
 
@@ -51,21 +48,19 @@ const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline
 const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
   const navigate = useNavigate();
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
+
+  const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+  const [unitsSkills, setUnitsSkills] = useState<UserSkill[] | null>(null);
 
   // ===================================================================
   // Real Functionality Data
   // ===================================================================
 
-  // const mockMetrics: UnitMetrics = {
-  //   activeUnits: 0,
-  //   avgResponse: 0,
-  //   slaCompliance: 0,
-  //   totalCases: 0
-  // };
+  const { data: usersSkills } = useGetUserSkillsByUsernameQuery(selectedUsername ?? "", { skip: !selectedUsername });
 
   const data: (Unit & { id: string })[] = unit.map(u => ({
     ...u,
@@ -95,9 +90,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       create: "/api/mdm/units",
       read: "/api/mdm/units/:id",
       update: "/api/mdm/units/:id",
-      delete: "/api/mdm/units/:id",
-      // bulkDelete: "/api/mdm/units/bulk",
-      // export: "/api/mdm/units/export"
+      delete: "/api/mdm/units/:id"
     },
     columns: [
       {
@@ -166,6 +159,36 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Preview Configuration
   // ===================================================================
 
+  const SkillTab: React.FC<{ unitItem: Unit }> = ({ unitItem }) => {
+    useEffect(() => {
+      setSelectedUsername(unitItem.username);
+    }, [unitItem.username]);
+
+    useEffect(() => {
+      setUnitsSkills(usersSkills?.data as unknown as UserSkill[]);
+    });
+
+    return (
+      <>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex items-start justify-start gap-2">
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Currently Active User:</label>
+            <div className="font-mono text-gray-900 dark:text-white text-sm">
+              {unitItem.username}
+            </div>
+          </div>
+          <div className="text-sm">
+            {unitsSkills?.length && unitsSkills.map(item => {
+              return (
+                <Badge key={item.skillId} className="mr-2">{language === "th" && item.th || item.en || item.skillId}</Badge>
+              )
+            })}
+          </div>
+        </div>
+      </>
+    );
+  };
+
   const previewConfig: PreviewConfig<Unit> = {
     title: () => "Unit Information",
     size: "xl",
@@ -178,40 +201,39 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         render: (unitItem: Unit) => {
           return (
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Name</label>
-                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.unitName}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">ID</label>
-                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+              <div className="flex items-start justify-start gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">ID:</label>
+                <div className="font-mono text-gray-900 dark:text-white text-sm">
                   {unitItem.unitId}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Plate Number</label>
-                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                  {unitItem.plateNo}
+              <div className="flex items-start justify-start gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Name:</label>
+                <div className="font-mono text-gray-900 dark:text-white text-sm">
+                  {unitItem.unitName}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Priority</label>
-                <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.priority}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Active Status</label>
-                <div className="mt-1">
-                  <UnitStatus status={unitItem.active ? "active" : "inactive"} />
+              <div className="flex items-start justify-start gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Priority:</label>
+                <div className="font-mono text-gray-900 dark:text-white text-sm">
+                  {unitItem.priority}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Login Status</label>
-                <div className="mt-1">
-                  <UnitStatus status={unitItem.isLogin ? "online" : "offline"} />
-                </div>
+              <div className="flex items-start justify-start gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Status:</label>
+                <UnitStatus status={unitItem.active ? "active" : "inactive"} />
+                <UnitStatus status={unitItem.isLogin ? "online" : "offline"} />
               </div>
             </div>
           )
+        }
+      },
+      {
+        key: "skill",
+        label: "Skill",
+        // icon: InfoIcon,
+        render: (unitItem: Unit) => {
+          return (<SkillTab unitItem={unitItem} />)
         }
       },
       {
@@ -269,17 +291,6 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       }
     ],
     actions: [
-      // {
-      //   key: "view",
-      //   label: "View",
-      //   // icon: EyeIcon,
-      //   variant: "primary",
-      //   onClick: (unitItem: Unit, closePreview: () => void) => {
-      //     closePreview();
-      //     navigate(`/unit/${unitItem.id}`);
-      //   },
-      //   condition: () => (permissions.hasPermission("unit.view") || isSystemAdmin) as boolean
-      // },
       {
         key: "update",
         label: "Edit",
@@ -309,19 +320,6 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Advanced Filters
   // ===================================================================
 
-  // const advancedFilters = [
-  //   {
-  //     key: "active",
-  //     label: "Status",
-  //     type: "select" as const,
-  //     options: [
-  //       { value: true, label: "Active" },
-  //       { value: false, label: "Inactive"}
-  //     ],
-  //     placeholder: "Select status",
-  //   },
-  // ];
-
   // ===================================================================
   // Bulk Actions
   // ===================================================================
@@ -346,7 +344,6 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   const handleAction = (actionKey: string, unitItem: Unit) => {
     // Add custom unit-specific action handling
     console.log(`Action ${actionKey} triggered for unit:`, unitItem.id);
-    
   };
 
   // Handle deletion
@@ -360,19 +357,9 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Render Component
   // ===================================================================
 
-  // const attrMetrics = [
-  //   { key: "activeUnits", title: "Active Units", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-  //   { key: "avgResponse", title: "Avg. Response", icon: PieChartIcon, color: "yellow", className: "text-yellow-600" },
-  //   { key: "slaCompliance", title: "SLA Compliance", icon: TimeIcon, color: "red", className: "text-red-600" },
-  //   { key: "totalCases", title: "Total Cases", icon: ListIcon, color: "blue", className: "text-blue-600" },
-  // ];
-
   return (
     <>
-      {/* <MetricsView metrics={mockMetrics} attrMetrics={attrMetrics} /> */}
-
       <EnhancedCrudContainer
-        // advancedFilters={advancedFilters}
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
