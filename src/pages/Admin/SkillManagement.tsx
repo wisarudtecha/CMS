@@ -22,8 +22,8 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-// import { useGetListCaseQuery } from "@/store/api/caseApi";
-// import { useGetCaseStatusesQuery, useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
+import { useGetSkillQuery } from "@/store/api/skillApi";
+import type { Skill } from "@/types/skill";
 import SkillManagementComponent from "@/components/admin/system-configuration/skill/SkillManagement";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -32,14 +32,8 @@ const SkillManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  // const { data: caseHistoriesData } = useGetListCaseQuery({ start: 0, length: 100 });
-  // const caseHistories = caseHistoriesData?.data as unknown as CaseEntity[] || [];
-
-  // const { data: caseStatusesData } = useGetCaseStatusesQuery({ start: 0, length: 30 });
-  // const caseStatuses = caseStatusesData?.data as unknown as CaseStatus[] || [];
-
-  // const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
-  // const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+  const { data: skillsData } = useGetSkillQuery({ start: 0, length: 100 });
+  const skills = skillsData?.data as unknown as Skill[] || [];
 
   return (
     <>
@@ -51,7 +45,7 @@ const SkillManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["user.view"]}>
         <PageBreadcrumb pageTitle="Skill Management" />
 
-        <SkillManagementComponent />
+        <SkillManagementComponent skills={skills} />
       </ProtectedRoute>
     </>
   );

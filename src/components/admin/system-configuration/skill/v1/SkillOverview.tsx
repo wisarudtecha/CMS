@@ -1,4 +1,4 @@
-// /src/components/admin/skill/SkillManagement.tsx
+// /src/components/admin/system-configuration/skill/v1/SkillManagement.tsx
 import React, { useState } from "react";
 import { Award, BookOpen, Settings, Star, Target, TrendingUp } from "lucide-react";
 import { AlertHexaIcon, GroupIcon, TimeIcon } from "@/icons";

@@ -342,7 +342,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
     if (action) {
       // console.log("Executing action from config:", action.key);
       
-      if (actionKey === "view" && (module === "case" || module === "user" || module === "unit")) {
+      if (actionKey === "view" && (
+        module === "case" ||
+        module === "skill" ||
+        module === "user" ||
+        module === "unit"
+      )) {
         handleItemClick(item);
       }
       else {
