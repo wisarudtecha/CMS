@@ -9,9 +9,7 @@ import Input from "../input/InputField";
 import { SortableFieldEditItem } from "./dynamicFormElement";
 
 import { ConfirmationModal } from "@/components/case/modal/ConfirmationModal";
-import { useGetFormByFormIdMutation } from "@/store/api/formApi";
 import { updateFieldRecursively, removeFieldRecursively, createDynamicFormField, getResponsiveGridClass, getResponsiveColSpanClass } from "./function";
-import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput";
 
 interface FormEditProps {
     currentForm: FormFieldWithChildren;
@@ -48,7 +46,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     const [currentEditingField, setCurrentEditingField] = useState<IndividualFormFieldWithChildren | null>(null);
   
     const [formMeta, setFormMeta] = useState<formMetaData | undefined>(formMetaData ?? undefined)
-    const [getForm] = useGetFormByFormIdMutation()
+
     useEffect(() => {
         if (currentEditingField) {
             setModalRules(currentEditingField.formRule || {});
@@ -507,18 +505,18 @@ export const FormEdit: React.FC<FormEditProps> = ({
         }
     };
 
-    const handleChangeVersion = async (versions: string) => {
-        setCurrentForm((prev) => ({
-            ...(prev),
-            formFieldJson: [],
-        }));
-        const result = await getForm({ formId: currentForm.formId, version: versions }).unwrap()
-        setCurrentForm(result?.data as FormFieldWithChildren)
-        setFormMeta((prev) => (prev ? {
-            ...(prev),
-            currentVersions: versions,
-        } : undefined));
-    }
+    // const handleChangeVersion = async (versions: string) => {
+    //     setCurrentForm((prev) => ({
+    //         ...(prev),
+    //         formFieldJson: [],
+    //     }));
+    //     const result = await getForm({ formId: currentForm.formId, version: versions }).unwrap()
+    //     setCurrentForm(result?.data as FormFieldWithChildren)
+    //     setFormMeta((prev) => (prev ? {
+    //         ...(prev),
+    //         currentVersions: versions,
+    //     } : undefined));
+    // }
 
     return (
         <>  <ConfirmationModal
@@ -542,7 +540,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                         <h2 className="text-lg font-bold mb-4">Form Settings</h2>
                       
                     </div>
-                    {formMeta?.versionsList && <SearchableSelect className='px-2 py-1 rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion} disabledChevronsIcon={true} disabledRemoveButton={true} />}
+                    {/* {formMeta?.versionsList && <SearchableSelect className='px-2 py-1 rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion} disabledChevronsIcon={true} disabledRemoveButton={true} />} */}
                 </div>
                 <div className=" relative space-y-4">
                     <label className={`block text-gray-600 text-sm font-bold dark:text-gray-400`}>Form Name:

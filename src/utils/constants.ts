@@ -147,6 +147,25 @@ export const PRIORITY_LABELS = {
   }
 } as const;
 
+export const PRIORITY_LABELS_SHORT = {
+  low: {
+    th: "ต่ำ",
+    en: "Low Priority",
+  },
+  medium: {
+    th: "ปานกลาง",
+    en: "Medium Priority",
+  },
+  high: {
+    th: "สูง",
+    en: "High Priority",
+  },
+  urgent: {
+    th: "สูงสุด",
+    en: "Urgent Priority",
+  }
+} as const;
+
 export const PRIORITY_CONFIG = [
   { type: 'high', count: 4, color: PRIORITY_COLORS.high, icon: AlertHexaIcon },
   { type: 'medium', count: 3, color: PRIORITY_COLORS.medium, icon: TimeIcon },

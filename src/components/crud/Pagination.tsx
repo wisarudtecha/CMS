@@ -31,7 +31,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   onPageSizeChange
 }) => {
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
 
   // if (totalPages <= 1) {
   //   return null;
@@ -88,6 +88,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               onChange={(value) => onPageSizeChange(parseInt(value))}
               options={pageSizeOptions}
               className="cursor-pointer"
+              placeholder={language === "th" && "เลือกการแบ่งหน้า" || "Select a pagination"}
             />
           </span>
           <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{t("crud.common.length_menu.entries")}</span>

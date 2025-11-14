@@ -109,8 +109,7 @@ export const SearchableSelect: React.FC<{
                     disabled={disabled}
                     className={`${COMMON_INPUT_CSS} appearance-none border rounded-md w-full py-3 px-3 text-gray-900 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent dark:text-gray-300 dark:border-gray-800 dark:bg-gray-900 disabled:text-gray-500 disabled:border-gray-300 disabled:opacity-40 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:disabled:border-gray-700 text-left flex justify-between items-center`}
                 >
-                    {prefixedStringValue}
-                    <span className="truncate">{selectedLabel}</span>
+                    <span className="truncate">{prefixedStringValue}{selectedLabel}</span>
                     <div className="flex items-center gap-2">
                         {value && ! disabled && !disabledRemoveButton && (
                             <div

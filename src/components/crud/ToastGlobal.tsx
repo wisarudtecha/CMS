@@ -18,7 +18,7 @@ export const ToastGlobalContainer: React.FC<ToastGlobalContainerProps> = ({ chil
             }
             const id = Date.now().toString();
             loadingToastIdRef.current = id;
-            addToast("info", "case.display.toast.loading_case", 0,true);
+            addToast("loading", "case.display.toast.loading_case", 0,true);
         };
 
         const handleLoadingEnd = () => {

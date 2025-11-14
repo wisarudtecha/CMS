@@ -53,6 +53,18 @@ export const formApi = baseApi.injectEndpoints({
             invalidatesTags: ["Form and Workflow"],
         }),
 
+        getFormByFormIdQuery: builder.query<ApiResponse<FormManager>, { //
+            version: string;
+            formId: string;
+        }>({
+            query: ({ formId, version }) => ({ //
+                url: "/forms",
+                method: "GET",
+                params: { formId, version }
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
         updateStatus: builder.mutation<ApiResponse<UpdataStatusResponse>, { //
             active: boolean;
             formId: string;
@@ -154,6 +166,30 @@ export const formApi = baseApi.injectEndpoints({
                 body: params,
             }),
             providesTags: ["Form and Workflow"],
+        }),
+
+        changeFormVersion: builder.query<ApiResponse<null>, { //
+            formId: string;
+            version: string;
+        }>({
+            query: (params) => ({ //
+                url: `/forms/version`,
+                method: "PATCH",
+                body: params,
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
+        changeFormVersionMutation: builder.mutation<ApiResponse<null>, { 
+            formId: string;
+            version: string;
+        }>({
+            query: (params) => ({ 
+                url: `/forms/version`,
+                method: "PATCH",
+                body: params,
+            }),
+            invalidatesTags: ["Form and Workflow"],
         }),
 
         publishFormMutation: builder.mutation<ApiResponse<null>, { //
@@ -369,6 +405,11 @@ export const {
     useGetFormLinkWfMutationMutation,
     useGetFormLinkWfQuery,
     useLazyGetAllFormsQuery,
-    useLazyGetFormLinkWfQuery
+    useLazyGetFormLinkWfQuery,
+    useGetFormByFormIdQueryQuery,
+    useLazyGetFormByFormIdQueryQuery,
+    useChangeFormVersionMutationMutation,
+    useChangeFormVersionQuery,
+    useLazyChangeFormVersionQuery
 } = formApi;
 

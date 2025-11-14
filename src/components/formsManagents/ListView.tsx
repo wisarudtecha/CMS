@@ -6,9 +6,10 @@ import {
     ChevronUpIcon,
 } from "@/icons";
 import ButtonAction from './ButtonAction';
-import { statusConfig } from '../ui/status/status';
 import { FormManager } from '../interface/FormField';
 import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
+import Button from '../ui/button/Button';
+import Badge from '../ui/badge/Badge';
 
 interface SortConfig {
     key: keyof FormManager | null;
@@ -24,6 +25,7 @@ interface FormTableViewProps {
     onSetStatusInactive: (formId: string, formName: string, newStatus: FormManager['active']) => void;
     handleOnEdit: (form: FormManager) => void;
     handleOnView: (form: FormManager) => void;
+    handleOnVersion?: (form: FormManager) => void;
 }
 
 const ListViewFormManager: React.FC<FormTableViewProps> = ({
@@ -35,6 +37,7 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
     setForms,
     handleOnEdit,
     handleOnView,
+    handleOnVersion
 }) => {
     return (
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border-none overflow-hidden mb-8">
@@ -58,13 +61,13 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                                     onClick={() => handleSort('active')}
                                     className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
                                 >
-                                    Status
+                                    Versions
                                     {sortConfig.key === 'active' && (
                                         sortConfig.direction === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />
                                     )}
                                 </button>
                             </th>
-                            <th className="px-6 py-3 text-left whitespace-nowrap">
+                            {/* <th className="px-6 py-3 text-left whitespace-nowrap">
                                 <button
                                     onClick={() => handleSort('createdAt')}
                                     className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
@@ -74,9 +77,9 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                                         sortConfig.direction === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />
                                     )}
                                 </button>
-                            </th>
+                            </th> */}
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                                Create By
+                                Create
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                                 Actions
@@ -85,8 +88,8 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                     </thead>
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                         {forms.map((form) => {
-                            const status = form.active === true ? "active" : "inactive"
-                            const config = statusConfig[status]
+                            // const status = form.active === true ? "active" : "inactive"
+                            // const config = statusConfig[status]
 
                             return (
                                 <tr key={uuidv4()} className="hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -100,21 +103,24 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                                             </div>
                                         </div>
                                     </td>
-                                    <td className={`px-6 py-4 whitespace-nowrap`}>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
-                                            {status}
-                                        </span>
-                                        {form.versions === "draft" && <span className={`px-2 py-1 mx-2 rounded-full text-xs font-medium ${statusConfig["draft"].color}`}>
-                                            draft
-                                        </span>}
+                                    <td className={`px-6 py-4 whitespace-nowrap space-x-3`}>
+
+                                        <Button className=' w-fit rounded-full text-xs font-medium' variant='outline' onClick={() => { handleOnVersion && handleOnVersion(form) }}>v.{form.versions}</Button>
+                                        {form?.versionsList &&
+                                            form.versionsList.length > 0 &&
+                                            Number(form.versions) < Math.max(...form.versionsList.map(Number)) && (
+                                                <Badge color="warning" className="px-2 py-1 rounded-full text-xs font-medium">
+                                                    New Versions
+                                                </Badge>
+                                            )}
+                                        {/* <SearchableSelect className='w-fit px-2 py-1 rounded-full text-xs font-medium' value={form.versions} prefixedStringValue="v." options={(form?.versionsList || [])} onChange={() => { }} disabledChevronsIcon={true} disabledRemoveButton={true} placeholder=' ' /> */}
                                     </td>
+
                                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                        {formatDate(form.createdAt)}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                        <div className="flex items-left  gap-2">
+                                        <div className="flex items-center justify-center  gap-2">
                                             {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700")}
-                                            {form.createdBy}
+                                            {form.createdBy + " At "}
+                                            {formatDate(form.createdAt)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">

@@ -342,7 +342,7 @@
       "no_records": "สร้าง_ENTITY_แรกของคุณเพื่อเริ่มต้น",
       "action": "การดำเนินการ",
       "create": "สร้าง_ENTITY_",
-      "read": "ดู",
+      "read": "แสดง",
       "update": "แก้ไข",
       "delete": "ลบ",
       "delete_success": "ลบ_ENTITY_สำเร็จแล้ว",
@@ -424,6 +424,7 @@
         },
         "header": {
           "case": "หมายเลขใบสั่งงาน",
+          "detail": "รายละเอียด",
           "status": "สถานะ",
           "priority": "ความสำคัญ",
           "created_by": "สร้างโดย",

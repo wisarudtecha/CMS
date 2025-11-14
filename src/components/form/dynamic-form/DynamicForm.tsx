@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import Button from "@/components/ui/button/Button";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormFieldWithChildren, FormManager, formMetaData } from "@/components/interface/FormField";
-import { useCreateFormMutation, useUpdateFormMutation } from "@/store/api/formApi";
+import { useCreateFormMutation, useGetFormByFormIdMutation, useUpdateFormMutation } from "@/store/api/formApi";
 import { formConfigurations } from "./constant";
 import 'react-phone-number-input/style.css'
 import { getCountries } from 'react-phone-number-input/input'
@@ -32,6 +32,8 @@ import AddFormSelector from "./addFormSelector.tsx";
 import { useTranslation } from "@/hooks/useTranslation.ts";
 import { ArrowLeft, Download, Upload } from "lucide-react";
 import ExportDynamicFormModal from "./exportDynamicForm.tsx";
+import { SearchableSelect } from "@/components/SearchInput/SearchSelectInput.tsx";
+import { SpinnerIcon } from "@/icons/SpinnerIcon.tsx";
 export type CountryCode = ReturnType<typeof getCountries>[number]
 
 
@@ -73,7 +75,8 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const [formMeta, setFormMeta] = useState<formMetaData | undefined>(
     initialForm && "versions" in initialForm ?
       { currentVersions: initialForm.versions, publish: initialForm.publish, versionsList: initialForm?.versionsList || [] } : undefined);
-
+  const [getForm] = useGetFormByFormIdMutation()
+  const [isLoadingForm, setIsLoadingForm] = useState<boolean>(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     {
       formId: uuidv4(),
@@ -477,13 +480,33 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     });
   }, [getParentAndCurrentArray, updateNestedFormFields]);
 
+  const handleChangeVersion = async (versions: string) => {
+    setIsLoadingForm(true)
+    setCurrentForm((prev) => ({
+      ...(prev),
+      formFieldJson: [],
+    }));
+    const result = await getForm({ formId: currentForm.formId, version: versions }).unwrap()
+    setCurrentForm(result?.data as FormFieldWithChildren)
+    setIsLoadingForm(false)
+    setFormMeta((prev) => (prev ? {
+      ...(prev),
+      currentVersions: versions,
+    }
+      : undefined));
+  }
 
 
   const FormPreview = useCallback(() => {
     return (
       <div>
-        {enableFormTitle && <div className="px-3  text-xl dark:text-white">{currentForm.formName}</div>}
-        {currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
+        <div className=" flex justify-between">
+          {enableFormTitle && <div className="px-3 text-xl dark:text-white">{currentForm.formName}</div>}
+          {formMeta?.versionsList && formMeta?.versionsList.length!=0  && edit == false && <SearchableSelect className=' w-18 items-end justify-end  rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion}  disabledRemoveButton={true} />}
+        </div>
+        {isLoadingForm ? <div className="flex justify-center text-gray-500 items-center">
+          <SpinnerIcon className="w-5 h-5 text-gray-600 dark:text-gray-300 animate-spin mr-2" /> Loading
+        </div> : currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
         ) : (
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
             {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 px-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}><RenderFormField setCurrentForm={setCurrentForm} field={field} showValidationErrors={showValidationErrors} editFormData={editFormData} /></div>))}

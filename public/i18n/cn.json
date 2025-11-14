@@ -420,6 +420,7 @@
         },
         "header": {
           "case": "案例编号",
+          "detail": "详情",
           "status": "状态",
           "priority": "优先级",
           "created_by": "创建者",

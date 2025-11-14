@@ -40,7 +40,7 @@ import {
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { useGetUserByUserNameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
-import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
+import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS_SHORT, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseListParams } from "@/store/api/caseApi";
 import type {
@@ -404,12 +404,12 @@ const CaseHistoryComponent: React.FC<{
   // ===================================================================
 
   const generatePriorityConfigs = () => {
-    const langKey = language as keyof typeof PRIORITY_LABELS.high;
+    const langKey = language as keyof typeof PRIORITY_LABELS_SHORT.high;
     return PRIORITY_CONFIG.flatMap(({ type, count, color, icon }) =>
       Array(count).fill(null).map(() => ({
         color,
         icon,
-        label: PRIORITY_LABELS[type][langKey]
+        label: PRIORITY_LABELS_SHORT[type][langKey]
       }))
     );
   }
@@ -621,17 +621,32 @@ const CaseHistoryComponent: React.FC<{
         label: t("crud.case_history.list.header.case"),
         sortable: true,
         render: (caseItem: CaseEntity) => (
-          <div className="flex items-center gap-3">
+          <div className="text-gray-700 dark:text-gray-200">
+            {caseItem.caseId}
+          </div>
+        )
+      },
+      {
+        key: "caseDetail",
+        label: t("crud.case_history.list.header.detail"),
+        sortable: true,
+        render: (caseItem: CaseEntity) => (
+          <div
+            className="flex items-center gap-3"
+            title={`
+              ${caseTitle(caseItem) as string || ""}\n${caseItem.caseDetail || ""}\n${caseItem.caselocAddr || caseItem.caseLocAddr || caseItem.caselocAddrDecs || ""}`
+            }
+          >
             {/* <FolderIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" /> */}
             <div>
-              <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+              <div className="font-semibold text-gray-900 dark:text-white truncate">
                 {caseTitle(caseItem) || ""}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-xs">
                 {caseItem.caseDetail || ""}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                {caseItem.caselocAddr || ""}
+                {caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr || ""}
               </div>
             </div>
           </div>
@@ -666,12 +681,14 @@ const CaseHistoryComponent: React.FC<{
         key: "createdBy",
         label: t("crud.case_history.list.header.created_by"),
         sortable: true,
-        render: (caseItem: CaseEntity) => (
-          <div className="flex gap-1 items-center">
-            <UserIcon className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-900 dark:text-white">{caseItem.usercreate}</span>
-          </div>
-        )
+        render: (caseItem: CaseEntity) => {
+          return (caseItem.usercreate || caseItem.createdBy) && (
+            <div className="flex gap-1 items-center">
+              <UserIcon className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">{caseItem.usercreate || caseItem.createdBy}</span>
+            </div>
+          )
+        }
       },
       {
         key: "createdAt",
@@ -937,7 +954,7 @@ const CaseHistoryComponent: React.FC<{
               <div className="grid grid-cols-1 space-y-3">
                 <div className="xl:flex items-left justify-left">
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || "-"}
+                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr || "-"}
                   </div>
                 </div>
               </div>
@@ -1477,17 +1494,27 @@ const CaseHistoryComponent: React.FC<{
   const renderCard = (caseItem: CaseEntity) => {
     return (
       <>
-        <div className="xl:flex items-start justify-between mb-2">
+        <div className="xl:flex items-start justify-between">
           <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+              <h4 className="text-gray-700 dark:text-gray-200">
+                {caseItem.caseId}
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        <div className="xl:flex items-start justify-between mb-1">
+          <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
                 {caseTitle(caseItem)}
               </h3>
             </div>
           </div>
         </div>
 
-        <div className="xl:flex gap-1 flex-shrink-0 mb-4">
+        <div className="xl:flex gap-1 flex-shrink-0 mb-2">
           <Badge className={`${getStatusConfig(caseItem)?.color} text-sm`}>
             {getStatusConfig(caseItem)?.label}
           </Badge>
@@ -1496,24 +1523,27 @@ const CaseHistoryComponent: React.FC<{
           </span>
         </div>
         
-        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm line-clamp-2">
+        <p className="text-gray-600 dark:text-gray-300 mb-2 text-sm line-clamp-2 truncate" title={caseItem.caseDetail}>
           {caseItem.caseDetail}
         </p>
 
         {/* Additional Info */}
-        <div className="xl:flex items-center justify-between mb-4">
+        <div
+          className="xl:flex items-center justify-between mb-2"
+          title={caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr || ""}
+        >
           <div className="xl:flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <div className="xl:flex items-center gap-1 min-h-4">
+            <div className="xl:flex items-start gap-1 min-h-8">
               {/* <MapPinIcon className="w-3 h-3" /> */}
-              <span>{caseItem.caselocAddr || ""}</span>
+              <span>{caseItem.caselocAddr || caseItem.caseLocAddr || caseItem.caselocAddrDecs || ""}</span>
             </div>
           </div>
         </div>
         
-        <div className="xl:flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
+        <div className="xl:flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-1">
           <div className="xl:flex items-center gap-1">
             <UserIcon className="w-4 h-4 hidden xl:block" />
-            <span>{caseItem.createdBy}</span>
+            <span>{caseItem.usercreate || caseItem.createdBy}</span>
           </div>
           <div className="xl:flex items-center gap-1">
             <CalenderIcon className="w-4 h-4 hidden xl:block" />

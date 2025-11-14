@@ -320,7 +320,7 @@ const NotificationDropdown = () => {
   useEffect(() => {
     const prefs = getPreferences();
     if (!prefs.pushEnabled) {
-      console.log("Push notifications disabled by user preference.");
+      // console.log("Push notifications disabled by user preference.");
       return;
     }
 

@@ -3,6 +3,7 @@ import React from "react";
 import { CheckCircleIcon, ErrorIcon, AlertIcon, CloseIcon } from "@/icons";
 import type { Toast } from "@/types/crud";
 import { useTranslation } from "@/hooks/useTranslation";
+import { SpinnerIcon } from "@/icons/SpinnerIcon";
 // import Button from "@/components/ui/button/Button";
 
 interface ToastContainerProps {
@@ -27,6 +28,8 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
         return <AlertIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-300" />;
       case "info":
         return <AlertIcon className="w-5 h-5 text-blue-600 dark:text-blue-300" />;
+      case "loading":
+        return <SpinnerIcon className="w-5 h-5 text-gray-600 dark:text-gray-300 animate-spin" />;
       default:
         return null;
     }
@@ -42,6 +45,8 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
         return "bg-yellow-100 dark:bg-yellow-800 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-100";
       case "info":
         return "bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-100";
+      case "loading":
+        return "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100";
       default:
         return "";
     }
@@ -52,7 +57,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
   // };
 
   return (
-    <div className="fixed top-4 right-4 z-99999 space-y-2">
+    <div className="fixed top-25 right-4 z-99999 space-y-2">
       {toasts.map(toast => (
         <div
           key={toast.id}

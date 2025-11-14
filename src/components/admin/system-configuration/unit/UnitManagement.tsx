@@ -36,7 +36,7 @@ const UnitLocation: React.FC<{
 
 const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline" }> = ({ status }) => {
   return (
-    <Badge className={`capitalize text-sm ${status === "active" || status === "online"
+    <Badge className={`capitalize text-xs ${status === "active" || status === "online"
       ? "bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200"
       : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
     }`}>

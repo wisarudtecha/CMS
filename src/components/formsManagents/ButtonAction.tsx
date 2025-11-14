@@ -138,7 +138,7 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
   };
 
   return (
-    <div className={`flex items-center ${type!=="list"?"justify-between":"justify-center"} w-full`}>
+    <div className={`flex items-center ${type !== "list" ? "justify-between" : "justify-center"} w-full`}>
       <div className="flex items-center gap-2">
         <Button
           onClick={() => handleOnView?.()}
@@ -149,15 +149,21 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
         </Button>
         <Button
           onClick={() => handleOnEdit?.(form)}
-          variant={`${style}`}
+          variant={style}
           title="Edit"
+          disabled={
+            (form?.versionsList?.length ?? 0) > 0 &&
+            Number(form.versions) <
+            Math.max(...(form.versionsList?.map(Number) ?? [Number(form.versions)]))
+          }
         >
           Edit
         </Button>
 
+
         {type === "list" && <Button
           onClick={() => { setShowPubModal(true) }}
-          variant={`${!form.publish ? "success" : "error"}`}
+          variant={`outline`}
           className="min-w-[110px]"
         >
           {!form.publish ? "Publish" : "UnPublish"}
@@ -166,7 +172,7 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
       </div>
       {type != "list" && <Button
         onClick={() => { setShowPubModal(true) }}
-        variant={`${!form.publish ? "success" : "error"}`}
+        variant={`outline`}
         className="min-w-[110px]"
       >
         {!form.publish ? "Publish" : "UnPublish"}

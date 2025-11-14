@@ -424,6 +424,7 @@
         },
         "header": {
           "case": "Work Order #",
+          "detail": "Detail",
           "status": "Status",
           "priority": "Priority",
           "created_by": "Created By",

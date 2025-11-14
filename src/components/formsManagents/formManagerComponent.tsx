@@ -26,6 +26,7 @@ import DynamicForm from '../form/dynamic-form/DynamicForm';
 import { useGetAllFormsQuery, useUpdateStatusMutation } from '@/store/api/formApi';
 import { v4 as uuidv4 } from 'uuid';
 import ListViewFormManager from './ListView';
+import FormVersionsModal from './formVersionModal';
 
 
 interface SortConfig {
@@ -93,7 +94,7 @@ const FormManagerComponent: React.FC = () => {
     { value: "inactive", label: "Inactive", status: false },
     { value: "draft", label: "Draft", isDraft: true },
   ];
-
+  const [showVersionModal, setShowVersionModal] = useState<boolean>(false)
   const paginationOptions = [
     { value: "10", label: "10" },
     { value: "20", label: "20" },
@@ -315,6 +316,11 @@ const FormManagerComponent: React.FC = () => {
     }
   };
 
+  const handleOnVersion = (form: FormManager) => {
+    setSelectForm(form)
+    setShowVersionModal(true)
+  }
+
 
   if (showDynamicForm) {
     return <OnBackOnly onBack={onBack}>
@@ -328,6 +334,10 @@ const FormManagerComponent: React.FC = () => {
     <>
       <div className="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
         <div className="mx-auto w-full">
+          {SelectForm && <FormVersionsModal isOpen={showVersionModal} onClose={() => {
+            setShowVersionModal(false)
+            setSelectForm(undefined)
+          }} form={SelectForm} />}
           {/* Toast Notifications */}
           <div className="fixed top-4 right-4 z-50 space-y-2">
             {toasts.map(toast => (
@@ -488,6 +498,7 @@ const FormManagerComponent: React.FC = () => {
                       handleOnView={() => handleOnView(form)}
                       formatDate={formatDate}
                       onSetStatusInactive={onSetStatusInactive}
+                      handleOnVersion={handleOnVersion}
                     />
                   ))}
                 </div>
@@ -502,6 +513,7 @@ const FormManagerComponent: React.FC = () => {
                   onSetStatusInactive={onSetStatusInactive}
                   handleOnEdit={handleOnEdit}
                   handleOnView={handleOnView}
+                  handleOnVersion={handleOnVersion}
                 />
               )}
 

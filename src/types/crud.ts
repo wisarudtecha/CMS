@@ -30,7 +30,7 @@ export interface ConfirmDialog {
 
 export interface Toast {
   id: string;
-  type: "success" | "error" | "warning" | "info";
+  type: "success" | "error" | "warning" | "info" | "loading";
   message: string;
   duration?: number;
   isI18N?:boolean

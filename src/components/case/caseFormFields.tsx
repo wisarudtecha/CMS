@@ -80,7 +80,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             mergeCaseTypeAndSubType(item, language)
         );
     }, [caseTypeSupTypeData]);
-    const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>(undefined);
+    const [selectedCaseTypeForm, setSelectedCaseTypeForm] = useState<formType | undefined>(caseState?.caseType || undefined);
 
     const caseType = useMemo(() => ({
         caseType: caseState?.caseType?.caseType ?? "",
@@ -89,23 +89,19 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 
     // Form data fetching effect
 
+
     useEffect(() => {
         const fetchFormData = async () => {
-            if (!caseState.caseType?.sTypeCode) return;
-            // for initail form answer when not create
-            if (caseState?.caseType?.formField) {
-                const currentCaseType = findCaseTypeSubType(caseTypeSupTypeData, caseState?.caseType?.caseType, language);
-                if (currentCaseType?.typeId === caseState.caseType.typeId &&
-                    currentCaseType?.sTypeId === caseState.caseType.sTypeId) {
-                    setSelectedCaseTypeForm(caseState.caseType);
-                    return;
-                }
-            }
+            if (!caseState?.caseType?.sTypeId) return;
+
+
             const form = await getFormByCaseType();
             setSelectedCaseTypeForm(form);
         };
-        fetchFormData();
-    }, [caseState?.caseType?.sTypeId, getTypeSubType]);
+        if (isCreate) {
+            fetchFormData();
+        }
+    }, [caseType]);
 
     const getFormByCaseType = useCallback(async () => {
         if (!caseState?.caseType?.caseType || !caseTypeSupTypeData.length) {
