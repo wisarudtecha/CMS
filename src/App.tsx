@@ -151,8 +151,8 @@ export default function App() {
           <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorV2Page />} />
           <Route path="/workflow/editor/v2/:id/:action" element={<WorkflowEditorV2Page />} />
 	  
-	  {/* Report */}
-	  <Route path="/report" element={<ReportPage />} />
+          {/* Report */}
+          <Route path="/report" element={<ReportPage />} />
 
           {/* User Management */}
           <Route path="/user" element={<UserManagementPage />} />

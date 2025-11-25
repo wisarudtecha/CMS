@@ -952,7 +952,7 @@ const AppSidebar: React.FC = () => {
         </div>
       </aside>
 
-      <Modal isOpen={openVersion} onClose={() => setOpenVersion(false)} className="max-w-4xl p-6 max-h-[80vh]">
+      <Modal isOpen={openVersion} onClose={() => setOpenVersion(false)} className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto">
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">
             {language === "th" && "บันทึกการเปลี่ยนแปลง" || "Changelog"}
@@ -960,8 +960,8 @@ const AppSidebar: React.FC = () => {
           {/* <p className="text-xs text-muted-foreground cursor-default">{versionInfo.date}</p> */}
         </div>
         <div className="space-y-4 cursor-default">
-          {versionInfo?.map(item =>
-            <div>
+          {versionInfo?.map((item, idx) =>
+            <div key={item?.version || item?.date || idx}>
               <div className="text-gray-700 dark:text-gray-200 flex gap-1">
                 <div className="font-semibold">{item?.version || ""}</div>
                 <div className="font-light italic">{item?.segment && `- ${item.segment}` || ""}</div>

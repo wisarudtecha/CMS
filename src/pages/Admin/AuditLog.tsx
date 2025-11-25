@@ -59,9 +59,12 @@ interface AuditLog {
     action: string;
     status: number;
     duration: number;
-    newData: any;
-    oldData: any;
-    resData: any;
+    // newData: any;
+    newData: unknown;
+    // oldData: any;
+    oldData: unknown;
+    // resData: any;
+    resData: unknown;
     message: string;
     createdAt: string;
 }
@@ -90,12 +93,16 @@ interface UserFromAPI {
     active: boolean;
     createdAt: string;
     updatedAt: string;
-    [key: string]: any; // Allow other properties
+    // [key: string]: any; // Allow other properties
+    [key: string]: unknown; // Allow other properties
 }
 
 
 // --- Helper component for rendering data objects ---
-const DataDisplay = ({ data }: { data: any }) => {
+const DataDisplay = ({ data }: {
+    // data: any
+    data: unknown
+}) => {
     const { t } = useTranslation();
     
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
@@ -234,13 +241,19 @@ export default function AuditLog() {
             }
 
             // Parse JSON strings in the API response safely
-            const processedLogs = result.data.map((log: any) => {
+            const processedLogs = result.data.map((
+                // log: any
+                log: Record<string, unknown>
+            ) => {
                 try {
                     return {
                         ...log,
-                        newData: log.newData && log.newData !== '{}' && log.newData !== '' ? JSON.parse(log.newData) : {},
-                        oldData: log.oldData && log.oldData !== '{}' && log.oldData !== '' ? JSON.parse(log.oldData) : {},
-                        resData: log.resData && log.resData !== '{}' && log.resData !== '' ? JSON.parse(log.resData) : {}
+                        // newData: log.newData && log.newData !== '{}' && log.newData !== '' ? JSON.parse(log.newData) : {},
+                        newData: log.newData && log.newData !== '{}' && log.newData !== '' ? JSON.parse(log.newData as string) : {},
+                        // oldData: log.oldData && log.oldData !== '{}' && log.oldData !== '' ? JSON.parse(log.oldData) : {},
+                        oldData: log.oldData && log.oldData !== '{}' && log.oldData !== '' ? JSON.parse(log.oldData as string) : {},
+                        // resData: log.resData && log.resData !== '{}' && log.resData !== '' ? JSON.parse(log.resData) : {}
+                        resData: log.resData && log.resData !== '{}' && log.resData !== '' ? JSON.parse(log.resData as string) : {}
                     };
                 } catch (parseError) {
                     console.warn('Failed to parse JSON for log:', log.id, parseError);
@@ -257,12 +270,23 @@ export default function AuditLog() {
             const message = t("audit_log.query_success", { count: processedLogs.length }) || `โหลดข้อมูลสำเร็จ ${processedLogs.length} รายการ`;
             showToast(message, "success");
             
-        } catch (err: any) {
-            console.error("Error fetching audit logs:", err);
-            setError(err.message);
+        }
+        // catch (err: any) {
+        //     console.error("Error fetching audit logs:", err);
+        //     setError(err.message);
+        //     setLogs([]);
+        //     // Don't show error toast for failed fetch - just show "no data found" in UI
+        // }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error
+                ? err.message
+                : (typeof err === 'string' ? err : JSON.stringify(err));
+            console.error("Error fetching audit logs:", errorMessage);
+            setError(errorMessage);
             setLogs([]);
             // Don't show error toast for failed fetch - just show "no data found" in UI
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     };
@@ -299,7 +323,12 @@ export default function AuditLog() {
             setUsernames(uniqueUsernames);
             // Don't show toast for users - too noisy
 
-        } catch (err: any) {
+        }
+        // catch (err: any) {
+        //     console.error("Error fetching users for filter:", err);
+        //     // Don't show error toast for users - just log to console
+        // }
+        catch (err: unknown) {
             console.error("Error fetching users for filter:", err);
             // Don't show error toast for users - just log to console
         }
@@ -309,6 +338,7 @@ export default function AuditLog() {
     useEffect(() => {
         handleFetchLogs();
         fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Close dropdown when clicking outside
@@ -361,9 +391,9 @@ export default function AuditLog() {
             if (filter.search) {
                 const searchLower = filter.search.toLowerCase();
                 return (
-                    log.username.toLowerCase().includes(searchLower) ||
-                    log.txId.toLowerCase().includes(searchLower) ||
-                    log.message.toLowerCase().includes(searchLower)
+                    log?.username?.toLowerCase()?.includes(searchLower) ||
+                    log?.txId?.toLowerCase()?.includes(searchLower) ||
+                    log?.message?.toLowerCase()?.includes(searchLower)
                 );
             }
 
@@ -541,7 +571,10 @@ export default function AuditLog() {
     // --- RENDER ---
     return (
         <div className="bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300 font-sans">
-            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            <div
+                // className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8"
+                className="mx-auto p-4 sm:p-6 lg:p-8"
+            >
                 <PageBreadcrumb items={breadcrumbItems} />
 
                 {/* Toast - Only show when needed */}
@@ -595,8 +628,8 @@ export default function AuditLog() {
                             >
                                 <option value="">{t("audit_log.all_status") || "All Status"}</option>
                                 <option value="0">{t("audit_log.success") || "Success"}</option>
-                                <option value="1">{t("audit_log.failed") || "Failed"}</option>
-                                <option value="2">{t("audit_log.warning") || "Warning"}</option>
+                                <option value="-1">{t("audit_log.failed") || "Failed"}</option>
+                                {/* <option value="2">{t("audit_log.warning") || "Warning"}</option> */}
                             </select>
                             <button 
                                 onClick={() => handleFetchLogs(filter.username)} 
@@ -921,7 +954,7 @@ export default function AuditLog() {
                                                     
                                                     {/* Status Column */}
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-2 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bg} ${statusInfo.color}`}>
+                                                        <span className={`flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bg} ${statusInfo.color}`}>
                                                             <statusInfo.icon className="w-3 h-3" />
                                                             {statusInfo.text}
                                                         </span>

@@ -897,6 +897,29 @@ const UserForm: React.FC = () => {
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label htmlFor="empId" className={labelClasses}>
+                    {tt("userform.empId")}
+                    {pageMode === "Create" && <span className="text-red-500">*</span>}
+                  </label>
+                  {pageMode === "Create" ? (
+                    <input
+                      type="text"
+                      id="empId"
+                      name="empId"
+                      value={formData.empId}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required
+                      maxLength={30}
+                    />
+                  ) : (
+                    <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                      {formData.empId || "-"}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

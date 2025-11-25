@@ -1,7 +1,13 @@
 {
-  "0.1.2": {
+  "0.2.1": {
+    "date": "2025-11-25",
+    "segment": "PATCH",
+    "notes": "fix: DF_10, DF_20-21 :\n- Add empId input box.\n- Handle lowerCase string for search.\n- Change status dropdown of Fail value from 1 to -1 and remove Warning status.",
+    "author": "Wisarud Techa"
+  },
+  "0.2.0": {
     "date": "2025-11-24",
-    "segment": "MAJOR",
+    "segment": "MINOR",
     "notes": "feat: change log:\n- Add change log viewer (version and detail).",
     "author": "Wisarud Techa"
   },
