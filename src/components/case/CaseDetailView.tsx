@@ -44,6 +44,7 @@ import AttachedFiles from "../Attachment/AttachmentPreviewList"
 import { isAttachment, validateFile } from "../Attachment/AttachmentConv"
 import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from "@/store/api/file"
 import { updateCaseInLocalStorage } from "./caseLocalStorage.tsx/caseListUpdate"
+import RetryButton from "../form/input/RetryButton"
 
 
 const CaseHeader = memo(({
@@ -104,7 +105,7 @@ const OfficerItem = memo(({
     handleCancel: (officer: UnitWithSop) => void;
     unitStatus: CaseStatusInterface[]
     canCancel: boolean,
-    caseStatus:string,
+    caseStatus: string,
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
@@ -145,7 +146,7 @@ const OfficerItem = memo(({
                             size="xxs"
                             className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
                             variant="success"
-                            disabled={disableButton || !hasAction || cancelAndCloseStatus.includes(caseStatus) }
+                            disabled={disableButton || !hasAction || cancelAndCloseStatus.includes(caseStatus)}
                         >
                             {unitStatus.find((item) =>
                                 officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
@@ -185,7 +186,7 @@ const AssignedOfficers = memo(({
     handleCancel: (officer: UnitWithSop) => void;
     unitStatus: CaseStatusInterface[];
     canCancel: boolean;
-    caseStatus:string
+    caseStatus: string
 }) => {
     if (!SopUnit?.length) return null;
     const { t } = useTranslation();
@@ -879,6 +880,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             {/* <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                                 The case you're looking for doesn't exist or couldn't be loaded.
                             </p> */}
+                            <RetryButton refetch={refetch}/>
                         </div>
                     </div>
                 </div>
@@ -922,7 +924,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     unitStatus={caseStatus}
                                     handleCancel={handleCancelUnitClick}
                                     canCancel={canCancelUnit}
-                                    caseStatus={caseState?.status ||""}
+                                    caseStatus={caseState?.status || ""}
                                 />
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>

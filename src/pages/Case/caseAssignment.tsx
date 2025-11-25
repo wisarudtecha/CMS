@@ -30,6 +30,8 @@ import { Area, mergeArea } from "@/store/api/area"
 import { useGetUsersQuery } from "@/store/api/userApi"
 import { UserProfile } from "@/types/user"
 import { idbStorage } from "@/components/idb/idb"
+import { useToastContext } from "@/components/crud/ToastGlobal"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
@@ -40,7 +42,21 @@ const getInitialFilters = () => {
 
   if (savedFilters) {
     try {
-      return JSON.parse(savedFilters);
+      const result = JSON.parse(savedFilters)
+      return {
+        priority: "",
+        category: "",
+        titleSearch: "",
+        descriptionSearch: result.detail || "",
+        startDate: result.start_date || "",
+        endDate: result.end_date || "",
+        caseType: result.caseType || "",
+        caseSubtype: result.caseSType || "",
+        createBy: result.createBy || "",
+        area: result.provId && result.distId && result.countryId ? { provId: result.provId || "", distId: result.distId || "", countryId: result.countryId || "" } as Area : {} as Area,
+        phoneNumber: result.phoneNo || "",
+        user: "",
+      };
     } catch (error) {
       console.error("Error parsing filters:", error);
     }
@@ -91,7 +107,7 @@ export default function CasesView() {
   // const [loadingCase, setLoadingCase] = useState<boolean>(false)
   const [visibleListCount, setVisibleListCount] = useState(20);
   const listLoadMoreRef = useRef(null);
-
+  const { isCaseLoading } = useToastContext();
   const getStatusKey = (caseItem: CaseEntity): string => {
     const statusColumn = statusColumns.find(column =>
       column.group.includes((caseItem as CaseEntity).statusId)
@@ -109,6 +125,20 @@ export default function CasesView() {
   }
 
   useEffect(() => {
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'caseList' && e.newValue) {
+        try {
+          const updatedCases = JSON.parse(e.newValue) as CaseEntity[];
+          const filteredCases = updatedCases.filter(c => allowedStatusIds.includes(c.statusId));
+          setCaseData(filteredCases);
+        } catch (error) {
+          console.error('Failed to parse updated case list:', error);
+        }
+      }
+    };
+
+
     const loadCases = async () => {
       const savedCases = await idbStorage.getItem("caseList");
 
@@ -123,30 +153,32 @@ export default function CasesView() {
     };
 
     loadCases();
-  }, []);
-
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-
-      if (e.key === 'caseList' && e.newValue) {
-        // console.log('Case list updated in localStorage');
-        try {
-          const updatedCases = JSON.parse(e.newValue) as CaseEntity[];
-          const filteredCases = updatedCases.filter(c => allowedStatusIds.includes(c.statusId));
-          setCaseData(filteredCases);
-          // console.log('Local case data refreshed from storage event');
-        } catch (error) {
-          console.error('Failed to parse updated case list:', error);
-        }
-      }
-    };
-
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [allowedStatusIds]);
+  }, []);
+
+  // useEffect(() => {
+  //   const handleStorageChange = (e: StorageEvent) => {
+  //     if (e.key === 'caseList' && e.newValue) {
+  //       try {
+  //         const updatedCases = JSON.parse(e.newValue) as CaseEntity[];
+  //         const filteredCases = updatedCases.filter(c => allowedStatusIds.includes(c.statusId));
+  //         setCaseData(filteredCases);
+  //       } catch (error) {
+  //         console.error('Failed to parse updated case list:', error);
+  //       }
+  //     }
+  //   };
+
+  //   window.addEventListener('storage', handleStorageChange);
+
+  //   return () => {
+  //     window.removeEventListener('storage', handleStorageChange);
+  //   };
+  // }, []);
 
   const handleCaseClick = (caseItem: CaseEntity) => {
     setSelectedCase(caseItem)
@@ -155,7 +187,7 @@ export default function CasesView() {
   const handleAdvanceFilterClose = () => {
     setShowAdvanceFilter(false)
   }
-  const handleClear = async () => {
+  const handleClear = async (fetch: boolean) => {
     const clearedFilters = {
       priority: "",
       category: "",
@@ -171,19 +203,22 @@ export default function CasesView() {
       user: "",
     };
     setAdvancedFilters(clearedFilters);
-    localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
+    // localStorage.setItem("WorkOrderFilter", JSON.stringify(clearedFilters))
     setSelectedStatus(null)
     //setLoadingCase(true)
-    await fetchCase({});
+    handleAdvanceFilterClose();
+    if (fetch) {
+      await fetchCase({});
+    }
     //setLoadingCase(false)
     const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
     setCaseData(updatedCases);
-    handleAdvanceFilterClose();
+
   };
   const handleRefreshCase = async () => {
     setIsRefreshing(true);
     //setLoadingCase(true)
-    handleClear()
+    handleClear(false)
     await fetchCase({});
     //setLoadingCase(false)
 
@@ -243,8 +278,9 @@ export default function CasesView() {
     const [localFilters, setLocalFilters] = useState(advancedFilters);
     const handleApply = async () => {
       setAdvancedFilters(localFilters);
-      localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
+      // localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
       //setLoadingCase(true)
+      handleAdvanceFilterClose();
       await fetchCase({
         caseType: localFilters.caseType ?? undefined,
         caseSType: localFilters.caseSubtype ?? undefined,
@@ -265,7 +301,6 @@ export default function CasesView() {
       }
       const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
       setCaseData(updatedCases);
-      handleAdvanceFilterClose();
     };
 
     const handleCaseTypeChange = (label: string) => {
@@ -403,7 +438,7 @@ export default function CasesView() {
           </div>
         </div>
         <div className="mt-6 flex justify-end space-x-3">
-          <Button variant="outline" onClick={handleClear}>{t("case.assignment.clear")}</Button>
+          <Button variant="outline" onClick={() => { handleClear(true) }}>{t("case.assignment.clear")}</Button>
           <Button onClick={handleApply}>{t("case.assignment.apply_filter")}</Button>
         </div>
       </div>
@@ -491,16 +526,16 @@ export default function CasesView() {
 
     if (selectedStatus) {
       return (
-          <div ref={scrollContainerRef} className="space-y-3 px-2 overflow-y-auto h-screen custom-scrollbar">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
-              {visibleCases.map((caseItem) => (
-                <CaseCard key={caseItem.caseId} caseItem={caseItem} />
-              ))}
-              {visibleCount < cases.length && (
-                <div ref={loadMoreRef} className="h-10 w-full" />
-              )}
-            </div>
+        <div ref={scrollContainerRef} className="space-y-3 px-2 overflow-y-auto h-screen custom-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
+            {visibleCases.map((caseItem) => (
+              <CaseCard key={caseItem.caseId} caseItem={caseItem} />
+            ))}
+            {visibleCount < cases.length && (
+              <div ref={loadMoreRef} className="h-10 w-full" />
+            )}
           </div>
+        </div>
       );
     }
 
@@ -810,6 +845,7 @@ export default function CasesView() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
       <PageBreadcrumb pageTitle={t("case.assignment.pageheader")} />
+      <ProtectedRoute requiredPermissions={["case.assign"]}>
       <div className="relative px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-y-4 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -853,6 +889,7 @@ export default function CasesView() {
                   variant="outline"
                   onClick={() => { setShowAdvanceFilter(true) }}
                   className="w-full sm:w-auto whitespace-nowrap"
+                  disabled={isCaseLoading}
                   size="sm"
                 >
                   <Filter className="w-4 h-4 mr-2 sm:mr-1" />
@@ -862,7 +899,7 @@ export default function CasesView() {
                 {hasActiveFilters() && (
                   <Button
                     variant="primary"
-                    onClick={handleClear}
+                    onClick={() => { handleClear(true) }}
                     className="w-full sm:w-auto whitespace-nowrap"
                     size="sm"
                   >
@@ -876,7 +913,7 @@ export default function CasesView() {
                 className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
                 onClick={handleRefreshCase}
                 size="sm"
-                disabled={isRefreshing}
+                disabled={isRefreshing || isCaseLoading}
               >
                 <RefreshCcw className="w-4 h-4" />
               </Button>
@@ -929,6 +966,7 @@ export default function CasesView() {
           {viewMode === "kanban" ? <KanbanView /> : <ListView />}
         </div>
       </div>
+      </ProtectedRoute>
       {/* {loadingCase && <Loading />} */}
       {showAdvanceFilter && <AdvanceFilter />}
     </div >

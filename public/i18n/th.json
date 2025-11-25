@@ -11,9 +11,11 @@
     "confirm": "ยืนยัน",
     "delete": "ลบ",
     "edit": "แก้ไข",
+    "view": "ดู",
     "add": "เพิ่ม",
     "search": "ค้นหา",
     "loading": "กำลังโหลด...",
+    "loadingPercentage":"กำลังโหลด..._percentage_",
     "error": "เกิดข้อผิดพลาด",
     "success": "สำเร็จ",
     "back": "ย้อนกลับ",
@@ -34,7 +36,37 @@
     "retry": "ลองใหม่อีกครั้ง",
     "no_result": "ไม่เจอผลลัพธ์",
     "charater": "ตัวอักษร",
-    "noOption": "ไม่มีตัวเลือก"
+    "noOption": "ไม่มีตัวเลือก",
+    "publish": "เผยเพร่",
+    "unpublish": "ปิดการเผยแพร่",
+    "createBy": "สร้างโดย",
+    "at_time": "ตอน",
+    "new_version": "เวอร์ชั่นใหม่",
+    "version": "เวอร์ชั่น",
+    "name": "ชื่อ",
+    "create": "สร้าง",
+    "change_version": "เปลื่ยนเวอร์ชั่น",
+    "import": "นำเข้า",
+    "export": "ส่งออก",
+    "preview": "แสดงตัวอย่าง",
+    "submit": "ส่ง",
+    "close": "ปิด",
+    "addField": "เพิ่มฟิลด์",
+    "remove": "ลบ",
+    "hide": "ซ่อน",
+    "download": "ดาวน์โหลด",
+    "upload": "อัปโหลด",
+    "info": "ข้อมูล",
+    "dob": "วันเกิด",
+    "email": "อีเมล",
+    "phoneNumber": "หมายเลขโทรศัพท์",
+    "address": "ที่อยู่",
+    "type": "ประเภท",
+    "room":"ห้อง",
+    "floor":"ชั้น",
+    "using":"กำลังใช้",
+    "current":"ปัจุบัน",
+    "report":"รายงาน"
   },
   "auth": {
     "signin": {
@@ -178,7 +210,22 @@
           "title": "เวิร์กโฟลว์",
           "nested": {
             "workflow_management": "การจัดการเวิร์กโฟลว์",
-            "workflow_builder": "สร้างเวิร์กโฟลว์"
+            "workflow_builder": {
+              "title": "สร้างเวิร์กโฟลว์",
+              "header": "_MODE_เวิร์กโฟลว์",
+              "create": {
+                "title": "สร้างเวิร์กโฟลว์",
+                "header": "สร้างเวิร์กโฟลว์"
+              },
+              "read": {
+                "title": "รายละเอียดเวิร์กโฟลว์",
+                "header": "รายละเอียดเวิร์กโฟลว์"
+              },
+              "update": {
+                "title": "แก้ไขเวิร์กโฟลว์",
+                "header": "แก้ไขเวิร์กโฟลว์"
+              }
+            }
           }
         },
         "user_management": {
@@ -301,7 +348,8 @@
         "workflow": {
           "title": "เวิร์กโฟลว์",
           "nested": {
-            "workflow_builder_v1": "เวิร์กโฟลว์ Builder v0.1.0"
+            "workflow_builder_v1": "เวิร์กโฟลว์ Builder v0.1.0",
+            "workflow_builder_v2": "เวิร์กโฟลว์ Builder v0.2.0"
           }
         }
       }
@@ -442,6 +490,161 @@
               "activity": "บันทึกกิจกรรม"
             }
           }
+        }
+      }
+    },
+    "workflow": {
+      "name": "เวิร์กโฟลว์",
+      "builder": {
+        "toolbar": {
+          "header": "รายละเอียดเวิร์กโฟลว์",
+          "nodes": {
+            "header": "เพิ่มโหนด",
+            "start": "เริ่มต้น",
+            "process": "กระบวนการ",
+            "dispatch": "สั่งการ",
+            "sla": "SLA",
+            "decision": "การตัดสินใจ",
+            "end": "สิ้นสุด"
+          },
+          "actions": {
+            "adding": "คลิกเพื่อเพิ่มหรือลากลงบนผืนผ้าใบ",
+            "import": "นำเข้าเวิร์กโฟลว์",
+            "preview": "ดูตัวอย่าง SOP",
+            "save": "บันทึกเวิร์กโฟลว์",
+            "edit": "แก้ไขเวิร์กโฟลว์"
+          }
+        },
+        "metadata": {
+          "title": {
+            "label": "ชื่อเวิร์กโฟลว์",
+            "placeholder": "กรอกชื่อเวิร์กโฟลว์...",
+            "default": "เวิร์กโฟลว์ที่ไม่มีชื่อ"
+          },
+          "description": {
+            "label": "คำอธิบาย",
+            "placeholder": "คำอธิบายสั้นๆ..."
+          },
+          "status": {
+            "label": "สถานะ",
+            "placeholder": "เลือกสถานะ",
+            "options": {
+              "draft": "ร่าง",
+              "active": "ใช้งาน",
+              "inactive": "ไม่ใช้งาน",
+              "testing": "ทดสอบ"
+            }
+          },
+          "total_sla": "SLA รวม",
+          "created_at": "สร้างเมื่อ",
+          "created_by": "โดย"
+        },
+        "node": {
+          "header": "การตั้งค่าโหนด",
+          "description": "เลือกโหนดเพื่อกำหนดค่าคุณสมบัติ",
+          "validation": {
+            "header": "ข้อผิดพลาดในการตรวจสอบ",
+            "node_required": "เวิร์กโฟลว์ต้องมีอย่างน้อย หนึ่งโหนด _NODE_",
+            "action_required": "เวิร์กโฟลว์ต้องมีอย่างน้อย หนึ่งการกระทำ _ACTION_ ในโหนด _NODE_",
+            "maximum_connections": "โหนด_NODE_มีการเชื่อมต่อสูงสุดแล้ว",
+            "determine_connections": "โหนด_NODE_มีการเชื่อมต่อ ทั้งแบบใช่และไม่ใช่แล้ว"
+          },
+          "form": {
+            "label": { "label": "ป้ายชื่อ" },
+            "description": {
+              "label": "คำอธิบาย",
+              "placeholder": "กรอกคำอธิบาย..."
+            },
+            "node_type": { "label": "ประเภทโหนด" },
+            "position": { "label": "ตำแหน่ง" },
+            "actions": {
+              "label": "การกระทำ",
+              "placeholder": "เลือกการกระทำ"
+            },
+            "form": {
+              "label": "แบบฟอร์ม",
+              "placeholder": "เลือกแบบฟอร์ม"
+            },
+            "sla": { "label": "SLA (นาที)" },
+            "group": {
+              "label": "กลุ่มผู้รับผิดชอบ",
+              "placeholder": "เลือกกลุ่ม"
+            },
+            "pic": {
+              "label": "ผู้รับผิดชอบ (PIC)",
+              "placeholder": "เลือกผู้ใช้"
+            },
+            "conditions": {
+              "label": "เงื่อนไข",
+              "placeholder": "กรอกเงื่อนไข..."
+            }
+          },
+          "connections": {
+            "header": "การเชื่อมต่อ",
+            "outgoing": "ขาออก",
+            "incoming": "ขาเข้า"
+          },
+          "stats": {
+            "header": "สถิติเวิร์กโฟลว์",
+            "title": "ชื่อเวิร์กโฟลว์",
+            "status": "สถานะ",
+            "nodes": "โหนด",
+            "connections": "การเชื่อมต่อ",
+            "start_nodes": "โหนดเริ่มต้น",
+            "end_nodes": "โหนดสิ้นสุด"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "นำเข้าเวิร์กโฟลว์",
+            "file": { "label": "อัปโหลดไฟล์ .json" },
+            "textarea": {
+              "label": "หรือวางเนื้อหา JSON",
+              "placeholder": "วาง JSON ของเวิร์กโฟลว์ที่นี่..."
+            },
+            "actions": { "import": "นำเข้า" }
+          },
+          "preview": {
+            "header": "ดูตัวอย่าง SOP ของเวิร์กโฟลว์",
+            "description": "สร้างส่วนประกอบฟอร์มตามเส้นทางเวิร์กโฟลว์",
+            "step": "ขั้นตอนที่",
+            "start": "เริ่มเวิร์กโฟลว์",
+            "decision": {
+              "header": "เงื่อนไข",
+              "path": "เลือกเส้นทางการตัดสินใจ"
+            },
+            "sla": {
+              "header": "เวลา SLA",
+              "path": "เส้นทางการตัดสินใจ SLA",
+              "yes": "เป็นไปตาม SLA",
+              "no": "เกิน SLA"
+            },
+            "current_path": "เส้นทางปัจจุบัน",
+            "end": "สิ้นสุดเวิร์กโฟลว์",
+            "actions": { "close": "ปิด" },
+            "empty": {
+              "title": "ไม่มีตัวอย่าง SOP ให้ดู",
+              "description": "เพิ่มโหนดเริ่มต้น กระบวนการ การสั่งการ และจุดสิ้นสุดพร้อมการเชื่อมต่อเพื่อสร้างตัวอย่าง SOP"
+            }
+          },
+          "save": {
+            "header": "ดูตัวอย่าง JSON ของเวิร์กโฟลว์และยืนยัน",
+            "actions": {
+              "copy": "คัดลอก",
+              "copied": "คัดลอกแล้ว",
+              "download": "ดาวน์โหลด",
+              "confirm": "ยืนยัน",
+              "saving": "กำลังบันทึก..."
+            }
+          },
+          "actions": { "cancel": "ยกเลิก" }
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "นาที",
+          "label": "นาที",
+          "postfix": ""
         }
       }
     },
@@ -947,9 +1150,9 @@
         "missing_close_case_data": "กรุณาใส่ข้อมูลให้ครบ",
         "upload_file_success": "อัพโหลดไฟล์สำเร็จ",
         "upload_file_fail": "อัพโหลดไฟล์ไม่สำเร็จ",
-        "loading_case" : "กำลังโหลดใบงาน",
-        "loading_case_success" : "โหลดใบงานสำเร็จ",
-        "loading_case_fail" : "โหลดใบงานไม่ สำเร็จ"
+        "loading_case": "กำลังโหลดใบงาน",
+        "loading_case_success": "โหลดใบงานสำเร็จ",
+        "loading_case_fail": "โหลดใบงานไม่ สำเร็จ"
       }
     },
     "sop_card": {
@@ -1035,7 +1238,7 @@
   },
   "time": {
     "s": "วิ.",
-    "m": "น.",
+    "m": "นท.",
     "h": "ชม.",
     "d": "ว.",
     "y": "ป.",
@@ -1058,7 +1261,174 @@
     "pending": "รอดำเนินการ",
     "no_sla": "ไม่ได้กำหนด SLA",
     "used": "ใช้ไป",
-    "completed_progress": "สำเร็จไปแล้ว",
+    "completed_progress": "งานสำเร็จไปแล้ว",
     "total_sla": "SLA ทั้งหมด"
+  },
+  "form_builder": {
+    "create": "สร้างฟอร์ม",
+    "form_management": "การจัดการฟอร์ม",
+    "form_not_found": "ไม่เจอฟอร์ม",
+    "desc_filter_not_found": "ลองปรับตัวกรองหรือเงื่อนไขการค้นหาของคุณ",
+    "confirm_pulish": "คุณต้องการเผยแพร่ฟอร์มนี้ใช่ไหม",
+    "confirm_unpulish": "คุณต้องการยกเลิกการเผยแพร่ฟอร์มนี้ใช่ไหม",
+    "remove_workflow": "ไม่สามารถยกเลิกเผยแพร่ได้ เนื่องจากฟอร์มนี้ถูกใช้งานใน Workflow ด้านล่าง",
+    "export_form": "ส่งออกฟอร์ม",
+    "export_description": "ดาวน์โหลดฟอร์มนี้เป็นไฟล์ JSON",
+    "form_name": "ชื่อฟอร์ม",
+    "import_form": "นำเข้าฟอร์ม",
+    "import_description": "อัปโหลดไฟล์ JSON เพื่อนำเข้าการตั้งค่าฟอร์ม",
+    "select_file": "เลือกไฟล์ JSON",
+    "selected_file": "ไฟล์ที่เลือก",
+    "file_size": "ขนาด",
+    "invalid_file_type": "กรุณาเลือกไฟล์ JSON ที่ถูกต้อง",
+    "invalid_import_data": "ข้อมูลฟอร์มไม่ถูกต้อง",
+    "import_success": "นำเข้าฟอร์มสำเร็จ",
+    "import_error": "เกิดข้อผิดพลาดในการนำเข้าฟอร์ม"
+  },
+  "dynamicForm": {
+    "pageTitle": "เครื่องมือสร้างฟอร์มไดนามิก",
+    "saveDrafts": "บันทึกร่าง",
+    "saveChange": "บันทึกการเปลี่ยนแปลง",
+    "saveForm": "บันทึกฟอร์ม",
+    "preview": {
+      "noFields": "ยังไม่มีการเพิ่มฟิลด์ คลิก \"แก้ไข\" เพื่อเริ่มเพิ่ม",
+      "versionPrefix": "เวอร์ชัน "
+    },
+    "toasts": {
+      "noFields": "ไม่มีองค์ประกอบในฟอร์ม",
+      "somethingWentWrong": "เกิดข้อผิดพลาดบางอย่าง",
+      "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+      "correctErrors": "โปรดแก้ไขข้อผิดพลาดก่อนส่ง",
+      "draftLoaded": "โหลดร่างสำเร็จ:",
+      "noDraftFound": "ไม่พบร่างใน localStorage",
+      "parseDraftError": "ไม่สามารถแยกวิเคราะห์ร่างจาก localStorage:",
+      "moveBetweenGroupsNotAllowed": "ไม่อนุญาตให้ย้ายรายการระหว่างกลุ่มต่างๆ"
+    }
+  },
+  "formEdit": {
+    "confirmPublish": {
+      "title": "ยืนยันการเผยแพร่?",
+      "description": "ยืนยันการเผยแพร่?"
+    },
+    "formSettings": {
+      "title": "การตั้งค่าฟอร์ม",
+      "formNameLabel": "ชื่อฟอร์ม:",
+      "formNamePlaceholder": "ป้อนชื่อฟอร์ม",
+      "formIdLabel": "รหัสฟอร์ม:",
+      "formIdPlaceholder": "ป้อนรหัสฟอร์มที่ไม่ซ้ำกัน",
+      "version": "เวอร์ชัน :",
+      "publish": "เผยแพร่",
+      "unpublish": "ยกเลิกการเผยแพร่",
+      "gridColumns": "จำนวนคอลัมน์ (เดสก์ท็อป):"
+    },
+    "layoutEditor": {
+      "title": "เครื่องมือแก้ไขเค้าโครงฟอร์ม",
+      "hideAll": "ซ่อนทั้งหมด",
+      "showAll": "แสดงทั้งหมด",
+      "noFields": "ยังไม่มีการเพิ่มฟิลด์ ใช้ปุ่มด้านบนเพื่อเพิ่มฟิลด์ใหม่"
+    },
+    "settingsModal": {
+      "title": "การตั้งค่าสำหรับ:",
+      "fieldType": "ประเภทฟิลด์:",
+      "saveButton": "บันทึกกฎ",
+      "unsupportedRule": "กฎที่ไม่รองรับ: {ruleName}"
+    },
+    "rules": {
+      "searchCountries": "ค้นหาประเทศ...",
+      "minLength": "ความยาวขั้นต่ำ:",
+      "maxLength": "ความยาวสูงสุด:",
+      "minnumber": "ค่าต่ำสุด:",
+      "maxnumber": "ค่าสูงสุด:",
+      "minSelections": "จำนวนตัวเลือกขั้นต่ำ:",
+      "maxSelections": "จำนวนตัวเลือกสูงสุด:",
+      "maxFileSize": "ขนาดไฟล์สูงสุด (MB):",
+      "minFiles": "จำนวนไฟล์ขั้นต่ำ:",
+      "maxFiles": "จำนวนไฟล์สูงสุด:",
+      "contain": "ต้องมี:",
+      "allowedCountries": "ประเทศที่อนุญาต:",
+      "allowedFileTypes": "ประเภทไฟล์ที่อนุญาต:",
+      "minLocalDate": "วันที่และเวลาท้องถิ่นขั้นต่ำ:",
+      "maxLocalDate": "วันที่และเวลาท้องถิ่นสูงสุด:",
+      "minDate": "วันที่ขั้นต่ำ:",
+      "maxDate": "วันที่สูงสุด:",
+      "validEmailFormat": "รูปแบบอีเมลที่ถูกต้อง",
+      "hasUppercase": "มีตัวพิมพ์ใหญ่",
+      "hasLowercase": "มีตัวพิมพ์เล็ก",
+      "hasNumber": "มีตัวเลข",
+      "hasSpecialChar": "มีอักขระพิเศษ",
+      "noWhitespace": "ไม่มีช่องว่าง",
+      "futureDateOnly": "เฉพาะวันที่ในอนาคต",
+      "pastDateOnly": "เฉพาะวันที่ในอดีต"
+    }
+  },
+  "formElement": {
+    "dragHandleTitle": "ลากเพื่อจัดลำดับใหม่",
+    "form_elements": "องค์ประกอบฟอร์ม",
+    "removeFieldTitle": "ลบฟิลด์",
+    "toggleVisibility": "สลับการแสดงผล",
+    "showLabel": "แสดงป้ายกำกับ",
+    "labelText": "ข้อความป้ายกำกับ:",
+    "labelPlaceholder": "แก้ไขป้ายกำกับฟิลด์",
+    "idLabel": "รหัส (ID):",
+    "idPlaceholder": "แก้ไขรหัสฟิลด์",
+    "idTitle": "แก้ไขรหัสฟิลด์",
+    "placeholderLabel": "ข้อความตัวยึดตำแหน่ง:",
+    "placeholderPlaceholder": "แก้ไขข้อความตัวยึดตำแหน่ง",
+    "placeholderTitle": "แก้ไขข้อความตัวยึดตำแหน่ง",
+    "required": "จำเป็น",
+    "enableSearch": "เปิดใช้งานการค้นหา",
+    "gridColumns": "จำนวนคอลัมน์ (เดสก์ท็อป):",
+    "columnSpan": "ความกว้างคอลัมน์ (เดสก์ท็อป):",
+    "newOption": "ตัวเลือกใหม่",
+    "groupedFields": "ฟิลด์ที่จัดกลุ่ม",
+    "formForOption": "ฟอร์มสำหรับ \"{optionValue}\""
+  },
+  "formType": {
+    "textInput": "ข้อความ",
+    "numberInput": "ตัวเลข",
+    "textAreaInput": "พื้นที่ข้อความ",
+    "emailInput": "อีเมล",
+    "multiCheckbox": "ช่องทำเครื่องหมาย (หลายตัวเลือก)",
+    "singleSelect": "ตัวเลือก (รายการเดียว)",
+    "image": "รูปภาพ",
+    "dndImage": "รูปภาพ (ลากและวาง)",
+    "multiImage": "รูปภาพ (หลายรูป)",
+    "dndMultiImage": "รูปภาพ (ลากและวาง หลายรูป)",
+    "passwordInput": "รหัสผ่าน",
+    "date": "วันที่",
+    "dateTime": "วันที่และเวลา",
+    "radio": "ปุ่มตัวเลือก (Radio)",
+    "group": "กลุ่ม",
+    "dynamicField": "ฟิลด์แบบไดนามิก",
+    "phoneNumber": "หมายเลขโทรศัพท์"
+  },
+  "formViewer": {
+    "emptyValue": "-",
+    "noImageUploaded": "ไม่มีรูปภาพอัปโหลด",
+    "noImagesUploaded": "ไม่มีรูปภาพหลายรูปอัปโหลด",
+    "emptyGroup": "ไม่มีฟิลด์ในกลุ่มนี้",
+    "dynamicFieldDetails": "รายละเอียดสำหรับ \"{{value}}\"",
+    "unsupportedFieldType": "รูปแบบฟิลด์ไม่รองรับ: {{type}}"
+  },
+  "customer": {
+    "userType": {
+      "bronze": "บรอนซ์",
+      "silver": "ซิลเวอร์",
+      "gold": "โกลด์",
+      "platinum": "แพลทินัม"
+    },
+    "info": "ข้อมูลลูกค้า"
+  },
+  "report":{
+    "1":"1.รายงานสรุปงานบริการ",
+    "1_1":"1.1 รายงานสรุปงานบริการรายวัน",
+    "1_2":"1.2 รายงานสรุปงานบริการรายเดือน",
+    "1_3":"1.3 รายงานสรุปงานบริการเปรียบเทียบตามรายวัน",
+    "1_4":"1.4 รายงานสรุปงานบริการเปรียบเทียบตามรายเดือน",
+    "2":"2.รายงานรายละเอียดงานบริการ",
+    "2_1":"2.1 รายงานรายละเอียดข้อมูลงานบริการ",
+    "2_2":"2.2 รายงานสรปงานบริการแจกแจงตามประเภทงานบริการ",
+    "2_3":"2.3 รายงานสรุปงานบริการแจกแจงตามผลให้บริการ",
+    "2_4":"2.4 รายงานรายละเอียดงานบริการและสถานที่ให้บริการ"
   }
 }

@@ -2,7 +2,7 @@ import React, { SetStateAction, useEffect, useState } from 'react';
 import Button from '@/components/ui/button/Button';
 import { FormField, FormLinkWf, FormManager } from '../interface/FormField';
 import { ConfirmationModal } from '../case/modal/ConfirmationModal';
-import { useLazyGetFormLinkWfQuery, useLazyPublishFormQuery } from '@/store/api/formApi';
+import { useLazyGetFormLinkWfQuery, usePublishFormMutationMutation } from '@/store/api/formApi';
 import { ToastContainer } from '../crud/ToastContainer';
 import { useToast } from '@/hooks';
 import Badge from '../ui/badge/Badge';
@@ -11,7 +11,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 
 const ListOfWf: React.FC<{ formLinkWf: FormLinkWf[] }> = ({ formLinkWf }) => {
-  return <div> กรุณาเอา form ออกจาก workflow ด่างล่าง เพื่อทำการ Unpublish
+  const { t } = useTranslation();
+  return <div> {t("form_builder.remove_workflow")}
     <div>{formLinkWf.length > 0 && (
       <div className=" rounded-lg ">
         <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
@@ -56,11 +57,11 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
   const [showPubModal, setShowPubModal] = useState<boolean>(false);
   const [isLoadingWfData, setIsLoadingWfData] = useState<boolean>(false);
   const style = type === "list" ? "outline" : "outline";
-  const [pusblishForm] = useLazyPublishFormQuery({})
+  const [pusblishForm] = usePublishFormMutationMutation({})
   const [getFormLinkWf] = useLazyGetFormLinkWfQuery()
   const { toasts, addToast, removeToast } = useToast();
   const [SelectFormLinkWf, setSelectFormLinkWf] = useState<FormLinkWf[] | undefined>(undefined)
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleOnPubUnPub = async (form: FormManager) => {
     try {
       const response = await pusblishForm({ formId: form.formId, publish: !form.publish })
@@ -138,35 +139,35 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
   };
 
   return (
-    <div className={`flex items-center ${type !== "list" ? "justify-between" : "justify-center"} w-full`}>
+    <div className={`flex  ${type !== "list" ? "justify-between" : "  justify-end"} w-full`}>
       <div className="flex items-center gap-2">
         <Button
           onClick={() => handleOnView?.()}
           variant={`${style}`}
           title="View"
         >
-          View
+          {t("common.view")}
         </Button>
         <Button
           onClick={() => handleOnEdit?.(form)}
           variant={style}
           title="Edit"
-          disabled={
-            (form?.versionsList?.length ?? 0) > 0 &&
-            Number(form.versions) <
-            Math.max(...(form.versionsList?.map(Number) ?? [Number(form.versions)]))
-          }
+          // disabled={
+          //   (form?.versionsInfoList?.length ?? 0) > 0 &&
+          //   Number(form.versions) <
+          //   Math.max(...(form.versionsInfoList?.map((item)=>Number(item.version)) ?? [Number(form.versions)]))
+          // }
         >
-          Edit
+        {t("common.edit")}
         </Button>
 
 
         {type === "list" && <Button
           onClick={() => { setShowPubModal(true) }}
           variant={`outline`}
-          className="min-w-[110px]"
+          className="w-[110px]"
         >
-          {!form.publish ? "Publish" : "UnPublish"}
+          {!form.publish ? t("common.publish") : t("common.unpublish")}
         </Button>
         }
       </div>
@@ -175,7 +176,7 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
         variant={`outline`}
         className="min-w-[110px]"
       >
-        {!form.publish ? "Publish" : "UnPublish"}
+        {!form.publish ? t("common.publish") : t("common.unpublish")}
       </Button>
       }
 
@@ -188,9 +189,11 @@ const ButtonAction: React.FC<TableRowActionsProps> = ({
           setIsLoadingWfData(false);
         }}
         onConfirm={canConfirm() ? () => handleOnPubUnPub(form) : undefined}
-        title={!form?.publish ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+        title={!form?.publish ? t("common.publish") : t("common.unpublish")}
         description={getModalDescription()}
         confirmButtonVariant={!form?.publish ? "success" : "error"}
+        cancelButtonText={t("common.cancel")}
+        confirmButtonText={t("common.confirm")}
       />
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />

@@ -1,6 +1,5 @@
 // /src/components/workflow/editor/Editor.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AngleLeftIcon, AngleRightIcon, BoxCubeIcon, CheckLineIcon, CloseIcon, CopyIcon, DownloadIcon, FileIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { ToastContainer } from "@/components/crud/ToastContainer";
@@ -8,6 +7,7 @@ import { FormField } from "@/components/interface/FormField";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCreateWorkflowMutation, useUpdateWorkflowMutation } from "@/store/api/workflowApi";
 import type { Connection, ConnectionType, NodeType, Position, WorkflowData, WorkflowEditorComponentProps, WorkflowNode } from "@/types/workflow";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
@@ -19,31 +19,18 @@ import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
 
 // Grid configuration
-const GRID_SIZE = 20;
-const NODE_WIDTH = 96; // 24 * 4 (w-24)
-const NODE_HEIGHT = 64; // 16 * 4 (h-16)
-
-// Workflow status options
-const workflowStatuses = [
-  { value: "draft", label: "Draft", color: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800" },
-  { value: "active", label: "Active", color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800" },
-  { value: "inactive", label: "Inactive", color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800" },
-  { value: "testing", label: "Testing", color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800" }
-] as const;
-
-// Node type configurations
-const nodeTypes = {
-  start: { button: "bg-success-500 text-white dark:text-white hover:bg-success-600", color: "bg-success-500 dark:bg-success-400", label: "Start" },
-  process: { button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600", color: "bg-brand-500 dark:bg-brand-400", label: "Process" },
-  dispatch: { button: "bg-gray-500 text-white dark:text-white hover:bg-gray-600", color: "bg-gray-500 dark:bg-gray-400", label: "Dispatch" },
-  sla: { button: "bg-purple-500 text-white dark:text-white hover:bg-purple-600", color: "bg-purple-500 dark:bg-purple-400", label: "SLA" },
-  decision: { button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600", color: "bg-warning-500 dark:bg-warning-400", label: "Decision" },
-  end: { button: "bg-error-500 text-white dark:text-white hover:bg-error-600", color: "bg-error-500 dark:bg-error-400", label: "End" }
-} as const;
+const GRID_SIZE = 20 as const;
+const NODE_WIDTH = 96 as const; // 24 * 4 (w-24)
+const NODE_HEIGHT = 64 as const; // 16 * 4 (h-16)
 
 const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   caseStatuses,
   forms,
+  userGroup,
+  users,
+  workflowAction,
+  workflowData,
+  workflowId,
   initialData = {
     nodes: [],
     connections: [],
@@ -51,79 +38,168 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       title: "Untitled Workflow",
       description: "",
       status: "draft",
+      totalSla: 0,
       createdAt: new Date().toISOString()
     }
   },
-  users,
-  userGroup,
-  workflowAction,
-  workflowData,
-  workflowId,
   onSave
 }) => {
-  const [createWorkflow] = useCreateWorkflowMutation();
-  const [updateWorkflow] = useUpdateWorkflowMutation();
-  // const navigate = useNavigate();
+  // ===================================================================
+  // Hooks
+  // ===================================================================
+
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
-  const editable = workflowId === "new" || (workflowId !== "new" && workflowAction === "edit");
+  const { language, t } = useTranslation();
 
-  const [nodes, setNodes] = useState<WorkflowNode[]>(initialData.nodes);
-  const [connections, setConnections] = useState<Connection[]>(initialData.connections);
-  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
-  const [isDragging, setIsDragging] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
-  const [isConnecting, setIsConnecting] = useState<string | null>(null);
-  const [tempConnection, setTempConnection] = useState<Position | null>(null);
-  const [showJsonPreview, setShowJsonPreview] = useState<boolean>(false);
-  const [workflowMetadata, setWorkflowMetadata] = useState(initialData.metadata);
+  // Node type configurations
+  const nodeTypes = {
+    start: {
+      button: "bg-success-500 text-white dark:text-white hover:bg-success-600",
+      color: "bg-success-500 dark:bg-success-400",
+      label: t("crud.workflow.builder.toolbar.nodes.start")
+    },
+    process: {
+      button: "bg-brand-500 text-white dark:text-white hover:bg-brand-600",
+      color: "bg-brand-500 dark:bg-brand-400",
+      label: t("crud.workflow.builder.toolbar.nodes.process")
+    },
+    dispatch: {
+      button: "bg-gray-500 text-white dark:text-white hover:bg-gray-600",
+      color: "bg-gray-500 dark:bg-gray-400",
+      label: t("crud.workflow.builder.toolbar.nodes.dispatch")
+    },
+    sla: {
+      button: "bg-purple-500 text-white dark:text-white hover:bg-purple-600",
+      color: "bg-purple-500 dark:bg-purple-400",
+      label: t("crud.workflow.builder.toolbar.nodes.sla")
+    },
+    decision: {
+      button: "bg-warning-500 text-white dark:text-white hover:bg-warning-600",
+      color: "bg-warning-500 dark:bg-warning-400",
+      label: t("crud.workflow.builder.toolbar.nodes.decision")
+    },
+    end: {
+      button: "bg-error-500 text-white dark:text-white hover:bg-error-600",
+      color: "bg-error-500 dark:bg-error-400",
+      label: t("crud.workflow.builder.toolbar.nodes.end")
+    }
+  } as const;
+
+  // Workflow status options
+  const workflowStatuses = [
+    { value: "draft", label: t("crud.workflow.builder.metadata.status.options.draft"), color: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800" },
+    { value: "active", label: t("crud.workflow.builder.metadata.status.options.active"), color: "text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800" },
+    { value: "inactive", label: t("crud.workflow.builder.metadata.status.options.inactive"), color: "text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800" },
+    { value: "testing", label: t("crud.workflow.builder.metadata.status.options.testing"), color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800" }
+  ] as const;
+
+  // ===================================================================
+  // API Mutations
+  // ===================================================================
+
+  const [createWorkflow] = useCreateWorkflowMutation();
+  const [updateWorkflow] = useUpdateWorkflowMutation();
+
+  // ===================================================================
+  // Component State
+  // ===================================================================
+
+  const svgRef = useRef<SVGSVGElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // ===================================================================
+  // State Variables
+  // ===================================================================
+
   const [connectingFrom, setConnectingFrom] = useState<"yes" | "no" | null>(null);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [connections, setConnections] = useState<Connection[]>(initialData?.connections || []);
   const [copiedJson, setCopiedJson] = useState<boolean>(false);
-  const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
-  const [showComponentsPreview, setShowComponentsPreview] = useState<boolean>(false);
-  const [importJsonText, setImportJsonText] = useState<string>("");
   const [draggedNodeType, setDraggedNodeType] = useState<WorkflowNode["type"] | null>(null);
+  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [importJsonText, setImportJsonText] = useState<string>("");
+  const [isConnecting, setIsConnecting] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<string | null>(null);
+  const [nodes, setNodes] = useState<WorkflowNode[]>(initialData?.nodes || []);
+  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
+  const [showComponentsPreview, setShowComponentsPreview] = useState<boolean>(false);
+  const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
+  const [showJsonPreview, setShowJsonPreview] = useState<boolean>(false);
+  const [tempConnection, setTempConnection] = useState<Position | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [workflowMetadata, setWorkflowMetadata] = useState(initialData?.metadata || []);
   // Enhanced state for Components Preview
   const [decisionSelections, setDecisionSelections] = useState<Record<string, "yes" | "no">>({});
   const [loading, setLoading] = useState(false);
   
-  const svgRef = useRef<SVGSVGElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // ===================================================================
+  // Derived State
+  // ===================================================================
 
-  const caseStatusOptions = Array.isArray(caseStatuses) ? caseStatuses.map((caseStatus) => ({
-    value: caseStatus?.statusId || "",
-    label: caseStatus?.en || caseStatus?.th || ""
-  })) : [];
+  // Determine if the workflow is editable
+  const editable = workflowId === "new" || (workflowId !== "new" && workflowAction === "edit");
 
-  const formOptions = forms?.map((form) => {
+  const decisionLang: Record<string, string> = {
+    yes: language === "th" && "ใช่" || "Yes", no: language === "th" && "ไม่" || "No"
+  };
+
+  // ===================================================================
+  // Helper Functions
+  // ===================================================================
+  
+  // Prepare case status options for Select component
+  const caseStatusOptions = useMemo(() => (
+    Array?.isArray(caseStatuses)
+      ? caseStatuses?.map(caseStatus => ({
+          value: caseStatus?.statusId || "",
+          label: language === "th" && caseStatus?.th || caseStatus?.en || ""
+        }))
+      : []
+  ), [caseStatuses, language]);
+
+  // Prepare form options for Select component
+  const formOptions = Array?.isArray(forms) && forms?.map(form => {
     return { value: form?.formId || "", label: form?.formName || "" };
   }) || [];
 
-  const userOptions = users?.map((user) => {
+  // Prepare user options for Select component
+  const userOptions = Array?.isArray(users) && users?.map(user => {
     return { value: user?.username || "", label: user?.displayName || user?.username || "" };
   }) || [];
 
-  const groupOptions = userGroup?.map((ug) => {
-    return { value: ug?.grpId || "", label: ug?.th || ug?.en || "" };
+  // Prepare group options for Select component
+  const groupOptions = Array?.isArray(userGroup) && userGroup?.map(ug => {
+    return { value: ug?.grpId || "", label: language === "th" && ug?.th || ug?.en || "" };
   }) || [];
 
   // Prepare workflow status options for Select component
-  const workflowStatusesOptions = workflowStatuses.map(status => ({
-    value: status.value,
-    label: status.label
-  }));
+  const workflowStatusesOptions = Array?.isArray(workflowStatuses) && workflowStatuses?.map(status => ({
+    value: status?.value,
+    label: status?.label
+  })) || [];
+
+  const countSLA = useCallback(() => {
+    return nodes?.reduce((total, node) => {
+      const config = node.data.config;
+      const slaValue = (config?.SLA ?? config?.sla) || undefined;
+      if (slaValue !== undefined && !isNaN(Number(slaValue))) {
+        return total + Number(slaValue);
+      }
+      return total;
+    }, 0);
+  }, [nodes]);
+
+  // Update workflow metadata
+  const updateWorkflowMetadata = useCallback((updates: Partial<typeof workflowMetadata>) => {
+    setWorkflowMetadata(prev => ({ ...prev, ...updates }));
+  }, []);
 
   // Load workflow data from URL if workflowId is provided
   useEffect(() => {
     if (workflowId && workflowId !== "new") {
-      // Mock API call - replace with actual API
       const loadWorkflowFromUrl = async () => {
         try {
-          // Simulate API call
-          // await new Promise(resolve => setTimeout(resolve, 100));
-          
           const { nodes, connections, metadata } = workflowData as {
             nodes: NodeType[];
             connections: ConnectionType[];
@@ -136,9 +212,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           };
           
           setNodes(
-            nodes?.map((n) => ({
+            nodes?.map(n => ({
               ...n,
-              type: n.type as WorkflowNode["type"],
+              type: n?.type as WorkflowNode["type"],
             })) || null
           );
 
@@ -147,7 +223,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           if (metadata) {
             setWorkflowMetadata({
               ...metadata,
-              status: metadata.status as WorkflowData["metadata"]["status"],
+              status: metadata?.status as WorkflowData["metadata"]["status"],
             });
           }
         }
@@ -162,90 +238,131 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     }
   }, [workflowData, workflowId]);
 
+  useEffect(() => {
+    updateWorkflowMetadata({ totalSla: countSLA() });
+  }, [countSLA, updateWorkflowMetadata]);
+
+  const findNodeByAction = useCallback((action: string, type?: string): WorkflowNode | undefined => {
+    if (type === "dispatch") {
+      return nodes.find(node => node?.data?.config?.action === action && node?.type === type);
+    }
+    return nodes.find(node => node?.data?.config?.action === action);
+  }, [nodes]);
+
   // Validate workflow before saving
   const validateWorkflow = useCallback((): string[] => {
     const errors: string[] = [];
+
+    ["start", "dispatch", "end"]?.map(n => {
+      if (!nodes?.some(node => node?.type === n)) {
+        let nodeName = "";
+        if (n === "start") {
+          nodeName = t("crud.workflow.builder.toolbar.nodes.start");
+        }
+        else if (n === "dispatch") {
+          nodeName = t("crud.workflow.builder.toolbar.nodes.dispatch");
+        }
+        else if (n === "end") {
+          nodeName = t("crud.workflow.builder.toolbar.nodes.end");
+        }
+        errors?.push(t("crud.workflow.builder.node.validation.node_required").replace("_NODE_", nodeName));
+      }
+    });
+
+    ["S001", "S003", "S007"]?.map(a => {
+      const actionValue = caseStatusOptions?.find(s => s?.value === a);
+      const actionLabel = actionValue?.label?.toLowerCase() || "";
+      // const isDispatch = actionValue?.label?.toLowerCase()?.replace("ed", "") || "";
+      const isDispatch = actionValue?.value === "S003" && "dispatch" || ""
+      if (isDispatch === "dispatch") {
+        if (!findNodeByAction(actionValue?.value || "", isDispatch || "")) {
+          errors?.push(t("crud.workflow.builder.node.validation.action_required")
+            .replace("_ACTION_", actionLabel)
+            .replace("_NODE_", t("crud.workflow.builder.toolbar.nodes.dispatch"))
+          );
+        }
+      }
+      else {
+        if (!findNodeByAction(actionValue?.value || "")) {
+          errors?.push(t("crud.workflow.builder.node.validation.action_required")
+            .replace("_ACTION_", actionLabel)
+            .replace("_NODE_", t("crud.workflow.builder.toolbar.nodes.process"))
+          );
+        }
+      }
+    });
     
-    const hasStartNode = nodes.some(node => node.type === "start");
-    const hasEndNode = nodes.some(node => node.type === "end");
+    // const hasStartNode = nodes?.some(node => node?.type === "start");
+    // const hasEndNode = nodes?.some(node => node?.type === "end");
     
-    if (!hasStartNode) {
-      errors.push("Workflow must have at least one Start node");
-    }
+    // if (!hasStartNode) {
+    //   errors?.push("Workflow must have at least one Start node");
+    // }
     
-    if (!hasEndNode) {
-      errors.push("Workflow must have at least one End node");
-    }
+    // if (!hasEndNode) {
+    //   errors?.push("Workflow must have at least one End node");
+    // }
     
     // Validate connection limits
-    const connectionCounts = nodes.reduce((acc, node) => {
-      const outgoingConnections = connections.filter(conn => conn.source === node.id);
-      acc[node.id] = outgoingConnections.length;
+    const connectionCounts = nodes?.reduce((acc, node) => {
+      const outgoingConnections = connections?.filter(conn => conn?.source === node?.id);
+      acc[node?.id] = outgoingConnections?.length;
       return acc;
     }, {} as Record<string, number>);
     
-    nodes.forEach(node => {
-      const count = connectionCounts[node.id] || 0;
-      if ((
-        node.type === "start"
-        || node.type === "process"
-        || node.type === "dispatch"
-        // || node.type === "sla"
-        || node.type === "end"
-      ) && count > 1) {
-        errors.push(`${node.data.label} can only have 1 outgoing connection`);
+    nodes?.forEach(node => {
+      const count = connectionCounts[node?.id] || 0;
+      if ((node?.type === "start" || node?.type === "process" || node?.type === "dispatch" || node?.type === "end") && count > 1) {
+        errors?.push(`${node?.data?.label} can only have 1 outgoing connection`);
       }
-      if ((
-        node.type === "decision"
-        || node.type === "sla"
-      ) && count > 2) {
-        errors.push(`${node.data.label} can only have 2 outgoing connections (Yes/No)`);
+      if ((node?.type === "decision" || node?.type === "sla") && count > 2) {
+        errors?.push(`${node?.data?.label} can only have 2 outgoing connections (Yes/No)`);
       }
     });
     
     return errors;
-  }, [nodes, connections]);
+  }, [caseStatusOptions, connections, nodes, findNodeByAction, t]);
 
   // Snap position to grid
   const snapToGrid = useCallback((position: Position): Position => {
     return {
-      x: Math.round(position.x / GRID_SIZE) * GRID_SIZE,
-      y: Math.round(position.y / GRID_SIZE) * GRID_SIZE
+      x: Math?.round(position?.x / GRID_SIZE) * GRID_SIZE,
+      y: Math?.round(position?.y / GRID_SIZE) * GRID_SIZE
     };
   }, []);
 
   // Calculate connection point on node border
   const getNodeConnectionPoint = useCallback((fromPos: Position, toPos: Position, isSource: boolean): Position => {
     const nodeCenter = {
-      x: (isSource ? fromPos.x : toPos.x) + NODE_WIDTH / 2,
-      y: (isSource ? fromPos.y : toPos.y) + NODE_HEIGHT / 2
+      x: (isSource ? fromPos?.x : toPos?.x) + NODE_WIDTH / 2,
+      y: (isSource ? fromPos?.y : toPos?.y) + NODE_HEIGHT / 2
     };
     
     const otherCenter = {
-      x: (isSource ? toPos.x : fromPos.x) + NODE_WIDTH / 2,
-      y: (isSource ? toPos.y : fromPos.y) + NODE_HEIGHT / 2
+      x: (isSource ? toPos?.x : fromPos?.x) + NODE_WIDTH / 2,
+      y: (isSource ? toPos?.y : fromPos?.y) + NODE_HEIGHT / 2
     };
 
     // Calculate which side to connect from/to
-    const dx = otherCenter.x - nodeCenter.x;
-    const dy = otherCenter.y - nodeCenter.y;
+    const dx = otherCenter?.x - nodeCenter?.x;
+    const dy = otherCenter?.y - nodeCenter?.y;
     
     const nodeHalfWidth = NODE_WIDTH / 2;
     const nodeHalfHeight = NODE_HEIGHT / 2;
     
     // Determine connection side based on direction
-    if (Math.abs(dx) > Math.abs(dy)) {
+    if (Math?.abs(dx) > Math?.abs(dy)) {
       // Horizontal connection (left/right)
       return {
-        x: nodeCenter.x + (dx > 0 ? nodeHalfWidth : -nodeHalfWidth),
-        y: nodeCenter.y
+        x: nodeCenter?.x + (dx > 0 ? nodeHalfWidth : -nodeHalfWidth),
+        y: nodeCenter?.y
       };
     }
     else {
       // Vertical connection (top/bottom)
       return {
-        x: nodeCenter.x,
-        y: nodeCenter.y + (dy > 0 ? nodeHalfHeight : -nodeHalfHeight)
+        x: nodeCenter?.x,
+        y: nodeCenter?.y + (dy > 0 ? nodeHalfHeight : -nodeHalfHeight)
       };
     }
   }, []);
@@ -256,37 +373,35 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     const visited = new Set<string>();
     
     const traverse = (nodeId: string) => {
-      if (visited.has(nodeId)) {
+      if (visited?.has(nodeId)) {
         return;
       }
-      visited.add(nodeId);
+      visited?.add(nodeId);
       
-      const node = nodes.find(n => n.id === nodeId);
+      const node = nodes?.find(n => n?.id === nodeId);
       if (!node) {
         return;
       }
       
-      path.push(nodeId);
+      path?.push(nodeId);
       
-      if (node.type === "end") {
+      if (node?.type === "end") {
         return;
       }
       
-      const outgoingConnections = connections.filter(c => c.source === nodeId);
+      const outgoingConnections = connections?.filter(c => c?.source === nodeId);
       
-      if (
-        node.type === "decision"
-        || node.type === "sla"
-      ) {
+      if (node?.type === "decision" || node?.type === "sla") {
         const selectedPath = decisions[nodeId] || "yes"; // Default to yes
-        const connection = outgoingConnections.find(c => c.label === selectedPath);
+        const connection = outgoingConnections?.find(c => c?.label === selectedPath);
         if (connection) {
-          traverse(connection.target);
+          traverse(connection?.target);
         }
-      } else {
+      }
+      else {
         // For non-decision nodes, follow the first connection
-        if (outgoingConnections.length > 0) {
-          traverse(outgoingConnections[0].target);
+        if (outgoingConnections?.length > 0) {
+          traverse(outgoingConnections[0]?.target);
         }
       }
     };
@@ -297,63 +412,57 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Generate components preview based on workflow path
   const generateComponentsPreview = useCallback(() => {
-    const startNodes = nodes.filter(n => n.type === "start");
-    if (startNodes.length === 0) {
+    const startNodes = nodes?.filter(n => n?.type === "start");
+    if (startNodes?.length === 0) {
       return [];
     }
 
-    const pathNodes = getWorkflowPath(startNodes[0].id, decisionSelections);
+    const pathNodes = getWorkflowPath(startNodes[0]?.id, decisionSelections);
 
     type PreviewComponent =
       {
-        id: string;
         type: "start";
+        id: string;
         label: string;
         description?: string;
         continueFromWorkflow?: boolean;
         sourceWorkflowId?: string;
       } |
       {
-        id: string;
         type: "process";
+        id: string;
         label: string;
-        action?: string
-        // formId?: string;
         form?: FormField;
+        action?: string;
         sla?: string | number;
-        // group?: string[];
         group?: string;
-        // pic?: string[];
         pic?: string;
       } |
       {
-        id: string;
         type: "dispatch";
+        id: string;
         label: string;
-        action?: string
-        // formId?: string;
         form?: FormField;
+        action?: string;
         sla?: string | number;
-        // group?: string[];
         group?: string;
-        // pic?: string[];
         pic?: string;
       } |
       {
-        id: string;
         type: "sla";
+        id: string;
         label: string;
         SLA?: string | number;
       } |
       {
-        id: string;
         type: "decision";
+        id: string;
         label: string;
         condition?: string;
       } |
       {
-        id: string;
         type: "end";
+        id: string;
         label: string;
         description?: string;
         allowContinuation?: boolean;
@@ -362,90 +471,75 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
     const components: PreviewComponent[] = [];
 
-    pathNodes.forEach(nodeId => {
-      const node = nodes.find(n => n.id === nodeId);
+    pathNodes?.forEach(nodeId => {
+      const node = nodes?.find(n => n?.id === nodeId);
       if (!node) {
         return;
       }
 
-      // console.log(node.data.config);
-
-      if (node.type === "start") {
-        components.push({
-          id: node.id,
+      if (node?.type === "start") {
+        components?.push({
           type: "start",
-          label: node.data.label,
-          description: node.data.description,
-          continueFromWorkflow: node.data.config?.continueFromWorkflow === true,
-          sourceWorkflowId: typeof node.data.config?.sourceWorkflowId === "string" ? node.data.config.sourceWorkflowId : undefined
+          id: node?.id,
+          label: node?.data?.label,
+          description: node?.data?.description,
+          continueFromWorkflow: node?.data?.config?.continueFromWorkflow === true,
+          sourceWorkflowId: typeof node?.data?.config?.sourceWorkflowId === "string" ? node?.data?.config?.sourceWorkflowId : undefined
         });
       }
-      // else if (node.type === "process" && node.data.config?.form) {
-      //   const formConfig = getFormComponentConfig(
-      //     typeof node.data.config?.form === "string" ? node.data.config.form : ""
-      //   );
-      //   components.push({
-      //     id: node.id,
-      //     type: "form",
-      //     label: node.data.label,
-      //     form: typeof node.data.config?.form === "string" ? node.data.config.form : "",
-      //     formConfig,
-      //     sla: typeof node.data.config?.sla === "string" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
-      //     pic: typeof node.data.config?.pic === "string" ? node.data.config.pic : undefined
-      //   });
-      // }
-      else if (node.type === "process" || node.type === "dispatch") {
-        components.push({
-          id: node.id,
-          // type: "process",
-          type: node.type === "dispatch" ? "dispatch" : "process",
-          label: node.data.label,
-          action: caseStatuses?.find(a => a.statusId === node.data.config?.action)?.en || caseStatuses?.find(a => a.statusId === node.data.config?.action)?.th,
-          // formId: typeof node.data.config?.formId === "string" ? node.data.config.formId : "",
-          form: forms?.find(f => f.formId === node.data.config?.formId),
-          sla: typeof node.data.config?.sla === "number" || typeof node.data.config?.sla === "number" ? node.data.config.sla : undefined,
-          // pic: Array.isArray(node.data.config?.pic) ? node.data.config.pic : undefined,
-          pic: Array.isArray(node.data.config?.pic)
-            ? node.data.config.pic.map((pid: string) => users?.find(u => u.id === pid)?.displayName || users?.find(u => u.id === pid)?.username || pid).join(", ")
-            : (typeof node.data.config?.pic === "string"
-              ? users?.find(u => u.id === node.data.config?.pic)?.displayName || 
-                users?.find(u => u.id === node.data.config?.pic)?.username || 
-                node.data.config?.pic
+      else if (node?.type === "process" || node?.type === "dispatch") {
+        components?.push({
+          type: node?.type === "dispatch" ? "dispatch" : "process",
+          id: node?.id,
+          label: node?.data?.label,
+          form: forms?.find(f => f?.formId === node?.data?.config?.formId),
+          sla: typeof node.data?.config?.sla === "number" || typeof node?.data?.config?.sla === "number" ? node?.data?.config?.sla : undefined,
+          action: language === "th" && (
+            caseStatuses?.find(a => a?.statusId === node?.data?.config?.action)?.th || caseStatuses?.find(a => a?.statusId === node?.data?.config?.action)?.en
+          ) || "",
+          group: Array?.isArray(node?.data?.config?.group)
+            ? node?.data?.config?.group?.map((gid: string) => language === "th" && (
+              userGroup?.find(ug => ug?.grpId === gid)?.th || userGroup?.find(ug => ug?.grpId === gid)?.en
+            ) || gid)?.join(", ")
+            : (typeof node?.data?.config?.group === "string"
+              ? language === "th" && (
+                userGroup?.find(ug => ug?.grpId === node?.data?.config?.group)?.th || userGroup?.find(ug => ug?.grpId === node?.data?.config?.group)?.en
+              ) ||
+                node?.data?.config?.group
               : undefined),
-          // group: Array.isArray(node.data.config?.group) ? node.data.config.group : undefined
-          group: Array.isArray(node.data.config?.group)
-            ? node.data.config.group.map((gid: string) => userGroup?.find(ug => ug.grpId === gid)?.en || userGroup?.find(ug => ug.grpId === gid)?.th || gid).join(", ")
-            : (typeof node.data.config?.group === "string"
-              ? userGroup?.find(ug => ug.grpId === node.data.config?.group)?.en ||
-                userGroup?.find(ug => ug.grpId === node.data.config?.group)?.th ||
-                node.data.config?.group
+          pic: Array?.isArray(node?.data?.config?.pic)
+            ? node?.data?.config?.pic?.map((pid: string) => users?.find(u => u?.id === pid)?.displayName || users?.find(u => u?.id === pid)?.username || pid)?.join(", ")
+            : (typeof node?.data?.config?.pic === "string"
+              ? users?.find(u => u?.id === node?.data?.config?.pic)?.displayName || 
+                users?.find(u => u?.id === node?.data?.config?.pic)?.username || 
+                node.data?.config?.pic
               : undefined),
         });
       }
-      else if (node.type === "sla") {
-        components.push({
-          id: node.id,
+      else if (node?.type === "sla") {
+        components?.push({
           type: "sla",
-          label: node.data.label,
-          SLA: typeof node.data.config?.SLA === "string" || typeof node.data.config?.SLA === "number" ? node.data.config.SLA : undefined
+          id: node?.id,
+          label: node?.data?.label,
+          SLA: typeof node?.data?.config?.SLA === "string" || typeof node?.data?.config?.SLA === "number" ? node?.data?.config?.SLA : undefined
         });
       }
-      else if (node.type === "decision") {
-        components.push({
-          id: node.id,
+      else if (node?.type === "decision") {
+        components?.push({
           type: "decision",
-          label: node.data.label,
-          condition: typeof node.data.config?.condition === "string" ? node.data.config.condition : undefined
+          id: node?.id,
+          label: node?.data?.label,
+          condition: typeof node?.data?.config?.condition === "string" ? node?.data?.config?.condition : undefined
         });
       }
-      else if (node.type === "end") {
-        components.push({
-          id: node.id,
+      else if (node?.type === "end") {
+        components?.push({
           type: "end",
-          label: node.data.label,
-          description: node.data.description,
-          allowContinuation: node.data.config?.allowContinuation === true,
-          nextWorkflowId: typeof node.data.config?.nextWorkflowId === "string" ? node.data.config.nextWorkflowId : undefined
+          id: node?.id,
+          label: node?.data?.label,
+          description: node?.data?.description,
+          allowContinuation: node?.data?.config?.allowContinuation === true,
+          nextWorkflowId: typeof node?.data?.config?.nextWorkflowId === "string" ? node?.data?.config?.nextWorkflowId : undefined
         });
       }
     });
@@ -456,10 +550,10 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     forms,
     nodes,
     decisionSelections,
+    language,
     userGroup,
     users,
-    getWorkflowPath,
-    // getFormComponentConfig
+    getWorkflowPath
   ]);
 
   // Handle decision toggle in Components Preview
@@ -485,7 +579,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       const baseY = scrollTop + GRID_SIZE * 4; // 4 grid units from top edge
 
       // Find next available grid position
-      const existingPositions = nodes.map(n => n.position);
+      const existingPositions = nodes.map(n => n?.position);
 
       for (let row = 0; row < 10; row++) {
         for (let col = 0; col < 8; col++) {
@@ -494,9 +588,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             y: baseY + row * (NODE_HEIGHT + GRID_SIZE)
           };
           
-          const isOccupied = existingPositions.some(pos => 
-            Math.abs(pos.x - testPosition.x) < NODE_WIDTH && 
-            Math.abs(pos.y - testPosition.y) < NODE_HEIGHT
+          const isOccupied = existingPositions?.some(pos => 
+            Math?.abs(pos?.x - testPosition?.x) < NODE_WIDTH && 
+            Math?.abs(pos?.y - testPosition?.y) < NODE_HEIGHT
           );
           
           if (!isOccupied) {
@@ -539,7 +633,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       type,
       position: nodePosition,
       data: {
-        label: `${nodeTypes[type].label} ${nodes.filter(n => n.type === type).length + 1}`,
+        label: `${nodeTypes[type]?.label} ${nodes?.filter(n => n?.type === type)?.length + 1}`,
         description: "",
         config: initialConfig
       }
@@ -550,33 +644,32 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     setSelectedNode(newNode);
     
     return newNode;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, snapToGrid]);
 
   // Handle drag start from node palette
   const handleDragStart = useCallback((e: React.DragEvent, nodeType: WorkflowNode["type"]) => {
     setDraggedNodeType(nodeType);
     e.dataTransfer.effectAllowed = "copy";
-    e.dataTransfer.setData("text/plain", nodeType);
+    e.dataTransfer?.setData("text/plain", nodeType);
   }, []);
 
   // Handle drag over canvas
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
+    e?.preventDefault();
     e.dataTransfer.dropEffect = "copy";
-  }, [
-
-  ]);
+  }, []);
 
   // Handle drop on canvas
   const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
+    e?.preventDefault();
     
     if (draggedNodeType) {
-      const rect = canvasRef.current?.getBoundingClientRect();
+      const rect = canvasRef?.current?.getBoundingClientRect();
       if (rect) {
         const position = snapToGrid({
-          x: e.clientX - rect.left - NODE_WIDTH / 2,
-          y: e.clientY - rect.top - NODE_HEIGHT / 2
+          x: e?.clientX - rect?.left - NODE_WIDTH / 2,
+          y: e?.clientY - rect?.top - NODE_HEIGHT / 2
         });
         
         const newNode = addNode(draggedNodeType, position);
@@ -595,13 +688,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Handle drag leave
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = canvasRef?.current?.getBoundingClientRect();
     if (rect) {
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const x = e?.clientX - rect?.left;
+      const y = e?.clientY - rect?.top;
       
       // Only clear preview if actually leaving the canvas area
-      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+      if (x < 0 || y < 0 || x > rect?.width || y > rect?.height) {
         // Handle drag leave
       }
     }
@@ -609,34 +702,31 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Handle mouse down on node
   const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
-    e.stopPropagation();
-    const node = nodes.find(n => n.id === nodeId);
+    e?.stopPropagation();
+    const node = nodes?.find(n => n?.id === nodeId);
     if (!node) {
       return;
     }
 
-    if (e.shiftKey && editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"])) {
+    if (e?.shiftKey && editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"])) {
       // Shift + click to start connection
 
       // Check connection limits
-      const outgoingConnections = connections.filter(conn => conn.source === nodeId);
-      // const maxConnections = node.type === "decision" ? 2 : 1;
-      const maxConnections = (node.type === "decision" || node.type === "sla") ? 2 : 1;
+      const outgoingConnections = connections?.filter(conn => conn?.source === nodeId);
+      const maxConnections = (node?.type === "decision" || node?.type === "sla") ? 2 : 1;
       
       if (outgoingConnections.length >= maxConnections) {
-        // alert(`${node.type === "decision" ? "Decision" : "This"} node already has maximum connections`);
-        const nodeTypeName = node.type === "decision" ? "Decision" : node.type === "sla" ? "SLA" : "This";
-        alert(`${nodeTypeName} node already has maximum connections`);
+        const nodeTypeName = node?.type === "decision" ? t("crud.workflow.builder.toolbar.nodes.decision")
+          : (node?.type === "sla" && t("crud.workflow.builder.toolbar.nodes.sla") || "");
+        // alert(`${nodeTypeName} node already has maximum connections`);
+        alert(`${t("crud.workflow.builder.node.validation.maximum_connections").replace("_NODE_", nodeTypeName)}`);
         return;
       }
       
-      // For decision nodes, determine Yes/No connection
-      if (
-        node.type === "decision"
-        || node.type === "sla"
-      ) {
-        const hasYes = outgoingConnections.some(conn => conn.label === "yes");
-        const hasNo = outgoingConnections.some(conn => conn.label === "no");
+      // For decision or sla nodes, determine Yes/No connection
+      if (node?.type === "decision" || node?.type === "sla") {
+        const hasYes = outgoingConnections?.some(conn => conn?.label === "yes");
+        const hasNo = outgoingConnections?.some(conn => conn?.label === "no");
         
         if (!hasYes) {
           setConnectingFrom("yes");
@@ -645,9 +735,9 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           setConnectingFrom("no");
         }
         else {
-          // alert("Decision node already has both Yes and No connections");
-          const nodeTypeName = node.type === "decision" ? "Decision" : "SLA";
-          alert(`${nodeTypeName} node already has both Yes and No connections`);
+          const nodeTypeName = node?.type === "decision" ? t("crud.workflow.builder.toolbar.nodes.decision") : t("crud.workflow.builder.toolbar.nodes.sla");
+          // alert(`${nodeTypeName} node already has both Yes and No connections`);
+          alert(`${t("crud.workflow.builder.node.validation.determine_connections").replace("_NODE_", nodeTypeName)}`);
           return;
         }
       }
@@ -659,54 +749,53 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     }
     else {
       // Regular click to drag
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect && editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"])) {
+      const rect = canvasRef?.current?.getBoundingClientRect();
+      if (rect && editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"])) {
         setIsDragging(nodeId);
         setDragOffset({
-          x: e.clientX - rect.left - node.position.x,
-          y: e.clientY - rect.top - node.position.y
+          x: e?.clientX - rect?.left - node?.position?.x,
+          y: e?.clientY - rect?.top - node?.position?.y
         });
       }
     }
     setSelectedNode(node);
   }, [
-    nodes,
     connections,
+    editable,
+    nodes,
     permissions,
-    editable
+    t
   ]);
 
   // Handle mouse move
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = canvasRef?.current?.getBoundingClientRect();
     if (!rect) {
       return;
     }
 
     const mousePos = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e?.clientX - rect?.left,
+      y: e?.clientY - rect?.top
     };
 
     if (isDragging) {
       const newPosition = snapToGrid({
-        x: mousePos.x - dragOffset.x,
-        y: mousePos.y - dragOffset.y
+        x: mousePos?.x - dragOffset?.x,
+        y: mousePos?.y - dragOffset?.y
       });
 
-      setNodes(prev => prev.map(node => 
-        node.id === isDragging
-          ? { ...node, position: newPosition }
-          : node
+      setNodes(prev => prev?.map(node => 
+        node?.id === isDragging ? { ...node, position: newPosition } : node
       ));
     }
     else if (isConnecting) {
       setTempConnection(snapToGrid(mousePos));
     }
   }, [
-    isDragging,
-    isConnecting,
     dragOffset,
+    isConnecting,
+    isDragging,
     snapToGrid
   ]);
 
@@ -714,18 +803,18 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (isConnecting) {
       // Check if we"re over a node
-      const target = e.target as Element;
-      const nodeElement = target.closest("[data-node-id]");
+      const target = e?.target as Element;
+      const nodeElement = target?.closest("[data-node-id]");
       if (nodeElement) {
-        const targetNodeId = nodeElement.getAttribute("data-node-id");
+        const targetNodeId = nodeElement?.getAttribute("data-node-id");
         if (targetNodeId && targetNodeId !== isConnecting) {
           // Validate connection
-          const targetNode = nodes.find(n => n.id === targetNodeId);
-          const sourceNode = nodes.find(n => n.id === isConnecting);
+          const targetNode = nodes?.find(n => n?.id === targetNodeId);
+          const sourceNode = nodes?.find(n => n?.id === isConnecting);
           
           if (targetNode && sourceNode) {
             // Check if target can accept connections (start nodes cannot be targets)
-            if (targetNode.type === "start") {
+            if (targetNode?.type === "start") {
               alert("Cannot connect to Start node");
               setIsConnecting(null);
               setConnectingFrom(null);
@@ -735,7 +824,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             
             // Check for duplicate connections
             const existingConnection = connections.find(conn => 
-              conn.source === isConnecting && conn.target === targetNodeId
+              conn?.source === isConnecting && conn.target === targetNodeId
             );
             
             if (existingConnection) {
@@ -762,16 +851,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     }
     setIsDragging(null);
   }, [
-    isConnecting,
     connectingFrom,
-    nodes,
-    connections
+    connections,
+    isConnecting,
+    nodes
   ]);
 
   // Delete node
   const deleteNode = useCallback((nodeId: string) => {
-    setNodes(prev => prev.filter(n => n.id !== nodeId));
-    setConnections(prev => prev.filter(c => c.source !== nodeId && c.target !== nodeId));
+    setNodes(prev => prev?.filter(n => n?.id !== nodeId));
+    setConnections(prev => prev?.filter(c => c?.source !== nodeId && c?.target !== nodeId));
     if (selectedNode?.id === nodeId) {
       setSelectedNode(null);
     }
@@ -779,13 +868,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Update node data
   const updateNodeData = useCallback((nodeId: string, updates: Partial<WorkflowNode["data"]>) => {
-    setNodes(prev => prev.map(node => 
-      node.id === nodeId 
-        ? { ...node, data: { ...node.data, ...updates } }
+    setNodes(prev => prev?.map(node => 
+      node?.id === nodeId 
+        ? { ...node, data: { ...node?.data, ...updates } }
         : node
     ));
     if (selectedNode?.id === nodeId) {
-      setSelectedNode(prev => prev ? { ...prev, data: { ...prev.data, ...updates } } : null);
+      setSelectedNode(prev => prev ? { ...prev, data: { ...prev?.data, ...updates } } : null);
     }
   }, [selectedNode]);
 
@@ -795,17 +884,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       const workflowData = JSON.parse(importJsonText);
       
       // Validate imported data structure
-      if (!workflowData.nodes || !workflowData.connections || !workflowData.metadata) {
+      if (!workflowData?.nodes || !workflowData?.connections || !workflowData?.metadata) {
         throw new Error("Invalid workflow format");
       }
       
-      setNodes(workflowData.nodes);
-      setConnections(workflowData.connections);
-      setWorkflowMetadata(workflowData.metadata);
+      setNodes(workflowData?.nodes);
+      setConnections(workflowData?.connections);
+      setWorkflowMetadata(workflowData?.metadata);
       setImportJsonText("");
       setShowImportDialog(false);
-      
-      // console.log("Workflow imported successfully");
     }
     catch (error) {
       alert("Invalid JSON format. Please check your input.");
@@ -815,11 +902,11 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Import from file
   const handleFileImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event?.target?.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
+      reader.onload = e => {
+        const content = e?.target?.result as string;
         setImportJsonText(content);
       };
       reader.readAsText(file);
@@ -843,7 +930,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${workflowMetadata.title.replace(/\s+/g, "_").toLowerCase()}_workflow.json`;
+    a.download = `${workflowMetadata?.title?.replace(/\s+/g, "_").toLowerCase()}_workflow.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -876,7 +963,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     const errors = validateWorkflow();
     setValidationErrors(errors);
 
-    if (errors.length > 0) {
+    if (errors?.length > 0) {
       return; // Don"t save if there are validation errors
     }
 
@@ -890,24 +977,22 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     };
     onSave?.(workflowData);
     setShowJsonPreview(false);
-    // console.log("Workflow saved:", workflowData);
 
     try {
       setLoading(true);
-      // const response = await createWorkflow(workflowData).unwrap();
+
       let response;
-      if (workflowId && workflowId !== "new" && permissions.hasAnyPermission(["workflow.update"])) {
-        response = await updateWorkflow({ id: workflowId, data: workflowData }).unwrap();
+      if (workflowId && workflowId !== "new" && permissions?.hasAnyPermission(["workflow.update"])) {
+        response = await updateWorkflow({ id: workflowId, data: workflowData })?.unwrap();
       }
-      else if (permissions.hasAnyPermission(["workflow.create"])) {
-        response = await createWorkflow(workflowData).unwrap();
+      else if (permissions?.hasAnyPermission(["workflow.create"])) {
+        response = await createWorkflow(workflowData)?.unwrap();
       }
 
       if (response?.status) {
         addToast("success", `Workflow Management: ${response?.desc || response?.msg || "Save successfully"}`);
         setTimeout(() => {
           window.location.replace(`/workflow/list/`);
-          // navigate("/workflow/list/", { replace: true });
         }, 1000);
       }
       else {
@@ -928,73 +1013,60 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     workflowMetadata,
     addToast,
     createWorkflow,
-    // navigate,
     onSave,
     updateWorkflow,
     validateWorkflow,
   ]);
-
-  // Update workflow metadata
-  const updateWorkflowMetadata = useCallback((updates: Partial<typeof workflowMetadata>) => {
-    setWorkflowMetadata(prev => ({ ...prev, ...updates }));
-  }, []);
 
   // Show JSON preview before save
   const handleSaveClick = useCallback(() => {
     const errors = validateWorkflow();
     setValidationErrors(errors);
     setShowJsonPreview(true);
-  }, [
-    validateWorkflow,
-  ]);
+  }, [validateWorkflow]);
 
   // Get node position by ID
   const getNodePosition = useCallback((nodeId: string): Position => {
-    const node = nodes.find(n => n.id === nodeId);
-    return node ? node.position : { x: 0, y: 0 };
+    const node = nodes?.find(n => n?.id === nodeId);
+    return node ? node?.position : { x: 0, y: 0 };
   }, [nodes]);
 
   return (
     <>
-      <div
-        className="xl:flex bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700"
-      >
+      <div className="xl:flex bg-gray-50 dark:bg-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700">
         {/* Hidden file input */}
         <input
-          ref={fileInputRef}
           type="file"
           accept=".json"
-          onChange={handleFileImport}
           className="hidden"
+          ref={fileInputRef}
+          onChange={handleFileImport}
         />
 
         {/* Toolbar */}
-        <div
-          className="xl:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl rounded-r-2xl xl:rounded-r-none"
-        >
+        <div className="xl:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 rounded-l-2xl rounded-r-2xl xl:rounded-r-none">
           {/* Workflow Metadata */}
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">
-              Workflow Details
+              {t("crud.workflow.builder.toolbar.header")}
             </h3>
             
             {/* Title Input */}
-            <div className="mb-3">
+            <div className="mb-2">
               <label htmlFor="workflowMetadata.title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Title
+                {t("crud.workflow.builder.metadata.title.label")}:
               </label>
-              {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+              {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                 <Input
                   type="text"
                   id="workflowMetadata.title"
-                  value={workflowMetadata.title}
-                  onChange={(e) => updateWorkflowMetadata({ title: e.target.value })}
-                  placeholder="Enter workflow title..."
+                  placeholder={t("crud.workflow.builder.metadata.title.placeholder")}
+                  value={workflowMetadata?.title}
+                  onChange={e => updateWorkflowMetadata({ title: e?.target?.value })}
                 />
-              : <div
-                  className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                >
-                  {workflowMetadata.title || "Untitled Workflow"}
+              : <div className="w-full appearance-none text-sm bg-transparent text-gray-900 dark:text-white cursor-default">
+                  {workflowMetadata?.title || t("crud.workflow.builder.metadata.title.default")}
                 </div>
               }
             </div>
@@ -1002,70 +1074,120 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             {/* Description Input */}
             <div className="mb-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Description
+                {t("crud.workflow.builder.metadata.description.label")}:
               </label>
-              {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+              {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                 <TextArea
-                  value={workflowMetadata.description}
-                  onChange={(value) => updateWorkflowMetadata({ description: value })}
+                  placeholder={t("crud.workflow.builder.metadata.description.placeholder")}
                   rows={2}
-                  placeholder="Brief description..."
+                  value={workflowMetadata?.description}
+                  onChange={value => updateWorkflowMetadata({ description: value })}
                 />
-              : <div
-                  className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                >
-                  {workflowMetadata.description || "-"}
+              : <div className="w-full appearance-none text-sm bg-transparent text-gray-900 dark:text-white cursor-default">
+                  {workflowMetadata?.description || "-"}
                 </div>
               }
             </div>
 
             {/* Status Selector */}
-            {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("crud.workflow.builder.metadata.status.label")}:
+              </label>
+
+              {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                <Select
+                  className="cursor-pointer"
+                  options={workflowStatusesOptions || []}
+                  placeholder={t("crud.workflow.builder.metadata.status.placeholder")}
+                  value={workflowMetadata?.status}
+                  onChange={value => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
+                />
+              : <div className="w-full appearance-none text-sm bg-transparent text-gray-900 dark:text-white cursor-default">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium
+                    ${workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"}
+                  `}>
+                    {workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.label}
+                  </span>
+                </div>
+              }
+            </div>
+
+            {/*
+            {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) && (
               <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Status
                 </label>
+
                 <Select
-                  value={workflowMetadata.status}
-                  onChange={(value) => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
-                  options={workflowStatusesOptions}
-                  placeholder="Select Status"
                   className="cursor-pointer"
+                  options={workflowStatusesOptions || []}
+                  placeholder="Select Status"
+                  value={workflowMetadata?.status}
+                  onChange={value => updateWorkflowMetadata({ status: (value as WorkflowData["metadata"]["status"]) })}
                 />
               </div>
             )}
+            */}
 
             {/* Status Badge */}
+            {/*
             {!editable && (
-              <div className="flex items-center gap-2 cursor-default">
-                <span className="text-xs text-gray-500 dark:text-gray-400">Current Status:</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"
-                }`}>
-                  {workflowStatuses.find(s => s.value === workflowMetadata.status)?.label}
+              <div className="flex items-center gap-2 cursor-default mb-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Current Status:
+                </span>
+
+                <span className={`px-2 py-1 rounded-full text-xs font-medium
+                  ${workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"}
+                `}>
+                  {workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.label}
                 </span>
               </div>
             )}
+            */}
+            
+            {/* SLA Input */}
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("crud.workflow.builder.metadata.total_sla")}:
+              </label>
+
+              {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                <div className=" h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:placeholder:text-white/30  bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90 dark:focus:border-brand-800 cursor-default">
+                  {workflowMetadata?.totalSla || 0} {t("crud.workflow.unit.sla.abbr")}
+                </div>
+              : <div className="w-full appearance-none text-sm bg-transparent text-gray-900 dark:text-white cursor-default">
+                  {workflowMetadata?.totalSla || 0} {t("crud.workflow.unit.sla.abbr")}
+                </div>
+              }
+            </div>
           </div>
 
           {editable && (
             <PermissionGate permissions={["workflow.create", "workflow.update"]}>
               {/* Node Types */}
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">Add Nodes</h3>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">
+                  {t("crud.workflow.builder.toolbar.nodes.header")}
+                </h3>
+
                 <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(nodeTypes).map(([type, config]) => {
+                  {Object?.entries(nodeTypes)?.map(([type, config]) => {
                     return (
                       <div
                         key={type}
+                        className={`flex items-center gap-2 p-2 rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config?.button}`}
                         draggable
-                        onDragStart={(e) => handleDragStart(e, type as WorkflowNode["type"])}
+                        title={`${t("crud.workflow.builder.toolbar.actions.adding")}: ${config?.label}`}
+                        onDragStart={e => handleDragStart(e, type as WorkflowNode["type"])}
                         onClick={() => addNode(type as WorkflowNode["type"])}
-                        // className={`flex items-center gap-2 p-2 border rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
-                        className={`flex items-center gap-2 p-2 rounded-lg transition-colors cursor-grab active:cursor-grabbing select-none ${config.button}`}
-                        title={`Click to add or drag to canvas: ${config.label}`}
                       >
-                        <span className="text-xs text-center w-100">{config.label}</span>
+                        <span className="text-xs text-center w-100">
+                          {config.label || ""}
+                        </span>
                       </div>
                     );
                   })}
@@ -1074,202 +1196,138 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             </PermissionGate>
           )}
 
-          {/* Case Management System Settings */}
-          <div
-            // className="mb-4 border-t border-gray-200 dark:border-gray-700 pt-4"
-            className="mb-4 border-t border-gray-200 dark:border-gray-700"
-          >
-            {/*
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 cursor-default">
-              SOP Settings
-            </h3>
-            */}
-            
-            {/*
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Case Priority
-              </label>
-              <Select
-                value={workflowMetadata.casePriority || ""}
-                onChange={(value) => updateWorkflowMetadata({ casePriority: value })}
-                options={casePriorityOptions}
-                placeholder="Select Priority"
-                className="cursor-pointer"
-              />
-            </div>
-            */}
-
-            {/*
-            <PermissionGate permissions={["workflow.create", "workflow.update"]}>
-              <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Case Type
-                </label>
-                <Select
-                  value={workflowMetadata.caseCategory || ""}
-                  onChange={(value) => updateWorkflowMetadata({ caseCategory: value })}
-                  options={caseCategoryOptions}
-                  // placeholder="Select Category"
-                  placeholder="Select Case Type"
-                  disabled={workflowId && workflowId !== "new" ? true : false}
-                  className="cursor-pointer"
-                />
-              </div>
-            </PermissionGate>
-            */}
-
-            {/*
-            <div className="mb-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Target Case Status
-              </label>
-              <Select
-                value={workflowMetadata.targetCaseStatus || ""}
-                onChange={(value) => updateWorkflowMetadata({ targetCaseStatus: value })}
-                options={targetCaseStatusOptions}
-                placeholder="Select Target Status"
-                className="cursor-pointer"
-              />
-            </div>
-            */}
-
-            {/* Case Management Summary */}
-            {/*
-            <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded-lg border border-blue-200 dark:border-blue-800 cursor-default">
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-100 mb-2">
-                SOP Summary
-              </h4>
-              <div className="text-xs text-blue-700 dark:text-blue-200 space-y-1">
-                <div>
-                  Priority: <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    workflowMetadata.casePriority === "urgent" || workflowMetadata.casePriority === "critical" 
-                      ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                      : workflowMetadata.casePriority === "high"
-                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
-                      : workflowMetadata.casePriority === "medium"
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                      : workflowMetadata.casePriority === "low"
-                      ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                  }`}>
-                    {casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label || "Not Set"}
-                  </span>
-                </div>
-                <div>
-                  Case Type: <strong>{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label || "Not Set"}</strong>
-                </div>
-                <div>
-                  Target Status: <strong>{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label || "Not Set"}</strong>
-                </div>
-              </div>
-            </div>
-            */}
-          </div>
+          <div className="mb-4 border-t border-gray-200 dark:border-gray-700"></div>
 
           {editable && (
             <PermissionGate permissions={["workflow.create", "workflow.update"]}>
               {/* Actions */}
               <div className="mb-2">
                 <Button
-                  onClick={() => setShowImportDialog(true)}
                   className="w-full mb-2"
                   variant="success"
+                  onClick={() => setShowImportDialog(true)}
                 >
-                  <FileIcon className="w-4 h-4" />
-                  Import JSON
+                  <FileIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.toolbar.actions.import")}
                 </Button>
+
                 <Button
-                  onClick={() => setShowComponentsPreview(true)}
                   className="w-full mb-2"
                   variant="info"
+                  onClick={() => setShowComponentsPreview(true)}
                 >
-                  <BoxCubeIcon className="w-4 h-4" />
-                  {/* Components Preview */}
-                  SOP Preview
+                  <BoxCubeIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.toolbar.actions.preview")}
                 </Button>
+
                 <Button
-                  onClick={handleSaveClick}
                   className="w-full mb-2"
                   variant="primary"
+                  onClick={handleSaveClick}
                 >
-                  <DownloadIcon className="w-4 h-4" />
-                  Save Workflow
+                  <DownloadIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.toolbar.actions.save")}
                 </Button>
               </div>
 
               {/* Instructions */}
               <div className="text-xs text-gray-500 dark:text-gray-400 cursor-default">
-                <p className="text-gray-600 dark:text-gray-300">
-                  {/* <strong>Case Management:</strong> */}
-                  <strong>SOP Management:</strong>
-                </p>
-                {/* <p>• Set case priority, category, and target status</p> */}
-                {/* <p>• Set case priority, and category</p> */}
-                {/* <p>• Set case priority, type, and target status</p> */}
-                <p>• Visual priority indicators in summary panel</p>
-                <p className="text-gray-600 dark:text-gray-300"><strong>Node Operations:</strong></p>
-                <p>• Click nodes to add at top-left of visible canvas</p>
-                <p>• Drag nodes from palette to canvas</p>
-                <p>• Click to select nodes</p>
-                <p>• Drag to move nodes (snaps to grid)</p>
-                <p>• Shift+click to connect nodes</p>
-                {/* <p>• Decision nodes have Yes/No connectors</p> */}
-                <p>• Decision and SLA nodes have Yes/No connectors</p>
-                <p className="text-gray-600 dark:text-gray-300"><strong>Workflow Features:</strong></p>
-                {/* <p>• Start nodes can continue from other workflows</p> */}
-                {/* <p>• End nodes can allow workflow continuation</p> */}
-                {/*
-                <p>• Visual indicators:
-                  <AngleLeftIcon className="mx-1 inline w-3 h-3 bg-blue-400 border border-blue-600 rounded-full items-center justify-center" /> (continues from),
-                  <AngleRightIcon className="mx-1 inline w-3 h-3 bg-green-400 border border-green-600 rounded-full items-center justify-center" /> (allows continuation)
-                </p>
-                */}
-                <p>• Start/End nodes required for save</p>
-                {/* <p>• Max connections: 1 (normal), 2 (decision)</p> */}
-                <p>• Max connections: 1 (normal), 2 (decision/SLA)</p>
-                <p>• Import/Export JSON workflows</p>
-                <p>• Preview form components</p>
-                <p>• Scroll for large workflows</p>
+                {language === "th" && (
+                  <>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>การจัดการ SOP:</strong>
+                    </p>
+                    <p>• ตัวบ่งชี้ลำดับความสำคัญแบบภาพในแผงสรุป</p>
+
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>การทำงานของโหนด:</strong>
+                    </p>
+                    <p>• คลิกโหนดเพื่อเพิ่มที่ด้านบนซ้ายของผืนผ้าใบที่มองเห็นได้</p>
+                    <p>• ลากโหนดจากจานสีไปยังผืนผ้าใบ</p>
+                    <p>• คลิกเพื่อเลือกโหนด</p>
+                    <p>• ลากเพื่อย้ายโหนด (สแนปไปยังตาราง)</p>
+                    <p>• กด Shift+คลิกเพื่อเชื่อมต่อโหนด</p>
+                    <p>• โหนดการตัดสินใจและ SLA มีตัวเชื่อมต่อแบบใช่/ไม่ใช่</p>
+
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>คุณสมบัติเวิร์กโฟลว์:</strong>
+                    </p>
+                    <p>• ต้องใช้โหนดเริ่มต้น/สิ้นสุดสำหรับการบันทึก</p>
+                    <p>• การเชื่อมต่อสูงสุด: 1 (ปกติ), 2 (การตัดสินใจ/SLA)</p>
+                    <p>• นำเข้า/ส่งออกเวิร์กโฟลว์ JSON</p>
+                    <p>• ดูตัวอย่างส่วนประกอบของแบบฟอร์ม</p>
+                    <p>• เลื่อนเพื่อดูเวิร์กโฟลว์ขนาดใหญ่</p>
+                  </>
+                ) ||
+                  <>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>SOP Management:</strong>
+                    </p>
+                    <p>• Visual priority indicators in summary panel</p>
+
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Node Operations:</strong>
+                    </p>
+                    <p>• Click nodes to add at top-left of visible canvas</p>
+                    <p>• Drag nodes from palette to canvas</p>
+                    <p>• Click to select nodes</p>
+                    <p>• Drag to move nodes (snaps to grid)</p>
+                    <p>• Shift+click to connect nodes</p>
+                    <p>• Decision and SLA nodes have Yes/No connectors</p>
+
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Workflow Features:</strong>
+                    </p>
+                    <p>• Start/End nodes required for save</p>
+                    <p>• Max connections: 1 (normal), 2 (decision/SLA)</p>
+                    <p>• Import/Export JSON workflows</p>
+                    <p>• Preview form components</p>
+                    <p>• Scroll for large workflows</p>
+                  </>
+                }
               </div>
             </PermissionGate>
           )}
+
           {workflowId !== "new" && workflowAction !== "edit" && (
-            <PermissionGate permissions={["workflow.update"]}>
-              <div className="mb-2">
-                <Button
-                  onClick={() => window.location.replace(`/workflow/editor/v2/${workflowId}/edit`)}
-                  className="w-full mb-2"
-                  variant="warning"
-                >
-                  <PencilIcon className="w-4 h-4 mr-1" />
-                  Edit Workflow
-                </Button>
-              </div>
-            </PermissionGate>
+            <>
+              <Button
+                className="w-full mb-2"
+                variant="info"
+                onClick={() => setShowComponentsPreview(true)}
+              >
+                <BoxCubeIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.toolbar.actions.preview")}
+              </Button>
+
+              <PermissionGate permissions={["workflow.update"]}>
+                <div className="mb-2">
+                  <Button
+                    className="w-full mb-2"
+                    variant="warning"
+                    onClick={() => window.location.replace(`/workflow/editor/v3/${workflowId}/edit`)}
+                  >
+                    <PencilIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.toolbar.actions.edit")}
+                  </Button>
+                </div>
+              </PermissionGate>
+            </>
           )}
         </div>
 
         {/* Canvas */}
-        <div
-          className="xl:flex-1 relative xl:overflow-x-auto xl:overflow-y-auto min-h-lvh"
-        >
+        <div className="xl:flex-1 relative xl:overflow-x-auto xl:overflow-y-auto min-h-lvh">
           <div
             ref={canvasRef}
             className={`min-w-full min-h-full relative 
-              ${editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ? "cursor-grab active:cursor-grabbing" : "cursor-default"}`
+              ${editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ? "cursor-grab active:cursor-grabbing" : "cursor-default"}`
             }
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
+            onMouseLeave={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
           >
             <svg
-              ref={svgRef}
-              // className="xl:absolute inset-0 pointer-events-none"
               className="xl:absolute inset-0"
+              ref={svgRef}
               style={{ width: "2000px", height: "2000px", zIndex: 1 }}
             >
               {/* Grid Pattern */}
@@ -1295,61 +1353,60 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
               {/* Connections */}
               {connections?.map(connection => {
-                const sourcePos = getNodePosition(connection.source);
-                const targetPos = getNodePosition(connection.target);
+                const sourcePos = getNodePosition(connection?.source);
+                const targetPos = getNodePosition(connection?.target);
                 const sourcePoint = getNodeConnectionPoint(sourcePos, targetPos, true);
                 const targetPoint = getNodeConnectionPoint(sourcePos, targetPos, false);
                 
                 // Determine if connection is vertical (straight line) or horizontal (curve)
-                const isVertical = Math.abs(sourcePoint.x - targetPoint.x) < 10;
+                const isVertical = Math?.abs(sourcePoint?.x - targetPoint?.x) < 10;
                 
                 let pathD;
                 if (isVertical) {
                   // Straight line for vertical connections
-                  pathD = `M ${sourcePoint.x},${sourcePoint.y} L ${targetPoint.x},${targetPoint.y}`;
+                  pathD = `M ${sourcePoint?.x},${sourcePoint?.y} L ${targetPoint?.x},${targetPoint?.y}`;
                 }
                 else {
                   // Curved line for horizontal connections
-                  const midX = (sourcePoint.x + targetPoint.x) / 2;
-                  pathD = `M ${sourcePoint.x},${sourcePoint.y} C ${midX},${sourcePoint.y} ${midX},${targetPoint.y} ${targetPoint.x},${targetPoint.y}`;
+                  const midX = (sourcePoint?.x + targetPoint?.x) / 2;
+                  pathD = `M ${sourcePoint?.x},${sourcePoint?.y} C ${midX},${sourcePoint?.y} ${midX},${targetPoint?.y} ${targetPoint?.x},${targetPoint?.y}`;
                 }
                 
                 // Calculate label position
-                const labelX = (sourcePoint.x + targetPoint.x) / 2;
-                const labelY = (sourcePoint.y + targetPoint.y) / 2;
+                const labelX = (sourcePoint?.x + targetPoint?.x) / 2;
+                const labelY = (sourcePoint?.y + targetPoint?.y) / 2;
                 
                 return (
-                  <g key={connection.id}>
+                  <g key={connection?.id}>
                     <path
                       d={pathD}
-                      // stroke="#6b7280"
-                      stroke="#cccccc"
-                      strokeWidth="2"
                       fill="none"
                       markerEnd="url(#arrowhead)"
+                      stroke="#cccccc"
+                      strokeWidth="2"
                     />
 
-                    {connection.label && (
+                    {connection?.label && (
                       <g>
                         <circle
                           cx={labelX}
                           cy={labelY}
-                          r="12"
                           fill="white"
+                          r="12"
                           stroke="#6b7280"
                           strokeWidth="1"
                         />
 
                         <text
+                          dominantBaseline="central"
+                          fill="#374151"
+                          fontSize="10"
+                          fontWeight="bold"
+                          textAnchor="middle"
                           x={labelX}
                           y={labelY}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fontSize="10"
-                          fill="#374151"
-                          fontWeight="bold"
                         >
-                          {connection.label === "yes" ? "Y" : "N"}
+                          {connection?.label === "yes" && "Y" || "N"}
                         </text>
                       </g>
                     )}
@@ -1361,22 +1418,26 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               {isConnecting && tempConnection && (
                 <g>
                   <path
-                    d={`M ${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true).x},${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true).y} L ${tempConnection.x},${tempConnection.y}`}
-                    stroke="#3b82f6"
-                    strokeWidth="2"
-                    strokeDasharray="5,5"
+                    d={`M 
+                      ${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true)?.x},
+                      ${getNodeConnectionPoint(getNodePosition(isConnecting), tempConnection, true)?.y} L 
+                      ${tempConnection?.x},${tempConnection?.y}
+                    `}
                     fill="none"
+                    stroke="#3b82f6"
+                    strokeDasharray="5,5"
+                    strokeWidth="2"
                   />
 
                   {connectingFrom && (
                     <text
-                      x={tempConnection.x + 10}
-                      y={tempConnection.y - 10}
+                      x={tempConnection?.x + 10}
+                      y={tempConnection?.y - 10}
                       fontSize="12"
                       fill="#3b82f6"
                       fontWeight="bold"
                     >
-                      {connectingFrom.toUpperCase()}
+                      {connectingFrom?.toUpperCase()}
                     </text>
                   )}
                 </g>
@@ -1386,15 +1447,15 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               <defs>
                 <marker
                   id="arrowhead"
-                  markerWidth="10"
                   markerHeight="7"
+                  markerWidth="10"
+                  orient="auto"
                   refX="10"
                   refY="3.5"
-                  orient="auto"
                 >
                   <polygon
-                    points="0 0, 10 3.5, 0 7"
                     fill="#6b7280"
+                    points="0 0, 10 3.5, 0 7"
                   />
                 </marker>
               </defs>
@@ -1402,49 +1463,52 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
             {/* Nodes */}
             {nodes?.map(node => {
-              const nodeConfig = nodeTypes[node.type];
-              const isSelected = selectedNode?.id === node.id;
-              const isContinueFromWorkflow = node.type === "start" && node.data.config?.continueFromWorkflow;
-              const isAllowContinuation = node.type === "end" && node.data.config?.allowContinuation;
+              const nodeConfig = nodeTypes[node?.type];
+              const isSelected = selectedNode?.id === node?.id;
+              const isContinueFromWorkflow = node?.type === "start" && node?.data?.config?.continueFromWorkflow;
+              const isAllowContinuation = node?.type === "end" && node?.data?.config?.allowContinuation;
               
               return (
                 <div
-                  key={node.id}
-                  data-node-id={node.id}
+                  key={node?.id}
+                  data-node-id={node?.id}
                   className={`absolute pointer-events-auto select-none transition-all rounded-lg ${isSelected ?
-                    "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
-                  } ${editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ? (isDragging === node.id ? "cursor-grabbing" : "cursor-grab") : "cursor-default"}`}
+                      "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-0" : ""
+                    } ${editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ? (isDragging === node?.id ?
+                      "cursor-grabbing" : "cursor-grab") : "cursor-default"}
+                  `}
                   style={{
-                    left: node.position.x,
-                    top: node.position.y,
+                    left: node?.position?.x,
+                    top: node?.position?.y,
                     zIndex: 2
                   }}
-                  onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
+                  onMouseDown={e => handleNodeMouseDown(e, node?.id)}
                 >
-                  {
-                    // node.type === "decision"
-                    (node.type === "decision" || node.type === "sla")
-                  ? (
+                  {(node.type === "decision" || node.type === "sla") ? (
                     // Diamond shape for decision nodes
                     <div className="relative w-24 h-16 flex items-center justify-center">
                       <svg width="96" height="64" className="absolute inset-0">
                         <polygon
                           points="48,4 88,32 48,60 8,32"
-                          // fill="rgb(234 179 8)"
-                          fill={node.type === "decision" ? "rgb(234 179 8)" : "rgb(168 85 247)"}
+                          fill={node?.type === "decision" ? "rgb(234 179 8)" : "rgb(168 85 247)"}
                           stroke="white"
                           strokeWidth="2"
                           className="drop-shadow-lg"
                         />
                       </svg>
+
                       <div className="relative z-10 flex flex-col items-center justify-center text-white dark:text-gray-900">
-                        <span className="text-xs font-medium truncate px-1 max-w-16 text-center">{node.data.label}</span>
+                        <span className="text-xs font-medium truncate px-1 max-w-16 text-center">
+                          {node.data.label}
+                        </span>
                       </div>
                     </div>
                   ) : (
                     // Rectangle shape for other nodes
                     <div className={`w-24 h-16 rounded-lg border-2 border-white dark:border-gray-900 shadow-lg flex flex-col items-center justify-center text-white dark:text-gray-900 ${nodeConfig.color}`}>
-                      <span className="text-xs font-medium truncate px-1">{node.data.label}</span>
+                      <span className="text-xs font-medium truncate px-1">
+                        {node.data.label}
+                      </span>
 
                       {/* Visual indicators for workflow continuation */}
                       {isContinueFromWorkflow ? (
@@ -1466,13 +1530,13 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                     </div>
                   )}
                   
-                  {isSelected && editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
+                  {isSelected && editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNode(node.id);
-                      }}
                       className="absolute -top-2 -right-2 w-6 h-6 bg-red-400 border border-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      onClick={e => {
+                        e?.stopPropagation();
+                        deleteNode(node?.id);
+                      }}
                     >
                       <TrashBinIcon className="w-3 h-3" />
                     </button>
@@ -1484,24 +1548,23 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         </div>
 
         {/* Configuration Panel */}
-        <div
-          className="xl:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl rounded-l-2xl xl:rounded-l-none"
-        >
+        <div className="xl:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl rounded-l-2xl xl:rounded-l-none">
           <div className="flex items-center gap-2 mb-2">
             <PencilIcon className="w-5 h-5 text-lg font-semibold text-gray-700 dark:text-gray-200" />
+
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 cursor-default">
-              Node Configuration
+              {t("crud.workflow.builder.node.header")}
             </h3>
           </div>
 
           {/* Validation Errors */}
-          {validationErrors.length > 0 && (
+          {validationErrors?.length > 0 && (
             <div className="cursor-default mb-2">
               <Alert
-                variant="error"
-                title="Validation Errors"
+                title={t("crud.workflow.builder.node.validation.header")}
                 messages={validationErrors}
                 showLink={false}
+                variant="error"
               />
             </div>
           )}
@@ -1510,112 +1573,108 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             <div className="space-y-2">
               <div>
                 <label htmlFor="selectedNode.data.label" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Label
+                  {t("crud.workflow.builder.node.form.label.label")}
                 </label>
-                {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                   <Input
                     type="text"
                     id="selectedNode.data.label"
-                    value={selectedNode.data.label}
-                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                    value={selectedNode?.data?.label}
+                    onChange={e => updateNodeData(selectedNode?.id, { label: e?.target?.value })}
                   />
-                : <div
-                    className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                  >
-                    {selectedNode.data.label || "-"}
+                : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                    {selectedNode?.data?.label || ""}
                   </div>
                 }
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Description
+                  {t("crud.workflow.builder.node.form.description.label")}
                 </label>
-                {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                   <TextArea
-                    value={selectedNode.data.description || ""}
-                    onChange={(value) => updateNodeData(selectedNode.id, { description: value })}
+                    value={selectedNode?.data?.description || ""}
+                    placeholder={t("crud.workflow.builder.node.form.description.placeholder")}
                     rows={1}
-                    placeholder="Enter description..."
+                    onChange={value => updateNodeData(selectedNode?.id, { description: value })}
                   />
-                : <div
-                    className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                  >
-                    {selectedNode.data.description || "-"}
+                : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                    {selectedNode?.data?.description || ""}
                   </div>
                 }
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Node Type
+                  {t("crud.workflow.builder.node.form.node_type.label")}
                 </label>
+
                 <div className="flex items-center gap-2 p-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{nodeTypes[selectedNode.type].label}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {nodeTypes[selectedNode?.type]?.label || ""}
+                  </span>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Position
+                  {t("crud.workflow.builder.node.form.position.label")}
                 </label>
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label htmlFor="selectedNode.position.x" className="block text-xs text-gray-500 dark:text-gray-400">X</label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                    <label htmlFor="selectedNode.position.x" className="block text-xs text-gray-500 dark:text-gray-400">
+                      X
+                    </label>
+                    
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Input
                         type="number"
                         id="selectedNode.position.x"
-                        value={Math.round(selectedNode.position.x)}
-                        onChange={(e) => {
+                        step={GRID_SIZE}
+                        value={Math?.round(selectedNode?.position?.x)}
+                        onChange={e => {
                           const newPosition = snapToGrid({ 
-                            x: parseInt(e.target.value) || 0, 
-                            y: selectedNode.position.y 
+                            x: parseInt(e?.target?.value) || 0, 
+                            y: selectedNode?.position?.y 
                           });
-                          const newNodes = nodes.map(n => 
-                            n.id === selectedNode.id 
-                              ? { ...n, position: newPosition }
-                              : n
-                          );
+                          const newNodes = nodes.map(n => n?.id === selectedNode?.id ? { ...n, position: newPosition } : n);
                           setNodes(newNodes);
                           setSelectedNode({ ...selectedNode, position: newPosition });
                         }}
-                        step={GRID_SIZE}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {Math.round(selectedNode.position.x) || 0}
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {Math?.round(selectedNode?.position?.x) || 0}
                       </div>
                     }
                   </div>
 
                   <div>
-                    <label htmlFor="selectedNode.position.y" className="block text-xs text-gray-500 dark:text-gray-400">Y</label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+                    <label htmlFor="selectedNode.position.y" className="block text-xs text-gray-500 dark:text-gray-400">
+                      Y
+                    </label>
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Input
                         type="number"
                         id="selectedNode.position.y"
-                        value={Math.round(selectedNode.position.y)}
-                        onChange={(e) => {
+                        step={GRID_SIZE}
+                        value={Math?.round(selectedNode?.position?.y)}
+                        onChange={e => {
                           const newPosition = snapToGrid({ 
-                            x: selectedNode.position.x, 
-                            y: parseInt(e.target.value) || 0 
+                            x: selectedNode?.position?.x, 
+                            y: parseInt(e?.target?.value) || 0 
                           });
-                          const newNodes = nodes.map(n => 
-                            n.id === selectedNode.id 
-                              ? { ...n, position: newPosition }
-                              : n
-                          );
+                          const newNodes = nodes?.map(n => n?.id === selectedNode?.id ? { ...n, position: newPosition } : n);
                           setNodes(newNodes);
                           setSelectedNode({ ...selectedNode, position: newPosition });
                         }}
-                        step={GRID_SIZE}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {Math.round(selectedNode.position.y) || 0}
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default" >
+                        {Math?.round(selectedNode?.position?.y) || 0}
                       </div>
                     }
                   </div>
@@ -1623,219 +1682,125 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               </div>
 
               {/* Type-specific configuration */}
-              {/*
-              {selectedNode.type === "start" && (
-                <>
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedNode.data.config?.continueFromWorkflow === true}
-                        onChange={(e) => updateNodeData(selectedNode.id, { 
-                          config: { 
-                            ...selectedNode.data.config, 
-                            continueFromWorkflow: e.target.checked,
-                            sourceWorkflowId: e.target.checked ? (selectedNode.data.config?.sourceWorkflowId || "") : ""
-                          }
-                        })}
-                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-300 focus:ring-blue-500 dark:focus:ring-blue-400"
-                      />
-                      Continue from another workflow
-                    </label>
-                  </div>
-                  
-                  {selectedNode.data.config?.continueFromWorkflow && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                        Source Workflow ID
-                      </label>
-                      <Input
-                        type="text"
-                        value={typeof selectedNode.data.config?.sourceWorkflowId === "string" ? selectedNode.data.config.sourceWorkflowId : ""}
-                        onChange={(e) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, sourceWorkflowId: e.target.value }
-                        })}
-                        placeholder="Enter source workflow ID..."
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ID of the workflow that this workflow continues from
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {selectedNode.type === "end" && (
-                <>
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedNode.data.config?.allowContinuation === true}
-                        onChange={(e) => updateNodeData(selectedNode.id, { 
-                          config: { 
-                            ...selectedNode.data.config, 
-                            allowContinuation: e.target.checked,
-                            nextWorkflowId: e.target.checked ? (selectedNode.data.config?.nextWorkflowId || "") : ""
-                          }
-                        })}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      Allow other workflows to continue
-                    </label>
-                  </div>
-                  
-                  {selectedNode.data.config?.allowContinuation && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                        Next Workflow ID
-                      </label>
-                      <Input
-                        type="text"
-                        value={typeof selectedNode.data.config?.nextWorkflowId === "string" ? selectedNode.data.config.nextWorkflowId : ""}
-                        onChange={(e) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, nextWorkflowId: e.target.value }
-                        })}
-                        placeholder="Enter next workflow ID..."
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ID of the workflow that should continue after this one
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-              */}
-
-              {/* Type-specific configuration */}
-              {selectedNode.type === "decision" && (
+              {selectedNode?.type === "decision" && (
                 <div>
                   <label htmlFor="selectedNode.data.config.condition" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Condition
+                    {t("crud.workflow.builder.node.form.conditions.label")}
                   </label>
-                  {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                  {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                     <Input
                       type="text"
                       id="selectedNode.data.config.condition"
-                      value={typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
-                      onChange={(e) => updateNodeData(selectedNode.id, { 
-                        config: { ...(selectedNode.data.config ?? {}), condition: e.target.value }
+                      placeholder={t("crud.workflow.builder.node.form.conditions.placeholder")}
+                      value={typeof selectedNode?.data?.config?.condition === "string" ? selectedNode?.data?.config?.condition : ""}
+                      onChange={e => updateNodeData(selectedNode?.id, { 
+                        config: { ...(selectedNode?.data?.config ?? {}), condition: e?.target?.value }
                       })}
-                      placeholder="Enter condition..."
                     />
-                  : <div
-                      className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                    >
-                      {typeof selectedNode.data.config?.condition === "string" ? selectedNode.data.config.condition : ""}
+                  : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                      {typeof selectedNode?.data?.config?.condition === "string" ? selectedNode?.data?.config?.condition : ""}
                     </div>
                   }
                 </div>
               )}
 
-              {selectedNode.type === "sla" && (
+              {selectedNode?.type === "sla" && (
                 <div>
-                  <label
-                    htmlFor="selectedNode.data.config.SLA"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-                  >
-                    SLA (Minutes)
+                  <label htmlFor="selectedNode.data.config.SLA" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    {t("crud.workflow.builder.node.form.sla.label")}
                   </label>
-                  {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                  {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                     <Input
                       type="number"
                       id="selectedNode.data.config.SLA"
-                      value={typeof selectedNode.data.config?.SLA === "string" || typeof selectedNode.data.config?.SLA === "number" ? selectedNode.data.config.SLA : ""}
-                      onChange={(e) => updateNodeData(selectedNode.id, { 
-                        config: { ...selectedNode.data.config, SLA: e.target.value }
-                      })}
-                      placeholder="Enter SLA in minutes..."
-                      min="1"
                       max="720"
+                      min="1"
+                      // placeholder="Enter SLA in minutes..."
+                      value={
+                        typeof selectedNode?.data?.config?.SLA === "string" || typeof selectedNode?.data?.config?.SLA === "number"
+                        ? selectedNode?.data?.config?.SLA : ""
+                      }
+                      onChange={(e) => updateNodeData(selectedNode.id, { 
+                        config: { ...selectedNode?.data?.config, SLA: e?.target?.value }
+                      })}
                     />
-                  : <div
-                      className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-500 dark:text-gray-400 cursor-default"
-                    >
-                      {typeof selectedNode.data.config?.SLA === "string" || typeof selectedNode.data.config?.SLA === "number" ? selectedNode.data.config.SLA : ""}
+                  : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-500 dark:text-gray-400 cursor-default">
+                      {
+                        typeof selectedNode?.data?.config?.SLA === "string" || typeof selectedNode?.data?.config?.SLA === "number"
+                        ? selectedNode?.data?.config?.SLA : ""
+                      }
                     </div>
                   }
                 </div>
               )}
 
-              {(selectedNode.type === "process" || selectedNode.type === "dispatch") && (
+              {(selectedNode?.type === "process" || selectedNode?.type === "dispatch") && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Action
+                      {t("crud.workflow.builder.node.form.actions.label")}
                     </label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Select
-                        value={typeof selectedNode.data.config?.action === "string" ? selectedNode.data.config.action : ""}
-                        onChange={(value) => updateNodeData(selectedNode.id, {
-                          config: { ...selectedNode.data.config, action: value }
-                        })}
-                        // options={actionOptions}
-                        options={caseStatusOptions}
-                        placeholder="Select Action"
                         className="bg-white dark:bg-gray-900 cursor-pointer"
+                        options={caseStatusOptions || []}
+                        placeholder={t("crud.workflow.builder.node.form.actions.placeholder")}
+                        value={typeof selectedNode?.data?.config?.action === "string" ? selectedNode?.data?.config?.action : ""}
+                        onChange={value => updateNodeData(selectedNode?.id, {
+                          config: { ...selectedNode?.data?.config, action: value }
+                        })}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {caseStatusOptions.find(a => a.value === selectedNode.data.config?.action)?.label || ""}
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {caseStatusOptions?.find(a => a?.value === selectedNode?.data?.config?.action)?.label || ""}
                       </div>
                     }
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Form
+                      {t("crud.workflow.builder.node.form.form.label")}
                     </label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Select
-                        value={typeof selectedNode.data.config?.formId === "string" ? selectedNode.data.config.formId : ""}
-                        onChange={(value) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, formId: value }
-                        })}
-                        options={formOptions}
-                        placeholder="Select Form"
                         className="bg-white dark:bg-gray-900 cursor-pointer"
+                        options={formOptions || []}
+                        placeholder={t("crud.workflow.builder.node.form.form.placeholder")}
+                        value={typeof selectedNode?.data?.config?.formId === "string" ? selectedNode?.data?.config?.formId : ""}
+                        onChange={value => updateNodeData(selectedNode?.id, { 
+                          config: { ...selectedNode?.data?.config, formId: value }
+                        })}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {formOptions.find(f => f.value === selectedNode.data.config?.formId)?.label || ""}
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {formOptions?.find(f => f?.value === selectedNode?.data?.config?.formId)?.label || ""}
                       </div>
                     }
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="selectedNode.data.config.sla"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-                      // className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 line-through cursor-not-allowed"
-                    >
-                      {/* SLA (Hours) */}
-                      SLA (Minutes)
+                    <label htmlFor="selectedNode.data.config.sla" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      {t("crud.workflow.builder.node.form.sla.label")}
                     </label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <Input
                         type="number"
                         id="selectedNode.data.config.sla"
-                        value={typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
-                        onChange={(e) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, sla: e.target.value }
-                        })}
-                        // placeholder="Enter SLA in hours..."
-                        placeholder="Enter SLA in minutes..."
-                        min="1"
                         max="720"
-                        // className="line-through"
-                        // disabled
+                        min="1"
+                        // placeholder="Enter SLA in minutes..."
+                        value={
+                          typeof selectedNode?.data?.config?.sla === "string" || typeof selectedNode?.data?.config?.sla === "number"
+                          ? selectedNode?.data?.config?.sla : ""
+                        }
+                        onChange={e => updateNodeData(selectedNode?.id, { 
+                          config: { ...selectedNode?.data?.config, sla: e?.target?.value }
+                        })}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                        // className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-500 dark:text-gray-400 cursor-default line-through"
-                      >
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
                         {typeof selectedNode.data.config?.sla === "string" || typeof selectedNode.data.config?.sla === "number" ? selectedNode.data.config.sla : ""}
                       </div>
                     }
@@ -1843,36 +1808,21 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Group of Assignee
+                      {t("crud.workflow.builder.node.form.group.label")}
                     </label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
-                      // <Select
-                      //   value={typeof selectedNode.data.config?.group === "string" ? selectedNode.data.config.group : ""}
-                      //   onChange={(value) => updateNodeData(selectedNode.id, { 
-                      //     config: { ...selectedNode.data.config, group: value }
-                      //   })}
-                      //   options={groupOptions}
-                      //   placeholder="Select Group"
-                      //   className="bg-white dark:bg-gray-900 cursor-pointer"
-                      // />
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <CustomizableSelect
-                        options={groupOptions}
-                        value={Array.isArray(selectedNode.data.config?.group) ? selectedNode.data.config.group : []}
-                        onChange={(value) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, group: value }
+                        options={groupOptions || []}
+                        placeholder={t("crud.workflow.builder.node.form.group.placeholder")}
+                        value={Array?.isArray(selectedNode?.data?.config?.group) ? selectedNode?.data?.config?.group : []}
+                        onChange={value => updateNodeData(selectedNode?.id, {
+                          config: { ...selectedNode?.data?.config, group: value }
                         })}
-                        placeholder="Select Groups"
-                        // asyncFetch={async (query, page) => {
-                        //   const res = await fetch(`/api/tags?q=${query}&page=${page}`);
-                        //   return res.json();
-                        // }}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {/* {groupOptions.find(g => g.value === selectedNode.data.config?.group)?.label || ""} */}
-                        {Array.isArray(selectedNode.data.config?.group) ? selectedNode.data.config.group.map(
-                          group => groupOptions.find(g => g.value === group)?.label
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {Array?.isArray(selectedNode?.data?.config?.group) ? selectedNode?.data?.config?.group?.map(
+                          group => groupOptions?.find(g => g?.value === group)?.label
                         ).join(", ") : ""}
                       </div>
                     }
@@ -1880,35 +1830,21 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      PIC (Person in Charge)
+                      {t("crud.workflow.builder.node.form.pic.label")}
                     </label>
-                    {editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) ?
-                      // <Input
-                      //   type="text"
-                      //   value={typeof selectedNode.data.config?.pic === "string" || typeof selectedNode.data.config?.pic === "number" ? selectedNode.data.config.pic : ""}
-                      //   onChange={(e) => updateNodeData(selectedNode.id, { 
-                      //     config: { ...selectedNode.data.config, pic: e.target.value }
-                      //   })}
-                      //   placeholder="Enter PIC..."
-                      // />
+
+                    {editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) ?
                       <CustomizableSelect
-                        options={userOptions}
-                        value={Array.isArray(selectedNode.data.config?.pic) ? selectedNode.data.config.pic : []}
-                        onChange={(value) => updateNodeData(selectedNode.id, { 
-                          config: { ...selectedNode.data.config, pic: value }
+                        options={userOptions || []}
+                        placeholder={t("crud.workflow.builder.node.form.pic.placeholder")}
+                        value={Array?.isArray(selectedNode?.data?.config?.pic) ? selectedNode?.data?.config?.pic : []}
+                        onChange={value => updateNodeData(selectedNode.id, { 
+                          config: { ...selectedNode?.data?.config, pic: value }
                         })}
-                        placeholder="Select Users"
-                        // asyncFetch={async (query, page) => {
-                        //   const res = await fetch(`/api/tags?q=${query}&page=${page}`);
-                        //   return res.json();
-                        // }}
                       />
-                    : <div
-                        className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default"
-                      >
-                        {/* {typeof selectedNode.data.config?.pic === "string" ? selectedNode.data.config.pic : ""} */}
-                        {Array.isArray(selectedNode.data.config?.pic) ? selectedNode.data.config.pic.map(
-                          pic => userOptions.find(u => u.value === pic)?.label
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {Array?.isArray(selectedNode?.data?.config?.pic) ? selectedNode?.data?.config?.pic?.map(
+                          pic => userOptions?.find(u => u?.value === pic)?.label
                         ).join(", ") : ""}
                       </div>
                     }
@@ -1918,64 +1854,58 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
               {/* Connection Info */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 cursor-default">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Connections</h4>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t("crud.workflow.builder.node.connections.header")}
+                </h4>
+
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>
-                    Outgoing: {connections.filter(c => c.source === selectedNode.id).length}
-                    {/* {selectedNode.type === "decision" && " / 2 (Yes/No)"} */}
-                    {/* {selectedNode.type !== "decision" && " / 1"} */}
-                    {(selectedNode.type === "decision" || selectedNode.type === "sla") && " / 2 (Yes/No)"}
-                    {selectedNode.type !== "decision" && selectedNode.type !== "sla" && " / 1"}
+                    {t("crud.workflow.builder.node.connections.outgoing")}: {connections?.filter(c => c?.source === selectedNode?.id)?.length}
+                    {(selectedNode?.type === "decision" || selectedNode?.type === "sla") && " / 2 (Yes/No)"}
+                    {selectedNode?.type !== "decision" && selectedNode?.type !== "sla" && " / 1"}
                   </div>
-                  <div>Incoming: {connections.filter(c => c.target === selectedNode.id).length}</div>
+
+                  <div>{t("crud.workflow.builder.node.connections.incoming")}: {connections?.filter(c => c?.target === selectedNode?.id)?.length}</div>
                 </div>
               </div>
             </div>
           ) : (
             <div className="text-center text-gray-600 dark:text-gray-300 py-8 cursor-default">
               <PencilIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
-              <p>Select a node to configure its properties</p>
+
+              <p>
+                {t("crud.workflow.builder.node.description")}
+              </p>
             </div>
           )}
 
           {/* Workflow Stats */}
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 cursor-default">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Workflow Stats</h4>
-            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-              <div>Title: <span className="font-medium">{workflowMetadata.title}</span></div>
-              <div>Status: <span className={`px-1 py-0.5 rounded text-xs ${
-                  workflowStatuses.find(s => s.value === workflowMetadata.status)?.color || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900"
-                }`}>
-                  {workflowStatuses.find(s => s.value === workflowMetadata.status)?.label}
-                </span>
-              </div>
-              <div>Nodes: {nodes?.length || 0}</div>
-              <div>Connections: {connections?.length || 0}</div>
-              <div>Start Nodes: {nodes?.filter(n => n.type === "start").length || 0}</div>
-              <div>End Nodes: {nodes?.filter(n => n.type === "end").length || 0}</div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              {t("crud.workflow.builder.node.stats.header")}
+            </h4>
 
-              {/* Case Management Stats */}
-              {/*
-              {(
-                workflowMetadata.casePriority
-                || workflowMetadata.caseCategory
-                || workflowMetadata.targetCaseStatus
-              ) && (
-                <>
-                  <div className="border-t border-gray-300 dark:border-gray-600 pt-1 mt-2"></div>
-                  <div className="font-medium text-blue-600 dark:text-blue-400">Case Management:</div>
-                  {workflowMetadata.casePriority && (
-                    <div>Priority: <span className="font-medium">{casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label}</span></div>
-                  )}
-                  {workflowMetadata.caseCategory && (
-                    <div>Category: <span className="font-medium">{caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label}</span></div>
-                  )}
-                  {workflowMetadata.targetCaseStatus && (
-                    <div>Target: <span className="font-medium">{targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label}</span></div>
-                  )}
-                </>
-              )}
-              */}
+            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+              <div>
+                {t("crud.workflow.builder.node.stats.title")}: <span className="font-medium">{workflowMetadata?.title || ""}</span>
+              </div>
+
+              <div>
+                {t("crud.workflow.builder.node.stats.status")}: <span className={`px-1 py-0.5 rounded text-xs ${
+                          workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.color
+                          || "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900"
+                        }`}>
+                          {workflowStatuses?.find(s => s?.value === workflowMetadata?.status)?.label}
+                        </span>
+              </div>
+
+              <div>{t("crud.workflow.builder.node.stats.nodes")}: {nodes?.length || 0}</div>
+
+              <div>{t("crud.workflow.builder.node.stats.connections")}: {connections?.length || 0}</div>
+
+              <div>{t("crud.workflow.builder.node.stats.start_nodes")}: {nodes?.filter(n => n?.type === "start")?.length || 0}</div>
+
+              <div>{t("crud.workflow.builder.node.stats.end_nodes")}: {nodes?.filter(n => n?.type === "end")?.length || 0}</div>
             </div>
           </div>
         </div>
@@ -1983,11 +1913,16 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* JSON Preview Dialog */}
-        {showJsonPreview && editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
-          <Modal isOpen={showJsonPreview} onClose={() => setShowJsonPreview(loading ? true : false)} className="max-w-4xl p-6">
+        {showJsonPreview && editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) && (
+          <Modal className="max-w-4xl p-6" isOpen={showJsonPreview} onClose={() => setShowJsonPreview(loading && true || false)}>
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">Workflow JSON Preview</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{workflowMetadata.title}</p>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">
+                {t("crud.workflow.builder.modal.save.header")}
+              </h3>
+
+              <p className="text-sm text-gray-600 dark:text-gray-300 cursor-default">
+                {workflowMetadata?.title || ""}
+              </p>
             </div>
             
             <div className="p-4 overflow-auto max-h-[60vh]">
@@ -2005,47 +1940,38 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
             
             <div className="flex items-center justify-end gap-2 p-4">
               <Button
-                onClick={() => setShowJsonPreview(false)}
+                disabled={loading}
                 variant="error"
-                disabled={loading}
+                onClick={() => setShowJsonPreview(false)}
               >
-                Cancel
+                {t("crud.workflow.builder.modal.actions.cancel")}
               </Button>
 
               <Button
+                variant={`${copiedJson && "success" || "outline"}`}
                 onClick={copyJsonToClipboard}
-                variant={`${
-                  copiedJson 
-                    ? "success"
-                    : "outline"
-                }`}
               >
-                {copiedJson ? <CheckLineIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                {copiedJson ? "Copied!" : "Copy"}
+                {copiedJson ? <CheckLineIcon className="w-4 h-4 mr-1" /> : <CopyIcon className="w-4 h-4 mr-1" />}
+                {copiedJson ? `${t("crud.workflow.builder.modal.save.actions.copied")}!` : t("crud.workflow.builder.modal.save.actions.copy")}
               </Button>
 
               <Button
-                onClick={downloadJsonWorkflow}
-                variant="outline"
                 disabled={loading}
+                variant="outline"
+                onClick={downloadJsonWorkflow}
               >
-                <DownloadIcon className="w-4 h-4" />
-                Download
+                <DownloadIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.modal.save.actions.download")}
               </Button>
 
               <Button
+                disabled={validationErrors?.length > 0 || loading}
+                variant={`${validationErrors?.length > 0 && "outline" || "primary"}`}
                 onClick={saveWorkflow}
-                disabled={validationErrors.length > 0 || loading}
-                variant={`${
-                  validationErrors.length > 0
-                    ? "outline"
-                    : "primary"
-                }`}
               >
-                {loading ? "Saving..." : (
+                {loading ? t("crud.workflow.builder.modal.save.actions.saving") : (
                   <>
-                    <DownloadIcon className="w-4 h-4" />
-                    <span>Save</span>
+                    {/* <DownloadIcon className="w-4 h-4 mr-1" /> */}
+                    <span>{t("crud.workflow.builder.modal.save.actions.confirm")}</span>
                   </>
                 )}
               </Button>
@@ -2054,56 +1980,56 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
         )}
 
         {/* Import Dialog */}
-        {showImportDialog && editable && permissions.hasAnyPermission(["workflow.create", "workflow.update"]) && (
+        {showImportDialog && editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]) && (
           <Modal isOpen={showImportDialog} onClose={() => setShowImportDialog(false)} className="max-w-4xl p-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">Import Workflow JSON</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">
+                {t("crud.workflow.builder.modal.import.header")}
+              </h3>
             </div>
             
             <div className="p-4">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Upload JSON File
+                  {t("crud.workflow.builder.modal.import.file.label")}
                 </label>
+
                 <input
                   type="file"
                   accept=".json"
-                  onChange={handleFileImport}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white"
+                  onChange={handleFileImport}
                 />
               </div>
               
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Or Paste JSON Content
+                  {t("crud.workflow.builder.modal.import.textarea.label")}
                 </label>
+
                 <TextArea
-                  value={importJsonText}
-                  onChange={(value) => setImportJsonText(value)}
                   className="w-full h-64 px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent font-mono text-sm"
-                  placeholder="Paste your workflow JSON here..."
+                  placeholder={t("crud.workflow.builder.modal.import.textarea.placeholder")}
+                  value={importJsonText || ""}
+                  onChange={value => setImportJsonText(value)}
                 />
               </div>
             </div>
             
             <div className="flex items-center justify-end gap-2 p-4">
               <Button
-                onClick={() => setShowImportDialog(false)}
                 variant="error"
+                onClick={() => setShowImportDialog(false)}
               >
-                Cancel
+                {t("crud.workflow.builder.modal.actions.cancel")}
               </Button>
+
               <Button
+                disabled={!importJsonText?.trim()}
+                variant={`${!importJsonText?.trim() && "outline" || "success"}`}
                 onClick={importJsonWorkflow}
-                disabled={!importJsonText.trim()}
-                variant={`${
-                  !importJsonText.trim()
-                    ? "outline"
-                    : "success"
-                }`}
               >
-                <FileIcon className="w-4 h-4" />
-                Import Workflow
+                <FileIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.modal.import.actions.import")}
               </Button>
             </div>
           </Modal>
@@ -2118,128 +2044,97 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           >
             <div className="cursor-default">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {/* Components Preview */}
-                SOP Preview
+                {t("crud.workflow.builder.modal.preview.header")}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Generated form components based on workflow path</p>
 
-              {/* Case Management Info Banner */}
-              {/*
-              {(
-                workflowMetadata.casePriority
-                || workflowMetadata.caseCategory
-                || workflowMetadata.targetCaseStatus
-              ) && (
-                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="font-medium text-blue-800 dark:text-blue-100">📋 Case Management:</span>
-                    {workflowMetadata.casePriority && (
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        workflowMetadata.casePriority === "urgent" || workflowMetadata.casePriority === "critical" 
-                          ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                          : workflowMetadata.casePriority === "high"
-                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
-                          : workflowMetadata.casePriority === "medium"
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                          : "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                      }`}>
-                        {casePriorityOptions.find(p => p.value === workflowMetadata.casePriority)?.label}
-                      </span>
-                    )}
-                    {workflowMetadata.caseCategory && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded text-xs font-medium">
-                        {caseCategoryOptions.find(c => c.value === workflowMetadata.caseCategory)?.label}
-                      </span>
-                    )}
-                    {workflowMetadata.targetCaseStatus && (
-                      <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded text-xs font-medium">
-                        Target: {targetCaseStatusOptions.find(s => s.value === workflowMetadata.targetCaseStatus)?.label}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-              */}
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {t("crud.workflow.builder.modal.preview.description")}
+              </p>
             </div>
             
             <div className="py-4 overflow-auto cursor-default">
-              {generateComponentsPreview().length > 0 ? (
+              {generateComponentsPreview()?.length > 0 ? (
                 <div className="space-y-6">
-                  {generateComponentsPreview().map((component, index) => (
-                    <div key={component.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  {generateComponentsPreview()?.map((component, index) => (
+                    <div key={component?.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-medium px-2 py-1 rounded-full">
-                          Step {index + 1}
+                          {t("crud.workflow.builder.modal.preview.step")} {index + 1}
                         </span>
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{component.label}</h4>
+                        
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {component?.label || ""}
+                        </h4>
 
                         {/* Component Type Badge */}
-                        {component.type === "start" && (
+                        {component?.type === "start" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Start
+                            {t("crud.workflow.builder.toolbar.nodes.start")}
                           </span>
                         )}
-                        {/*
-                        {component.type === "form" && (
+
+                        {component?.type === "process" && (
                           <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Form: {component.form}
+                            {t("crud.workflow.builder.node.form.actions.label")}: {component?.action || ""}{" | "}
+                            {t("crud.workflow.builder.node.form.sla.label")}: {component?.sla || 0} {t("crud.workflow.unit.sla.label")}{" | "}
+                            {t("crud.workflow.builder.node.form.group.label")}: {component?.group || ""}{" | "}
+                            {t("crud.workflow.builder.node.form.pic.label")}: {component?.pic || ""}
                           </span>
                         )}
-                        */}
-                        {component.type === "process" && (
-                          <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Action: {component?.action || "N/A"}{" | "}
-                            {/* Form: {component?.formId || "N/A"}{" | "} */}
-                            SLA: {component?.sla || "0"} minutes{" | "}
-                            Group: {component?.group || "N/A"}{" | "}
-                            PIC: {component?.pic || "N/A"}
-                          </span>
-                        )}
-                        {component.type === "dispatch" && (
+
+                        {component?.type === "dispatch" && (
                           <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Dispatch: {component?.action || "N/A"}{" | "}
-                            {/* Form: {component?.formId || "N/A"}{" | "} */}
-                            SLA: {component?.sla || "0"} minutes{" | "}
-                            Group: {component?.group || "N/A"}{" | "}
-                            PIC: {component?.pic || "N/A"}
+                            {t("crud.workflow.builder.toolbar.nodes.dispatch")}: {component?.action || ""}{" | "}
+                            {t("crud.workflow.builder.node.form.sla.label")}: {component?.sla || 0} {t("crud.workflow.unit.sla.label")}{" | "}
+                            {t("crud.workflow.builder.node.form.group.label")}: {component?.group || ""}{" | "}
+                            {t("crud.workflow.builder.node.form.pic.label")}: {component?.pic || ""}
                           </span>
                         )}
-                        {component.type === "sla" && (
+
+                        {component?.type === "sla" && (
                           <span className="bg-green-100 dark:bg-purple-800 text-purple-800 dark:text-purple-100 text-xs font-medium px-2 py-1 rounded-full">
-                            SLA: {component?.SLA || "0"} minutes{" "}
+                            {t("crud.workflow.builder.toolbar.nodes.sla")} {component?.SLA || 0} {t("crud.workflow.unit.sla.label")}
                           </span>
                         )}
-                        {component.type === "decision" && (
+
+                        {component?.type === "decision" && (
                           <span className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs font-medium px-2 py-1 rounded-full">
-                            Decision
+                            {t("crud.workflow.builder.toolbar.nodes.decision")}
                           </span>
                         )}
-                        {component.type === "end" && (
+
+                        {component?.type === "end" && (
                           <span className="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 text-xs font-medium px-2 py-1 rounded-full">
-                            End
+                            {t("crud.workflow.builder.toolbar.nodes.end")}
                           </span>
                         )}
                       </div>
 
                       {/* Start Component */}
-                      {component.type === "start" && (
+                      {component?.type === "start" && (
                         <div className="bg-green-100 dark:bg-green-800 p-4 rounded-lg border border-green-200 dark:border-green-700">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium text-green-800 dark:text-green-100">Workflow Start</span>
-                            {component.continueFromWorkflow && (
+                            <span className="font-medium text-green-800 dark:text-green-100">
+                              {t("crud.workflow.builder.modal.preview.start")}
+                            </span>
+
+                            {component?.continueFromWorkflow && (
                               <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-medium px-2 py-1 rounded-full">
-                                <AngleLeftIcon className="w-4 h-4 inline" />
-                                Continues from workflow
+                                <AngleLeftIcon className="w-4 h-4 mr-1 inline" /> Continues from workflow
                               </span>
                             )}
                           </div>
-                          {component.description && (
-                            <p className="text-sm text-green-700 dark:text-green-200">{component.description}</p>
+
+                          {component?.description && (
+                            <p className="text-sm text-green-700 dark:text-green-200">
+                              {component.description || ""}
+                            </p>
                           )}
-                          {component.continueFromWorkflow && component.sourceWorkflowId && (
+
+                          {component?.continueFromWorkflow && component?.sourceWorkflowId && (
                             <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded border border-blue-200 dark:border-blue-700">
                               <p className="text-xs text-blue-700 dark:text-blue-200">
-                                <strong>Source Workflow:</strong> {component.sourceWorkflowId}
+                                <strong>Source Workflow:</strong> {component?.sourceWorkflowId || ""}
                               </p>
                             </div>
                           )}
@@ -2247,163 +2142,72 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       )}
                       
                       {/* Form Component */}
-                      {(component.type === "process" || component.type === "dispatch") && component?.form && (
-                        <DynamicForm edit={false} editFormData={true} enableFormTitle={false} initialForm={component?.form} />
+                      {(component?.type === "process" || component?.type === "dispatch") && component?.form && (
+                        <DynamicForm edit={false} editFormData={true} enableFormTitle={false} initialForm={component?.form || null} />
                       )}
-                      {/*
-                      {component.type === "form" && (
+
+                      {component?.type === "process" && (
                         <div>
-                          {component.sla && (
+                          {component?.group && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>SLA:</strong> {component.sla} hours
+                              <strong>{t("crud.workflow.builder.node.form.group.label")}:</strong> {component?.group || ""}
                             </div>
                           )}
-                          {component.pic && (
+
+                          {component?.pic && (
                             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>PIC:</strong> {component.pic.replace("_", " ").toUpperCase()}
+                              <strong>{t("crud.workflow.builder.node.form.pic.label")}:</strong> {component?.pic || ""}
                             </div>
                           )}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {component.formConfig.fields.map((
-                              field, fieldIndex
-                            ) => (
-                              <div
-                                key={fieldIndex}
-                                className="border border-gray-100 dark:border-gray-800 rounded p-3"
-                              >
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                  {field.label} {field.required && <span className="text-red-500 dark:text-red-400">*</span>}
-                                </label>
-                                {field.type === "text" || field.type === "email" || field.type === "tel" || field.type === "number" ? (
-                                  <Input
-                                    type={field.type}
-                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
-                                  />
-                                ) : field.type === "textarea" ? (
-                                  <TextArea
-                                    rows={2}
-                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
-                                  />
-                                ) : field.type === "select" ? (
-                                  <Select
-                                    options={
-                                      (field.options ?? []).map((option: string) => ({
-                                        value: option,
-                                        label: option
-                                      }))
-                                    }
-                                    placeholder={`Select ${field.label.toLowerCase()}...`}
-                                    onChange={() => {}}
-                                    className="cursor-pointer"
-                                  />
-                                ) : field.type === "radio" ? (
-                                  <div className="space-y-1">
-                                    {field.options?.map((option: string, optIndex: number) => (
-                                      <label key={optIndex} className="flex items-center gap-2">
-                                        <Input
-                                          type="radio"
-                                          name={field.name}
-                                          value={option}
-                                        />
-                                        <span className="text-sm text-gray-900 dark:text-white">{option}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                ) : field.type === "checkbox" ? (
-                                  <div className="space-y-1">
-                                    {field.options?.map((option: string, optIndex: number) => (
-                                      <label key={optIndex} className="flex items-center gap-2">
-                                        <Input
-                                          type="checkbox"
-                                          value={option}
-                                        />
-                                        <span className="text-sm text-gray-900 dark:text-white">{option}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                ) : null}
-                              </div>
-                            ))}
-                          </div>
                         </div>
                       )}
-                      */}
-                      {component.type === "process" && (
-                        <div>
+
+                      {/* SLA Component  */}
+                      {component?.type === "sla" && (
+                        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded border">
+                          <div className="text-sm text-gray-700 dark:text-gray-200">
+                            <strong>{t("crud.workflow.builder.modal.preview.sla.header")}:</strong> {component?.SLA || "-"} {t("crud.workflow.unit.sla.label")}
+                          </div>
+
                           {/*
-                          {component.sla && (
-                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>SLA:</strong> {component.sla} minutes
+                          {component?.SLA && (
+                            <div className="text-sm text-gray-700 dark:text-gray-200 mt-1">
+                              <strong>SLA:</strong> {component?.SLA || 0}
                             </div>
                           )}
                           */}
-                          {component.group && (
-                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              {/* <strong>Group:</strong> {component.group.join(", ")} */}
-                              <strong>Group:</strong> {component.group}
-                            </div>
-                          )}
-                          {component.pic && (
-                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              {/* <strong>PIC:</strong> {component.pic.join(", ")} */}
-                              <strong>PIC:</strong> {component.pic}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/*
-                      {component.type === "sla" && (
-                        <div>
-                          {component.SLA && (
-                            <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                              <strong>SLA:</strong> {component.SLA} minutes
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      */}
-
-                      {/* SLA Component  */}
-                      {component.type === "sla" && (
-                        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded border">
-                          <div className="text-sm text-gray-700 dark:text-gray-200">
-                            <strong>SLA Time:</strong> {component.SLA || "Not specified"} minutes
-                          </div>
-                          {component.SLA && (
-                            <div className="text-sm text-gray-700 dark:text-gray-200 mt-1">
-                              <strong>SLA:</strong> {component.SLA}
-                            </div>
-                          )}
 
                           {/* Interactive Toggle Buttons */}
                           <div className="mb-4 mt-3">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                              SLA Decision Path:
+                              {t("crud.workflow.builder.modal.preview.sla.path")}:
                             </label>
+
                             <div className="flex gap-2">
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, "yes")}
-                                variant={decisionSelections[component.id] === "yes" ? "success" : "outline-success"}
                                 size="xs"
+                                variant={decisionSelections[component?.id] === "yes" && "success" || "outline-success"}
+                                onClick={() => handleDecisionToggle(component?.id, "yes")}
                               >
-                                <CheckLineIcon className="w-4 h-4" />
-                                Met SLA (YES)
+                                <CheckLineIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.modal.preview.sla.yes")}
                               </Button>
+
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, "no")}
-                                variant={decisionSelections[component.id] === "no" ? "error" : "outline-error"}
                                 size="xs"
+                                variant={decisionSelections[component?.id] === "no" && "error" || "outline-error"}
+                                onClick={() => handleDecisionToggle(component?.id, "no")}
                               >
-                                <CloseIcon className="w-4 h-4" />
-                                Exceeded SLA (NO)
+                                <CloseIcon className="w-4 h-4 mr-1" /> {t("crud.workflow.builder.modal.preview.sla.no")}
                               </Button>
                             </div>
                           </div>
 
                           {/* Current Selection Display */}
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            Current path: <strong>{decisionSelections[component.id] === "no" ? "Exceeded SLA" : "Met SLA"}</strong>
+                            {t("crud.workflow.builder.modal.preview.current_path")}:
+                            <strong className="ml-1">{decisionSelections[component?.id] === "no" &&
+                              t("crud.workflow.builder.modal.preview.sla.no") || t("crud.workflow.builder.modal.preview.sla.yes")}
+                            </strong>
                           </div>
                         </div>
                       )}
@@ -2412,64 +2216,70 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                       {component.type === "decision" && (
                         <div className="bg-yellow-100 dark:bg-yellow-800 p-3 rounded border">
                           <div className="text-sm text-gray-700 dark:text-gray-200">
-                            <strong>Condition:</strong> {component.condition || "No condition specified"}
+                            <strong className="mr-1">{t("crud.workflow.builder.modal.preview.decision.header")}:</strong>
+                            {component?.condition && t("common.yes") || ""}
                           </div>
 
                           {/* Interactive Toggle Buttons */}
                           <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                              Choose Decision Path:
+                              {t("crud.workflow.builder.modal.preview.decision.path")}:
                             </label>
+
                             <div className="flex gap-2">
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, "yes")}
-                                variant={decisionSelections[component.id] === "yes" ? "success" : "outline-success"}
                                 size="xs"
+                                variant={decisionSelections[component?.id] === "yes" && "success" || "outline-success"}
+                                onClick={() => handleDecisionToggle(component?.id, "yes")}
                               >
-                                <CheckLineIcon className="w-4 h-4" />
-                                YES
+                                <CheckLineIcon className="w-4 h-4 mr-1" /> {t("common.yes")}
                               </Button>
+
                               <Button
-                                onClick={() => handleDecisionToggle(component.id, "no")}
-                                variant={decisionSelections[component.id] === "no" ? "error" : "outline-error"}
                                 size="xs"
+                                variant={decisionSelections[component?.id] === "no" && "error" || "outline-error"}
+                                onClick={() => handleDecisionToggle(component?.id, "no")}
                               >
-                                <CloseIcon className="w-4 h-4" />
-                                NO
+                                <CloseIcon className="w-4 h-4 mr-1" /> {t("common.no")}
                               </Button>
                             </div>
                           </div>
 
                           {/* Current Selection Display */}
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            Current path: <strong>{decisionSelections[component.id] || "yes"}</strong>
+                            {t("crud.workflow.builder.modal.preview.current_path")}:
+                            <strong className="ml-1">
+                              {decisionLang?.[decisionSelections[component?.id]] || decisionLang["yes"] || "yes"}
+                            </strong>
                           </div>
                         </div>
                       )}
 
                       {/* End Component */}
-                      {component.type === "end" && (
+                      {component?.type === "end" && (
                         <div className="bg-red-100 dark:bg-red-800 p-4 rounded-lg border border-red-200 dark:border-red-700">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium text-red-800 dark:text-red-100">Workflow End</span>
+                            <span className="font-medium text-red-800 dark:text-red-100">
+                              {t("crud.workflow.builder.modal.preview.end")}
+                            </span>
 
-                            {/* Updated: [20-06-2025] v0.1.7 */}
-                            {component.allowContinuation && (
+                            {component?.allowContinuation && (
                               <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full">
-                                <AngleLeftIcon className="w-4 h-4" />
-                                Allows continuation
+                                <AngleLeftIcon className="w-4 h-4 mr-1" /> Allows continuation
                               </span>
                             )}
                           </div>
-                          {component.description && (
-                            <p className="text-sm text-red-700 dark:text-red-200">{component.description}</p>
+
+                          {component?.description && (
+                            <p className="text-sm text-red-700 dark:text-red-200">
+                              {component?.description || ""}
+                            </p>
                           )}
 
-                          {/* Updated: [20-06-2025] v0.1.7 */}
-                          {component.allowContinuation && component.nextWorkflowId && (
+                          {component?.allowContinuation && component?.nextWorkflowId && (
                             <div className="bg-green-100 dark:bg-green-800 p-2 rounded border border-green-200 dark:border-green-700">
                               <p className="text-xs text-green-700 dark:text-green-200">
-                                <strong>Next Workflow:</strong> {component.nextWorkflowId}
+                                <strong>Next Workflow:</strong> {component?.nextWorkflowId || ""}
                               </p>
                             </div>
                           )}
@@ -2481,35 +2291,38 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
               ) : (
                 <div className="text-center py-12">
                   <FileIcon className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No Components to Preview</div>
+
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">
+                    {t("crud.workflow.builder.modal.preview.empty.title")}
+                  </div>
+
                   <p className="text-gray-400 dark:text-gray-500">
-                    Add start, process, and end nodes with connections to generate component previews
+                    {t("crud.workflow.builder.modal.preview.empty.description")}
                   </p>
                 </div>
               )}
             </div>
             
-            <div
-              className="flex items-center justify-end gap-2 p-4"
-            >
+            <div className="flex items-center justify-end gap-2 p-4">
+              {/*
               <div className="text-sm text-gray-600 dark:text-gray-300">
-                {Object.keys(decisionSelections).length > 0 && (
+                {Object?.keys(decisionSelections)?.length > 0 && (
                   <span>
-                    Decisions: {Object.entries(decisionSelections).map(([id, decision]) => {
-                      const node = nodes.find(n => n.id === id);
-                      // return `${node?.data.label}: ${decision.toUpperCase()}`;
-                      const nodeTypeName = node?.type === "sla" ? "SLA" : "Decision";
-                      return `${node?.data.label} (${nodeTypeName}): ${decision.toUpperCase()}`;
+                    Decisions: {Object?.entries(decisionSelections)?.map(([id, decision]) => {
+                      const node = nodes?.find(n => n?.id === id);
+                      const nodeTypeName = node?.type === "sla" && "SLA" || "Decision";
+                      return `${node?.data?.label || ""} (${nodeTypeName || ""}): ${decision?.toUpperCase() || ""}`;
                     }).join(", ")}
                   </span>
                 )}
               </div>
+              */}
 
               <Button
-                onClick={() => setShowComponentsPreview(false)}
                 variant="outline"
+                onClick={() => setShowComponentsPreview(false)}
               >
-                Close
+                {t("crud.workflow.builder.modal.preview.actions.close")}
               </Button>
             </div>
           </Modal>

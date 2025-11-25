@@ -10,10 +10,9 @@ import Button from "@/components/ui/button/Button"
 import Badge from "@/components/ui/badge/Badge"
 import { ScrollArea } from "@/components/ui/scorllarea/scroll-area"
 import { getPriorityBorderColorClass, getPriorityColorClass } from "../function/Prioriy"
-import CaseHistory from "@/utils/json/caseHistory.json"
 import Avatar from "../ui/avatar/Avatar"
 import React from "react"
-import { mergeAddress } from "@/store/api/custommerApi"
+import { Customer, mergeAddress, useGetCustommerByPhoneNoQuery } from "@/store/api/custommerApi"
 import { CaseDetails, CaseEntity } from "@/types/case"
 import { useGetDeviceIoTQuery } from "@/store/api/deviceIoT"
 import { Device } from "@/types/deviceIoT"
@@ -22,7 +21,12 @@ import { useNavigate } from "react-router"
 import { useTranslation } from "@/hooks/useTranslation"
 import { formatDate } from "@/utils/crud"
 import { idbStorage } from "../idb/idb"
+import { useToast } from "@/hooks"
+import { ToastContainer } from "../crud/ToastContainer"
+import Loading from "../common/Loading"
+import { isValidPhoneNumber } from "react-phone-number-input"
 
+const userType = [{ name: "Bronze", id: "1" }, { name: "Silver", id: "2" }, { name: "Gold", id: "3" }, { name: "Platinum", id: "4" }]
 
 
 interface PanelProps {
@@ -37,10 +41,48 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
     const { t } = useTranslation();
     const tabs = [
-        { id: "Device info", label: t("case.panel.device_info") }
-    ];
-
+        { id: "Device info", label: t("case.panel.device_info") },
+        import.meta.env.VITE_SHOW_CASE_CONTRACT === "true"
+            ? { id: "customer-info", label: t("common.info") }
+            : undefined,
+    ].filter(Boolean);
+    const [customer, setCustomer] = useState<Customer | undefined>(undefined);
     const navigate = useNavigate()
+    const {
+        data: customerData,
+        isLoading: isLoadingCustomer,
+        isFetching: isFetchingCustomer,
+        error: customerError
+    } = useGetCustommerByPhoneNoQuery(
+        { phoneNo: caseItem?.customerData?.mobileNo || "" },
+        {
+            skip: !caseItem?.customerData?.mobileNo || activeTab !== "customer-info" || !isValidPhoneNumber(caseItem?.customerData?.mobileNo || "", "TH"),
+            refetchOnMountOrArgChange: true
+        }
+    );
+    const { toasts, removeToast } = useToast();
+
+    useEffect(() => {
+        if (customerError || !caseItem?.customerData?.mobileNo) {
+            setCustomer(undefined)
+        } else {
+            setCustomer(customerData?.data)
+        }
+    }, [customerData, customerError])
+    // useEffect(async () => {
+    //     if(activeTab==="customer-info"){
+    //     try {
+    //         const result = await getCustomer({ phoneNo: caseItem?.customerData?.mobileNo || "" }).unwrap()
+    //         if (result?.data) {
+    //             setCustomer(result?.data as Custommer)
+    //         }
+    //     } catch (error) {
+
+    //     }
+    // }
+
+    // }, [activeTab]);
+
 
     if (referCaseList && referCaseList.length != 0) {
         tabs.push({ id: "Subcase", label: "Subcase" });
@@ -77,7 +119,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     //     // { id: "Knowledge Base", label: "Knowledge Base" },
     //     // { id: "FAQ", label: "FAQ" },
     // ];
-    const serviceHistory = CaseHistory;
+    // const serviceHistory = CaseHistory;
 
     const cachedDevices = localStorage.getItem("devices");
 
@@ -180,28 +222,30 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
 
                 <ScrollArea className="flex-1">
                     <div className="p-3 space-y-3">
-                        {activeTab === "customer-info" ? (
-                            <>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
-                                        Customer Information
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <div className="flex flex-wrap gap-3 items-center">
-                                        <Avatar
-                                            src={
-                                                caseItem?.customerData?.photo
-                                                    ? caseItem?.customerData.photo
-                                                    : "/images/user/unknow user.png"
-                                            }
-                                            size="xxlarge"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                                                {caseItem?.customerData?.name ? caseItem?.customerData?.name : "-"}
-                                            </h3>
-                                            {/* {customerData && (
+
+                        {isLoadingCustomer || isFetchingCustomer ? (<Loading />)
+                            : activeTab === "customer-info" ? (
+                                <>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
+                                            {t("customer.info")}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex flex-wrap gap-3 items-center">
+                                            <Avatar
+                                                src={
+                                                    customer?.photo
+                                                        ? customer.photo
+                                                        : "/images/user/unknow user.png"
+                                                }
+                                                size="xxlarge"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-medium text-gray-900 dark:text-white text-sm">
+                                                    {customer?.firstName && customer?.lastName ? customer?.firstName + " " + customer.lastName : "-"}
+                                                </h3>
+                                                {/* {customerData && (
                                                 <>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                                         Business ID: 123456789
@@ -211,102 +255,115 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                                     </div>
                                                 </>
                                             )} */}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-2 text-xs">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Date of birth</div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {caseItem?.customerData?.dob ? formatDate(caseItem?.customerData.dob) : "-"}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-blue-500 dark:text-blue-400 mb-1">Email</div>
-                                            <div className="text-gray-900 dark:text-white">
-                                                {caseItem?.customerData?.email ? caseItem?.customerData.email : "-"}
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Phone Number</div>
-                                        <div className="text-gray-900 dark:text-white">
-                                            {caseItem?.customerData?.mobileNo ? caseItem?.customerData.mobileNo : "-"}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-blue-500 dark:text-blue-400 mb-1">Address</div>
-                                        <div className="text-gray-900 dark:text-white">
-                                            {caseItem?.customerData?.address ? mergeAddress(caseItem?.customerData.address) : "-"}
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-
-                        ) : activeTab === "Subcase" ? (
-                            <div className="space-y-3">
-                                {referCase.length > 0 ? (
-                                    referCase.map((SupCase) => (
-                                        <div
-                                            key={SupCase.caseId}
-                                            onClick={() => navigate(`/case/${SupCase.caseId}`)}
-                                            className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(SupCase.priority)} group`}
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center space-x-2 mb-2">
-                                                        <div className={`w-2 h-2 ${getPriorityColorClass(SupCase.priority)} rounded-full flex-shrink-0`}></div>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-500 font-mono">#{SupCase.caseId}</span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-500">
-                                                            {new Date(SupCase.createdDate).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                    <h4 className="text-sm font-medium text-gray-900 dark:text-white leading-tight mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                                                        {SupCase.caseDetail || 'No details available'}
-                                                    </h4>
-                                                    <div className="flex items-center justify-between">
-                                                        <Badge>
-                                                            {statusIdToStatusTitle(SupCase.statusId)}
-                                                        </Badge>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                                                            {SupCase.createdBy}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center text-gray-500 py-4">
-                                        No subcases found
-                                    </div>
-                                )}
-                            </div>
-                        ) : activeTab === "Location" ? (
-                            <div className="text-center py-4">
-                                <img src={"../../../public/images/map/Location-image.jpeg"} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
-                            </div>
-                        )
-                            : activeTab === "Device info" ? (
-                                <>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
-                                            {t("case.panel.device_info")}
-                                        </span>
-                                    </div>
-
-                                    <div className="space-y-2 text-sm">
+                                    <div className="space-y-2 text-xs">
                                         <div className="grid grid-cols-2 gap-2">
-                                            <div className=" col-span-2">
-                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
-                                                    <span>{t("case.panel.iot_device_name")}</span>
-                                                </div>
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.dob")}</div>
                                                 <div className="text-gray-900 dark:text-white">
-                                                    {caseItem?.deviceMetaData?.device_name || "-"}
+                                                    {customer?.dob ? formatDate(customer.dob, { includeTime: false, }) : "-"}
                                                 </div>
                                             </div>
-                                            {/* <div className=" col-span-2">
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.email")}</div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {customer?.email ? customer.email : "-"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.phoneNumber")}</div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {customer?.mobileNo ? customer.mobileNo : "-"}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.type")}</div>
+                                                <div className="text-gray-900 dark:text-white">
+                                                    {customer?.userType
+                                                        ? t("customer.userType." + (userType.find(item => item.id === customer.userType)?.name || "-").toLowerCase())
+                                                        : "-"
+                                                    }
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.address")}</div>
+                                            <div className="text-gray-900 dark:text-white">
+                                                {customer?.address ? mergeAddress(customer.address) : "-"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+
+                            ) : activeTab === "Subcase" ? (
+                                <div className="space-y-3">
+                                    {referCase.length > 0 ? (
+                                        referCase.map((SupCase) => (
+                                            <div
+                                                key={SupCase.caseId}
+                                                onClick={() => navigate(`/case/${SupCase.caseId}`)}
+                                                className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(SupCase.priority)} group`}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center space-x-2 mb-2">
+                                                            <div className={`w-2 h-2 ${getPriorityColorClass(SupCase.priority)} rounded-full flex-shrink-0`}></div>
+                                                            <span className="text-xs text-gray-600 dark:text-gray-500 font-mono">#{SupCase.caseId}</span>
+                                                            <span className="text-xs text-gray-600 dark:text-gray-500">
+                                                                {new Date(SupCase.createdDate).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <h4 className="text-sm font-medium text-gray-900 dark:text-white leading-tight mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
+                                                            {SupCase.caseDetail || 'No details available'}
+                                                        </h4>
+                                                        <div className="flex items-center justify-between">
+                                                            <Badge>
+                                                                {statusIdToStatusTitle(SupCase.statusId)}
+                                                            </Badge>
+                                                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                                                                {SupCase.createdBy}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center text-gray-500 py-4">
+                                            No subcases found
+                                        </div>
+                                    )}
+                                </div>
+                            ) : activeTab === "Location" ? (
+                                <div className="text-center py-4">
+                                    <img src={"../../../public/images/map/Location-image.jpeg"} alt="Location Map" className="w-full h-48 object-cover rounded-lg" />
+                                </div>
+                            )
+                                : activeTab === "Device info" ? (
+                                    <>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-blue-500 dark:text-blue-400 font-medium text-sm">
+                                                {t("case.panel.device_info")}
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-2 text-sm">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className=" col-span-2">
+                                                    <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                        <span>{t("case.panel.iot_device_name")}</span>
+                                                    </div>
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        {caseItem?.deviceMetaData?.device_name || "-"}
+                                                    </div>
+                                                </div>
+                                                {/* <div className=" col-span-2">
                                                 <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
                                                     <Hash className="w-3 h-3" />
                                                     <span>{t("case.panel.iot_device_serial_number")}</span>
@@ -315,52 +372,52 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                                     {caseItem?.deviceMetaData?.device_serial_number || "-"}
                                                 </div>
                                             </div> */}
-                                            <div>
-                                                {/* <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                <div>
+                                                    {/* <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
                                                     <Wifi className="w-3 h-3" />
                                                     <span>{t("case.display.iot_device")}</span>
                                                 </div>
                                                 <div className="text-gray-900 dark:text-white">
                                                     {caseItem?.deviceMetaData?.device_id || caseItem?.iotDevice || "-"}
                                                 </div> */}
-                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
-                                                    <Hash className="w-3 h-3" />
-                                                    <span>{t("case.panel.iot_device_serial_number")}</span>
+                                                    <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                        <Hash className="w-3 h-3" />
+                                                        <span>{t("case.panel.iot_device_serial_number")}</span>
+                                                    </div>
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        {caseItem?.deviceMetaData?.device_serial_number || "-"}
+                                                    </div>
                                                 </div>
-                                                <div className="text-gray-900 dark:text-white">
-                                                    {caseItem?.deviceMetaData?.device_serial_number || "-"}
+                                                <div>
+                                                    <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                        <Cpu className="w-3 h-3" />
+                                                        <span>{t("case.panel.device_type")}</span>
+                                                    </div>
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        {caseItem?.deviceMetaData?.device_type || "-"}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
-                                                    <Cpu className="w-3 h-3" />
-                                                    <span>{t("case.panel.device_type")}</span>
-                                                </div>
-                                                <div className="text-gray-900 dark:text-white">
-                                                    {caseItem?.deviceMetaData?.device_type || "-"}
+
+                                                <div>
+                                                    <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
+                                                        <Tag className="w-3 h-3" />
+                                                        <span>{t("case.panel.brand")}</span>
+                                                    </div>
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        {caseItem?.deviceMetaData?.device_brand || "-"}
+                                                        <span>{!caseItem?.deviceMetaData?.device_brand || ` ${t("case.panel.device_model")} `}</span>
+                                                        {caseItem?.deviceMetaData?.device_brand ? caseItem?.deviceMetaData?.device_model : ""}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div>
-                                                <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 space-x-1">
-                                                    <Tag className="w-3 h-3" />
-                                                    <span>{t("case.panel.brand")}</span>
-                                                </div>
-                                                <div className="text-gray-900 dark:text-white">
-                                                    {caseItem?.deviceMetaData?.device_brand || "-"}
-                                                    <span>{!caseItem?.deviceMetaData?.device_brand || ` ${t("case.panel.device_model")} `}</span>
-                                                    {caseItem?.deviceMetaData?.device_brand ? caseItem?.deviceMetaData?.device_model : ""}
-                                                </div>
-                                            </div>
                                         </div>
-
+                                    </>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
                                     </div>
-                                </>
-                            ) : (
-                                <div className="text-center py-4">
-                                    <div className="text-gray-500 dark:text-gray-400 mb-1 text-sm">No data available for this tab.</div>
-                                </div>
-                            )}
+                                )}
                     </div>
                 </ScrollArea>
             </div>
@@ -375,7 +432,7 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                 </div>
                 <ScrollArea className="flex-1">
                     <div className="p-3 space-y-3">
-                        {caseItem?.customerData?.name ? serviceHistory.map((historyItem) => (
+                        {/* {customer?.displayName ? serviceHistory.map((historyItem) => (
                             <div
                                 key={historyItem.id}
                                 className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(historyItem.priority)} group`}
@@ -403,10 +460,11 @@ const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
                                     </div>
                                 </div>
                             </div>
-                        )) : <></>}
+                        )) : <></>} */}
                     </div>
                 </ScrollArea>
             </div>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 };

@@ -1,23 +1,28 @@
 import React from 'react';
 import { FormField, IndividualFormField } from "@/components/interface/FormField";
+import { useTranslation } from "@/hooks/useTranslation.ts"; // 1. Import useTranslation
 
 interface FormViewerProps {
   formData: FormField;
 }
 
 const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
+  const { t } = useTranslation();
+
   const renderFieldValue = (field: IndividualFormField) => {
     const valueTextClasses = "text-md font-medium text-gray-900 dark:text-white";
     const labelTextClasses = "text-md text-gray-500 dark:text-gray-400";
     let valueContent: React.ReactNode;
 
-    // Helper to render the label with a required indicator
     const renderLabel = (label: string, required?: boolean) => (
       <span className={labelTextClasses}>
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </span>
     );
+
+
+    const emptyValueIndicator = t("formViewer.emptyValue"); 
 
     switch (field.type) {
       case "textInput":
@@ -29,22 +34,22 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
       case "dateLocal":
       case "select":
       case "radio":
-        valueContent = field.value || "-";
+        valueContent = field.value || emptyValueIndicator;
         break;
 
       case "option": // Multi-checkbox
         valueContent = Array.isArray(field.value) && field.value.length > 0
           ? field.value.join(", ")
-          : "-";
+          : emptyValueIndicator;
         break;
 
       case "image":
       case "dndImage":
         const singleImageUrl = field.value instanceof File ? URL.createObjectURL(field.value) : (typeof field.value === 'string' ? field.value : null);
         valueContent = singleImageUrl ? (
-          <img src={singleImageUrl} alt={field.label} className="max-w-xs h-auto" /> // Added some basic image styling
+          <img src={singleImageUrl} alt={field.label} className="max-w-xs h-auto" />
         ) : (
-          "No image uploaded"
+          t("formViewer.noImageUploaded") 
         );
         break;
 
@@ -52,7 +57,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
       case "dndMultiImage":
         const multiImageFiles = Array.isArray(field.value) ? field.value : [];
         valueContent = multiImageFiles.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"> {/* Added a grid for multiple images */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {multiImageFiles.map((file: File | { name: string; url: string;[key: string]: any }, index: number) => {
               let imageUrl: string = "";
               if (file instanceof File || file instanceof Blob) {
@@ -68,7 +73,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
             })}
           </div>
         ) : (
-          "No images uploaded"
+          t("formViewer.noImagesUploaded")
         );
         break;
 
@@ -86,7 +91,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
               </React.Fragment>
             ))}
             {Array.isArray(field.value) && field.value.length === 0 && (
-              <p className="text-center text-gray-500 italic text-sm mt-2">No fields in this group.</p>
+              <p className="text-center text-gray-500 italic text-sm mt-2">{t("formViewer.emptyGroup")}</p> // i18n for empty group
             )}
           </>
         );
@@ -96,10 +101,12 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
         return (
           <>
             {field.showLabel && renderLabel(field.label, field.required)}
-            <div className={valueTextClasses}>{field.value || "-"}</div>
+            <div className={valueTextClasses}>{field.value || emptyValueIndicator}</div>
             {selectedOption && Array.isArray(selectedOption.form) && selectedOption.form.length > 0 && (
               <>
-                <h4 className="text-md font-semibold mb-3 dark:text-gray-300">Details for "{field.value}"</h4>
+                <h4 className="text-md font-semibold mb-3 dark:text-gray-300">
+                  {t("formViewer.dynamicFieldDetails", { value: field.value })}
+                </h4>
                 {selectedOption.form.map((nestedField: IndividualFormField) => (
                   <React.Fragment key={nestedField.id}>
                     {renderFieldValue(nestedField)}
@@ -111,7 +118,7 @@ const FormViewer: React.FC<FormViewerProps> = ({ formData }) => {
         );
 
       default:
-        valueContent = <p className="text-red-500">Unsupported field type: {field.type}</p>;
+        valueContent = <p className="text-red-500">{t("formViewer.unsupportedFieldType", { type: field.type })}</p>; // i18n for unsupported type
         break;
     }
 

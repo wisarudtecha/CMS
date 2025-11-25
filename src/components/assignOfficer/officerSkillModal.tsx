@@ -44,7 +44,7 @@ export default function OfficerDetailModal({
     }
     return (
         <Dialog open={!!officer} onOpenChange={onOpenChange}>
-            <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] h-[30vh] flex flex-col z-1000001 rounded-lg shadow-2xl">
+            <DialogContent aria-describedby={undefined} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl w-[90vw] md:w-[70vw] flex flex-col z-1000001 rounded-lg shadow-2xl">
                 <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
                     <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
                         {t("case.officer_detail.personal_title")}

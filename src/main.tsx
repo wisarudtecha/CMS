@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { AppWrapper } from "@/components/common/PageMeta.tsx";
 import { TranslationLoader } from "@/components/common/TranslationLoader";
-import { ToastGlobalContainer } from "@/components/crud/ToastGlobal";
+import { ToastProvider } from "@/components/crud/ToastGlobal";
 import { WebSocketProvider } from "@/components/websocket/websocket";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -24,7 +24,7 @@ createRoot(document.getElementById("root")!).render(
         <LanguageProvider>
           <TranslationLoader fallback={<LoadingScreen />}>
             <AuthProvider>
-              <ToastGlobalContainer>
+              <ToastProvider>
                 <SessionTimeoutWarning />
                 <ProtectedRoute>
                   <AppWrapper>
@@ -33,7 +33,7 @@ createRoot(document.getElementById("root")!).render(
                     </WebSocketProvider>
                   </AppWrapper>
                 </ProtectedRoute>
-              </ToastGlobalContainer>
+              </ToastProvider>
             </AuthProvider>
           </TranslationLoader>
         </LanguageProvider>

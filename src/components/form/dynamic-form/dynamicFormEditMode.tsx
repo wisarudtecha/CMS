@@ -7,6 +7,7 @@ import { getCountries } from "react-phone-number-input";
 import { maxGridCol, formConfigurations } from "./constant";
 import Input from "../input/InputField";
 import { SortableFieldEditItem } from "./dynamicFormElement";
+import { useTranslation } from "@/hooks/useTranslation.ts"; // Import useTranslation
 
 import { ConfirmationModal } from "@/components/case/modal/ConfirmationModal";
 import { updateFieldRecursively, removeFieldRecursively, createDynamicFormField, getResponsiveGridClass, getResponsiveColSpanClass } from "./function";
@@ -28,6 +29,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     showValidationErrors,
     formMetaData
 }) => {
+    const { t } = useTranslation(); // Initialize t function
     const [modalRules, setModalRules] = useState<FormRule>({});
     const [countrySearch, setCountrySearch] = useState('');
     const allCountries = useMemo(() => getCountries(), []);
@@ -75,8 +77,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
             }
             if (field.type === "dynamicField" && Array.isArray(field.options)) {
                 for (const option of field.options) {
-                    if (Array.isArray(option.formMeta)) {
-                        ids = ids.concat(getAllFieldIds(option.formMeta));
+                    if (Array.isArray(option.form)) { // Corrected from formMeta
+                        ids = ids.concat(getAllFieldIds(option.form)); // Corrected from formMeta
                     }
                 }
             }
@@ -100,7 +102,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
     const hideAllCards = useCallback(() => {
         const allIds = getAllFieldIds(currentForm.formFieldJson);
         setHiddenCardIds(new Set(allIds));
-    }, [currentForm.formFieldJson]);
+    }, [currentForm.formFieldJson]); // Dependency added
 
     const showAllCards = useCallback(() => {
         setHiddenCardIds(new Set());
@@ -112,13 +114,43 @@ export const FormEdit: React.FC<FormEditProps> = ({
         }
     };
 
-    const getRuleLabel = (ruleName: string): string => {
-        const defaultLabel = ruleName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        const customLabels: Record<string, string> = {
-            maxFileSize: 'Max File Size (MB)',
+    const getRuleLabel = useCallback((ruleName: string): string => {
+        const keyMap: Record<string, string> = {
+            maxFileSize: "formEdit.rules.maxFileSize",
+            minLength: "formEdit.rules.minLength",
+            maxLength: "formEdit.rules.maxLength",
+            minnumber: "formEdit.rules.minnumber",
+            maxnumber: "formEdit.rules.maxnumber",
+            minSelections: "formEdit.rules.minSelections",
+            maxSelections: "formEdit.rules.maxSelections",
+            minFiles: "formEdit.rules.minFiles",
+            maxFiles: "formEdit.rules.maxFiles",
+            contain: "formEdit.rules.contain",
+            allowedCountries: "formEdit.rules.allowedCountries",
+            allowedFileTypes: "formEdit.rules.allowedFileTypes",
+            minLocalDate: "formEdit.rules.minLocalDate",
+            maxLocalDate: "formEdit.rules.maxLocalDate",
+            minDate: "formEdit.rules.minDate",
+            maxDate: "formEdit.rules.maxDate",
+            validEmailFormat: "formEdit.rules.validEmailFormat",
+            hasUppercase: "formEdit.rules.hasUppercase",
+            hasLowercase: "formEdit.rules.hasLowercase",
+            hasNumber: "formEdit.rules.hasNumber",
+            hasSpecialChar: "formEdit.rules.hasSpecialChar",
+            noWhitespace: "formEdit.rules.noWhitespace",
+            futureDateOnly: "formEdit.rules.futureDateOnly",
+            pastDateOnly: "formEdit.rules.pastDateOnly",
         };
-        return customLabels[ruleName] || defaultLabel;
-    };
+
+        const tKey = keyMap[ruleName];
+        
+        if (tKey) {
+            return t(tKey);
+        }
+
+        // Fallback for any unmapped rules
+        return ruleName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    }, [t]); // Added t as dependency
 
     const handleUpdateFieldRule = useCallback((fieldId: string, newRules: FormRule) => {
         setCurrentForm(prevForm => ({
@@ -130,7 +162,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
         }));
         setCurrentEditingField(null);
         setShowSettingModal(false);
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively from dep array
 
     const settingHandling = (fieldData: IndividualFormFieldWithChildren) => {
         setCurrentEditingField(fieldData);
@@ -143,7 +175,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
 
     const handleFormNameChange = useCallback((newName: string) => {
         setCurrentForm(prevForm => ({ ...prevForm, formName: newName }));
-    }, []);
+    }, [setCurrentForm]); // Added dependency
 
     const handleOverallFormColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         let newColSpan = parseInt(e.target.value, 10);
@@ -162,7 +194,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
             });
             return { ...prevForm, formColSpan: newColSpan, formFieldJson: updatedFieldJson };
         });
-    }, []);
+    }, [setCurrentForm]); // Added dependency
 
 
     const handleLabelChange = useCallback((id: string, newLabel: string) => {
@@ -173,7 +205,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 label: newLabel
             })),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const handleShowLabelChange = useCallback((id: string, newValue: boolean) => {
         setCurrentForm(prevForm => ({
@@ -183,7 +215,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 showLabel: newValue
             })),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const handlePlaceholderChange = useCallback((id: string, newPlaceholder: string) => {
         setCurrentForm(prevForm => ({
@@ -193,7 +225,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 placeholder: newPlaceholder
             })),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const updateFieldId = useCallback((oldId: string, newId: string) => {
         const trimmedNewId = newId.trim();
@@ -210,7 +242,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 }
                 if (field.type === "dynamicField" && Array.isArray(field.options)) {
                     for (const option of field.options) {
-                        if (Array.isArray(option.formMeta) && checkIdExistsRecursively(option.formMeta)) {
+                        if (Array.isArray(option.form) && checkIdExistsRecursively(option.form)) { // Corrected from formMeta
                             return true;
                         }
                     }
@@ -230,7 +262,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 id: trimmedNewId
             })),
         }));
-    }, [currentForm.formFieldJson, updateFieldRecursively]);
+    }, [currentForm.formFieldJson, setCurrentForm]); // Removed updateFieldRecursively
 
     const handleAddOption = useCallback((id: string, newOptionTextValue: string) => {
         setCurrentForm(prevForm => ({
@@ -241,7 +273,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                     if (field.type === "dynamicField") {
                         const newOption = {
                             value: newOptionValue,
-                            formMeta: []
+                            form: [] // Corrected from formMeta
                         };
                         if (field.options && !field.options.some(o => o.value === newOptionValue)) {
                             return { ...field, options: [...field.options, newOption] };
@@ -259,14 +291,14 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 return field;
             }),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const removeField = useCallback((id: string) => {
         setCurrentForm(prevForm => ({
             ...prevForm,
             formFieldJson: removeFieldRecursively(prevForm.formFieldJson, id),
         }));
-    }, [removeFieldRecursively]);
+    }, [setCurrentForm]); // Removed removeFieldRecursively
 
     const handleRemoveOption = useCallback((fieldId: string, optionIndexToRemove: number) => {
         setCurrentForm(prevForm => ({
@@ -296,7 +328,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 return field;
             }),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const handleToggleRequired = useCallback((id: string) => {
         setCurrentForm(prevForm => ({
@@ -306,7 +338,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 required: !field.required
             })),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
 
     const handleColSpanChange = useCallback((id: string, newColSpan: number) => {
@@ -317,7 +349,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 colSpan: newColSpan
             })),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const addFieldToDynamicOption = useCallback((dynamicFieldId: string, optionValue: string, formType: string) => {
         const newField = createDynamicFormField(formConfigurations, formType, true);
@@ -327,8 +359,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
             if (field.id === dynamicFieldId && field.type === "dynamicField") {
                 const updatedOptions = field.options?.map(option => {
                     if (option.value === optionValue) {
-                        const newForm = Array.isArray(option.formMeta) ? [...option.formMeta, newField] : [newField];
-                        return { ...option, formMeta: newForm };
+                        const newForm = Array.isArray(option.form) ? [...option.form, newField] : [newField]; // Corrected from formMeta
+                        return { ...option, form: newForm }; // Corrected from formMeta
                     }
                     return option;
                 });
@@ -341,7 +373,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
             ...prevForm,
             formFieldJson: updateFieldRecursively(prevForm.formFieldJson, dynamicFieldId, callback)
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const handleChildContainerColSpanChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, containerId: string, containerType: "InputGroup" | "dynamicField") => {
         let newColSpan = parseInt(e.target.value, 10);
@@ -368,14 +400,14 @@ export const FormEdit: React.FC<FormEditProps> = ({
                         return { ...field, GroupColSpan: newColSpan, value: updatedChildren };
                     } else if (containerType === "dynamicField") {
                         const updatedOptions = field.options?.map(option => {
-                            if (Array.isArray(option.formMeta)) {
-                                const updatedOptionForm = option.formMeta.map((childField: IndividualFormFieldWithChildren) => {
+                            if (Array.isArray(option.form)) { // Corrected from formMeta
+                                const updatedOptionForm = option.form.map((childField: IndividualFormFieldWithChildren) => { // Corrected from formMeta
                                     if (childField.colSpan && childField.colSpan > newColSpan) {
                                         return { ...childField, colSpan: newColSpan };
                                     }
                                     return childField;
                                 });
-                                return { ...option, formMeta: updatedOptionForm };
+                                return { ...option, form: updatedOptionForm }; // Corrected from formMeta
                             }
                             return option;
                         });
@@ -385,12 +417,12 @@ export const FormEdit: React.FC<FormEditProps> = ({
                 return field;
             }),
         }));
-    }, [updateFieldRecursively]);
+    }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const renderRuleInput = (ruleName: string, value: any) => {
         const label = getRuleLabel(ruleName);
         const commonInputClass = "mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400";
-        const commonCheckboxClass = "formMeta-checkbox h-4 w-4 text-blue-600 rounded";
+        const commonCheckboxClass = "form-checkbox h-4 w-4 text-blue-600 rounded"; // Corrected from formMeta-checkbox
 
         switch (ruleName) {
             case 'minLength':
@@ -432,7 +464,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
                         <label className="block text-sm font-medium">{label}:</label>
                         <Input
                             type="text"
-                            placeholder="Search countries..."
+                            placeholder={t("formEdit.rules.searchCountries")}
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
                             className={`${commonInputClass} mb-2`}
@@ -501,7 +533,7 @@ export const FormEdit: React.FC<FormEditProps> = ({
             case 'pastDateOnly':
                 return <label className="flex items-center text-sm font-medium"><input type="checkbox" checked={!!value} onChange={e => handleRuleInputChange(ruleName as keyof FormRule, e.target.checked)} className={commonCheckboxClass} /><span className="ml-2">{label}</span></label>;
             default:
-                return <p>Unsupported rule: {ruleName}</p>;
+                return <p>{t("formEdit.settingsModal.unsupportedRule", { ruleName: ruleName })}</p>;
         }
     };
 
@@ -520,8 +552,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
 
     return (
         <>  <ConfirmationModal
-            title=""
-            description="Confirm Publish?"
+            title={t("formEdit.confirmPublish.title")}
+            description={t("formEdit.confirmPublish.description")}
             onConfirm={() => {
                 // pusblishForm({ formId: currentForm.formId, publish: true });
                 setFormMeta((prev) => (prev ? {
@@ -537,19 +569,19 @@ export const FormEdit: React.FC<FormEditProps> = ({
             <div className="mb-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
                 <div className=" flex justify-between">
                     <div className="flex space-x-3">
-                        <h2 className="text-lg font-bold mb-4">Form Settings</h2>
+                        <h2 className="text-lg font-bold mb-4">{t("formEdit.formSettings.title")}</h2>
                       
                     </div>
                     {/* {formMeta?.versionsList && <SearchableSelect className='px-2 py-1 rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion} disabledChevronsIcon={true} disabledRemoveButton={true} />} */}
                 </div>
                 <div className=" relative space-y-4">
-                    <label className={`block text-gray-600 text-sm font-bold dark:text-gray-400`}>Form Name:
+                    <label className={`block text-gray-600 text-sm font-bold dark:text-gray-400`}>{t("formEdit.formSettings.formNameLabel")}
 
                     </label>
                     <div className={`${formMeta && "grid grid-cols-[1fr_auto_auto] space-x-3"} text-gray-600 text-sm font-bold dark:text-gray-400`}>
-                        <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter formMeta name" disabled={!editFormData} />
+                        <Input type="text" value={currentForm.formName} onChange={(e) => handleFormNameChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder={t("formEdit.formSettings.formNamePlaceholder")} disabled={!editFormData} />
                         {/* {formMeta?.currentVersions && <div className=" flex items-center">
-                            Version :
+                            {t("formEdit.formSettings.version")}
                             <label className={` items-center justify-center`}>{formMetaData?.currentVersions}</label>
                         </div>
                         } */}
@@ -558,17 +590,17 @@ export const FormEdit: React.FC<FormEditProps> = ({
 
 
                             {/* {!formMeta?.publish ?
-                                <Button onClick={() => { setShowConfirmPubish(true) }}>Publish</Button>
-                                : <Button onClick={() => { setShowConfirmPubish(true) }}>Unpublish</Button>} */}
+                                <Button onClick={() => { setShowConfirmPubish(true) }}>{t("formEdit.formSettings.publish")}</Button>
+                                : <Button onClick={() => { setShowConfirmPubish(true) }}>{t("formEdit.formSettings.unpublish")}</Button>} */}
                         </div>}
 
                     </div>
 
-                    {/* <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">Form ID:
-                        <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder="Enter unique formMeta ID" disabled={true} />
+                    {/* <label className="block text-gray-700 text-sm font-bold dark:text-gray-400">{t("formEdit.formSettings.formIdLabel")}
+                        <Input type="text" value={currentForm.formId} onChange={(e) => handleFormIdChange(e.target.value)} className="mt-1 block w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 dark:text-gray-400" placeholder={t("formEdit.formSettings.formIdPlaceholder")} disabled={true} />
                     </label> */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">Desktop Grid Columns:</label>
+                        <label htmlFor={`overallColSpan-input`} className="text-gray-700 text-sm dark:text-gray-400">{t("formEdit.formSettings.gridColumns")}</label>
                         <Input id={`overallColSpan-input`} type="number" min="1" max={maxGridCol.toString()} value={currentForm.formColSpan} onChange={handleOverallFormColSpanChange} className="py-1 px-2 border rounded-md text-gray-700 dark:bg-gray-800 dark:text-gray-400 w-20" disabled={!editFormData} />
                     </div>
                 </div>
@@ -576,15 +608,15 @@ export const FormEdit: React.FC<FormEditProps> = ({
 
             <div className="mb-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
-                    <h2 className="text-lg font-bold">Form Layout Editor</h2>
+                    <h2 className="text-lg font-bold">{t("formEdit.layoutEditor.title")}</h2>
                     <div className="flex gap-2">
-                        <Button onClick={hideAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Hide All</Button>
-                        <Button onClick={showAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">Show All</Button>
+                        <Button onClick={hideAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">{t("formEdit.layoutEditor.hideAll")}</Button>
+                        <Button onClick={showAllCards} variant="outline-no-transparent" className="px-3 py-1 bg-blue-200 text-gray-700 rounded-md hover:bg-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-sm">{t("formEdit.layoutEditor.showAll")}</Button>
                     </div>
                 </div>
 
                 {currentForm.formFieldJson.length === 0 ? (
-                    <p className="text-center text-gray-500 italic">No fields added yet. Use the buttons above to add new fields.</p>
+                    <p className="text-center text-gray-500 italic">{t("formEdit.layoutEditor.noFields")}</p>
                 ) : (
                     <div>
                         <SortableContext items={currentForm.formFieldJson.map(field => field.id)} strategy={rectSortingStrategy} key={currentForm.formId}>
@@ -628,8 +660,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
             {
                 showSettingModal && currentEditingField && (<Modal isOpen={showSettingModal} onClose={() => { setShowSettingModal(false); setCurrentEditingField(null); }} className="max-w-lg p-6">
                     <div className="dark:text-gray-200">
-                        <h3 className="text-lg font-semibold ">Settings for: <span className="font-bold text-blue-500">{currentEditingField.label}</span></h3>
-                        <p className="text-sm text-gray-500 mb-4">Field Type: {currentEditingField.type}</p>
+                        <h3 className="text-lg font-semibold ">{t("formEdit.settingsModal.title")} <span className="font-bold text-blue-500">{currentEditingField.label}</span></h3>
+                        <p className="text-sm text-gray-500 mb-4">{t("formEdit.settingsModal.fieldType")} {currentEditingField.type}</p>
                         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                             {formConfigurations.find(c => c.formType === currentEditingField.type)?.property?.map(rule => (
                                 <div key={rule}>
@@ -638,8 +670,8 @@ export const FormEdit: React.FC<FormEditProps> = ({
                             ))}
                         </div>
                         <div className="flex items-center justify-end gap-2 mt-6">
-                            <Button onClick={() => { setShowSettingModal(false); setCurrentEditingField(null); }} variant="outline">Cancel</Button>
-                            <Button onClick={handleSaveRules} variant="success">Save Rules</Button>
+                            <Button onClick={() => { setShowSettingModal(false); setCurrentEditingField(null); }} variant="outline">{t("common.cancel")}</Button>
+                            <Button onClick={handleSaveRules} variant="success">{t("formEdit.settingsModal.saveButton")}</Button>
                         </div>
                     </div>
                 </Modal>)

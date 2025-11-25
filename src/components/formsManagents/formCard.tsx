@@ -8,12 +8,12 @@ import { FormManager } from '../interface/FormField';
 import ButtonAction from './ButtonAction';
 import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
 import Button from '../ui/button/Button';
-import Badge from '../ui/badge/Badge';
+import { formatDate } from '@/utils/crud';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FormCardProps {
   form: FormManager;
   setForms: React.Dispatch<SetStateAction<FormManager[]>>
-  formatDate: (dateString: string) => string;
   handleOnEdit?: () => void;
   handleOnView?: () => void;
   handleOnVersion?: (form: FormManager) => void;
@@ -26,7 +26,6 @@ interface FormCardProps {
 const FormCard: React.FC<FormCardProps> = ({
   form,
   setForms,
-  formatDate,
   handleOnEdit,
   handleOnView,
   onSetStatusInactive, // Destructure the new prop
@@ -34,7 +33,7 @@ const FormCard: React.FC<FormCardProps> = ({
 }) => {
 
   // const config = statusConfig[form.active===true?"active":"inactive"];
-
+  const { t } = useTranslation();
   return (
     <div
       key={form.formId}
@@ -42,18 +41,26 @@ const FormCard: React.FC<FormCardProps> = ({
     >
       <div>
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.formName}</h3>
-            {form?.versionsList &&
-              form.versionsList.length > 0 &&
-              Number(form.versions) < Math.max(...form.versionsList.map(Number)) && (
-                <Badge color="warning" className="px-2 py-1 rounded-full text-xs font-medium">
-                  New Versions
-                </Badge>
-              )}
-
-
+          <div className="relative group w-50">
+            <h3 className="items-center text-lg font-semibold text-gray-900 dark:text-white leading-relaxed line-clamp-2">
+              {form.formName}
+            </h3>
+            {/* <span className="
+                absolute left-0 top-0 mt-1 hidden text-lg group-hover:block
+                bg-gray-800 text-white px-2 py-1 rounded shadow-lg
+                whitespace-nowrap z-50
+                "
+            >
+              {form.formName}
+            </span> */}
           </div>
+          {/* {form?.versionsInfoList &&
+            form.versionsInfoList.length > 0 &&
+            Number(form.versions) < Math.max(...form.versionsInfoList.map(Number)) && (
+              <Badge color="warning" className="px-2 py-1 rounded-full text-xs font-medium">
+                {t("common.new_version")}
+              </Badge>
+            )} */}
           <div className="flex items-center gap-1">
             {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
               {config.label}
@@ -80,7 +87,7 @@ const FormCard: React.FC<FormCardProps> = ({
       </div>
 
       <div className="mt-auto pt-4">
-        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>Create By : {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
+        <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>{t("common.createBy")} : {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
         <ButtonAction
           type="button"
           form={form}

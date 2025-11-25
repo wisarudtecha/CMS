@@ -16,7 +16,8 @@ export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: s
         totalSeconds: number;
     } | null>(null);
     const { t } = useTranslation();
-
+    const waring = parseInt(import.meta.env.VITE_CASE_ASSIGNMENT_WARING_SLA || "7200", 10);
+    const alert = parseInt(import.meta.env.VITE_CASE_ASSIGNMENT_ALERT_SLA || "3600", 10);
     if (sla === null) {
         return null;
     }
@@ -110,7 +111,18 @@ export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: s
         );
     }
 
-    if (timeRemaining.totalSeconds <= 7200) {
+    if (timeRemaining.totalSeconds <= alert) {
+        return (
+            <Badge
+                variant="outline"
+                color="error"
+                size="xs"
+                className="text-center"
+            >
+                {t("time.TIMEREMAINING")} {formatRemainingTime()}
+            </Badge>
+        );
+    } else if (timeRemaining.totalSeconds <= waring) {
         return (
             <Badge
                 variant="outline"
@@ -245,7 +257,7 @@ export const StepCircle: React.FC<{
                 <div className="absolute z-50 bottom-1/2 left-1/2 transform  mb-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg whitespace-nowrap">
                     {renderTooltipContent()}
                     {/* Arrow */}
-                    
+
                 </div>
             )}
         </div>

@@ -581,7 +581,8 @@ const ServiceDashboard: React.FC = () => {
     data: {
       total: {
         name: language === "th" ? findKeyDeep(slaData, "percentage_inSLA_th") : findKeyDeep(slaData, "percentage_inSLA_en") || "",
-        data: (findKeyInArray(slaData, "percentage_inSLA_th")?.val || findKeyInArray(slaData, "percentage_inSLA_en")?.val || "0") as string,
+        // data: (findKeyInArray(slaData, "percentage_inSLA_th")?.val || findKeyInArray(slaData, "percentage_inSLA_en")?.val || "0") as string,
+        data: slaMet
       },
       met: {
         name: language === "th" ? findKeyDeep(slaData, "inSLA_th") : findKeyDeep(slaData, "inSLA_en") || "",
@@ -732,17 +733,22 @@ const ServiceDashboard: React.FC = () => {
     };
 
     const sender = async () => {
+      // console.log("🚀 ~ sender ~ isConnected:", isConnected);
+      // console.log("🚀 ~ sender ~ connectionState:", connectionState);
+      // console.log("🚀 ~ sender ~ isMounted:", isMounted);
       if ((isConnected || connectionState === "connected") && !isMounted) {
         const profile = await getProfile();
         send({ "EVENT": "DASHBOARD", orgId: profile?.orgId || "", username: profile?.username || "" });
         setIsMounted(true);
-        console.log("🚀 ~ ServiceDashboard ~ sender:", profile);
+        // console.log("🚀 ~ ServiceDashboard ~ sender:", profile);
       }
     }
 
-    return () => {
-      sender();
-    };
+    // return () => {
+    //   sender();
+    // };
+
+    sender();
   });
 
   return (
@@ -845,8 +851,8 @@ const ServiceDashboard: React.FC = () => {
               <div className="space-y-4">
                 <div className="text-center">
                   {slaPerformance?.data?.total?.data !== null && slaPerformance?.data?.total?.data !== undefined ? (
-                    <AnimatedPercentage
-                      value={slaPerformance.data.total.data || "0"}
+                    <AnimatedNumber
+                      value={slaPerformance.data.total.data || 0}
                       className="text-green-600 dark:text-green-300 text-2xl font-bold"
                       duration={1.5}
                     />
@@ -885,7 +891,10 @@ const ServiceDashboard: React.FC = () => {
                     {/* <span className="text-green-600 dark:text-green-300 text-sm font-medium">{slaPerformance.data.met.data || "0"}%</span> */}
                   </div>
                   <div className="bg-gray-200 dark:bg-gray-700 h-2 rounded-full w-full">
-                    <div className="bg-green-500 dark:bg-green-400 h-2 rounded-full" style={{width:`${slaPerformance.data.met.data || "0"}%`}}></div>
+                    <div
+                      className="bg-green-500 dark:bg-green-400 h-2 rounded-full"
+                      style={{width:`${slaPerformance.data.met.data <= 100 && slaPerformance.data.met.data|| "0"}%`}}
+                    ></div>
                   </div>
                   <div className="flex items-center justify-between">
                     {slaPerformance?.data?.overdue?.name ? (
@@ -996,9 +1005,9 @@ const ServiceDashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2 text-gray-900 dark:text-white">
                     <span className="text-sm">{labels?.complete}</span>
-                    {seriesOfMonthlyCasesRate[2] !== null && seriesOfMonthlyCasesRate[2] !== undefined ? (
+                    {seriesOfMonthlyCasesRate[0] !== null && seriesOfMonthlyCasesRate[0] !== undefined ? (
                       <AnimatedPercentage
-                        value={seriesOfMonthlyCasesRate[2] || 0}
+                        value={seriesOfMonthlyCasesRate[0] || 0}
                         className="text-sm font-semibold"
                         duration={1.5}
                       />
@@ -1007,14 +1016,14 @@ const ServiceDashboard: React.FC = () => {
                     )}
                     {/*
                     <span className="text-sm font-semibold">
-                      {parseInt((seriesOfMonthlyCasesRate[2])?.toString()) || 0}%
+                      {parseInt((seriesOfMonthlyCasesRate[0])?.toString()) || 0}%
                     </span>
                     */}
                   </div>
                   <div className="bg-gray-300 dark:bg-gray-600 h-2 w-full rounded-full">
-                    {seriesOfMonthlyCasesRate[2] ? (
+                    {seriesOfMonthlyCasesRate[0] ? (
                       <div className="bg-blue-400 h-2 rounded-full opacity-60" style={{
-                        width: `${(seriesOfMonthlyCasesRate[2]) || 0}%`
+                        width: `${seriesOfMonthlyCasesRate[0] <= 100 && seriesOfMonthlyCasesRate[0] || 0}%`
                       }}></div>
                     ) : (
                       <ProgressBar progress={0} />
@@ -1042,7 +1051,7 @@ const ServiceDashboard: React.FC = () => {
                   <div className="bg-gray-300 dark:bg-gray-600 h-2 w-full rounded-full">
                     {seriesOfMonthlyCasesRate[1] ? (
                       <div className="bg-blue-400 h-2 rounded-full opacity-60" style={{
-                        width: `${(seriesOfMonthlyCasesRate[1]) || 0}%`
+                        width: `${seriesOfMonthlyCasesRate[1] <= 100 && seriesOfMonthlyCasesRate[1] || 0}%`
                       }}></div>
                     ) : (
                       <ProgressBar progress={0} />

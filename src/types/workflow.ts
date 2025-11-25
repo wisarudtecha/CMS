@@ -55,6 +55,7 @@ export interface WorkflowData {
     title: string;
     description: string;
     status: "draft" | "active" | "inactive" | "testing";
+    totalSla?: number;
     createdAt?: string;
     updatedAt?: string;
   };
@@ -73,12 +74,12 @@ export interface WorkflowCreateData {
 export interface WorkflowEditorComponentProps {
   caseStatuses?: CaseStatus[];
   forms?: FormManager[];
-  initialData?: WorkflowData;
-  users?: UserProfile[];
   userGroup?: UserGroup[];
+  users?: UserProfile[];
   workflowAction?: string;
   workflowData?: WorkflowData;
   workflowId?: string;
+  initialData?: WorkflowData;
   onSave?: (data: WorkflowData) => void;
 }
 

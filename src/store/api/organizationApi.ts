@@ -58,7 +58,7 @@ export const organizationApi = baseApi.injectEndpoints({
     }),
 
     // DELETE api/v1/departments/{id}
-    deleteDepartments: builder.mutation<ApiResponse<void>, number | string>({
+    deleteDepartments: builder.mutation<ApiResponse<void>, string | number>({
       query: id => ({
         url: `/departments/${id}`,
         method: "DELETE"
@@ -110,7 +110,7 @@ export const organizationApi = baseApi.injectEndpoints({
     }),
 
     // DELETE api/v1/commands/{id}
-    deleteCommands: builder.mutation<ApiResponse<void>, number | string>({
+    deleteCommands: builder.mutation<ApiResponse<void>, string | number>({
       query: id => ({
         url: `/commands/${id}`,
         method: "DELETE"
@@ -162,7 +162,7 @@ export const organizationApi = baseApi.injectEndpoints({
     }),
 
     // DELETE api/v1/stations/{id}
-    deleteStations: builder.mutation<ApiResponse<void>, number | string>({
+    deleteStations: builder.mutation<ApiResponse<void>, string | number>({
       query: id => ({
         url: `/stations/${id}`,
         method: "DELETE"

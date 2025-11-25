@@ -28,17 +28,22 @@ export const fetchUnitStatus = async () => {
 
 export const fetchCase = async (params: CaseListParams) => {
   const requestNumber = parseInt(import.meta.env.VITE_GET_CASE_PER_REQUEST || "100", 10);
+  const requestRetry = parseInt(import.meta.env.VITE_GET_CASE_RETRY || "3", 10);
   const delay = parseInt(import.meta.env.VITE_GET_CASE_DELAY || "200", 10);
+
   if (!requestNumber || typeof requestNumber != "number") {
     return;
   }
-   // Dispatch loading start event
+
+  // Dispatch loading start event
   window.dispatchEvent(new CustomEvent("caseLoadingStart"));
-  
+  localStorage.setItem("WorkOrderFilter", JSON.stringify(params));
+
   let allData: any[] = [];
   let start = 0;
   let currentPage = 0;
   let totalPages = 0;
+
   const statusId = caseStatusGroup
     .filter(item => item.show)
     .flatMap(item => item.group)
@@ -51,62 +56,154 @@ export const fetchCase = async (params: CaseListParams) => {
     distId: distIdCommaSeparate(),
     orderBy: "priority,createdAt",
     direction: "asc,desc"
-  }
+  };
 
-  const firstResult = await store.dispatch(
-    caseApi.endpoints.getListCase.initiate({
+  // Retry helper function
+  const fetchWithRetry = async (fetchParams: any, retries = requestRetry): Promise<any> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const result = await store.dispatch(
+          caseApi.endpoints.getListCase.initiate(fetchParams, { forceRefetch: true })
+        );
+
+        // Check if we have a successful response
+        if (result.data !== undefined) {
+          return result;
+        }
+
+        // If result.error exists, retry
+        if (result.error) {
+          if (attempt === retries) {
+            throw new Error("API request failed");
+          }
+          console.warn(`Attempt ${attempt + 1} failed with error:`, result.error);
+        } else {
+          // No data and no error - unexpected state
+          if (attempt === retries) {
+            throw new Error("Unexpected API response");
+          }
+        }
+
+        // Exponential backoff: wait longer between retries
+        const backoffDelay = delay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+
+      } catch (error) {
+        console.error(`Attempt ${attempt + 1} failed:`, error);
+
+        if (attempt === retries) {
+          throw error;
+        }
+
+        // Exponential backoff
+        const backoffDelay = delay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
+    }
+  };
+
+  try {
+    // Fetch first page with retry
+    const firstResult = await fetchWithRetry({
       ...params,
       ...getListParams,
       start: 0,
-    })
-  );
+    });
 
-  if (firstResult.data?.data) {
-    allData = [...firstResult.data.data];
-    currentPage = firstResult.data.currentPage || 1;
-    totalPages = firstResult.data.totalPage || 0;
+    // Check if data exists (could be null or empty array)
+    if (firstResult.data?.data !== undefined && firstResult.data?.data !== null) {
+      allData = [...firstResult.data.data];
+      currentPage = firstResult.data.currentPage || 1;
+      totalPages = firstResult.data.totalPage || 0;
 
-    // Save first batch to IDB
-    idbStorage.setItem("caseList", JSON.stringify(allData));
-    window.dispatchEvent(new StorageEvent("storage", {
-      key: "caseList",
-      newValue: JSON.stringify(await idbStorage.getItem("caseList")),
-    }));
-  } else {
-    idbStorage.setItem("caseList", "[]");
-    window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
-    return [];
-  }
-
-  // Fetch remaining pages using currentPage
-  while ((currentPage < totalPages)) {
-    start = currentPage * requestNumber;
-    const result = await store.dispatch(
-      caseApi.endpoints.getListCase.initiate({
-        ...params,
-        ...getListParams,
-        start,
-      }, { forceRefetch: true })
-    );
-
-    if (result.data?.data) {
-      allData = [...allData, ...result.data.data];
-      currentPage = result.data.currentPage || currentPage + 1;
-
-      // Save updated data to IDB after each fetch
-      idbStorage.setItem("caseList", JSON.stringify(allData));
+      // Save first batch to IDB
+      await idbStorage.setItem("caseList", JSON.stringify(allData));
       window.dispatchEvent(new StorageEvent("storage", {
         key: "caseList",
         newValue: JSON.stringify(await idbStorage.getItem("caseList")),
       }));
+
+      // Dispatch progress for first page
+      window.dispatchEvent(
+        new CustomEvent("caseLoadingProgress", {
+          detail: {
+            current: currentPage,
+            total: totalPages
+          }
+        })
+      );
+    } else if (firstResult.data?.data === null) {
+      // Data is null - no data found, not an error
+      console.info("No cases found");
+      await idbStorage.setItem("caseList", "[]");
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "caseList",
+        newValue: "[]",
+      }));
+      window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
+      return [];
     } else {
-      break;
+      throw new Error("Failed to fetch initial data");
     }
-    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // Fetch remaining pages with retry
+    while (currentPage < totalPages) {
+      start = currentPage * requestNumber;
+
+      const result = await fetchWithRetry({
+        ...params,
+        ...getListParams,
+        start,
+      });
+
+      if (result.data?.data !== undefined && result.data?.data !== null) {
+        allData = [...allData, ...result.data.data];
+        currentPage = result.data.currentPage || currentPage + 1;
+
+        // Save updated data to IDB after each fetch
+        await idbStorage.setItem("caseList", JSON.stringify(allData));
+
+        window.dispatchEvent(
+          new CustomEvent("caseLoadingProgress", {
+            detail: {
+              current: currentPage,
+              total: totalPages
+            }
+          })
+        );
+
+        window.dispatchEvent(new StorageEvent("storage", {
+          key: "caseList",
+          newValue: JSON.stringify(await idbStorage.getItem("caseList")),
+        }));
+      } else if (result.data?.data === null) {
+        // No more data on this page (unlikely but handle it)
+        break;
+      } else {
+        throw new Error(`Failed to fetch page ${currentPage + 1}`);
+      }
+
+      // Delay between successful requests
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    // All pages fetched successfully
+    window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
+    return allData;
+
+  } catch (error) {
+
+    // Save whatever data we have
+    await idbStorage.setItem("caseList", JSON.stringify(allData.length > 0 ? allData : []));
+
+    // Dispatch failure event
+    window.dispatchEvent(new CustomEvent("caseLoadingFail"));
+
+    // Return partial data if available, or empty array
+    return allData.length > 0 ? allData : [];
   }
-  window.dispatchEvent(new CustomEvent("caseLoadingEnd"));
-  return allData;
 };
+
 export const fetchCaseResults = async () => {
   const result = await store.dispatch(
     caseApi.endpoints.getCaseResults.initiate({}, { forceRefetch: true })
@@ -130,7 +227,7 @@ export const fetchSubTypeForm = async (subType: string) => {
   const SubTypeForm = await store.dispatch(
     formApi.endpoints.postSubTypeForm.initiate(subType)
   );
- return SubTypeForm
+  return SubTypeForm
 };
 
 export const fetchSubTypeAllForm = async () => {
@@ -144,7 +241,7 @@ export const fetchSubTypeAllForm = async () => {
         const SubTypeForm = await store.dispatch(
           formApi.endpoints.postSubTypeForm.initiate(item.sTypeId)
         );
-       return SubTypeForm
+        return SubTypeForm
       })
     );
   }
@@ -175,6 +272,7 @@ export const fetchArea = async () => {
 };
 
 export const caseApiSetup = async () => {
+  // await fetchCustomers()
   await fetchTypeSubType();
   await fetchDeptCommandStations();
   await fetchCaseStatus();

@@ -5,6 +5,7 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  DocsIcon,
   GridIcon,
   FileIcon,
   HorizontaLDots,
@@ -19,12 +20,16 @@ import {
   LockIcon
 } from "@/icons";
 import { BoxIcon } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
 import { useSidebar } from "@/context/SidebarContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthService } from "@/utils/authService";
+import changelog from "@/changelog.json";
 // import Button from "@/components/ui/button/Button";
 // import SidebarWidget from "@/layout/SidebarWidget";
+
+declare const __APP_VERSION__: string;
 
 type NavItem = {
   name: string;
@@ -56,10 +61,13 @@ const AppSidebar: React.FC = () => {
     fetchSystemAdminStatus();
   }, [isSystemAdmin]);
 
+  const permissions = usePermissions();
+  const { language, t } = useTranslation();
+
   const [menuDisplay, setMenuDisplay] = useState("hidden");
 
-  const permissions = usePermissions();
-  const { t } = useTranslation();
+  const [openVersion, setOpenVersion] = useState(false);
+  const versionInfo = Object.entries(changelog).map(([version, info]) => ({ version, ...info }));
 
   // Main Menu
   const mainItems: NavItem[] = useMemo(() => [
@@ -133,9 +141,7 @@ const AppSidebar: React.FC = () => {
       permission: permissions.hasAnyPermission([
         "report.view", "report.generate", "report.export", "report.schedule", "report.delete",
       ]),
-      subItems: [
-      
-      ],
+      path: "/report",
     },
     {
       icon: <ListIcon />,
@@ -169,8 +175,8 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("workflow.view"),
         },
         {
-          name: t("navigation.sidebar.main.workflow.nested.workflow_builder"),
-          path: "/workflow/editor/v2",
+          name: t("navigation.sidebar.main.workflow.nested.workflow_builder.title"),
+          path: "/workflow/editor/v3",
           permission: permissions.hasPermission("workflow.create"),
         },
       ],
@@ -238,11 +244,11 @@ const AppSidebar: React.FC = () => {
           path: "/skill",
           permission: permissions.hasPermission("user.view"),
         },
-        {
-          name: t("navigation.sidebar.main.system_configuration.nested.property_management"),
-          path: "/property",
-          permission: permissions.hasPermission("unit.view"),
-        },
+        // {
+        //   name: t("navigation.sidebar.main.system_configuration.nested.property_management"),
+        //   path: "/property",
+        //   permission: permissions.hasPermission("unit.view"),
+        // },
         {
           name: t("navigation.sidebar.main.system_configuration.nested.area_management"),
           path: "/area",
@@ -357,9 +363,16 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <BoxCubeIcon />,
-      name: t("navigation.sidebar.archives.workflow.title"),
+      name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v1"),
       subItems: [
         { name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v1"), path: "/workflow/editor/v1", },
+      ],
+    },
+    {
+      icon: <BoxCubeIcon />,
+      name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v2"),
+      subItems: [
+        { name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v2"), path: "/workflow/editor/v2", },
       ],
     },
   ];
@@ -779,150 +792,188 @@ const AppSidebar: React.FC = () => {
   );
 
   return (
-    <aside
-      className={`
-        fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        pb-38 lg:pb-24
-        ${
-          isExpanded || isMobileOpen
-            ? "w-[290px]"
-            : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {(isExpanded || isHovered || isMobileOpen) && isSystemAdmin ? (
-        <div className="absolute bottom-16 lg:bottom-0 left-0 p-6 w-full bg-white dark:bg-gray-900 z-100">
-          <button
-            onClick={() => handleMenuDisplay()}
-            className="rounded-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900"
-            title="Show / Hide Template Menu"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </button>
-        </div>
-      ) : null}
-      <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
+    <>
+      <aside
+        className={`
+          fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+          pb-38 lg:pb-24
+          ${
+            isExpanded || isMobileOpen
+              ? "w-[290px]"
+              : isHovered
+              ? "w-[290px]"
+              : "w-[90px]"
+          }
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0`}
+        onMouseEnter={() => !isExpanded && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Link to="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              {/*
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              */}
-
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.png"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.png"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
-          ) : (
-            ""
-            // <img
-            //   src="/images/logo/logo-icon.svg"
-            //   alt="Logo"
-            //   width={32}
-            //   height={32}
-            // />
-          )}
-        </Link>
-      </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
-            <div className={`mb-6`}>
-              {renderMenuItems(mainItems, "main")}
+        {(isExpanded || isHovered || isMobileOpen) && isSystemAdmin ? (
+          <div className="absolute bottom-16 lg:bottom-0 left-0 flex items-center justify-between p-6 w-full bg-white dark:bg-gray-900 z-100">
+            <button
+              onClick={() => handleMenuDisplay()}
+              className="rounded-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900"
+              title="Show / Hide Template Menu"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+            
+            <div className="font-light flex gap-1 items-center text-gray-500 dark:text-gray-400 text-sm">
+              <span className="cursor-default">v{versionInfo[0]?.version || __APP_VERSION__}</span>
+              <button
+                onClick={() => setOpenVersion(true)}
+                className="p-2 text-blue-light-500 dark:text-blue-light-400 hover:text-blue-500 dark:hover:text-blue-400"
+                title={language === "th" && "ดูบันทึกการเปลี่ยนแปลง" || "View Changelog"}>
+                <DocsIcon className="h-4 w-4" />
+              </button>
             </div>
-            {isSystemAdmin && (
-              <>
-                <div className={`mb-6 ${menuDisplay}`}>
-                  <h2
-                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                      !isExpanded && !isHovered
-                        ? "lg:justify-center"
-                        : "justify-start"
-                    }`}
-                  >
-                    {isExpanded || isHovered || isMobileOpen ? (
-                      // "Menu"
-                      t("navigation.sidebar.menu.title")
-                    ) : (
-                      <HorizontaLDots />
-                    )}
-                  </h2>
-                  {renderMenuItems(navItems, "menu")}
-                </div>
-                <div className={`mb-6 ${menuDisplay}`}>
-                  <h2
-                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                      !isExpanded && !isHovered
-                        ? "lg:justify-center"
-                        : "justify-start"
-                    }`}
-                  >
-                    {isExpanded || isHovered || isMobileOpen ? (
-                      // "Others"
-                      t("navigation.sidebar.other.title")
-                    ) : (
-                      <HorizontaLDots />
-                    )}
-                  </h2>
-                  {renderMenuItems(othersItems, "others")}
-                </div>
-                <div className={`mb-6 ${menuDisplay}`}>
-                  <h2
-                    className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                      !isExpanded && !isHovered
-                        ? "lg:justify-center"
-                        : "justify-start"
-                    }`}
-                  >
-                    {isExpanded || isHovered || isMobileOpen ? (
-                      // "Archives"
-                      "Archives"
-                    ) : (
-                      <HorizontaLDots />
-                    )}
-                  </h2>
-                  {renderMenuItems(archivesItems, "archives")}
-                </div>
-              </>
-            )}
           </div>
-        </nav>
-        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
-      </div>
-    </aside>
+        ) : null}
+        <div
+          className={`py-8 flex ${
+            !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+          }`}
+        >
+          <Link to="/">
+            {isExpanded || isHovered || isMobileOpen ? (
+              <>
+                {/*
+                <img
+                  className="dark:hidden"
+                  src="/images/logo/logo.svg"
+                  alt="Logo"
+                  width={150}
+                  height={40}
+                />
+                <img
+                  className="hidden dark:block"
+                  src="/images/logo/logo-dark.svg"
+                  alt="Logo"
+                  width={150}
+                  height={40}
+                />
+                */}
+
+                <h1 className="text-gray-900 dark:text-white text-3xl">Work Order</h1>
+
+                {/*
+                <img
+                  className="dark:hidden"
+                  src="/images/logo/logo.png"
+                  alt="Logo"
+                  width={150}
+                  height={40}
+                />
+                <img
+                  className="hidden dark:block"
+                  src="/images/logo/logo-dark.png"
+                  alt="Logo"
+                  width={150}
+                  height={40}
+                />
+                */}
+              </>
+            ) : (
+              ""
+              // <img
+              //   src="/images/logo/logo-icon.svg"
+              //   alt="Logo"
+              //   width={32}
+              //   height={32}
+              // />
+            )}
+          </Link>
+        </div>
+        <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+          <nav className="mb-6">
+            <div className="flex flex-col gap-4">
+              <div className={`mb-6`}>
+                {renderMenuItems(mainItems, "main")}
+              </div>
+              {isSystemAdmin && (
+                <>
+                  <div className={`mb-6 ${menuDisplay}`}>
+                    <h2
+                      className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                        !isExpanded && !isHovered
+                          ? "lg:justify-center"
+                          : "justify-start"
+                      }`}
+                    >
+                      {isExpanded || isHovered || isMobileOpen ? (
+                        // "Menu"
+                        t("navigation.sidebar.menu.title")
+                      ) : (
+                        <HorizontaLDots />
+                      )}
+                    </h2>
+                    {renderMenuItems(navItems, "menu")}
+                  </div>
+                  <div className={`mb-6 ${menuDisplay}`}>
+                    <h2
+                      className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                        !isExpanded && !isHovered
+                          ? "lg:justify-center"
+                          : "justify-start"
+                      }`}
+                    >
+                      {isExpanded || isHovered || isMobileOpen ? (
+                        // "Others"
+                        t("navigation.sidebar.other.title")
+                      ) : (
+                        <HorizontaLDots />
+                      )}
+                    </h2>
+                    {renderMenuItems(othersItems, "others")}
+                  </div>
+                  <div className={`mb-6 ${menuDisplay}`}>
+                    <h2
+                      className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                        !isExpanded && !isHovered
+                          ? "lg:justify-center"
+                          : "justify-start"
+                      }`}
+                    >
+                      {isExpanded || isHovered || isMobileOpen ? (
+                        // "Archives"
+                        "Archives"
+                      ) : (
+                        <HorizontaLDots />
+                      )}
+                    </h2>
+                    {renderMenuItems(archivesItems, "archives")}
+                  </div>
+                </>
+              )}
+            </div>
+          </nav>
+          {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
+        </div>
+      </aside>
+
+      <Modal isOpen={openVersion} onClose={() => setOpenVersion(false)} className="max-w-4xl p-6 max-h-[80vh]">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 cursor-default">
+            {language === "th" && "บันทึกการเปลี่ยนแปลง" || "Changelog"}
+          </h3>
+          {/* <p className="text-xs text-muted-foreground cursor-default">{versionInfo.date}</p> */}
+        </div>
+        <div className="space-y-4 cursor-default">
+          {versionInfo?.map(item =>
+            <div>
+              <div className="text-gray-700 dark:text-gray-200 flex gap-1">
+                <div className="font-semibold">{item?.version || ""}</div>
+                <div className="font-light italic">{item?.segment && `- ${item.segment}` || ""}</div>
+              </div>
+              <div className="font-light text-sm text-gray-500 dark:text-gray-400">{language === "th" && "วันที่" || "Date"}: {item?.date || ""}</div>
+              <div className="font-light text-sm text-gray-500 dark:text-gray-400">{language === "th" && "ผู้เขียน" || "Author"}: {item?.author || ""}</div>
+              <div className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{item?.notes || ""}</div>
+            </div>
+          )}
+        </div>
+      </Modal>
+    </>
   );
 };
 

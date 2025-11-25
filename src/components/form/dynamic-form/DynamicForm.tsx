@@ -18,7 +18,7 @@ import {
 import Button from "@/components/ui/button/Button";
 import { IndividualFormFieldWithChildren, IndividualFormField, FormField, FormFieldWithChildren, FormManager, formMetaData } from "@/components/interface/FormField";
 import { useCreateFormMutation, useGetFormByFormIdMutation, useUpdateFormMutation } from "@/store/api/formApi";
-import { formConfigurations } from "./constant";
+import { formConfigurations, versionListToText } from "./constant";
 import 'react-phone-number-input/style.css'
 import { getCountries } from 'react-phone-number-input/input'
 import { validateInput } from "./validateDynamicForm";
@@ -74,13 +74,13 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const { t } = useTranslation();
   const [formMeta, setFormMeta] = useState<formMetaData | undefined>(
     initialForm && "versions" in initialForm ?
-      { currentVersions: initialForm.versions, publish: initialForm.publish, versionsList: initialForm?.versionsList || [] } : undefined);
+      { currentVersions: initialForm.versions, publish: initialForm.publish, versionsInfoList: initialForm?.versionsInfoList || [], selectVersion: initialForm?.versions } : undefined);
   const [getForm] = useGetFormByFormIdMutation()
   const [isLoadingForm, setIsLoadingForm] = useState<boolean>(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     {
       formId: uuidv4(),
-      formName: "New Dynamic Form",
+      formName: "New Dynamic Form", // This is default data, i18n might not be applicable for initial state logic
       formColSpan: 1,
       formFieldJson: [],
     }
@@ -134,7 +134,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     } else {
       setCurrentForm({
         formId: uuidv4(),
-        formName: "New Dynamic Form",
+        formName: "New Dynamic Form", // This is default data
         formColSpan: 1,
         formFieldJson: [],
       });
@@ -213,7 +213,13 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
 
   const addField = useCallback((formType: string, parentId?: string) => {
-    const newField = createDynamicFormField(formConfigurations, formType, !!parentId);
+    const newField = createDynamicFormField(
+      formConfigurations.map((item) => {
+        return { ...item, title: t(item.title) };
+      }),
+      formType,
+      !!parentId
+    );
     if (!newField) return;
 
     setCurrentForm(prevForm => {
@@ -259,7 +265,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
       const hasFields = currentForm.formFieldJson?.length > 0;
       if (!hasFields) {
-        addToast("error", "There are no elements in the form.");
+        addToast("error", t("dynamicForm.toasts.noFields"));
         return;
       }
 
@@ -279,23 +285,24 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
 
       // Handle missing formId that gen form backend (for create)
       if (!initialForm && !response?.data) {
-        addToast("error", response?.desc || "Unexpected response.");
+        addToast("error", response?.desc || t("dynamicForm.toasts.unexpectedResponse"));
         return;
       }
 
       // If form is newly created, store formId and metadata
       if (!initialForm && response?.data) {
         setCurrentForm((prev) => ({ ...prev, formId: response?.data?.formId }));
-        setFormMeta((prev) => ({ ...prev, currentVersions: response?.data?.version, publish: false, versionsList: [...(prev?.versionsList ?? []), response?.data?.version].sort((a, b) => a - b) }));
+        setFormMeta((prev) =>
+          ({ ...prev, currentVersions: response?.data?.version, publish: false, selectVersion: response?.data?.version, versionsInfoList: [...(prev?.versionsInfoList ?? []), response?.data?.version].sort((a, b) => a - b) }));
       }
 
       if (response.msg === "Success") {
-        addToast("success", "Success.");
+        addToast("success", t("common.success"));
       } else {
-        addToast("error", response?.desc || "Something went wrong.");
+        addToast("error", response?.desc || t("dynamicForm.toasts.somethingWentWrong"));
       }
     } catch (error: any) {
-      addToast("error", error?.data?.desc || "An unexpected error occurred.");
+      addToast("error", error?.data?.desc || t("dynamicForm.toasts.unexpectedError"));
     } finally {
       setIsSaving(false);
     }
@@ -340,9 +347,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         onFormSubmit(submitData);
       }
     } else {
-      addToast("error", "Please correct the errors before submitting.");
+      addToast("error", t("dynamicForm.toasts.correctErrors"));
     }
-  }, [currentForm, onFormSubmit, transformFieldForSubmission]);
+  }, [currentForm, onFormSubmit, transformFieldForSubmission, t, addToast]);
 
 
 
@@ -356,25 +363,26 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         if (savedDraft) {
           const parsedDraft: FormFieldWithChildren = JSON.parse(savedDraft);
           setCurrentForm(parsedDraft);
-          console.log("Draft loaded successfully:", parsedDraft.formName);
+          console.log(t("dynamicForm.toasts.draftLoaded"), parsedDraft.formName);
         } else {
-          console.log("No draft found in localStorage.");
+          console.log(t("dynamicForm.toasts.noDraftFound"));
         }
       } catch (error) {
-        console.error("Failed to parse draft from localStorage:", error);
+        console.error(t("dynamicForm.toasts.parseDraftError"), error);
         localStorage.removeItem(saveDraftsLocalStoreName);
       }
     }
   };
   useEffect(() => {
     getDrafts();
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const saveDrafts = () => {
     const handleSaveDrafts = () => {
       localStorage.setItem(saveDraftsLocalStoreName, JSON.stringify(currentForm))
     }
     return (<div >
-      <Button variant="success" onClick={handleSaveDrafts}>Save Drafts</Button>
+      <Button variant="success" onClick={handleSaveDrafts}>{t("dynamicForm.saveDrafts")}</Button>
     </div>
     )
   }
@@ -466,7 +474,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       const pathToString = (p: PathSegment[]) => p.map(i => (typeof i === 'object' ? `${i.id}_${i.optionValue}` : i)).join('>');
 
       if (pathToString(activeInfo.path) !== pathToString(overInfo.path)) {
-        console.warn("Moving items between different groups is not allowed.");
+        console.warn("Moving items between different groups is not allowed."); // Developer-facing, no i18n needed
         return prevForm;
       }
 
@@ -491,7 +499,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     setIsLoadingForm(false)
     setFormMeta((prev) => (prev ? {
       ...(prev),
-      currentVersions: versions,
+      selectVersion: versions,
     }
       : undefined));
   }
@@ -502,11 +510,26 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       <div>
         <div className=" flex justify-between">
           {enableFormTitle && <div className="px-3 text-xl dark:text-white">{currentForm.formName}</div>}
-          {formMeta?.versionsList && formMeta?.versionsList.length!=0  && edit == false && <SearchableSelect className=' w-18 items-end justify-end  rounded-full text-xs font-medium' value={formMeta?.currentVersions} prefixedStringValue="v." options={(formMeta?.versionsList)} onChange={handleChangeVersion}  disabledRemoveButton={true} />}
+          {formMeta?.versionsInfoList && formMeta?.versionsInfoList.length != 0 && edit == false &&
+            <SearchableSelect
+              className='w-fit items-end justify-end rounded-full text-xs font-medium'
+              value={formMeta?.selectVersion}
+              prefixedStringValue="v "
+              subfixedStringValue=" "
+              isDynamic={true}
+              options={versionListToText(
+                formMeta.versionsInfoList?.filter(item => item.version === formMeta.currentVersions || item.publish === true) || [],
+                formMeta.currentVersions
+              ) || []}
+              onChange={handleChangeVersion}
+              disabledRemoveButton={true}
+            />
+
+          }
         </div>
         {isLoadingForm ? <div className="flex justify-center text-gray-500 items-center">
-          <SpinnerIcon className="w-5 h-5 text-gray-600 dark:text-gray-300 animate-spin mr-2" /> Loading
-        </div> : currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">No fields added yet. Click "Edit" to start adding.</p>
+          <SpinnerIcon className="w-5 h-5 text-gray-600 dark:text-gray-300 animate-spin mr-2" /> {t("common.loading")}
+        </div> : currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">{t("dynamicForm.preview.noFields")}</p>
         ) : (
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
             {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 px-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}><RenderFormField setCurrentForm={setCurrentForm} field={field} showValidationErrors={showValidationErrors} editFormData={editFormData} /></div>))}
@@ -514,7 +537,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
         )}
       </div>
     );
-  }, [currentForm, enableFormTitle]);
+  }, [currentForm, enableFormTitle, formMeta, edit, t, isLoadingForm, showValidationErrors, editFormData]); // Added dependencies
 
   return edit ? (
     <div
@@ -525,7 +548,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
           : ""
       }
     >
-      <PageMeta title="Dynamic Form Builder" description="" />
+      <PageMeta title={t("dynamicForm.pageTitle")} description="" />
       {/* <PageBreadcrumb pageTitle="Form Builder"  /> */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       {isSaving && <Saving />}
@@ -557,9 +580,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             }} />
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
-                <Button variant="outline-no-transparent" onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />Import</Button>
-                <Button variant="outline-no-transparent" onClick={() => setExport(true)} disabled={!editFormData}><Download className="w-4 h-4 mr-2" />Export</Button>
-                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>Preview</Button>
+                <Button variant="outline-no-transparent" onClick={() => setImport(true)} disabled={!editFormData}><Upload className="w-4 h-4 mr-2" />{t("common.import")}</Button>
+                <Button variant="outline-no-transparent" onClick={() => setExport(true)} disabled={!editFormData}><Download className="w-4 h-4 mr-2" />{t("common.export")}</Button>
+                <Button onClick={() => setIsPreview(true)} disabled={!editFormData}>{t("common.preview")}</Button>
               </div>
             </div>
           </div>
@@ -572,14 +595,14 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
             <div className="fixed bottom-0 right-0 w-ful shadow-md z-50 m-4">
               <div className="flex space-x-2">
                 <Button variant="outline-no-transparent" onClick={() => setIsPreview(false)} disabled={!editFormData}>
-                  Edit
+                  {t("common.edit")}
                 </Button>
                 <Button onClick={saveSchema} disabled={!editFormData}>
-                  {initialForm ? "Save Change" : "Save Form"}
+                  {initialForm ? t("dynamicForm.saveChange") : t("dynamicForm.saveForm")}
                 </Button>
                 <div className="flex gap-2">
 
-                  {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">Submit</Button> */}
+                  {/* <Button onClick={handleSend} className="bg-green-500 hover:bg-green-600">{t("common.submit")}</Button> */}
                 </div>
               </div>
             </div>
@@ -596,9 +619,9 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
     <div className={enableSelfBg ? " rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12" : undefined}>
       {FormPreview()}
       <div className="flex justify-between w-full mt-4">
-        {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>Close</Button>}
+        {showDynamicForm && <Button className="m-4" onClick={() => showDynamicForm(false)}>{t("common.close")}</Button>}
         {saveDraftsLocalStoreName != "" ? saveDrafts() : null}
-        {onFormSubmit && currentForm.formFieldJson.length > 0 && <Button className="m-4" onClick={handleSend}>Submit</Button>}
+        {onFormSubmit && currentForm.formFieldJson.length > 0 && <Button className="m-4" onClick={handleSend}>{t("common.submit")}</Button>}
       </div>
     </div>
   );

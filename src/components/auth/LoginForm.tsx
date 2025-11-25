@@ -6,12 +6,15 @@ import { Autocomplete } from "@/components/form/form-elements/Autocomplete";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LoginCredentials } from "@/types/auth";
+import changelog from "@/changelog.json";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Checkbox from "@/components/form/input/Checkbox";
 import LangDropdown from "@/components/header/LangDropdown";
 import Button from "@/components/ui/button/Button";
 import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
+
+declare const __APP_VERSION__: string;
 
 export const LoginForm: React.FC = () => {
   const { state, login, forgotPassword, clearError } = useAuth();
@@ -28,6 +31,8 @@ export const LoginForm: React.FC = () => {
   const [forgotEmail, setForgotEmail] = useState("");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isPasswordResetSent, setIsPasswordResetSent] = useState(false);
+
+  const versionInfo = Object.entries(changelog).map(([version, info]) => ({ version, ...info }));
 
   // console.log("🔐 LoginForm rendered - Network:", state.networkStatus, "Loading:", state.isLoading);
 
@@ -411,7 +416,7 @@ export const LoginForm: React.FC = () => {
                   </div>
                 )}
 
-                <div className="mt-5">
+                <div className="flex justify-between mt-5">
                   <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start cursor-default">
                     {t("auth.signin.no_account")} {""}
                     <a
@@ -422,6 +427,10 @@ export const LoginForm: React.FC = () => {
                       {t("auth.signin.sign_up")}
                     </a>
                   </p>
+
+                  <div className="font-light text-gray-500 dark:text-gray-400 text-sm">
+                    <span className="cursor-default">v{versionInfo[0]?.version || __APP_VERSION__}</span>
+                  </div>
                 </div>
               </div>
             </div>

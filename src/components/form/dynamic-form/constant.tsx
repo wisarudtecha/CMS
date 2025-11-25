@@ -1,4 +1,5 @@
-import { FormConfigItem } from "@/components/interface/FormField";
+import { FormConfigItem, versionList } from "@/components/interface/FormField";
+import { useTranslation } from "@/hooks/useTranslation";
 import { LetterText, Hash, AlignJustify, Mail, CheckSquare, ChevronsUpDown, ImageIcon, FileIcon, CalendarDays, Clock, Circle, LayoutGrid, Slack, Lock, Phone } from "lucide-react";
 import { JSX } from "react";
 
@@ -39,23 +40,27 @@ export const commonClasses = "appearance-none border rounded w-full py-1 px-2 te
 
 
 export const formConfigurations: FormConfigItem[] = [
-  { formType: "textInput", title: "Text", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
-  { formType: "Integer", title: "Number", canBeChild: true, property: ["maxnumber", "minnumber"] },
-  { formType: "textAreaInput", title: "Text Area", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
-  { formType: "emailInput", title: "Email", canBeChild: true, property: ["validEmailFormat"] },
-  { formType: "option", title: "Multi-Checkbox", options: [], canBeChild: true, property: ["maxSelections", "minSelections"] },
-  { formType: "select", title: "Single-Select", options: [], canBeChild: true },
-  { formType: "image", title: "Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
-  { formType: "dndImage", title: "DnD Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
-  { formType: "multiImage", title: "Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
-  { formType: "dndMultiImage", title: "DnD Multi-Image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
-  // { formType: "passwordInput", title: "Password", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
-  { formType: "dateInput", title: "Date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
-  { formType: "dateLocal", title: "Date & Time", canBeChild: true, property: ["minLocalDate", "maxLocalDate", "futureDateOnly", "pastDateOnly"] },
-  { formType: "radio", title: "Radio", options: [], canBeChild: true },
-  { formType: "InputGroup", title: "Group", canBeChild: false },
-  { formType: "dynamicField", title: "Dynamic Field", canBeChild: false },
-  // { formType: "phoneNumber", title: "Phone Number", canBeChild:true, property: ["allowedCountries"]}
+  { formType: "textInput", title: "formType.textInput", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
+  { formType: "Integer", title: "formType.numberInput", canBeChild: true, property: ["maxnumber", "minnumber"] },
+  { formType: "textAreaInput", title: "formType.textAreaInput", canBeChild: true, property: ["contain", "maxLength", "minLength"] },
+  { formType: "emailInput", title: "formType.emailInput", canBeChild: true, property: ["validEmailFormat"] },
+  { formType: "option", title: "formType.multiCheckbox", options: [], canBeChild: true, property: ["maxSelections", "minSelections"] },
+  { formType: "select", title: "formType.singleSelect", options: [], canBeChild: true },
+  // { formType: "image", title: "formType.image", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
+  // { formType: "dndImage", title: "formType.dndImage", canBeChild: true, property: ["maxFileSize", "allowedFileTypes"] },
+  // { formType: "multiImage", title: "formType.multiImage", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
+  // { formType: "dndMultiImage", title: "formType.dndMultiImage", canBeChild: true, property: ["maxFileSize", "allowedFileTypes", "minFiles", "maxFiles"] },
+  { formType: "image", title: "formType.image", canBeChild: true },
+  { formType: "dndImage", title: "formType.dndImage", canBeChild: true },
+  { formType: "multiImage", title: "formType.multiImage", canBeChild: true, property: [ "minFiles", "maxFiles"] },
+  { formType: "dndMultiImage", title: "formType.dndMultiImage", canBeChild: true, property: [ "minFiles", "maxFiles"] },
+  // { formType: "passwordInput", title: "formType.passwordInput", canBeChild: true, property: ["minLength", "maxLength", "hasUppercase", "hasLowercase", "hasNumber", "hasSpecialChar", "noWhitespace",], },
+  { formType: "dateInput", title: "formType.date", canBeChild: true, property: ["minDate", "maxDate", "futureDateOnly", "pastDateOnly"] },
+  { formType: "dateLocal", title: "formType.dateTime", canBeChild: true, property: ["minLocalDate", "maxLocalDate", "futureDateOnly", "pastDateOnly"] },
+  { formType: "radio", title: "formType.radio", options: [], canBeChild: true },
+  { formType: "InputGroup", title: "formType.group", canBeChild: false },
+  { formType: "dynamicField", title: "formType.dynamicField", canBeChild: false },
+  // { formType: "phoneNumber", title: "formType.phoneNumber", canBeChild:true, property: ["allowedCountries"]}
 ];
 
 
@@ -77,4 +82,21 @@ export const formTypeIcons: Record<string, JSX.Element> = {
   InputGroup: <LayoutGrid size={16} />,
   dynamicField: <Slack size={16} />,
   phoneNumber: <Phone size={16} />
+};
+
+
+export const versionListToText = (
+  versionList: versionList[],
+  currentVersions: string
+) => {
+  const { t } = useTranslation();
+  return versionList.map(item => ({
+    value: item.version,
+    label:
+      item.version === currentVersions
+        ? `${item.version} ${t("common.using")}`
+        : !item.publish
+          ? `${item.version} ${t("common.edit")}`
+          : item.version
+  }));
 };

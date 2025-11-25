@@ -8,7 +8,6 @@ React,
 }
   from 'react';
 import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select";
 import Button from "@/components/ui/button/Button";
 import {
   AlertIcon,
@@ -23,10 +22,13 @@ import FormCard from './formCard';
 
 import { FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
-import { useGetAllFormsQuery, useUpdateStatusMutation } from '@/store/api/formApi';
-import { v4 as uuidv4 } from 'uuid';
+import { useGetAllFormsQuery, useGetFormByFormIdMutation, useUpdateStatusMutation } from '@/store/api/formApi';
 import ListViewFormManager from './ListView';
 import FormVersionsModal from './formVersionModal';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Pagination } from '../crud/Pagination';
+import Loading, { LoadingModal } from '../common/Loading';
+import { usePermissions } from '@/hooks';
 
 
 interface SortConfig {
@@ -68,48 +70,71 @@ const FormManagerComponent: React.FC = () => {
   const [dynamicEditDataFormAction, setDynamicEditDataFormAction] = useState<boolean>(false);
   const [forms, setForms] = useState<FormManager[]>([]);
   const [SelectForm, setSelectForm] = useState<FormManager | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const { data: AllFormsData, isLoading } = useGetAllFormsQuery(null
-    , { refetchOnMountOrArgChange: true }
-  );
-
-  const [displayMode, setDisplayMode] = useState<'card' | 'table'>('card');
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [_error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationConfig>({
+    page: 1,
+    pageSize: 10
+  });
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
     isDraft: undefined,
     status: undefined,
     category: '',
     search: ''
   });
+  const offset = (pagination.page - 1) * pagination.pageSize;
+  const { data: AllFormsData, isLoading, isFetching, error } = useGetAllFormsQuery({ start: offset, length: pagination.pageSize, search: filterConfig.search }
+    , { refetchOnMountOrArgChange: true }
+  );
+
+  const [displayMode, setDisplayMode] = useState<'card' | 'table'>('card');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
+  const [getFormById] = useGetFormByFormIdMutation()
+
   const [updateFormStatus] = useUpdateStatusMutation();
-  const [pagination, setPagination] = useState<PaginationConfig>({
-    page: 1,
-    pageSize: 10
-  });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
-  const filterOptions = [
-    { value: "active", label: "Active", status: true },
-    { value: "inactive", label: "Inactive", status: false },
-    { value: "draft", label: "Draft", isDraft: true },
-  ];
+  // const filterOptions = [
+  //   { value: "active", label: "Active", status: true },
+  //   { value: "inactive", label: "Inactive", status: false },
+  //   { value: "draft", label: "Draft", isDraft: true },
+  // ];
   const [showVersionModal, setShowVersionModal] = useState<boolean>(false)
-  const paginationOptions = [
-    { value: "10", label: "10" },
-    { value: "20", label: "20" },
-    { value: "50", label: "50" },
-    { value: "100", label: "100" },
-  ];
-  const handleOnEdit = (form: FormManager) => {
-    setSelectForm(form)
+  const handleOnEdit = async (form: FormManager) => {
+    const formEdit = form.versionsInfoList?.find((item) => item.publish === false)
+    try {
+      setLoading(true)
+
+      const resultForm = await getFormById({ formId: form.formId, version: formEdit?.version ? formEdit.version : form.versions }).unwrap()
+      if (resultForm.data)
+        setSelectForm({ ...form, formColSpan: resultForm.data.formColSpan, formFieldJson: resultForm.data.formFieldJson })
+    } catch (error) {
+      addToast("error", t("common.error"))
+      return
+    } finally {
+      setLoading(false)
+    }
     setDynamicEditFormAction(true)
     setDynamicEditDataFormAction(true)
     setShowDynamicForm(true)
   }
 
-  const handleOnView = (form: FormManager) => {
-    setSelectForm(form)
+  const handleOnView = async (form: FormManager) => {
+
+    try {
+      setLoading(true)
+      const resultForm = await getFormById({ formId: form.formId, version: form.versions }).unwrap()
+      if (resultForm.data)
+        setSelectForm({ ...form, formColSpan: resultForm.data.formColSpan, formFieldJson: resultForm.data.formFieldJson })
+    } catch (error) {
+      addToast("error", t("common.error"))
+      return
+    } finally {
+      setLoading(false)
+    }
+
+
+
     setDynamicEditFormAction(false)
     setDynamicEditDataFormAction(false)
     setShowDynamicForm(true)
@@ -130,16 +155,13 @@ const FormManagerComponent: React.FC = () => {
   useEffect(() => {
     const loadFormManagers = async () => {
       try {
-        setLoading(true);
+
         setError(null);
         AllFormsData && setForms(AllFormsData.data ?? []);
       }
       catch (err) {
         setError('Failed to fetch forms. Please try again.');
         console.error('Error fetching forms:', err);
-      }
-      finally {
-        setLoading(false);
       }
     };
 
@@ -191,24 +213,11 @@ const FormManagerComponent: React.FC = () => {
   };
 
   // Handle filter
-  const handleFilter = (key: keyof FilterConfig, value: string) => {
-    if (key === 'status') {
-      const selectedOption = filterOptions.find(option => option.value === value);
-      setFilterConfig(prev => ({
-        ...prev,
-        status: selectedOption ? selectedOption.status : undefined,
-        isDraft: selectedOption ? selectedOption.isDraft : undefined
-      }));
-    } else {
-      setFilterConfig(prev => ({ ...prev, [key]: value }));
-    }
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
 
 
   // Clear filters
   const clearFilters = () => {
-    setFilterConfig({ category: '', search: '', status: undefined });
+    setFilterConfig({ category: '', search: '', status: undefined, isDraft: undefined });
     setSearchInput('');
     setPagination(prev => ({ ...prev, page: 1 }));
   };
@@ -250,34 +259,13 @@ const FormManagerComponent: React.FC = () => {
       );
     }
   };
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
 
-  // Filter and sort forms
-  const filteredAndSortedFormManagers = useMemo(() => {
-    const filtered = forms.filter(form => {
-      const matchesSearch = !filterConfig.search ||
-        form.formName.toLowerCase().includes(filterConfig.search.toLowerCase()) ||
-        formatDate(form.createdAt!).toLowerCase().includes(filterConfig.search.toLowerCase());
-      ;
-
-      const matchesStatus = filterConfig.status === undefined || form.active === filterConfig.status; // Check for undefined to not filter if no status is selected
-      const matchesDraft = filterConfig.isDraft === undefined || (form.versions === "draft" && filterConfig.isDraft) || (form.versions !== "draft" && !filterConfig.isDraft); // Assuming 'publish' being false means it's a draft
-      const matchesCategory = !filterConfig.category || form.type === filterConfig.category;
-
-      return matchesSearch && matchesStatus && matchesDraft && matchesCategory;
-    });
+  const displayedForms = useMemo(() => {
+    let sorted = [...forms];
 
     if (sortConfig.key) {
-      filtered.sort((a, b) => {
+      sorted.sort((a, b) => {
         const aValue = a[sortConfig.key!] ?? '';
         const bValue = b[sortConfig.key!] ?? '';
 
@@ -287,24 +275,18 @@ const FormManagerComponent: React.FC = () => {
       });
     }
 
-    return filtered;
-  }, [forms, filterConfig, sortConfig]);
-
-  // Paginated forms
-  const paginatedFormManagers = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.pageSize;
-    const endIndex = startIndex + pagination.pageSize;
-    return filteredAndSortedFormManagers.slice(startIndex, endIndex);
-  }, [filteredAndSortedFormManagers, pagination]);
+    return sorted;
+  }, [forms, sortConfig]);
 
   // Pagination info
-  const totalPages = Math.ceil(filteredAndSortedFormManagers.length / pagination.pageSize);
-  const startEntry = (pagination.page - 1) * pagination.pageSize + 1;
-  const endEntry = Math.min(pagination.page * pagination.pageSize, filteredAndSortedFormManagers.length);
+  const totalPages = AllFormsData?.totalPage || 1;
+  const totalCount = AllFormsData?.totalRecords || 0;
+  const startEntry = offset + 1;
+  const endEntry = Math.min(offset + pagination.pageSize, offset + forms.length);
 
+  const { t } = useTranslation();
 
-
-
+  const permissions = usePermissions();
   const onSetStatusInactive = async (formId: string, formName: string, newStatus: FormManager['active']) => {
 
     handleUpdateStatus(formId, formName, newStatus)
@@ -320,6 +302,8 @@ const FormManagerComponent: React.FC = () => {
     setSelectForm(form)
     setShowVersionModal(true)
   }
+
+
 
 
   if (showDynamicForm) {
@@ -367,67 +351,77 @@ const FormManagerComponent: React.FC = () => {
               {/* Header */}
               <div className="mb-8">
                 {/* Controls */}
+                {/* Controls */}
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                  {/* Search */}
-                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
-                    <Input
-                      type="text"
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder="Search FormManager..."
-                      className="w-full sm:w-auto"
-                      onKeyDown={handleKeyDown}
-                    />
-                    <Button
-                      onClick={handleSearch}
-                      variant="dark"
-                      className="h-11 w-full sm:w-auto"
-                    >
-                      Search
-                    </Button>
-                  </div>
-
-                  {/* Display Mode Toggle and Create Button */}
-                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-4 lg:mt-0">
-                    <span className="text-sm text-gray-600 dark:text-gray-300 hidden sm:block">View:</span>
+                  {/* Search Section */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                    {/* Display Mode Toggle */}
                     <div className="flex rounded-lg overflow-hidden w-full sm:w-auto">
                       <Button
                         onClick={() => setDisplayMode('card')}
-                        className="rounded-r-none flex-grow sm:flex-grow-0"
-                        variant={`${displayMode === 'card'
-                          ? 'primary'
-                          : 'outline'
-                          }`}
+                        className="rounded-r-none flex-1 sm:flex-initial"
+                        variant={`${displayMode === 'card' ? 'primary' : 'outline'}`}
                       >
                         <GridIcon className="w-4 h-4 mr-2 sm:mr-0" />
                         <span className="sm:hidden">Card</span>
                       </Button>
                       <Button
                         onClick={() => setDisplayMode('table')}
-                        className="rounded-l-none flex-grow sm:flex-grow-0"
-                        variant={`${displayMode === 'table'
-                          ? 'primary'
-                          : 'outline'
-                          }`}
+                        className="rounded-l-none flex-1 sm:flex-initial"
+                        variant={`${displayMode === 'table' ? 'primary' : 'outline'}`}
                       >
                         <ListIcon className="w-4 h-4 mr-2 sm:mr-0" />
                         <span className="sm:hidden">Table</span>
                       </Button>
                     </div>
+
+                    {/* Search Input - Full width on mobile */}
+                    <Input
+                      type="text"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      placeholder={`${t("common.search")}...`}
+                      className="w-full sm:w-64 md:w-80"
+                      onKeyDown={handleKeyDown}
+                    />
+
                     <Button
-                      onClick={handleOnCreate}
-                      variant="primary"
-                      className="w-full sm:w-auto mt-2 sm:mt-0"
+                      onClick={handleSearch}
+                      variant="dark"
+                      className="h-11 w-full sm:w-auto"
                     >
-                      Create Form
+                      {t("common.search")}
                     </Button>
+
+                    {(filterConfig.search || filterConfig.status != undefined || filterConfig.isDraft != undefined) && (
+                      <Button
+                        onClick={clearFilters}
+                        className="h-11 w-full sm:w-auto"
+                      >
+                        <CloseIcon className="w-4 h-4 mr-2" />
+                        {t("common.clear_filters")}
+                      </Button>
+                    )}
                   </div>
+
+                  {/* Create Button */}
+                  {permissions.hasPermission("form.create") &&
+                    <div className="flex items-center gap-2 w-full lg:w-auto">
+                      <Button
+                        onClick={handleOnCreate}
+                        variant="primary"
+                        className="w-full sm:w-auto"
+                      >
+                        {t("form_builder.create")}
+                      </Button>
+                    </div>
+                  }
                 </div>
 
                 {/* Filters */}
                 <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 mt-4">
-                  {/* Status Filter */}
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
+
+                  {/* <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Select
                       value={
                         filterConfig.status === true
@@ -443,7 +437,7 @@ const FormManagerComponent: React.FC = () => {
                       placeholder="Select Status"
                       className="w-full"
                     />
-                  </div>
+                  </div> */}
 
                   {/* Category Filter */}
                   {/* <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -457,117 +451,85 @@ const FormManagerComponent: React.FC = () => {
                   </div> */}
 
                   {/* Clear Filters */}
-                  {(filterConfig.search || filterConfig.status != undefined || filterConfig.isDraft != undefined) && (
-                    <Button
-                      onClick={clearFilters}
-                      className="h-11 w-full sm:w-auto"
-                    >
-                      <CloseIcon className="w-4 h-4 mr-2" />
-                      Clear Filters
-                    </Button>
-                  )}
+
                 </div>
               </div>
 
               {/* Results Info */}
-              <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Showing {startEntry}-{endEntry} of {filteredAndSortedFormManagers.length} forms
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Show:</span>
-                  <Select
-                    value={pagination.pageSize.toString()}
-                    onChange={(value) => setPagination(prev => ({ ...prev, pageSize: parseInt(value), page: 1 }))}
-                    options={paginationOptions}
-                  />
-                  <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
-                </div>
-              </div>
+              {/* <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+                
+              </div> */}
 
               {/* Content */}
-              {displayMode === 'card' ? (
-                /* Card View */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {paginatedFormManagers.map((form) => (
-                    <FormCard
-                      key={uuidv4()}
-                      form={form}
-                      setForms={setForms}
-                      handleOnEdit={() => handleOnEdit(form)}
-                      handleOnView={() => handleOnView(form)}
-                      formatDate={formatDate}
-                      onSetStatusInactive={onSetStatusInactive}
-                      handleOnVersion={handleOnVersion}
-                    />
-                  ))}
-                </div>
-              ) : (
-                /* Table View */
-                <ListViewFormManager
-                  forms={paginatedFormManagers}
-                  handleSort={handleSort}
-                  sortConfig={sortConfig}
-                  formatDate={formatDate}
-                  setForms={setForms}
-                  onSetStatusInactive={onSetStatusInactive}
-                  handleOnEdit={handleOnEdit}
-                  handleOnView={handleOnView}
-                  handleOnVersion={handleOnVersion}
-                />
-              )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    Page {pagination.page} of {totalPages}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-                      disabled={pagination.page === 1}
-                    >
-                      Previous
-                    </Button>
-
-                    {/* Page Numbers */}
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const page = i + 1;
-                        return (
-                          <Button
-                            key={page}
-                            onClick={() => setPagination(prev => ({ ...prev, page }))}
-                            variant={`${pagination.page === page
-                              ? 'info'
-                              : 'primary'
-                              }`}
-                          >
-                            {page}
-                          </Button>
-                        );
-                      })}
-                    </div>
-
-                    <Button
-                      onClick={() => setPagination(prev => ({ ...prev, page: Math.min(totalPages, prev.page + 1) }))}
-                      disabled={pagination.page === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* No Results */}
-              {paginatedFormManagers.length === 0 && !loading && !error && (
+              {isFetching || isLoading ? <Loading /> : error ?
                 <div className="text-center py-12">
-                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading ? "Loading..." : "No forms found"}</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading ? t("common.loading") + "..." : t("form_builder.form_not_found")}</div>
                   <p className="text-gray-400 dark:text-gray-500 mb-4">
                     {filterConfig.search || filterConfig.status || filterConfig.category
-                      ? 'Try adjusting your filters or search terms'
-                      : 'Create your first workflow to get started'
+                      ? t("form_builder.desc_filter_not_found")
+                      : ''
+                    }
+                  </p>
+
+                </div>
+                : displayMode === 'card' ? (
+                  /* Card View */
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {displayedForms.map((form) => (
+                      <FormCard
+                        key={form.formId}
+                        form={form}
+                        setForms={setForms}
+                        handleOnEdit={() => handleOnEdit(form)}
+                        handleOnView={() => handleOnView(form)}
+                        onSetStatusInactive={onSetStatusInactive}
+                        handleOnVersion={handleOnVersion}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Table View */
+                  <ListViewFormManager
+                    forms={displayedForms}
+                    handleSort={handleSort}
+                    sortConfig={sortConfig}
+                    setForms={setForms}
+                    onSetStatusInactive={onSetStatusInactive}
+                    handleOnEdit={handleOnEdit}
+                    handleOnView={handleOnView}
+                    handleOnVersion={handleOnVersion}
+                  />
+                )}
+
+              {/* Pagination */}
+              {/* Pagination */}
+              <div className="mt-6">
+                <Pagination
+                  pagination={{
+                    page: pagination.page,
+                    pageSize: pagination.pageSize,
+                    total: totalCount
+                  }}
+                  totalPages={totalPages}
+                  startEntry={startEntry}
+                  endEntry={endEntry}
+                  onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))}
+                  onPageSizeChange={(newPageSize) => setPagination(prev => ({
+                    ...prev,
+                    pageSize: Number(newPageSize),
+                    page: 1
+                  }))}
+                />
+              </div>
+
+              {/* No Results */}
+              {/* {displayedForms.length === 0 && !loading && !error && (
+                <div className="text-center py-12">
+                  <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">{isLoading ? t("common.loading") + "..." : t("form_builder.form_not_found")}</div>
+                  <p className="text-gray-400 dark:text-gray-500 mb-4">
+                    {filterConfig.search || filterConfig.status || filterConfig.category
+                      ? t("form_builder.desc_filter_not_found")
+                      : ''
                     }
                   </p>
                   {(filterConfig.search || filterConfig.status || filterConfig.category) && (
@@ -580,7 +542,7 @@ const FormManagerComponent: React.FC = () => {
                     </Button>
                   )}
                 </div>
-              )}
+              )} */}
             </div>
           </div>
           {/* <ConfirmationModal
@@ -600,6 +562,9 @@ const FormManagerComponent: React.FC = () => {
 
           /> */}
         </div>
+        {loading &&
+          <LoadingModal />
+        }
       </div>
     </>
   );

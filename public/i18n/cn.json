@@ -174,7 +174,22 @@
           "title": "工作流",
           "nested": {
             "workflow_management": "工作流管理",
-            "workflow_builder": "工作流构建"
+            "workflow_builder": {
+              "title": "工作流构建",
+              "header": "工作流构建",
+              "create": {
+                "title": "创建工作流",
+                "header": "创建工作流"
+              },
+              "read": {
+                "title": "工作流详情",
+                "header": "工作流详情"
+              },
+              "update": {
+                "title": "编辑工作流",
+                "header": "编辑工作流"
+              }
+            }
           }
         },
         "user_management": {
@@ -297,7 +312,8 @@
         "workflow": {
           "title": "工作流",
           "nested": {
-            "workflow_builder_v1": "工作流构建 v0.1.0"
+            "workflow_builder_v1": "工作流构建 v0.1.0",
+            "workflow_builder_v2": "工作流构建 v0.2.0"
           }
         }
       }
@@ -438,6 +454,161 @@
               "activity": "活动日志"
             }
           }
+        }
+      }
+    },
+    "workflow": {
+      "name": "工作流程",
+      "builder": {
+        "toolbar": {
+          "header": "工作流程详情",
+          "nodes": {
+            "header": "添加节点",
+            "start": "开始",
+            "process": "处理",
+            "dispatch": "分派",
+            "sla": "SLA",
+            "decision": "决策",
+            "end": "结束"
+          },
+          "actions": {
+            "adding": "点击或拖动到画布",
+            "import": "导入工作流程",
+            "preview": "预览SOP",
+            "save": "保存工作流程",
+            "edit": "编辑工作流程"
+          }
+        },
+        "metadata": {
+          "title": {
+            "label": "标题",
+            "placeholder": "输入工作流标题...",
+            "default": "未命名工作流程"
+          },
+          "description": {
+            "label": "描述",
+            "placeholder": "简要描述..."
+          },
+          "status": {
+            "label": "状态",
+            "placeholder": "选择状态",
+            "options": {
+              "draft": "草稿",
+              "active": "活动",
+              "inactive": "非活动",
+              "testing": "测试"
+            }
+          },
+          "total_sla": "总SLA",
+          "created_at": "创建时间",
+          "created_by": "由"
+        },
+        "node": {
+          "header": "节点配置",
+          "description": "选择一个节点来配置其属性",
+          "validation": {
+            "header": "验证错误",
+            "node_required": "工作流程至少需要一个 _NODE_ 节点",
+            "action_required": "工作流程在 _NODE_ 节点中至少需要一个 _ACTION_ 操作",
+            "maximum_connections": "_NODE_ 节点已达到最大连接数",
+            "determine_connections": "_NODE_ 节点已同时具有“是”和“否”连接"
+          },
+          "form": {
+            "label": { "label": "标签" },
+            "description": {
+              "label": "描述",
+              "placeholder": "输入描述..."
+            },
+            "node_type": { "label": "节点类型" },
+            "position": { "label": "位置" },
+            "actions": {
+              "label": "操作",
+              "placeholder": "选择操作"
+            },
+            "form": {
+              "label": "表单",
+              "placeholder": "选择表单"
+            },
+            "sla": { "label": "SLA（分钟）" },
+            "group": {
+              "label": "负责组",
+              "placeholder": "选择组"
+            },
+            "pic": {
+              "label": "负责人（PIC）",
+              "placeholder": "选择用户"
+            },
+            "conditions": {
+              "label": "条件",
+              "placeholder": "输入条件..."
+            }
+          },
+          "connections": {
+            "header": "连接",
+            "outgoing": "输出",
+            "incoming": "输入"
+          },
+          "stats": {
+            "header": "工作流程统计",
+            "title": "标题",
+            "status": "状态",
+            "nodes": "节点",
+            "connections": "连接",
+            "start_nodes": "起始节点",
+            "end_nodes": "结束节点"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "导入工作流程",
+            "file": { "label": "上传 .json 文件" },
+            "textarea": {
+              "label": "或粘贴 JSON 内容",
+              "placeholder": "在此粘贴工作流程 JSON..."
+            },
+            "actions": { "import": "导入" }
+          },
+          "preview": {
+            "header": "预览工作流程的SOP",
+            "description": "根据工作流程路径生成表单组件",
+            "step": "步骤",
+            "start": "工作流程开始",
+            "decision": {
+              "header": "条件",
+              "path": "选择决策路径"
+            },
+            "sla": {
+              "header": "SLA时间",
+              "path": "SLA决策路径",
+              "yes": "符合SLA",
+              "no": "超出SLA"
+            },
+            "current_path": "当前路径",
+            "end": "工作流程结束",
+            "actions": { "close": "关闭" },
+            "empty": {
+              "title": "没有标准操作程序可供预览",
+              "description": "添加开始节点、流程节点、调度节点和结束节点以及连接，以生成 SOP 预览。"
+            }
+          },
+          "save": {
+            "header": "预览工作流程JSON并确认",
+            "actions": {
+              "copy": "复制",
+              "copied": "已复制",
+              "download": "下载",
+              "confirm": "确认",
+              "saving": "保存中..."
+            }
+          },
+          "actions": { "cancel": "取消" }
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "分钟",
+          "label": "分钟",
+          "postfix": ""
         }
       }
     },

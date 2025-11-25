@@ -14,6 +14,7 @@ import {
   VideoIcon
 } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   // useDeleteWorkflowMutation,
   useGetWorkflowsQuery
@@ -36,6 +37,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
+  const { t } = useTranslation();
   const [data, setData] = useState<(Workflow & { id: string })[]>([]);
   const [workflowAnalytics, setWorkflowAnalytics] = useState<WorkflowAnalytics>();
 
@@ -201,23 +203,23 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     actions: [
       {
         key: "view",
-        label: "View",
+        label: t("crud.common.read"),
         variant: "primary" as const,
         // icon: EyeIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.wfId}`),
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}`),
         condition: () => permissions.hasPermission("workflow.view")
       },
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v2/${workflow.wfId}/edit`),
+        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}/edit`),
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (workflow: Workflow) => {
@@ -380,7 +382,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "primary",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
-          navigate(`/workflow/editor/v2/${workflow.wfId}/edit`);
+          navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
         },
         condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
       },
@@ -632,7 +634,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         previewConfig={previewConfig as PreviewConfig<Workflow & { id: string }>}
         searchFields={["title", "desc"]}
         // customFilterFunction={() => true}
-        onCreate={() => navigate("/workflow/editor/v2")}
+        onCreate={() => navigate("/workflow/editor/v3")}
         onDelete={handleDelete}
         onItemAction={handleAction}
         // onItemAction={handleAction as (action: string, item: { wfId: string }) => void}

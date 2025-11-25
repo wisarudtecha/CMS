@@ -18,8 +18,44 @@ export const formApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ticket CRUD operations
 
-        getAllForms: builder.query<ApiResponse<FormManager[]>, null>({
-            query: () => "/forms/getAllForms",
+        getForm: builder.query<ApiResponse<{
+            formId :string,
+            formName : string,
+            versions: string,
+            publish :boolean
+        }>, { //
+            publish: boolean;
+        }>({
+            query: ({ publish }) => ({ //
+                url: `/forms`,
+                method: "GET",
+                params: { publish }
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
+        getFormMutation: builder.mutation<ApiResponse<{
+            formId :string,
+            formName : string,
+            versions: string,
+            publish :boolean
+        }>, { //
+            publish: boolean;
+        }>({
+            query: ({ publish }) => ({ //
+                url: `/forms`,
+                method: "GET",
+                params: { publish }
+            }),
+            invalidatesTags: ["Form and Workflow"],
+        }),
+        
+        
+        getAllForms: builder.query<ApiResponse<FormManager[]>, { start: Number, length: number, search: string }>({
+            query: (params) => ({
+                url: "/forms/getAllForms",
+                params: params
+            }),
             providesTags: ["Form and Workflow"],
             keepUnusedDataFor: 0,
         }),
@@ -27,7 +63,7 @@ export const formApi = baseApi.injectEndpoints({
         getFormLinkWfMutation: builder.mutation<ApiResponse<FormLinkWf[]>, { formId: string }>({
             query: (params) => ({
                 url: "/forms/GetFormlinkWf",
-                params:params
+                params: params
             }),
 
             invalidatesTags: ["Form and Workflow"],
@@ -36,7 +72,7 @@ export const formApi = baseApi.injectEndpoints({
         getFormLinkWf: builder.query<ApiResponse<FormLinkWf[]>, { formId: string }>({
             query: (params) => ({
                 url: "/forms/GetFormlinkWf",
-                params:params
+                params: params
             }),
             providesTags: ["Form and Workflow"],
         }),
@@ -46,9 +82,9 @@ export const formApi = baseApi.injectEndpoints({
             formId: string;
         }>({
             query: ({ formId, version }) => ({ //
-                url: "/forms",
+                url: `/forms/${formId}`,
                 method: "GET",
-                params: { formId, version }
+                params: { version }
             }),
             invalidatesTags: ["Form and Workflow"],
         }),
@@ -58,9 +94,9 @@ export const formApi = baseApi.injectEndpoints({
             formId: string;
         }>({
             query: ({ formId, version }) => ({ //
-                url: "/forms",
+                url: `/forms/${formId}`,
                 method: "GET",
-                params: { formId, version }
+                params: { version }
             }),
             providesTags: ["Form and Workflow"],
         }),
@@ -180,11 +216,11 @@ export const formApi = baseApi.injectEndpoints({
             providesTags: ["Form and Workflow"],
         }),
 
-        changeFormVersionMutation: builder.mutation<ApiResponse<null>, { 
+        changeFormVersionMutation: builder.mutation<ApiResponse<null>, {
             formId: string;
             version: string;
         }>({
-            query: (params) => ({ 
+            query: (params) => ({
                 url: `/forms/version`,
                 method: "PATCH",
                 body: params,

@@ -1,0 +1,20 @@
+{
+  "0.1.2": {
+    "date": "2025-11-24",
+    "segment": "MAJOR",
+    "notes": "feat: change log:\n- Add change log viewer (version and detail).",
+    "author": "Wisarud Techa"
+  },
+  "0.1.1": {
+    "date": "2025-11-24",
+    "segment": "PATCH",
+    "notes": "fix: service dashboard:\n- Change in SLA overview from percentage to total number on SLA performance.\n- Set max percentage range on progress bar not over 100%\n- Change work order rate (%) from new to success on work order status overview.",
+    "author": "Wisarud Techa"
+  },
+  "0.1.0": {
+    "date": "2025-11-24",
+    "segment": "PATCH",
+    "notes": "- add retry button in case detail\n- fixed re auth in jasper\n- add report auther\n- fixed height officer skill modal in mobile\n- edit form type confix",
+    "author": "Phanuphong Manopkawee"
+  }
+}

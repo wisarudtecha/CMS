@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { version } from "./package.json";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
@@ -138,6 +139,7 @@ export default defineConfig({
   define: {
     // Define environment variables
     __DEV__: JSON.stringify(process.env.NODE_ENV === "development"),
-    __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL)
+    __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL),
+    __APP_VERSION__: JSON.stringify(version),
   }
 });

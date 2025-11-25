@@ -11,9 +11,11 @@
     "confirm": "Confirm",
     "delete": "Delete",
     "edit": "Edit",
+    "view": "View",
     "add": "Add",
     "search": "Search",
     "loading": "Loading...",
+    "loadingPercentage": "Loading..._percentage_",
     "error": "Error",
     "success": "Success",
     "back": "Back",
@@ -32,9 +34,39 @@
     "refresh": "Refresh",
     "home": "Home",
     "retry": "Retry",
-    "no_result":"No results found.",
-    "charater":"Characters",
-    "noOption": "No Option."
+    "no_result": "No results found.",
+    "charater": "Characters",
+    "noOption": "No Option.",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "createBy": "Create By",
+    "at_time": "At",
+    "new_version": "New Version",
+    "version": "Version",
+    "name": "Name",
+    "create": "Create",
+    "change_version": "Change Version",
+    "import": "Import",
+    "export": "Export",
+    "preview": "Preview",
+    "submit": "Submit",
+    "close": "Close",
+    "addField": "Add Field",
+    "remove": "Remove",
+    "hide": "Hide",
+    "download": "Download",
+    "upload": "Upload",
+    "info": "Information",
+    "dob": "Date of Birth",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "address": "Address",
+    "type": "Type",
+    "room": "Room",
+    "floor": "Floor",
+    "using": "Using",
+    "current": "Current",
+    "report": "Report"
   },
   "auth": {
     "signin": {
@@ -178,7 +210,22 @@
           "title": "Workflow",
           "nested": {
             "workflow_management": "Workflow Management",
-            "workflow_builder": "Workflow Builder"
+            "workflow_builder": {
+              "title": "Workflow Builder",
+              "header": "Workflow Builder",
+              "create": {
+                "title": "Create Workflow",
+                "header": "Create Workflow"
+              },
+              "read": {
+                "title": "Workflow Detail",
+                "header": "Workflow Detail"
+              },
+              "update": {
+                "title": "Edit Workflow",
+                "header": "Edit Workflow"
+              }
+            }
           }
         },
         "user_management": {
@@ -301,7 +348,8 @@
         "workflow": {
           "title": "Workflow",
           "nested": {
-            "workflow_builder_v1": "Workflow Builder v0.1.0"
+            "workflow_builder_v1": "Workflow Builder v0.1.0",
+            "workflow_builder_v2": "Workflow Builder v0.2.0"
           }
         }
       }
@@ -442,6 +490,177 @@
               "activity": "Activity"
             }
           }
+        }
+      }
+    },
+    "workflow": {
+      "name": "Workflow",
+      "builder": {
+        "toolbar": {
+          "header": "Workflow Details",
+          "nodes": {
+            "header": "Add Node",
+            "start": "Start",
+            "process": "Process",
+            "dispatch": "Dispatch",
+            "sla": "SLA",
+            "decision": "Decision",
+            "end": "End"
+          },
+          "actions": {
+            "adding": "Click to add or drag to canvas",
+            "import": "Import Workflow",
+            "preview": "Preview SOP",
+            "save": "Save Workflow",
+            "edit": "Edit Workflow"
+          }
+        },
+        "metadata": {
+          "title": {
+            "label": "Title",
+            "placeholder": "Enter workflow title...",
+            "default": "Untitled Workflow"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Brief description..."
+          },
+          "status": {
+            "label": "Status",
+            "placeholder": "Select Status",
+            "options": {
+              "draft": "Draft",
+              "active": "Active",
+              "inactive": "Inactive",
+              "testing": "Testing"
+            }
+          },
+          "total_sla": "Total SLA",
+          "created_at": "Created At",
+          "created_by": "By"
+        },
+        "node": {
+          "header": "Node Configuration",
+          "description": "Select a node to configure its properties",
+          "validation": {
+            "header": "Validation Errors",
+            "node_required": "Workflow must have at least one _NODE_ node",
+            "action_required": " Workflow must have at least one _ACTION_ action in _NODE_ node",
+            "maximum_connections": "_NODE_ node already has maximum connections",
+            "determine_connections": "_NODE_ node already has both Yes and No connections"
+          },
+          "form": {
+            "label": {
+              "label": "Label"
+            },
+            "description": {
+              "label": "Description",
+              "placeholder": "Enter description..."
+            },
+            "node_type": {
+              "label": "Node Type"
+            },
+            "position": {
+              "label": "Position"
+            },
+            "actions": {
+              "label": "Action",
+              "placeholder": "Select Action"
+            },
+            "form": {
+              "label": "Form",
+              "placeholder": "Select Form"
+            },
+            "sla": {
+              "label": "SLA (Minutes)"
+            },
+            "group": {
+              "label": "Group of Assignee",
+              "placeholder": "Select Groups"
+            },
+            "pic": {
+              "label": "PIC (Person in Charge)",
+              "placeholder": "Select Users"
+            },
+            "conditions": {
+              "label": "Conditions",
+              "placeholder": "Enter condition..."
+            }
+          },
+          "connections": {
+            "header": "Connections",
+            "outgoing": "Outgoing",
+            "incoming": "Incoming"
+          },
+          "stats": {
+            "header": "Workflow Stats",
+            "title": "Title",
+            "status": "Status",
+            "nodes": "Nodes",
+            "connections": "Connections",
+            "start_nodes": "Start Nodes",
+            "end_nodes": "End Nodes"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "Import Workflow",
+            "file": {
+              "label": "Upload .json file"
+            },
+            "textarea": {
+              "label": "Or paste JSON content",
+              "placeholder": "Paste workflow JSON here..."
+            },
+            "actions": {
+              "import": "Import"
+            }
+          },
+          "preview": {
+            "header": "Preview SOP of Workflow",
+            "description": "Generated form components based on workflow path",
+            "step": "Step",
+            "start": "Workflow Start",
+            "decision": {
+              "header": "Condition",
+              "path": "Choose decision path"
+            },
+            "sla": {
+              "header": "SLA Time",
+              "path": "SLA decision path",
+              "yes": "Met SLA",
+              "no": "Exceeded SLA"
+            },
+            "current_path": "Current path",
+            "end": "Workflow End",
+            "actions": {
+              "close": "Close"
+            },
+            "empty": {
+              "title": "No SOP to Preview",
+              "description": "Add start, process, dispatch, and end nodes with connections to generate SOP previews"
+            }
+          },
+          "save": {
+            "header": "Preview JSON of Workflow and confirm",
+            "actions": {
+              "copy": "Copy",
+              "copied": "Copied",
+              "download": "Download",
+              "confirm": "Confirm",
+              "saving": "Saving..."
+            }
+          },
+          "actions": {
+            "cancel": "Cancel"
+          }
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "min.",
+          "label": "minute",
+          "postfix": "s"
         }
       }
     },
@@ -909,12 +1128,12 @@
       "updateAt": "Update At",
       "updateBy": "Update By",
       "edit": "Edit",
-      "cancel_case_detail":"Confirm to cancel this case?",
-      "cancel_case_title":"Cancel Case",
-      "close_case_detail":"Confirm to close this case?",
-      "close_case_title":"Close Case",
-      "cancel_case_assignment_title":"Cancel Assignment",
-      "cancel_case_assignment_detail":"Confirm to cancel the assignment for",
+      "cancel_case_detail": "Confirm to cancel this case?",
+      "cancel_case_title": "Cancel Case",
+      "close_case_detail": "Confirm to close this case?",
+      "close_case_title": "Close Case",
+      "cancel_case_assignment_title": "Cancel Assignment",
+      "cancel_case_assignment_detail": "Confirm to cancel the assignment for",
       "advance_filtering": {
         "title": "Advanced filtering",
         "search_case_type_place_holder": "Search by case type...",
@@ -928,27 +1147,28 @@
         "create_by_tilte_placeholder": "Created by...",
         "phone": "Phone Number",
         "phone_number_placeholder": "Enter Phone Number..."
-      },"toast":{
-        "close_case_success":"Close Work Order Success.",
-        "close_case_fail":"Close Work Order fail.",
-        "cancel_case_success":"Cancel Work Order Success.",
-        "cancel_case_fail":"Cancel Work Order fail.",
-        "cancel_unit_success":"Cancel Officer Success.",
-        "cancel_unit_fail":"Cancel Officer fail.",
-        "save_change_sucess":"Update Work Order Success.",
-        "save_change_fail":"Update Work Order fail.",
-        "dispatch_success":"Dispatch Success.",
-        "dispatch_fail":"Dispatch fail.",
-        "add_case_success":"Add Work Order Success.",
-        "savedaft_success":"SaveDraft Success.",
-        "add_case_fail":"Add Work Order fail.",
-        "savedaft_fail":"SaveDraft fail.",
-        "missing_close_case_data":"Missing Close Details Data.",
-        "upload_file_success":"Upload file Success.",
-        "upload_file_fail":"Upload file fail.",
-        "loading_case" : "Loading WorkOrder.",
-        "loading_case_success" : "Loading WorkOrder Successfully.",
-        "loading_case_fail" : "Loading WorkOrder Failed."
+      },
+      "toast": {
+        "close_case_success": "Close Work Order Success.",
+        "close_case_fail": "Close Work Order fail.",
+        "cancel_case_success": "Cancel Work Order Success.",
+        "cancel_case_fail": "Cancel Work Order fail.",
+        "cancel_unit_success": "Cancel Officer Success.",
+        "cancel_unit_fail": "Cancel Officer fail.",
+        "save_change_sucess": "Update Work Order Success.",
+        "save_change_fail": "Update Work Order fail.",
+        "dispatch_success": "Dispatch Success.",
+        "dispatch_fail": "Dispatch fail.",
+        "add_case_success": "Add Work Order Success.",
+        "savedaft_success": "SaveDraft Success.",
+        "add_case_fail": "Add Work Order fail.",
+        "savedaft_fail": "SaveDraft fail.",
+        "missing_close_case_data": "Missing Close Details Data.",
+        "upload_file_success": "Upload file Success.",
+        "upload_file_fail": "Upload file fail.",
+        "loading_case": "Loading WorkOrder.",
+        "loading_case_success": "Loading WorkOrder Successfully.",
+        "loading_case_fail": "Loading WorkOrder Failed."
       }
     },
     "sop_card": {
@@ -965,7 +1185,7 @@
       "send_activity": "Comment",
       "fail_send_activity": "Failed to add comment. Please try again.",
       "due": "Due",
-      "comment_modal_title":"History"
+      "comment_modal_title": "History"
     },
     "assignment": {
       "case_type": "Case Type",
@@ -998,7 +1218,7 @@
       "assign_button": "Assign Selected Officers",
       "select": "Selected",
       "officer": "officer",
-      "end_of_action":"Done"
+      "end_of_action": "Done"
     },
     "officer_detail": {
       "personal_title": "Personal Details",
@@ -1027,9 +1247,9 @@
       "device_model": "Model",
       "service_history": "Service History",
       "details_panel": "View Details Panel",
-      "brand":"Brand",
-      "iot_device_serial_number":"Serial Number",
-      "iot_device_name":"Device Name"
+      "brand": "Brand",
+      "iot_device_serial_number": "Serial Number",
+      "iot_device_name": "Device Name"
     }
   },
   "time": {
@@ -1052,12 +1272,179 @@
     "sla": "SLA",
     "actual": "Actual",
     "overdue_by": "Overdue",
-    "faster_by": "Faster by", 
+    "faster_by": "Faster by",
     "in_progress": "In Progress",
     "pending": "Pending",
     "no_sla": "No SLA defined",
-    "used":"been used",
-    "completed_progress":"Completion Rate",
+    "used": "been used",
+    "completed_progress": "Completion Rate",
     "total_sla": "Total SLA"
+  },
+  "form_builder": {
+    "create": "Create Form",
+    "form_management": "Form Management",
+    "form_not_found": "Form Not Found",
+    "desc_filter_not_found": "Try adjusting your filters or search terms",
+    "confirm_publish": "Are you sure you want to publish this form?",
+    "confirm_unpublish": "Are you sure you want to unpublish this form?",
+    "remove_workflow": "This form is currently in use. Please remove it from the workflows below before unpublishing.",
+    "export_form": "Export Form",
+    "export_description": "Download this form as a JSON file",
+    "form_name": "Form Name",
+    "import_form": "Import Form",
+    "import_description": "Upload a JSON file to import form configuration",
+    "select_file": "Select JSON File",
+    "selected_file": "Selected File",
+    "file_size": "Size",
+    "invalid_file_type": "Please select a valid JSON file",
+    "invalid_import_data": "Invalid form data",
+    "import_success": "Form imported successfully",
+    "import_error": "Error importing form"
+  },
+  "dynamicForm": {
+    "pageTitle": "Dynamic Form Builder",
+    "saveDrafts": "Save Drafts",
+    "saveChange": "Save Change",
+    "saveForm": "Save Form",
+    "preview": {
+      "noFields": "No fields added yet. Click \"Edit\" to start adding.",
+      "versionPrefix": "v."
+    },
+    "toasts": {
+      "noFields": "There are no elements in the form.",
+      "somethingWentWrong": "Something went wrong.",
+      "unexpectedError": "An unexpected error occurred.",
+      "correctErrors": "Please correct the errors before submitting.",
+      "draftLoaded": "Draft loaded successfully:",
+      "noDraftFound": "No draft found in localStorage.",
+      "parseDraftError": "Failed to parse draft from localStorage:",
+      "moveBetweenGroupsNotAllowed": "Moving items between different groups is not allowed."
+    }
+  },
+  "formEdit": {
+    "confirmPublish": {
+      "title": "Confirm Publish?",
+      "description": "Confirm Publish?"
+    },
+    "formSettings": {
+      "title": "Form Settings",
+      "formNameLabel": "Form Name:",
+      "formNamePlaceholder": "Enter form name",
+      "formIdLabel": "Form ID:",
+      "formIdPlaceholder": "Enter unique form ID",
+      "version": "Version :",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "gridColumns": "Desktop Grid Columns:"
+    },
+    "layoutEditor": {
+      "title": "Form Layout Editor",
+      "hideAll": "Hide All",
+      "showAll": "Show All",
+      "noFields": "No fields added yet. Use the buttons above to add new fields."
+    },
+    "settingsModal": {
+      "title": "Settings for:",
+      "fieldType": "Field Type:",
+      "saveButton": "Save Rules",
+      "unsupportedRule": "Unsupported rule: {ruleName}"
+    },
+    "rules": {
+      "searchCountries": "Search countries...",
+      "minLength": "Min Length:",
+      "maxLength": "Max Length:",
+      "minnumber": "Min number:",
+      "maxnumber": "Max number:",
+      "minSelections": "Min Selections:",
+      "maxSelections": "Max Selections:",
+      "maxFileSize": "Max File Size (MB):",
+      "minFiles": "Min Files:",
+      "maxFiles": "Max Files:",
+      "contain": "Contain:",
+      "allowedCountries": "Allowed Countries:",
+      "allowedFileTypes": "Allowed File Types:",
+      "minLocalDate": "Min Local Date:",
+      "maxLocalDate": "Max Local Date:",
+      "minDate": "Min Date:",
+      "maxDate": "Max Date:",
+      "validEmailFormat": "Valid Email Format",
+      "hasUppercase": "Has Uppercase",
+      "hasLowercase": "Has Lowercase",
+      "hasNumber": "Has Number",
+      "hasSpecialChar": "Has Special Char",
+      "noWhitespace": "No Whitespace",
+      "futureDateOnly": "Future Date Only",
+      "pastDateOnly": "Past Date Only"
+    }
+  },
+  "formElement": {
+    "dragHandleTitle": "Drag to reorder",
+    "form_elements": "Form Elements",
+    "removeFieldTitle": "Remove field",
+    "toggleVisibility": "Toggle visibility",
+    "showLabel": "Show Label",
+    "labelText": "Label Text:",
+    "labelPlaceholder": "Edit field label",
+    "idLabel": "ID:",
+    "idPlaceholder": "Edit field id",
+    "idTitle": "Edit Field ID",
+    "placeholderLabel": "Placeholder:",
+    "placeholderPlaceholder": "Edit field placeholder",
+    "placeholderTitle": "Edit Field Placeholder",
+    "required": "Required",
+    "enableSearch": "Enable Search",
+    "gridColumns": "Desktop Grid Columns:",
+    "columnSpan": "Desktop Column Span:",
+    "newOption": "New option",
+    "groupedFields": "Grouped Fields",
+    "formForOption": "Form for \"{optionValue}\""
+  },
+  "formType": {
+    "textInput": "Text",
+    "numberInput": "Number",
+    "textAreaInput": "Text Area",
+    "emailInput": "Email",
+    "multiCheckbox": "Multi-Checkbox",
+    "singleSelect": "Single-Select",
+    "image": "Image",
+    "dndImage": "DnD Image",
+    "multiImage": "Multi-Image",
+    "dndMultiImage": "DnD Multi-Image",
+    "passwordInput": "Password",
+    "date": "Date",
+    "dateTime": "Date & Time",
+    "radio": "Radio",
+    "group": "Group",
+    "dynamicField": "Dynamic Field",
+    "phoneNumber": "Phone Number"
+  },
+  "formViewer": {
+    "emptyValue": "-",
+    "noImageUploaded": "No image uploaded",
+    "noImagesUploaded": "No images uploaded",
+    "emptyGroup": "No fields in this group.",
+    "dynamicFieldDetails": "Details for \"{{value}}\"",
+    "unsupportedFieldType": "Unsupported field type: {{type}}"
+  },
+  "customer": {
+    "userType": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "info": "Customer Information"
+  },
+  "report": {
+    "1": "1.Service Summary Report",
+    "1_1": "1.1 Daily Service Summary Report",
+    "1_2": "1.2 Monthly Service Summary Report",
+    "1_3": "1.3 Service Comparison Report by Day",
+    "1_4": "1.4 Service Comparison Report by Month",
+    "2": "2.Service Detail Report",
+    "2_1": "2.1 Service Data Detail Report",
+    "2_2": "2.2 Service Summary Report Classified by Service Type",
+    "2_3": "2.3 Service Summary Report Classified by Service Outcome",
+    "2_4": "2.4 Service Detail Report and Service Location"
   }
 }

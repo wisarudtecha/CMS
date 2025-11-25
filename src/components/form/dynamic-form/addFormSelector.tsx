@@ -7,6 +7,7 @@ import {
     ChevronRightIcon,
 } from "lucide-react";
 import { formConfigurations, formTypeIcons } from "./constant";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AddFormSelectorProps {
     isOpen: boolean;
@@ -23,7 +24,7 @@ export const AddFormSelector: React.FC<AddFormSelectorProps> = ({
 }) => {
 
     if (!isOpen) return null;
-
+    const { t } = useTranslation()
     return (
         <div
             className={`
@@ -84,14 +85,12 @@ export const AddFormSelector: React.FC<AddFormSelectorProps> = ({
               md:grid md:grid-cols-5 md:sm:grid-cols-4 md:md:grid-cols-7 md:lg:grid-cols-10 md:xl:grid-cols-14 md:gap-2
             `}
                     >
-                        <h1
-                            className={`
-                text-gray-700 dark:text-white text-center
-                max-h-10
-              `}
-                        >
-                            Form Element
-                        </h1>
+                        <div className="flex justify-center items-center">
+                            <h1 className="text-gray-700 dark:text-white text-center">
+                                {t("formElement.form_elements")}
+                            </h1>
+                        </div>
+
 
                         {formConfigurations.map((item) => (
                             <div
@@ -108,7 +107,7 @@ export const AddFormSelector: React.FC<AddFormSelectorProps> = ({
                                     endIcon={formTypeIcons[item.formType]}
                                     endIconClass="hidden md:block"
                                 >
-                                    <span>{item.title}</span>
+                                    <span>{t(item.title)}</span>
                                 </Button>
                             </div>
                         ))}

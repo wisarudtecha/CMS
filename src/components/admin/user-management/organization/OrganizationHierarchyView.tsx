@@ -91,7 +91,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     // Add parent items (departments)
     (departments || []).forEach(dept => {
       items.push({
-        id: dept.id,
+        // id: dept.id,
+        id: dept.deptId,
         parentId: null, // Explicitly set to null for root items
         name: dept.th,
         secondaryName: dept.en,
@@ -110,8 +111,10 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
       const parentType = departments?.find(dept => dept.deptId === cmd.deptId);
       if (parentType) {
         items.push({
-          id: cmd.id,
-          parentId: parentType.id,
+          // id: cmd.id,
+          id: cmd.commId,
+          // parentId: parentType.id,
+          parentId: parentType.deptId,
           name: cmd.th,
           secondaryName: cmd.en,
           active: cmd.active,
@@ -129,8 +132,10 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
       const parentType = commands?.find(cmd => cmd.commId === stn.commId);
       if (parentType) {
         items.push({
-          id: stn.id,
-          parentId: parentType.id,
+          // id: stn.id,
+          id: stn.stnId,
+          // parentId: parentType.id,
+          parentId: parentType.commId,
           name: stn.th,
           secondaryName: stn.en,
           active: stn.active,

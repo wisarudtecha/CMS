@@ -17,24 +17,27 @@ import { TodayLocalDate } from "@/components/date/DateToString";
 import { useLazyGetTypeSubTypeQuery } from "@/store/api/formApi";
 import TextAreaWithCounter from "../form/input/TextAreaWithCounter";
 import { sourceInterface } from "@/types";
+import Loading from "../common/Loading";
 
 interface CaseTypeFormSectionProps {
     handleGetTypeFormData: (getTypeData: FormField) => void;
     selectedCaseTypeForm: FormField | undefined;
     children?: React.ReactNode;
+    loadDynamicForm: boolean
 }
 
 const CaseTypeFormSection: React.FC<CaseTypeFormSectionProps> = ({
     handleGetTypeFormData,
     selectedCaseTypeForm,
-    children
+    children,
+    loadDynamicForm
 }) => {
 
     return (
         <>
 
             {children}
-            {selectedCaseTypeForm?.formFieldJson && (
+            {loadDynamicForm ? <Loading /> : selectedCaseTypeForm?.formFieldJson && (
                 <>
                     <DynamicForm
                         initialForm={selectedCaseTypeForm}
@@ -68,6 +71,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 }) => {
     const { t, language } = useTranslation();
     const [getTypeSubType] = useLazyGetTypeSubTypeQuery();
+    const [loadDynamicForm, setLoadDynamicForm] = useState<boolean>(false)
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
     );
@@ -114,6 +118,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             return undefined;
         }
         try {
+            setLoadDynamicForm(true)
             const result = await getTypeSubType(caseState.caseType.sTypeId).unwrap();
             if (result) {
                 return {
@@ -124,6 +129,8 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             }
         } catch (error) {
             console.error('Error fetching form data:', error);
+        } finally {
+            setLoadDynamicForm(false);
         }
 
         // Return data without formField if not found
@@ -279,6 +286,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             <CaseTypeFormSection
                 handleGetTypeFormData={handleGetTypeFormData}
                 selectedCaseTypeForm={selectedCaseTypeForm?.formField}
+                loadDynamicForm={loadDynamicForm}
             >
                 <div className="grid-cols-2 sm:grid">
                     <div className="text-white dark:text-gray-300">

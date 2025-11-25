@@ -118,13 +118,14 @@ export default function ProgressSummary({ progressSteps, sliceIndex = true }: Pr
                 </div>
                 <div className="flex justify-between items-center mt-1">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDuration(Math.floor(summary.totalDuration / 60000))}
+                        {/* {formatDuration(Math.floor(summary.totalDuration / 60000))} */}
                     </span>
                     <span className={`text-xs font-medium ${summary.slaUsagePercent > 100 ? 'text-red-600 dark:text-red-400' :
                         summary.slaUsagePercent > 80 ? 'text-yellow-600 dark:text-yellow-400' :
                             'text-green-600 dark:text-green-400'
                         }`}>
-                        {t("progress.used")} {Math.round(summary.slaUsagePercent)}%
+                        {/* {t("progress.used")} {Math.round(summary.slaUsagePercent)}% */}
+                        {t("progress.used")} {formatDuration(Math.floor(summary.totalDuration / 60000))}
                     </span>
                 </div>
             </div>
