@@ -6,6 +6,7 @@ type BadgeColor =
   | "primary"
   | "secondary"
   | "success"
+  | "critical"
   | "error"
   | "warning"
   | "info"
@@ -57,7 +58,8 @@ const Badge: React.FC<BadgeProps> = ({
       info: "bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500",
       light: "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80",
       dark: "bg-gray-500 text-white dark:bg-white/5 dark:text-white",
-      high: "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400",
+      high: "bg-orange-100 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400",
+      critical: "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400",
       medium: "bg-yellow-100 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400",
       low: "bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
       ghost: "text-gray-700 dark:text-white/80",
@@ -71,7 +73,8 @@ const Badge: React.FC<BadgeProps> = ({
       info: "bg-blue-light-500 text-white dark:text-white",
       light: "bg-gray-400 dark:bg-white/5 text-white dark:text-white/80",
       dark: "bg-gray-700 text-white dark:text-white",
-      high: "bg-red-600 text-white dark:text-white",
+      high: "bg-orange-600 text-white dark:text-white",
+      critical: "bg-red-600 text-white dark:text-white",
       medium: "bg-yellow-500 text-white dark:text-white",
       low: "bg-blue-600 text-white dark:text-white",
       ghost: "text-white dark:text-white/80",
@@ -84,8 +87,9 @@ const Badge: React.FC<BadgeProps> = ({
       warning: "border border-warning-500 text-warning-500 dark:text-orange-400",
       info: "border border-blue-light-500 text-blue-light-500 dark:text-blue-light-400",
       light: "border border-gray-300 text-gray-700 dark:border-white/10 dark:text-white/70",
+      high: "border border-orange-600 text-orange-600 dark:border-orange-400 dark:text-orange-400",
       dark: "border border-gray-700 text-white dark:text-white",
-      high: "border border-red-600 text-red-600 dark:border-red-400 dark:text-red-400",
+      critical: "border border-red-600 text-red-600 dark:border-red-400 dark:text-red-400",
       medium: "border border-yellow-500 text-yellow-500 dark:border-yellow-400 dark:text-yellow-400",
       low: "border border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400",
       ghost: "text-gray-700 dark:text-white/70",

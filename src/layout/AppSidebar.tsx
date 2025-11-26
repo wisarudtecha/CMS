@@ -189,7 +189,7 @@ const AppSidebar: React.FC = () => {
       ]),
       subItems: [
         {
-          name: t("navigation.sidebar.main.user_management.nested.user"),
+          name: t("navigation.sidebar.main.user_management.nested.user.title"),
           path: "/user",
           permission: permissions.hasPermission("user.view"),
         },

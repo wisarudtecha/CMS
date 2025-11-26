@@ -1,6 +1,5 @@
 // /src/components/workflow/list/FormTableView.tsx
 import React, { SetStateAction } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import {
     ChevronDownIcon,
     ChevronUpIcon,
@@ -11,6 +10,7 @@ import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
 import Button from '../ui/button/Button';
 import { formatDate } from '@/utils/crud';
 import { useTranslation } from '@/hooks/useTranslation';
+import ViewWorkFlow from './viewWorkFlow';
 
 interface SortConfig {
     key: keyof FormManager | null;
@@ -78,15 +78,28 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                         {forms.map((form) => {
                             return (
-                                <tr key={uuidv4()} className="hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <tr  className="hover:bg-gray-100 dark:hover:bg-gray-800">
                                     <td className="px-6 py-4 w-auto">
                                         <div className="flex items-center gap-3">
                                             <div className="min-w-0">
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white truncate w-60">{form.formName}</div>
+                                                {form.workflows&& <ViewWorkFlow workflows={form.workflows} />}
+
                                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     {/* {form.description} */}
                                                 </div>
                                             </div>
+                                            {/* {form.workflows?.length != 0 &&
+                                                <Badge size='xxs'>
+                                                    ถูกใช้อยู่
+                                                </Badge>
+                                            } */}
+                                            {/* {form.workflows && form.workflows.map((item) => (
+                                                <Badge key={item.wfId} size='xxs'>
+                                                    {item.title}
+                                                </Badge>
+                                                ))} */}
+
                                             {/* {form?.versionsInfoList &&
                                                 form.versionsInfoList.length > 0 &&
                                                 Number(form.versions) < Math.max(...form.versionsInfoList.map(Number)) && (
@@ -108,8 +121,8 @@ const ListViewFormManager: React.FC<FormTableViewProps> = ({
 
                                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 w-auto whitespace-nowrap">
                                         <div className="flex items-center  gap-2">
-                                            {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700")}
-                                            <span>{form.createdBy} {t("common.at_time")} {formatDate(form.createdAt)}</span>
+                                            
+                                           {formatDate(form.createdAt)} {t("common.by")} {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700")} {form.createdBy}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 w-auto whitespace-nowrap">

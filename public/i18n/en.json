@@ -39,6 +39,9 @@
     "noOption": "No Option.",
     "publish": "Publish",
     "unpublish": "Unpublish",
+    "active": "Active",
+    "inactive": "Inactive",
+    "by":"By",
     "createBy": "Create By",
     "at_time": "At",
     "new_version": "New Version",
@@ -65,8 +68,10 @@
     "room": "Room",
     "floor": "Floor",
     "using": "Using",
+    "used":"Used",
     "current": "Current",
-    "report": "Report"
+    "report": "Report",
+    "status":"Status"
   },
   "auth": {
     "signin": {
@@ -231,7 +236,22 @@
         "user_management": {
           "title": "User Management",
           "nested": {
-            "user": "User",
+            "user": {
+              "title": "User",
+              "header": "User",
+              "create": {
+                "title": "Create User",
+                "header": "Create User"
+              },
+              "read": {
+                "title": "User's Detail",
+                "header": "User's Detail"
+              },
+              "update": {
+                "title": "Edit User",
+                "header": "Edit User"
+              }
+            },
             "role_privilege": "Role & Privilege",
             "organization": "Organization",
             "audit_log": "Audit Log"
@@ -664,12 +684,68 @@
         }
       }
     },
+    "user": {
+      "name": "User",
+      "metrics": {
+        "total_users": "Total",
+        "active_users": "Active",
+        "new_this_month": "New This Month",
+        "inactive_users": "Inactive"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search users..."
+          },
+          "advanced_filter": {
+            "roleId": {
+              "label": "Role",
+              "placeholder": "Select role"
+            },
+            "deptId": {
+              "label": "Department",
+              "placeholder": "Select department"
+            }
+          }
+        },
+        "header": {
+          "user": "User",
+          "role": "Role",
+          "department": "Department",
+          "status": "Status",
+          "last_login": "Last Login"
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "profile": "Profile",
+              "skills": "Skills",
+              "audit_log": "Audit Log"
+            }
+          }
+        }
+      },
+      "unit": {
+        "last_login": {
+          "today": "Today",
+          "yesterday": "Yesterday",
+          "day": "day_S_ ago",
+          "week": "week_S_ ago",
+          "month": "month_S_ ago",
+          "year": "year_S_ ago"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive"
+        }
+      }
+    },
     "unit": {
       "name": "Unit",
       "list": {
         "toolbar": {
           "search": {
-            "placeholder": "Search Unit..."
+            "placeholder": "Search units..."
           }
         },
         "header": {
@@ -1180,6 +1256,7 @@
       "created": "Created",
       "create_date": "Create Date",
       "High Priority": "High Priority",
+      "Critical Priority": "Critical Priority",
       "Medium Priority": "Medium Priority",
       "Low Priority": "Low Priority",
       "send_activity": "Comment",
@@ -1446,5 +1523,12 @@
     "2_2": "2.2 Service Summary Report Classified by Service Type",
     "2_3": "2.3 Service Summary Report Classified by Service Outcome",
     "2_4": "2.4 Service Detail Report and Service Location"
+  },
+  "form_manager": {
+    "confirm_publish": "Do you want to publish this form?",
+    "confirm_unpublish": "Do you want to unpublish this form?",
+    "delete_form_desc":"Do you want to Delete this form?"
+  },"toast":{
+    "delete_form_success":"Delete Form Successfully."
   }
 }

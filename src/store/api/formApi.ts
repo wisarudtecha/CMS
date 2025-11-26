@@ -19,10 +19,10 @@ export const formApi = baseApi.injectEndpoints({
         // Ticket CRUD operations
 
         getForm: builder.query<ApiResponse<{
-            formId :string,
-            formName : string,
+            formId: string,
+            formName: string,
             versions: string,
-            publish :boolean
+            publish: boolean
         }>, { //
             publish: boolean;
         }>({
@@ -35,10 +35,10 @@ export const formApi = baseApi.injectEndpoints({
         }),
 
         getFormMutation: builder.mutation<ApiResponse<{
-            formId :string,
-            formName : string,
+            formId: string,
+            formName: string,
             versions: string,
-            publish :boolean
+            publish: boolean
         }>, { //
             publish: boolean;
         }>({
@@ -49,11 +49,20 @@ export const formApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Form and Workflow"],
         }),
-        
-        
+
+
         getAllForms: builder.query<ApiResponse<FormManager[]>, { start: Number, length: number, search: string }>({
             query: (params) => ({
                 url: "/forms/getAllForms",
+                params: params
+            }),
+            providesTags: ["Form and Workflow"],
+            keepUnusedDataFor: 0,
+        }),
+
+        getAllFormslinkWf: builder.query<ApiResponse<FormManager[]>, { start: Number, length: number, search: string }>({
+            query: (params) => ({
+                url: "/forms/getAllFormslinkWf",
                 params: params
             }),
             providesTags: ["Form and Workflow"],
@@ -160,15 +169,22 @@ export const formApi = baseApi.injectEndpoints({
             invalidatesTags: ["Form and Workflow"],
         }),
 
-        deleteForm: builder.mutation<UpdataFormResponse, { //
-            id: string;
-        }>({
-            query: ({ id }) => ({
-                url: `/forms/${id}`,
+        deleteFormMutation: builder.mutation<ApiResponse<null>, { formId: string }>({
+            query: ({ formId }) => ({
+                url: `/forms/${formId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Form and Workflow"],
         }),
+
+        deleteForm: builder.query<ApiResponse<null>, { formId: string }>({
+            query: ({ formId }) => ({
+                url: `/forms/${formId}`,
+                method: "DELETE",
+            }),
+            providesTags: ["Form and Workflow"],
+        }),
+
 
         postSubTypeForm: builder.mutation<ApiResponse<FormField>, string>({
             query: (subType) => ({
@@ -426,13 +442,20 @@ export const formApi = baseApi.injectEndpoints({
 });
 export const {
     useGetAllFormsQuery,
+    useGetAllFormslinkWfQuery,
     useUpdateStatusMutation,
     useUpdateFormMutation,
     useCreateFormMutation,
     usePostSubTypeFormMutation,
     useGetTypeSubTypeQuery,
     useLazyGetTypeSubTypeQuery,
-    useDeleteFormMutation,
+    useDeleteFormMutationMutation,
+    useDeleteFormQuery,
+    useGetFormMutationMutation,
+    useGetFormQuery,
+    useLazyDeleteFormQuery,
+    useLazyGetAllFormslinkWfQuery,
+    useLazyGetFormQuery,
     useLazyPublishFormQuery,
     usePrefetch,
     usePublishFormMutationMutation,

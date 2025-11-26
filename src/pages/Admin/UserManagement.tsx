@@ -21,6 +21,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
 import type { Department, Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -30,6 +31,7 @@ import Toast from "../../components/toast/Toast";
 
 const UserManagementPage: React.FC = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   
   // Toast state
   const [toast, setToast] = useState<{
@@ -71,7 +73,7 @@ const UserManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["user.view"]}>
-        <PageBreadcrumb pageTitle="User Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.user.header")} />
 
         <UserManagementComponent usr={users} dept={departments} role={roles} />
       </ProtectedRoute>

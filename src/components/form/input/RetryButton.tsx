@@ -1,4 +1,5 @@
 import Button from "@/components/ui/button/Button";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RefreshCcw } from "lucide-react";
 import React from "react";
@@ -11,11 +12,15 @@ const RetryButton: React.FC<RetryButtonProps> = ({ refetch }) => {
     const [disabled, setDisabled] = React.useState(false);
     const [seconds, setSeconds] = React.useState(0);
     const { t } = useTranslation();
-
+    const { addToast } = useToast();
     const handleRetry = async () => {
-        await refetch();
+        try {
+            setDisabled(true);
+            await refetch();
+        } catch (error) {
+            addToast("error","common.error")
+        }
 
-        setDisabled(true);
         setSeconds(5);
 
         const interval = setInterval(() => {

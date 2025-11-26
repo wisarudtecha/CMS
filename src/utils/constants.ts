@@ -2,7 +2,7 @@
 /**
  * Application Constants
  */
-import { AlertHexaIcon, CheckCircleIcon, TimeIcon } from "@/icons";
+import { AlertHexaIcon, CheckCircleIcon, ErrorHexaIcon, TimeIcon } from "@/icons";
 
 export const APP_CONFIG = {
   NAME: "CMS - Case Management System",
@@ -121,53 +121,96 @@ export const POPUP_TRANSITION_MS = 300 as const; // animation 300ms (ต้อ�
 //   high: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
 //   urgent: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
 // } as const;
+// export const PRIORITY_COLORS = {
+//   low: "bg-transparent border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400",
+//   medium: "bg-transparent border-yellow-500 dark:border-yellow-400 text-yellow-500 dark:text-yellow-400",
+//   high: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
+//   urgent: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
+// } as const;
 export const PRIORITY_COLORS = {
-  low: "bg-transparent border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400",
+  critical: "bg-transparent border-red-600 dark:border-red-300 text-red-600 dark:text-red-300",
+  high: "bg-transparent border-orange-500 dark:border-orange-400 text-orange-500 dark:text-orange-400",
   medium: "bg-transparent border-yellow-500 dark:border-yellow-400 text-yellow-500 dark:text-yellow-400",
-  high: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
-  urgent: "bg-transparent border-red-500 dark:border-red-400 text-red-500 dark:text-red-400",
+  low: "bg-transparent border-blue-600 dark:border-blue-300 text-blue-600 dark:text-blue-300"
 } as const;
 
+// export const PRIORITY_LABELS = {
+//   low: {
+//     th: "ความสำคัญต่ำ",
+//     en: "Low Priority",
+//   },
+//   medium: {
+//     th: "ความสำคัญปานกลาง",
+//     en: "Medium Priority",
+//   },
+//   high: {
+//     th: "ความสำคัญสูง",
+//     en: "High Priority",
+//   },
+//   urgent: {
+//     th: "ความสำคัญสูงสุด",
+//     en: "Urgent Priority",
+//   }
+// } as const;
 export const PRIORITY_LABELS = {
-  low: {
-    th: "ความสำคัญต่ำ",
-    en: "Low Priority",
-  },
-  medium: {
-    th: "ความสำคัญปานกลาง",
-    en: "Medium Priority",
+  critical: {
+    th: "ความสำคัญวิกฤต",
+    en: "Critical Priority",
   },
   high: {
     th: "ความสำคัญสูง",
     en: "High Priority",
   },
-  urgent: {
-    th: "ความสำคัญสูงสุด",
-    en: "Urgent Priority",
+  medium: {
+    th: "ความสำคัญปานกลาง",
+    en: "Medium Priority",
+  },
+  low: {
+    th: "ความสำคัญต่ำ",
+    en: "Low Priority",
   }
 } as const;
 
+// export const PRIORITY_LABELS_SHORT = {
+//   low: {
+//     th: "ต่ำ",
+//     en: "Low",
+//   },
+//   medium: {
+//     th: "ปานกลาง",
+//     en: "Medium",
+//   },
+//   high: {
+//     th: "สูง",
+//     en: "High",
+//   },
+//   urgent: {
+//     th: "สูงสุด",
+//     en: "Urgent",
+//   }
+// } as const;
 export const PRIORITY_LABELS_SHORT = {
-  low: {
-    th: "ต่ำ",
-    en: "Low Priority",
-  },
-  medium: {
-    th: "ปานกลาง",
-    en: "Medium Priority",
+  critical: {
+    th: "วิกฤต",
+    en: "Critical",
   },
   high: {
     th: "สูง",
-    en: "High Priority",
+    en: "High",
   },
-  urgent: {
-    th: "สูงสุด",
-    en: "Urgent Priority",
+  medium: {
+    th: "ปานกลาง",
+    en: "Medium",
+  },
+  low: {
+    th: "ต่ำ",
+    en: "Low",
   }
 } as const;
 
 export const PRIORITY_CONFIG = [
-  { type: 'high', count: 4, color: PRIORITY_COLORS.high, icon: AlertHexaIcon },
+  { type: 'critical', count: 1, color: PRIORITY_COLORS.critical, icon: ErrorHexaIcon },
+  { type: 'high', count: 3, color: PRIORITY_COLORS.high, icon: AlertHexaIcon },
   { type: 'medium', count: 3, color: PRIORITY_COLORS.medium, icon: TimeIcon },
   { type: 'low', count: 3, color: PRIORITY_COLORS.low, icon: CheckCircleIcon },
 ] as const;

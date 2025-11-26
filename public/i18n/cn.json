@@ -195,7 +195,22 @@
         "user_management": {
           "title": "用户管理",
           "nested": {
-            "user": "用户",
+            "user": {
+              "title": "用户",
+              "header": "用户",
+              "create": {
+                "title": "创建用户",
+                "header": "创建用户"
+              },
+              "read": {
+                "title": "用户详情",
+                "header": "用户详情"
+              },
+              "update": {
+                "title": "编辑用户",
+                "header": "编辑用户"
+              }
+            },
             "role_privilege": "角色与权限",
             "organization": "组织",
             "audit_log": "审计日志"
@@ -609,6 +624,53 @@
           "abbr": "分钟",
           "label": "分钟",
           "postfix": ""
+        }
+      }
+    },
+    "user": {
+      "name": "用户",
+      "metrics": {
+        "total_users": "总数",
+        "active_users": "活跃数",
+        "new_this_month": "本月新增数",
+        "inactive_users": "非活跃数"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索用户..."
+          },
+          "advanced_filter": {
+            "roleId": {
+              "label": "角色",
+              "placeholder": "选择角色"
+            },
+            "deptId": {
+              "label": "部门",
+              "placeholder": "选择部门"
+            }
+          }
+        },
+        "header": {
+          "user": "用户",
+          "role": "角色",
+          "department": "部门",
+          "status": "状态",
+          "last_login": "上次登录"
+        }
+      },
+      "unit": {
+        "last_login": {
+          "today": "今天",
+          "yesterday": "昨天",
+          "day": "一天前",
+          "week": "一周前",
+          "month": "一个月前",
+          "year": "一年前"
+        },
+        "status": {
+          "active": "已激活",
+          "inactive": "已失效"
         }
       }
     },

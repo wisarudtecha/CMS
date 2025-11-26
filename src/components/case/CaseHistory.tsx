@@ -1462,7 +1462,7 @@ const CaseHistoryComponent: React.FC<{
 
       // Handle priority values
       if (key === "priority" && typeof value === "string") {
-        const priority = { high: [0,1,2,3], medium: [4,5,6], low: [7,8,9] };
+        const priority = { critical: [0], high: [1,2,3], medium: [4,5,6], low: [7,8,9] };
         return priority[value as keyof typeof priority].includes(caseItem.priority);
       }
 

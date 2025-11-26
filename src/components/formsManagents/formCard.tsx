@@ -10,6 +10,7 @@ import { getAvatarIconFromString } from '../avatar/createAvatarFromString';
 import Button from '../ui/button/Button';
 import { formatDate } from '@/utils/crud';
 import { useTranslation } from '@/hooks/useTranslation';
+import ViewWorkFlow from './viewWorkFlow';
 
 interface FormCardProps {
   form: FormManager;
@@ -39,7 +40,7 @@ const FormCard: React.FC<FormCardProps> = ({
       key={form.formId}
       className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow border-gray-200 dark:border-gray-700 flex flex-col"
     >
-      <div>
+      <div className=' space-y-3'>
         <div className="flex items-start justify-between mb-4">
           <div className="relative group w-50">
             <h3 className="items-center text-lg font-semibold text-gray-900 dark:text-white leading-relaxed line-clamp-2">
@@ -77,16 +78,19 @@ const FormCard: React.FC<FormCardProps> = ({
         </div>
 
         {/* <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{form.description}</p> */}
+        
+        {form.workflows&& <ViewWorkFlow workflows={form.workflows} />}
+      
+        
+      </div>
 
+      <div className="mt-auto pt-4">
         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
           <div className="flex items-center gap-1">
             <CalenderIcon className="w-4 h-4" />
             {formatDate(form.createdAt)}
           </div>
         </div>
-      </div>
-
-      <div className="mt-auto pt-4">
         <div className='mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400'>{t("common.createBy")} : {getAvatarIconFromString(form.createdBy, "bg-blue-600 dark:bg-blue-700 mx-1")}{form.createdBy}</div>
         <ButtonAction
           type="button"

@@ -96,6 +96,7 @@ export interface FormManager extends FormField {
   type?: string;
   createdBy: string
   versionsInfoList?: versionList[]
+  workflows?: FormLinkWf[]
 }
 
 export interface FormLinkWf {

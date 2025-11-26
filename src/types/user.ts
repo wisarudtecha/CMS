@@ -272,11 +272,11 @@ export interface UserGroupQueryParams {
 }
 
 export interface UserMetrics {
-  totalUsers: number;
-  activeUsers: number;
-  newThisMonth: number;
-  suspendedUsers: number;
-  lastMonthGrowth: number;
+  totalUsers: number | string;
+  activeUsers: number | string;
+  newThisMonth: number | string;
+  suspendedUsers: number | string;
+  lastMonthGrowth: number | string;
 }
 
 export interface UserQueryParams {

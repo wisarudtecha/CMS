@@ -1,4 +1,34 @@
 {
+  "0.3.3": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fix: user management, priority label and color:\n- Fix department filter not working in user management.\n-Add i18n in user management (not complete yet).\n- Add critical priority label and color.",
+    "author": "Wisarud Techa"
+  },
+  "0.3.2": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fixed : color",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.3.1": {
+    "date": "2025-11-26",
+    "segment": "MINOR",
+    "notes": "add: delete form",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.2.3": {
+    "date": "2025-11-25",
+    "segment": "MINOR",
+    "notes": "fix: change lable status in form manager",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.2.2": {
+    "date": "2025-11-25",
+    "segment": "PATCH",
+    "notes": "fix: UI FormManager",
+    "author": "Phanuphong Manopkawee"
+  },
   "0.2.1": {
     "date": "2025-11-25",
     "segment": "PATCH",

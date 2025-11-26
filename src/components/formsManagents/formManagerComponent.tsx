@@ -10,10 +10,7 @@ React,
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 import {
-  AlertIcon,
-  CheckCircleIcon,
   CloseIcon,
-  ErrorIcon,
   GridIcon,
   ListIcon,
 } from "@/icons";
@@ -22,13 +19,14 @@ import FormCard from './formCard';
 
 import { FormManager } from '../interface/FormField';
 import DynamicForm from '../form/dynamic-form/DynamicForm';
-import { useGetAllFormsQuery, useGetFormByFormIdMutation, useUpdateStatusMutation } from '@/store/api/formApi';
+import { useGetAllFormslinkWfQuery, useGetFormByFormIdMutation, useUpdateStatusMutation } from '@/store/api/formApi';
 import ListViewFormManager from './ListView';
 import FormVersionsModal from './formVersionModal';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Pagination } from '../crud/Pagination';
 import Loading, { LoadingModal } from '../common/Loading';
 import { usePermissions } from '@/hooks';
+import { useToastContext } from '../crud/ToastGlobal';
 
 
 interface SortConfig {
@@ -49,11 +47,7 @@ interface PaginationConfig {
 }
 
 
-interface Toast {
-  id: string;
-  type: 'success' | 'error' | 'warning';
-  message: string;
-}
+
 
 
 
@@ -83,16 +77,15 @@ const FormManagerComponent: React.FC = () => {
     search: ''
   });
   const offset = (pagination.page - 1) * pagination.pageSize;
-  const { data: AllFormsData, isLoading, isFetching, error } = useGetAllFormsQuery({ start: offset, length: pagination.pageSize, search: filterConfig.search }
+  const { data: AllFormsData, isLoading, isFetching, error } = useGetAllFormslinkWfQuery({ start: offset, length: pagination.pageSize, search: filterConfig.search }
     , { refetchOnMountOrArgChange: true }
   );
 
   const [displayMode, setDisplayMode] = useState<'card' | 'table'>('card');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
   const [getFormById] = useGetFormByFormIdMutation()
-
+  const { addToast } = useToastContext();
   const [updateFormStatus] = useUpdateStatusMutation();
-  const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
   // const filterOptions = [
   //   { value: "active", label: "Active", status: true },
@@ -150,8 +143,6 @@ const FormManagerComponent: React.FC = () => {
     setShowDynamicForm(false)
   }
 
-
-
   useEffect(() => {
     const loadFormManagers = async () => {
       try {
@@ -184,19 +175,6 @@ const FormManagerComponent: React.FC = () => {
   // }, [SelectForm]);
 
 
-  const addToast = (type: Toast['type'], message: string) => {
-    const id = Date.now().toString();
-    const newToast: Toast = { id, type, message };
-    setToasts(prev => [...prev, newToast]);
-    setTimeout(() => {
-      removeToast(id);
-    }, 5000);
-  };
-
-  // Remove toast
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
 
   // Handle search
   const handleSearch = () => {
@@ -322,29 +300,7 @@ const FormManagerComponent: React.FC = () => {
             setShowVersionModal(false)
             setSelectForm(undefined)
           }} form={SelectForm} />}
-          {/* Toast Notifications */}
-          <div className="fixed top-4 right-4 z-50 space-y-2">
-            {toasts.map(toast => (
-              <div
-                key={toast.id}
-                className={`flex items-center gap-3 p-4 rounded-lg shadow-lg transition-all duration-300 ${toast.type === 'success' ? 'bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-700 text-green-800 dark:text-green-100' :
-                  toast.type === 'error' ? 'bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-100' :
-                    'bg-yellow-100 dark:bg-yellow-800 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-100'
-                  }`}
-              >
-                {toast.type === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-300" />}
-                {toast.type === 'error' && <ErrorIcon className="w-5 h-5 text-red-600 dark:text-red-300" />}
-                {toast.type === 'warning' && <AlertIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-300" />}
-                <span className="text-sm font-medium">{toast.message}</span>
-                <button
-                  onClick={() => removeToast(toast.id)}
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  <CloseIcon className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
+
 
           <div className="p-0">
             <div className="mx-auto">

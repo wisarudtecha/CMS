@@ -9,8 +9,9 @@ import
 from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import { CheckLineIcon, ChevronUpIcon, CloseIcon, TimeIcon, UserIcon } from "@/icons";
+import { CheckLineIcon, ChevronUpIcon, CloseIcon, CloseLineIcon, UserIcon } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
 import { isValidImageUrl } from "@/utils/resourceValidators";
@@ -41,6 +42,7 @@ const UserManagementComponent: React.FC<{
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
+  const { language, t } = useTranslation();
 
   // const [filterValues, setFilterValues] = useState<FilterConfig>({});
   // const [filteredData, setFilteredData] = useState<UserProfile[]>(usr);
@@ -88,11 +90,11 @@ const UserManagementComponent: React.FC<{
   };
 
   const mockMetrics: UserMetrics = {
-    totalUsers: usr.length || 0,
-    activeUsers: usr.filter(u => u.active).length || 0,
-    newThisMonth: countUsersByMonth(usr)?.thisMonth || 0,
-    suspendedUsers: usr.filter(u => !u.active).length || 0,
-    lastMonthGrowth: countUsersByMonth(usr)?.lastMonth || 0
+    totalUsers: usr?.length?.toLocaleString() || 0,
+    activeUsers: usr?.filter(u => u?.active)?.length?.toLocaleString() || 0,
+    newThisMonth: countUsersByMonth(usr)?.thisMonth?.toLocaleString() || 0,
+    suspendedUsers: usr?.filter(u => !u?.active).length?.toLocaleString() || 0,
+    lastMonthGrowth: countUsersByMonth(usr)?.lastMonth?.toLocaleString() || 0
   };
 
   const data: (UserProfile & { id: string })[] = usr.map(u => ({
@@ -126,8 +128,8 @@ const UserManagementComponent: React.FC<{
   // };
 
   const config = {
-    entityName: "User",
-    entityNamePlural: "Users",
+    entityName: t("crud.user.name"),
+    entityNamePlural: t("crud.user.name"),
     apiEndpoints: {
       list: "/api/users",
       create: "/api/users",
@@ -140,7 +142,7 @@ const UserManagementComponent: React.FC<{
     columns: [
       {
         key: "user",
-        label: "User",
+        label: t("crud.user.list.header.user"),
         sortable: true,
         render: (userItem: UserProfile) => {
           // let name = `${userItem.firstName[0]}${userItem.lastName[0]}`;
@@ -179,7 +181,7 @@ const UserManagementComponent: React.FC<{
       },
       {
         key: "role",
-        label: "Role",
+        label: t("crud.user.list.header.role"),
         sortable: true,
         render: (userItem: UserProfile) => {
           const roleConfig = role.find(r => r.id === userItem.roleId);
@@ -191,14 +193,14 @@ const UserManagementComponent: React.FC<{
               // className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-white capitalize ${roleConfig?.color} ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
               className={`px-2 py-1 rounded-full text-xs font-medium mr-2 xl:mr-0 text-gray-900 dark:text-white capitalize`}
             >
-              {roleConfig?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || "Guest"}
+              {roleConfig?.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) || ""}
             </span>
           );
         }
       },
       {
         key: "department",
-        label: "Department",
+        label: t("crud.user.list.header.department"),
         sortable: true,
         render: (userItem: UserProfile) => {
           const department = dept.find(d => d.deptId === userItem.deptId);
@@ -207,34 +209,19 @@ const UserManagementComponent: React.FC<{
               // className={`text-gray-900 dark:text-white ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
               className={`text-gray-900 dark:text-white`}
             >
-              {department?.th}
+              {language === "th" && department?.th || department?.en || ""}
             </span>
           );
         }
       },
-      // {
-      //   key: "jobTitle",
-      //   label: "Job Title",
-      //   sortable: true,
-      //   render: (userItem: UserProfile) => {
-      //     return (
-      //       <span
-      //         // className={`text-gray-900 dark:text-white ${userItem.status === "suspended" ? "opacity-50 dark:opacity-60" : ""}`}
-      //         className={`text-gray-900 dark:text-white`}
-      //       >
-      //         {userItem.roleId}
-      //       </span>
-      //     );
-      //   }
-      // },
       {
         key: "status",
-        label: "Status",
+        label: t("crud.user.list.header.status"),
         sortable: true,
         render: (userItem: UserProfile) => {
           const statusConfig = userItem.active
             ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
-            : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: TimeIcon };
+            : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: CloseLineIcon };
           const Icon = statusConfig.icon;
           return (
             <div
@@ -242,14 +229,14 @@ const UserManagementComponent: React.FC<{
               className={`flex items-center gap-1 px-2 py-1 rounded-full justify-center ${statusConfig.color}`}
             >
               <Icon className="w-4 h-4" />
-              <span className="text-sm font-medium capitalize">{userItem.active ? "Active" : "Inactive"}</span>
+              <span className="text-sm font-medium capitalize">{userItem.active ? t("crud.user.unit.status.active") : t("crud.user.unit.status.inactive")}</span>
             </div>
           );
         }
       },
       {
         key: "lastLogin",
-        label: "Last Login",
+        label: t("crud.user.list.header.last_login"),
         sortable: true,
         render: (userItem: UserProfile) => (
           <span
@@ -264,7 +251,7 @@ const UserManagementComponent: React.FC<{
     actions: [
       {
         key: "view",
-        label: "View",
+        label: t("crud.common.read"),
         variant: "primary" as const,
         // icon: EyeIcon,
         onClick: (userItem: UserProfile) => navigate(`/user/${userItem.id}`),
@@ -272,7 +259,7 @@ const UserManagementComponent: React.FC<{
       },
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (userItem: UserProfile) => navigate(`/user/edit/${userItem.id}`),
@@ -280,7 +267,7 @@ const UserManagementComponent: React.FC<{
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         variant: "outline" as const,
         // icon: TrashBinIcon,
         onClick: (userItem: UserProfile) => {
@@ -393,17 +380,17 @@ const UserManagementComponent: React.FC<{
   const advancedFilters = [
     {
       key: "roleId",
-      label: "Role",
+      label: t("crud.user.list.toolbar.advanced_filter.roleId.label"),
       type: "select" as const,
       options: role.map(role => ({ value: role.id, label: role.roleName.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) })),
-      placeholder: "Select role",
+      placeholder: t("crud.user.list.toolbar.advanced_filter.roleId.placeholder"),
     },
     {
-      key: "department",
-      label: "Department",
+      key: "deptId",
+      label: t("crud.user.list.toolbar.advanced_filter.deptId.label"),
       type: "select" as const,
-      options: dept.map(department => ({ value: department.id, label: department.th || department.en })),
-      placeholder: "Select department",
+      options: dept.map(department => ({ value: department.deptId, label: department.th || department.en })),
+      placeholder: t("crud.user.list.toolbar.advanced_filter.deptId.placeholder"),
     },
     // {
     //   key: "active",
@@ -571,10 +558,10 @@ const UserManagementComponent: React.FC<{
   // ===================================================================
 
   const attrMetrics = [
-    { key: "totalUsers", title: "Total Users", icon: UserIcon, color: "blue", className: "text-blue-600" },
-    { key: "activeUsers", title: "Active Users", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-    { key: "suspendedUsers", title: "Inactive Users", icon: CloseIcon, color: "red", className: "text-red-600" },
-    { key: "newThisMonth", title: "New This Month", icon: ChevronUpIcon, color: "purple", className: "text-purple-600", trend: mockMetrics.lastMonthGrowth },
+    { key: "totalUsers", title: t("crud.user.metrics.total_users"), icon: UserIcon, color: "blue", className: "text-blue-600" },
+    { key: "activeUsers", title: t("crud.user.metrics.active_users"), icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "suspendedUsers", title: t("crud.user.metrics.inactive_users"), icon: CloseIcon, color: "red", className: "text-red-600" },
+    { key: "newThisMonth", title: t("crud.user.metrics.new_this_month"), icon: ChevronUpIcon, color: "purple", className: "text-purple-600", trend: mockMetrics.lastMonthGrowth },
   ];
 
   return (

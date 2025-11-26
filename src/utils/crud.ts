@@ -48,15 +48,27 @@ export const formatDate = (
 };
 
 export const formatLastLogin = (dateString: string | Date) => {
+  const { t } = UseTranslation();
+
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  return `${Math.floor(diffDays / 30)} months ago`;
+  if (diffDays === 0) {
+    return t("crud.user.unit.last_login.today");
+  }
+  if (diffDays === 1) {
+    return t("crud.user.unit.last_login.yesterday");
+  }
+  if (diffDays < 7) {
+    return `${diffDays} ${t("crud.user.unit.last_login.day")?.replace("_S_", diffDays > 1 && "s" || "")}`;
+  }
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} ${t("crud.user.unit.last_login.week")?.replace("_S_", weeks > 1 && "s" || "")}`;
+  }
+  const months = Math.floor(diffDays / 30);
+  return `${months} ${t("crud.user.unit.last_login.month")?.replace("_S_", months > 1 && "s" || "")}`;
 };
 
 export const getUniqueValues = <T>(

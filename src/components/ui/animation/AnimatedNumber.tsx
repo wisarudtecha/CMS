@@ -1,7 +1,7 @@
 // /src/components/ui/animation/AnimatedNumber.tsx
 import React, { useEffect, useState } from "react";
 
-interface AnimatedNumberProps {
+export interface AnimatedNumberProps {
   className?: string;
   duration?: number;
   value: number;
@@ -12,22 +12,22 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
   className = "",
   duration = 1000,
   value,
-  format = (val) => Math.floor(val).toString()
+  format = val => Math?.floor(val)?.toString()
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
 
   useEffect(() => {
     const startValue = displayValue;
     const endValue = value;
-    const startTime = Date.now();
+    const startTime = Date?.now();
     // const endTime = startTime + duration;
 
     const animate = () => {
-      const now = Date.now();
-      const progress = Math.min((now - startTime) / duration, 1);
+      const now = Date?.now();
+      const progress = Math?.min((now - startTime) / duration, 1);
       
       // Easing function (ease-out)
-      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const easeOut = 1 - Math?.pow(1 - progress, 3);
       
       const current = startValue + (endValue - startValue) * easeOut;
       setDisplayValue(current);
@@ -43,32 +43,30 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
   return (
     <span className={`${className} transition-all duration-300`}>
-      {format(displayValue)}
+      {format(displayValue)?.toLocaleString()}
     </span>
   );
 };
 
-interface AnimatedPercentageProps {
-  value: string | number;
+export interface AnimatedPercentageProps {
   className?: string;
   duration?: number;
+  value: string | number;
 }
 
 export const AnimatedPercentage: React.FC<AnimatedPercentageProps> = ({
-  value,
   className = "",
-  duration = 1000
+  duration = 1000,
+  value
 }) => {
-  const numericValue = typeof value === "string" 
-    ? parseFloat(value.replace("%", "")) 
-    : value;
+  const numericValue = typeof value === "string" ? parseFloat(value?.replace("%", "")) : value;
 
   return (
     <AnimatedNumber
-      value={numericValue}
       className={className}
       duration={duration}
-      format={(val) => `${Math.round(val)}%`}
+      value={numericValue}
+      format={(val) => `${Math?.round(val)}%`}
     />
   );
 };
