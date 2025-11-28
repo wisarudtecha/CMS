@@ -5,12 +5,14 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { UserOrganizationCardProps } from "@/types/user";
 
 // Helper function to format user type
-const formatUserType = (userType: number | undefined, t: (key: string) => string): string => {
+const formatUserType = (userType: number | undefined, t: (key: string) => string, language: string | undefined): string => {
   if (userType === undefined || userType === null) return t("userform.na");
   switch (userType) {
-    case 0: return t("userform.userTypeRegular");
-    case 1: return t("userform.userTypeAdmin");
-    case 2: return t("userform.userTypeSuperAdmin");
+    // case 0: return t("userform.userTypeRegular");
+    // case 1: return t("userform.userTypeAdmin");
+    // case 2: return t("userform.userTypeSuperAdmin");
+    case 1: return language === "th" && "ภายใน" || "Internal";
+    case 2: return language === "th" && "ภายนอก" || "Outsource";
     default: return t("userform.userTypeUnknown");
   }
 };
@@ -24,7 +26,7 @@ export default function UserOrganizationCard({
   loading: propLoading, 
   error: propError 
 }: UserOrganizationCardProps = {}) {
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
 
   // Always call useUserProfile, then fallback to props if context is null/undefined
   // const contextProfile = useUserProfile();
@@ -135,7 +137,8 @@ export default function UserOrganizationCard({
                 {t("userform.userType")}
               </p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {formatUserType(typeof userData.userType === "number" ? userData.userType : undefined, t)}
+                {/* {formatUserType(typeof userData.userType === "number" ? userData.userType : undefined, t, language)} */}
+                {formatUserType(typeof userData.userType === "number" ? userData.userType : (userData.userType ? parseInt(userData.userType, 10) : undefined), t, language)}
               </p>
             </div>
 

@@ -1383,7 +1383,7 @@ const UserForm: React.FC = () => {
                       options={[
                         {id: "1", name: tt("userform.genderMale")},
                         {id: "2", name: tt("userform.genderFemale")},
-                        {id: "0", name: tt("userform.genderOther")}
+                        {id: "9", name: tt("userform.genderOther")}
                       ]?.map(d => ({
                         value: d?.id,
                         label: d?.name

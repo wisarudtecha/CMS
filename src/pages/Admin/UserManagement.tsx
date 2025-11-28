@@ -22,12 +22,14 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useGetDepartmentsQuery, useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
-import type { Department, Role, UserProfile } from "@/types/user";
+import { useGetCommandsQuery, useGetDepartmentsQuery, useGetStationsQuery } from "@/store/api/organizationApi";
+import { useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
+import type { Command, Department, Station } from "@/types/organization";
+import type { Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 import UserManagementComponent from "@/components/admin/user-management/user/UserManagement";
-import Toast from "../../components/toast/Toast";
+import Toast from "@/components/toast/Toast";
 
 const UserManagementPage: React.FC = () => {
   const location = useLocation();
@@ -59,8 +61,14 @@ const UserManagementPage: React.FC = () => {
   const { data: usersData } = useGetUsersQuery({ start: 0, length: 100 });
   const users: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
 
-  const { data: departmentsData } = useGetDepartmentsQuery();
+  const { data: departmentsData } = useGetDepartmentsQuery({ start: 0, length: 100});
   const departments = departmentsData?.data as unknown as Department[] || [];
+
+  const { data: commandsData } = useGetCommandsQuery({ start: 0, length: 1000});
+  const commands = commandsData?.data as unknown as Command[] || [];
+
+  const { data: stationsData } = useGetStationsQuery({ start: 0, length: 10000});
+  const stations = stationsData?.data as unknown as Station[] || [];
 
   const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
   const roles = rolesData?.data as unknown as Role[] || [];
@@ -75,7 +83,7 @@ const UserManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["user.view"]}>
         <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.user.header")} />
 
-        <UserManagementComponent usr={users} dept={departments} role={roles} />
+        <UserManagementComponent usr={users} dept={departments} cmd={commands} stn={stations} role={roles} />
       </ProtectedRoute>
 
       {/* Toast Notification */}

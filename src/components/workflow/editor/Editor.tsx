@@ -493,7 +493,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           id: node?.id,
           label: node?.data?.label,
           form: forms?.find(f => f?.formId === node?.data?.config?.formId),
-          sla: typeof node.data?.config?.sla === "number" || typeof node?.data?.config?.sla === "number" ? node?.data?.config?.sla : undefined,
+          sla: typeof node?.data?.config?.sla === "string" || typeof node?.data?.config?.sla === "number" ? node?.data?.config?.sla : undefined,
           action: language === "th" && (
             caseStatuses?.find(a => a?.statusId === node?.data?.config?.action)?.th || caseStatuses?.find(a => a?.statusId === node?.data?.config?.action)?.en
           ) || "",

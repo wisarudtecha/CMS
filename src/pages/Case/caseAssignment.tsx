@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState, useRef } from "react"
+import { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import {
   Plus,
   List,
@@ -32,10 +32,221 @@ import { UserProfile } from "@/types/user"
 import { idbStorage } from "@/components/idb/idb"
 import { useToastContext } from "@/components/crud/ToastGlobal"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import React from "react"
 
 const statusColumns = caseStatusGroup.filter((item) => {
   return item.show === true;
 });
+
+interface AdvanceFilterProps {
+  isOpen: boolean;
+  onClose: () => void;
+  advancedFilters: ReturnType<typeof getInitialFilters>;
+  onApply: (filters: ReturnType<typeof getInitialFilters>) => void;
+  onClear: () => void;
+  language: string;
+  t: (key: string) => string;
+}
+
+const AdvanceFilter = React.memo<AdvanceFilterProps>(({
+  isOpen,
+  onClose,
+  advancedFilters,
+  onApply,
+  onClear,
+  language,
+  t
+}) => {
+  const [localFilters, setLocalFilters] = useState(advancedFilters);
+
+  const caseTypeSupTypeData = useMemo(() =>
+    JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[],
+    []
+  );
+
+  const areaList = useMemo(() =>
+    JSON.parse(localStorage.getItem("area") ?? "[]") as Area[],
+    []
+  );
+
+  const uniqueCategories = useMemo(() =>
+    statusColumns.map(col => language === "th" ? col.title.th : col.title.en),
+    [language]
+  );
+
+  useEffect(() => {
+    setLocalFilters(advancedFilters);
+  }, [advancedFilters]);
+
+  const handleApply = useCallback(() => {
+    onApply(localFilters);
+  }, [localFilters, onApply]);
+
+  const handleCaseTypeChange = useCallback((label: string) => {
+    const selectedCaseTypes = caseTypeSupTypeData.find(
+      item => mergeCaseTypeAndSubType(item, language) === label
+    );
+
+    setLocalFilters((prev) => ({
+      ...prev,
+      caseSubtype: selectedCaseTypes?.sTypeId || "",
+      caseType: selectedCaseTypes?.typeId || ""
+    }));
+  }, [caseTypeSupTypeData, language]);
+
+  const handleAreaChange = useCallback((label: string) => {
+    const selected = areaList.find(item => mergeArea(item, language) === label);
+    if (!selected) {
+      return setLocalFilters((prev) => ({
+        ...prev,
+        area: {} as Area
+      }));
+    }
+    setLocalFilters((prev) => ({
+      ...prev,
+      area: selected
+    }));
+  }, [areaList, language]);
+
+  const caseTypeOptions = useMemo(() => {
+    if (!caseTypeSupTypeData?.length) return [];
+    return caseTypeSupTypeData.map(item =>
+      mergeCaseTypeAndSubType(item, language)
+    );
+  }, [caseTypeSupTypeData, language]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-xl p-6">
+      <div>
+        <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">
+          {t("case.display.advance_filtering.title")}
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.types")}
+            </label>
+            <SearchableSelect
+              options={caseTypeOptions}
+              value={
+                (() => {
+                  const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
+                  return found ? mergeCaseTypeAndSubType(found, language) : "";
+                })()
+              }
+              onChange={handleCaseTypeChange}
+              className="w-full border-gray-200 bg-transparent text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.advance_filtering.search_case_type_place_holder")}
+            />
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.advance_filtering.search_detail")}
+            </label>
+            <input
+              id="description-search"
+              type="text"
+              value={localFilters.descriptionSearch}
+              onChange={(e) => setLocalFilters({ ...localFilters, descriptionSearch: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.advance_filtering.search_detail_placeholder")}
+            />
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.service_center")}
+            </label>
+            <SearchableSelect
+              options={areaList.map(item => mergeArea(item, language))}
+              value={localFilters?.area ? mergeArea(localFilters.area, language) : ""}
+              onChange={handleAreaChange}
+              className="w-full border-gray-200 bg-transparent text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.service_center")}
+            />
+          </div>
+          <div className="grid grid-cols-2">
+            <div className="mr-2">
+              <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t("case.display.advance_filtering.start_date_title")}
+              </label>
+              <input
+                id="start-date-search"
+                type="datetime-local"
+                value={localFilters.startDate}
+                onChange={(e) => setLocalFilters({ ...localFilters, startDate: e.target.value })}
+                className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t("case.display.advance_filtering.end_date_title")}
+              </label>
+              <input
+                id="end-date-search"
+                type="datetime-local"
+                value={localFilters.endDate}
+                onChange={(e) => setLocalFilters({ ...localFilters, endDate: e.target.value })}
+                className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.advance_filtering.status_title")}
+            </label>
+            <select
+              id="category-filter"
+              value={localFilters.category}
+              onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+            >
+              <option value="">{t("case.display.advance_filtering.status_placeholder_all")}</option>
+              {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.advance_filtering.create_by_tilte")}
+            </label>
+            <SearchableSelectApi<UserProfile>
+              id="createBy"
+              value={localFilters.createBy}
+              onChange={(e) => setLocalFilters({ ...localFilters, createBy: e })}
+              placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
+              apiQuery={useGetUsersQuery}
+              labelKey="username"
+              valueKey="username"
+              className="w-full border-gray-200 bg-transparent text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+            />
+          </div>
+          <div>
+            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("case.display.advance_filtering.phone")}
+            </label>
+            <input
+              id="phoneNo"
+              type="text"
+              value={localFilters.phoneNumber}
+              onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+              placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
+          <Button variant="outline" onClick={onClear}>
+            {t("case.assignment.clear")}
+          </Button>
+          <Button onClick={handleApply}>
+            {t("case.assignment.apply_filter")}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+});
+
+AdvanceFilter.displayName = 'AdvanceFilter';
 
 const getInitialFilters = () => {
   const savedFilters = localStorage.getItem("WorkOrderFilter");
@@ -103,7 +314,7 @@ export default function CasesView() {
   const [caseData, setCaseData] = useState<CaseEntity[]>([]);
   const { t, language } = useTranslation();
   const [advancedFilters, setAdvancedFilters] = useState(getInitialFilters())
-  const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
+  // const uniqueCategories = statusColumns.map(col => language === "th" ? col.title.th : col.title.en);
   // const [loadingCase, setLoadingCase] = useState<boolean>(false)
   const [visibleListCount, setVisibleListCount] = useState(20);
   const listLoadMoreRef = useRef(null);
@@ -274,176 +485,176 @@ export default function CasesView() {
 
 
 
-  const AdvanceFilter: React.FC = () => {
-    const [localFilters, setLocalFilters] = useState(advancedFilters);
-    const handleApply = async () => {
-      setAdvancedFilters(localFilters);
-      // localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
-      //setLoadingCase(true)
-      handleAdvanceFilterClose();
-      await fetchCase({
-        caseType: localFilters.caseType ?? undefined,
-        caseSType: localFilters.caseSubtype ?? undefined,
-        detail: localFilters.descriptionSearch,
-        start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
-        end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
-        createBy: localFilters.createBy ?? undefined,
-        provId: localFilters.area.provId,
-        distId: localFilters.area.distId,
-        countryId: localFilters.area.countryId,
-        phoneNo: localFilters.phoneNumber
-      });
-      //setLoadingCase(false)
-      if (localFilters.category !== "") {
-        setSelectedStatus(localFilters.category);
-      } else {
-        setSelectedStatus(null);
-      }
-      const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
-      setCaseData(updatedCases);
-    };
+  // const AdvanceFilter: React.FC = () => {
+  //   const [localFilters, setLocalFilters] = useState(advancedFilters);
+  //   const handleApply = async () => {
+  //     setAdvancedFilters(localFilters);
+  //     // localStorage.setItem("WorkOrderFilter", JSON.stringify(localFilters))
+  //     //setLoadingCase(true)
+  //     handleAdvanceFilterClose();
+  //     await fetchCase({
+  //       caseType: localFilters.caseType ?? undefined,
+  //       caseSType: localFilters.caseSubtype ?? undefined,
+  //       detail: localFilters.descriptionSearch,
+  //       start_date: localFilters.startDate ? new Date(localFilters.startDate + ':00.000Z').toISOString() : undefined,
+  //       end_date: localFilters.endDate ? new Date(localFilters.endDate + ':00.000Z').toISOString() : undefined,
+  //       createBy: localFilters.createBy ?? undefined,
+  //       provId: localFilters.area.provId,
+  //       distId: localFilters.area.distId,
+  //       countryId: localFilters.area.countryId,
+  //       phoneNo: localFilters.phoneNumber
+  //     });
+  //     //setLoadingCase(false)
+  //     if (localFilters.category !== "") {
+  //       setSelectedStatus(localFilters.category);
+  //     } else {
+  //       setSelectedStatus(null);
+  //     }
+  //     const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[]).filter(c => allowedStatusIds.includes(c.statusId));
+  //     setCaseData(updatedCases);
+  //   };
 
-    const handleCaseTypeChange = (label: string) => {
-      const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item, language) === label);
+  //   const handleCaseTypeChange = (label: string) => {
+  //     const selectedCaseTypes = caseTypeSupTypeData.find(item => mergeCaseTypeAndSubType(item, language) === label);
 
-      setLocalFilters((prev: any) => ({
-        ...prev,
-        caseSubtype: selectedCaseTypes?.sTypeId || "",
-        caseType: selectedCaseTypes?.typeId || ""
-      }));
+  //     setLocalFilters((prev: any) => ({
+  //       ...prev,
+  //       caseSubtype: selectedCaseTypes?.sTypeId || "",
+  //       caseType: selectedCaseTypes?.typeId || ""
+  //     }));
 
-    };
+  //   };
 
-    const handleAreaChange = (label: string) => {
-      const selected = areaList.find(item => mergeArea(item, language) === label);
-      if (!selected)
-        return setLocalFilters((prev: any) => ({
-          ...prev,
-          area: {} as Area
-        }));
-      setLocalFilters((prev: any) => ({
-        ...prev,
-        area: selected
-      }));
-    };
+  //   const handleAreaChange = (label: string) => {
+  //     const selected = areaList.find(item => mergeArea(item, language) === label);
+  //     if (!selected)
+  //       return setLocalFilters((prev: any) => ({
+  //         ...prev,
+  //         area: {} as Area
+  //       }));
+  //     setLocalFilters((prev: any) => ({
+  //       ...prev,
+  //       area: selected
+  //     }));
+  //   };
 
-    const caseTypeOptions = useMemo(() => {
-      if (!caseTypeSupTypeData?.length) return [];
-      return caseTypeSupTypeData.map(item =>
-        mergeCaseTypeAndSubType(item, language)
-      );
-    }, [caseTypeSupTypeData]);
+  //   const caseTypeOptions = useMemo(() => {
+  //     if (!caseTypeSupTypeData?.length) return [];
+  //     return caseTypeSupTypeData.map(item =>
+  //       mergeCaseTypeAndSubType(item, language)
+  //     );
+  //   }, [caseTypeSupTypeData]);
 
-    const areaList = useMemo(() =>
-      JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
-    );
+  //   const areaList = useMemo(() =>
+  //     JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
+  //   );
 
-    return (<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
-      <div>
-        <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">{t("case.display.advance_filtering.title")}</h3>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.types")}</label>
-            <SearchableSelect
-              options={caseTypeOptions}
-              value={
-                (() => {
-                  const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
-                  return found ? mergeCaseTypeAndSubType(found, language) : "";
-                })()
-              }
-              onChange={(e) => handleCaseTypeChange(e)}
-              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder={t("case.display.advance_filtering.search_case_type_place_holder")}
-            />
-          </div>
-          <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.search_detail")}</label>
-            <input
-              id="description-search"
-              type="texts"
-              value={localFilters.descriptionSearch}
-              onChange={(e) => setLocalFilters({ ...localFilters, descriptionSearch: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder={t("case.display.advance_filtering.search_detail_placeholder")}
-            />
-          </div>
-          <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.service_center")}</label>
-            <SearchableSelect
-              options={areaList.map(item => mergeArea(item, language))}
-              value={localFilters?.area ? mergeArea(localFilters.area, language) : ""}
-              onChange={(e) => handleAreaChange(e)}
-              className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder={t("case.display.service_center")}
-            />
-          </div>
-          <div className="grid grid-cols-2">
-            <div className="mr-2">
-              <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.start_date_title")}</label>
-              <input
-                id="start-date-search"
-                type="datetime-local"
-                value={localFilters.startDate}
-                onChange={(e) => setLocalFilters({ ...localFilters, startDate: e.target.value })}
-                className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              />
-            </div>
-            <div>
-              <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.end_date_title")}</label>
-              <input
-                id="end-date-search"
-                type="datetime-local"
-                value={localFilters.endDate}
-                onChange={(e) => setLocalFilters({ ...localFilters, endDate: e.target.value })}
-                className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.status_title")}</label>
-            <select
-              id="category-filter"
-              value={localFilters.category}
-              onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-            >
-              <option value="">{t("case.display.advance_filtering.status_placeholder_all")}</option>
-              {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.create_by_tilte")}</label>
-            <SearchableSelectApi<UserProfile>
-              id="createBy"
-              value={localFilters.createBy}
-              onChange={(e) => setLocalFilters({ ...localFilters, createBy: e })}
-              placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
-              apiQuery={useGetUsersQuery}
-              labelKey="username"
-              valueKey="username"
-              className="w-full border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-            />
-          </div>
-          <div>
-            <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.phone")}</label>
-            <input
-              id="phoneNo"
-              type="texts"
-              value={localFilters.phoneNumber}
-              onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
-              placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
-            />
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end space-x-3">
-          <Button variant="outline" onClick={() => { handleClear(true) }}>{t("case.assignment.clear")}</Button>
-          <Button onClick={handleApply}>{t("case.assignment.apply_filter")}</Button>
-        </div>
-      </div>
-    </Modal>)
-  }
+  //   return (<Modal isOpen={showAdvanceFilter} onClose={handleAdvanceFilterClose} className="max-w-xl p-6">
+  //     <div>
+  //       <h3 className="font-medium dark:text-gray-50 text-xl leading-tight pr-2 text-gray-700 mb-4">{t("case.display.advance_filtering.title")}</h3>
+  //       <div className="space-y-4">
+  //         <div>
+  //           <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.types")}</label>
+  //           <SearchableSelect
+  //             options={caseTypeOptions}
+  //             value={
+  //               (() => {
+  //                 const found = caseTypeSupTypeData.find(item => item.typeId === localFilters.caseType || item.sTypeId === localFilters.caseSubtype);
+  //                 return found ? mergeCaseTypeAndSubType(found, language) : "";
+  //               })()
+  //             }
+  //             onChange={(e) => handleCaseTypeChange(e)}
+  //             className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             placeholder={t("case.display.advance_filtering.search_case_type_place_holder")}
+  //           />
+  //         </div>
+  //         <div>
+  //           <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.search_detail")}</label>
+  //           <input
+  //             id="description-search"
+  //             type="texts"
+  //             value={localFilters.descriptionSearch}
+  //             onChange={(e) => setLocalFilters({ ...localFilters, descriptionSearch: e.target.value })}
+  //             className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             placeholder={t("case.display.advance_filtering.search_detail_placeholder")}
+  //           />
+  //         </div>
+  //         <div>
+  //           <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.service_center")}</label>
+  //           <SearchableSelect
+  //             options={areaList.map(item => mergeArea(item, language))}
+  //             value={localFilters?.area ? mergeArea(localFilters.area, language) : ""}
+  //             onChange={(e) => handleAreaChange(e)}
+  //             className="w-full  border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             placeholder={t("case.display.service_center")}
+  //           />
+  //         </div>
+  //         <div className="grid grid-cols-2">
+  //           <div className="mr-2">
+  //             <label htmlFor="start-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.start_date_title")}</label>
+  //             <input
+  //               id="start-date-search"
+  //               type="datetime-local"
+  //               value={localFilters.startDate}
+  //               onChange={(e) => setLocalFilters({ ...localFilters, startDate: e.target.value })}
+  //               className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             />
+  //           </div>
+  //           <div>
+  //             <label htmlFor="end-date-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.end_date_title")}</label>
+  //             <input
+  //               id="end-date-search"
+  //               type="datetime-local"
+  //               value={localFilters.endDate}
+  //               onChange={(e) => setLocalFilters({ ...localFilters, endDate: e.target.value })}
+  //               className="dark:[&::-webkit-calendar-picker-indicator]:invert w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             />
+  //           </div>
+  //         </div>
+  //         <div>
+  //           <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.status_title")}</label>
+  //           <select
+  //             id="category-filter"
+  //             value={localFilters.category}
+  //             onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
+  //             className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //           >
+  //             <option value="">{t("case.display.advance_filtering.status_placeholder_all")}</option>
+  //             {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
+  //           </select>
+  //         </div>
+  //         <div>
+  //           <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.create_by_tilte")}</label>
+  //           <SearchableSelectApi<UserProfile>
+  //             id="createBy"
+  //             value={localFilters.createBy}
+  //             onChange={(e) => setLocalFilters({ ...localFilters, createBy: e })}
+  //             placeholder={t("case.display.advance_filtering.create_by_tilte_placeholder")}
+  //             apiQuery={useGetUsersQuery}
+  //             labelKey="username"
+  //             valueKey="username"
+  //             className="w-full border-gray-200 bg-transparent   text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //           />
+  //         </div>
+  //         <div>
+  //           <label htmlFor="description-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("case.display.advance_filtering.phone")}</label>
+  //           <input
+  //             id="phoneNo"
+  //             type="texts"
+  //             value={localFilters.phoneNumber}
+  //             onChange={(e) => setLocalFilters({ ...localFilters, phoneNumber: e.target.value })}
+  //             className="w-full rounded-lg border border-gray-200 bg-transparent py-2 px-3 text-sm text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+  //             placeholder={t("case.display.advance_filtering.phone_number_placeholder")}
+  //           />
+  //         </div>
+  //       </div>
+  //       <div className="mt-6 flex justify-end space-x-3">
+  //         <Button variant="outline" onClick={() => { handleClear(true) }}>{t("case.assignment.clear")}</Button>
+  //         <Button onClick={handleApply}>{t("case.assignment.apply_filter")}</Button>
+  //       </div>
+  //     </div>
+  //   </Modal>)
+  // }
 
   const CaseCard = ({ caseItem }: { caseItem: CaseEntity }) => (
     <div className="space-y-2">
@@ -830,7 +1041,7 @@ export default function CasesView() {
     return () => {
       observer.unobserve(currentRef);
     };
-  }, [viewMode, listLoadMoreRef, visibleListCount ,isCaseLoading]);
+  }, [viewMode, listLoadMoreRef, visibleListCount, isCaseLoading]);
 
   const hasActiveFilters = () => {
     return Object.entries(advancedFilters).some(([key, value]) => {
@@ -841,134 +1052,174 @@ export default function CasesView() {
     });
   };
 
+  const handleAdvanceFilterApply = useCallback(async (filters: ReturnType<typeof getInitialFilters>) => {
+    setAdvancedFilters(filters);
+    handleAdvanceFilterClose();
+
+    await fetchCase({
+      caseType: filters.caseType ?? undefined,
+      caseSType: filters.caseSubtype ?? undefined,
+      detail: filters.descriptionSearch,
+      start_date: filters.startDate ? new Date(filters.startDate + ':00.000Z').toISOString() : undefined,
+      end_date: filters.endDate ? new Date(filters.endDate + ':00.000Z').toISOString() : undefined,
+      createBy: filters.createBy ?? undefined,
+      provId: filters.area.provId,
+      distId: filters.area.distId,
+      countryId: filters.area.countryId,
+      phoneNo: filters.phoneNumber
+    });
+
+    if (filters.category !== "") {
+      setSelectedStatus(filters.category);
+    } else {
+      setSelectedStatus(null);
+    }
+
+    const updatedCases = (JSON.parse(JSON.stringify(await idbStorage.getItem("caseList") ?? "[]")) as CaseEntity[])
+      .filter(c => allowedStatusIds.includes(c.statusId));
+    setCaseData(updatedCases);
+  }, [allowedStatusIds]);
+
+  const handleClearFilters = useCallback(async () => {
+    await handleClear(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageMeta title="Cases – TailAdmin Dashboard" description="Manage your support cases" />
       <PageBreadcrumb pageTitle={t("case.assignment.pageheader")} />
       <ProtectedRoute requiredPermissions={["case.assign"]}>
-      <div className="relative px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-y-4 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-              <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode("kanban")}
-                  className={`flex-1 sm:flex-none ${viewMode === "kanban"
-                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                    }`}
-                >
-                  <LayoutGrid className="w-4 h-4 mr-2" />
-                  {t("case.assignment.kanban")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className={`flex-1 sm:flex-none ${viewMode === "list"
-                    ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                    }`}
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  {t("case.assignment.list")}
-                </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <input
-                  type="text"
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
-                  placeholder={t("case.assignment.search_placeholder")}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => { setShowAdvanceFilter(true) }}
-                  className="w-full sm:w-auto whitespace-nowrap"
-                  disabled={isCaseLoading}
-                  size="sm"
-                >
-                  <Filter className="w-4 h-4 mr-2 sm:mr-1" />
-                  <span className="sm:hidden">{t("case.assignment.advance_filter")}</span>
-                  <span className="hidden sm:inline">{t("case.assignment.advance_filter")}</span>
-                </Button>
-                {hasActiveFilters() && (
+        <div className="relative px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-y-4 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+                <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-1 w-full sm:w-auto">
                   <Button
-                    variant="primary"
-                    onClick={() => { handleClear(true) }}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("kanban")}
+                    className={`flex-1 sm:flex-none ${viewMode === "kanban"
+                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      }`}
+                  >
+                    <LayoutGrid className="w-4 h-4 mr-2" />
+                    {t("case.assignment.kanban")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className={`flex-1 sm:flex-none ${viewMode === "list"
+                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      }`}
+                  >
+                    <List className="w-4 h-4 mr-2" />
+                    {t("case.assignment.list")}
+                  </Button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <input
+                    type="text"
+                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-3 pr-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 sm:w-[300px] lg:w-[430px]"
+                    placeholder={t("case.assignment.search_placeholder")}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => { setShowAdvanceFilter(true) }}
                     className="w-full sm:w-auto whitespace-nowrap"
+                    disabled={isCaseLoading}
                     size="sm"
                   >
-                    <span>{t("case.assignment.clear")}</span>
+                    <Filter className="w-4 h-4 mr-2 sm:mr-1" />
+                    <span className="sm:hidden">{t("case.assignment.advance_filter")}</span>
+                    <span className="hidden sm:inline">{t("case.assignment.advance_filter")}</span>
                   </Button>
-                )}
+                  {hasActiveFilters() && (
+                    <Button
+                      variant="primary"
+                      onClick={() => { handleClear(true) }}
+                      className="w-full sm:w-auto whitespace-nowrap"
+                      size="sm"
+                    >
+                      <span>{t("case.assignment.clear")}</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="flex">
+                <Button
+                  className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+                  onClick={handleRefreshCase}
+                  size="sm"
+                  disabled={isRefreshing || isCaseLoading}
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                </Button>
+                <Button
+                  className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
+                  onClick={() => navigate("/case/creation")}
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t("case.assignment.add_new_case")}
+                </Button>
               </div>
             </div>
-            <div className="flex">
-              <Button
-                className="flex mr-3 items-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-                onClick={handleRefreshCase}
-                size="sm"
-                disabled={isRefreshing || isCaseLoading}
-              >
-                <RefreshCcw className="w-4 h-4" />
-              </Button>
-              <Button
-                className="flex items-center justify-center hover:bg-blue-700 text-white bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
-                onClick={() => navigate("/case/creation")}
-                size="sm"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t("case.assignment.add_new_case")}
-              </Button>
+
+            <div className="w-full overflow-x-auto custom-scrollbar">
+              <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
+                <div
+                  className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === null
+                    ? 'font-semibold text-blue-600 dark:text-blue-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  onClick={() => setSelectedStatus(null)}
+                >
+                  <span className="text-sm">{t("case.status_allcase")}</span>
+                  <Badge color="primary">
+                    {getFilteredCases().length}
+                  </Badge>
+                </div>
+                {statusColumns.map((col) => {
+                  const localizedTitle = language === "th" ? col.title.th : col.title.en;
+                  return (
+                    <div
+                      key={localizedTitle}
+                      className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === localizedTitle
+                        ? 'font-semibold text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                        }`}
+                      onClick={() => setSelectedStatus(localizedTitle)}
+                    >
+                      <span className="text-sm">{localizedTitle}</span>
+                      <Badge color="primary">{getCasesForColumn(localizedTitle).length}</Badge>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto custom-scrollbar">
-            <div className="flex items-center space-x-3 sm:space-x-6 min-w-max pb-2">
-              <div
-                className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === null
-                  ? 'font-semibold text-blue-600 dark:text-blue-400'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                onClick={() => setSelectedStatus(null)}
-              >
-                <span className="text-sm">{t("case.status_allcase")}</span>
-                <Badge color="primary">
-                  {getFilteredCases().length}
-                </Badge>
-              </div>
-              {statusColumns.map((col) => {
-                const localizedTitle = language === "th" ? col.title.th : col.title.en;
-                return (
-                  <div
-                    key={localizedTitle}
-                    className={`flex items-center space-x-2 cursor-pointer whitespace-nowrap ${selectedStatus === localizedTitle
-                      ? 'font-semibold text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                      }`}
-                    onClick={() => setSelectedStatus(localizedTitle)}
-                  >
-                    <span className="text-sm">{localizedTitle}</span>
-                    <Badge color="primary">{getCasesForColumn(localizedTitle).length}</Badge>
-                  </div>
-                )
-              })}
-            </div>
+          <div className="relative w-full h-full">
+            {viewMode === "kanban" ? <KanbanView /> : <ListView />}
           </div>
         </div>
-
-        <div className="relative w-full h-full">
-          {viewMode === "kanban" ? <KanbanView /> : <ListView />}
-        </div>
-      </div>
       </ProtectedRoute>
       {/* {loadingCase && <Loading />} */}
-      {showAdvanceFilter && <AdvanceFilter />}
+      <AdvanceFilter
+        isOpen={showAdvanceFilter}
+        onClose={handleAdvanceFilterClose}
+        advancedFilters={advancedFilters}
+        onApply={handleAdvanceFilterApply}
+        onClear={handleClearFilters}
+        language={language}
+        t={t}
+      />
     </div >
   );
 }

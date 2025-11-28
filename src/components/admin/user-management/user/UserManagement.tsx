@@ -18,10 +18,11 @@ import { isValidImageUrl } from "@/utils/resourceValidators";
 // import { isEnglish } from "@/utils/stringFormatters";
 // import type { CrudConfig } from "@/types/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
+import type { Command, Department, Station } from "@/types/organization";
 import type { Role } from "@/types/role";
 import type {
   // Address,
-  Department,
+  // Department,
   // Meta,
   UserMetrics,
   UserProfile
@@ -37,8 +38,10 @@ import UserOrganizationCard from "@/components/UserProfile/UserOrganizationCard"
 const UserManagementComponent: React.FC<{
   usr: UserProfile[];
   dept: Department[];
+  cmd: Command[];
+  stn: Station[];
   role: Role[];
-}> = ({ usr, dept, role }) => {
+}> = ({ usr, dept, cmd, stn, role }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -313,7 +316,13 @@ const UserManagementComponent: React.FC<{
             <div className="space-y-6">
               <UserMetaCard userData={userItem as UserProfile} />
               <UserInfoCard userData={userItem as UserProfile} />
-              <UserOrganizationCard userData={userItem as UserProfile} />
+              <UserOrganizationCard
+                userData={userItem as UserProfile}
+                departmentsData={dept.map(d => ({ id: d.deptId, name: language === "th" && d.th || d.en }))}
+                commandsData={cmd.map(c => ({ id: c.commId, name: language === "th" && c.th || c.en }))}
+                stationsData={stn.map(s => ({ id: s.stnId, name: language === "th" && s.th || s.en }))}
+                rolesData={role.map(r => ({ id: r.id, name: r.roleName }))}
+              />
             </div>
           )
         }
@@ -389,7 +398,7 @@ const UserManagementComponent: React.FC<{
       key: "deptId",
       label: t("crud.user.list.toolbar.advanced_filter.deptId.label"),
       type: "select" as const,
-      options: dept.map(department => ({ value: department.deptId, label: department.th || department.en })),
+      options: dept.map(department => ({ value: department.deptId, label: language === "th" && department.th || department.en })),
       placeholder: t("crud.user.list.toolbar.advanced_filter.deptId.placeholder"),
     },
     // {

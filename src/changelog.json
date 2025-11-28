@@ -1,4 +1,16 @@
 {
+  "0.4.4": {
+    "date": "2025-11-28",
+    "segment": "PATCH",
+    "notes": "fix: defect, work order history:\n- DF_03,DF_05,DF_33,DF_34,DF_36,DF_37.\n- Remove role of currently logged in user from filter of loading/searching work orders.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.3": {
+    "date": "2025-11-28",
+    "segment": "PATCH",
+    "notes": "fix: case assignment rerender in advance filter.",
+    "author": "Phanuphong Manopkawee"
+  },
   "0.4.2": {
     "date": "2025-11-27",
     "segment": "PATCH",

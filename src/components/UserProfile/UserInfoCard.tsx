@@ -23,9 +23,9 @@ const formatDate = (dateString: string | undefined, t: (key: string) => string):
 const formatGender = (gender: number | undefined, t: (key: string) => string): string => {
   if (gender === undefined || gender === null) return t("userform.na");
   switch (gender) {
-    case 0: return t("userform.genderMale");
-    case 1: return t("userform.genderFemale");
-    case 2: return t("userform.genderOther");
+    case 1: return t("userform.genderMale");
+    case 2: return t("userform.genderFemale");
+    case 9: return t("userform.genderOther");
     default: return t("userform.na");
   }
 };
@@ -149,7 +149,8 @@ export default function UserInfoCard({ userData: propUserData, loading: propLoad
                   {t("userform.gender")}
                 </p>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {formatGender(typeof userData.gender === "number" ? userData.gender : undefined, t)}
+                  {/* {formatGender(typeof userData.gender === "number" ? userData.gender : undefined, t)} */}
+                  {formatGender(typeof userData.gender === "number" ? userData.gender : (userData.gender ? parseInt(userData.gender, 10) : undefined), t)}
                 </p>
               </div>
 
