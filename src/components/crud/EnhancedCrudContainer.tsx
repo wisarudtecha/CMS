@@ -1,7 +1,7 @@
 // /src/components/crud/EnhancedCrudContainer.tsx
 import React, { useState, useCallback, useMemo } from "react";
 import { InfoIcon } from "@/icons";
-// import { PermissionGate } from "@/components/auth/PermissionGate";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { AdvancedFilterPanel } from "@/components/crud/AdvancedFilterPanel";
 // import { BulkActionBar } from "@/components/crud/BulkActionBar";
 import { ClickableCard } from "@/components/crud/ClickableCard";
@@ -540,10 +540,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
             {/* Create Button */}
             {onCreate && (
-              <Button onClick={onCreate} variant="primary" className="h-11">
-                {/* Create {config.entityName} */}
-                {createEntity}
-              </Button>
+              <PermissionGate key="create" module={module} action="create">
+                <Button onClick={onCreate} variant="primary" className="h-11">
+                  {/* Create {config.entityName} */}
+                  {createEntity}
+                </Button>
+              </PermissionGate>
             )}
           </div>
         </div>
@@ -622,6 +624,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                   isAllSelected={isAllSelected}
                   toggleSelectAll={toggleSelectAll}
                   bulkSelectionEnabled={enabledFeatures.bulkActions}
+                  module={module}
                 />
               </div>
             </div>
@@ -711,6 +714,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
               onPrev={prevItem}
               canGoNext={canGoNext}
               canGoPrev={canGoPrev}
+              module={module}
             />
           </>
         )}

@@ -13,7 +13,9 @@ interface InputProps {
   min?: string;
   max?: string;
   minlength?: number;
+  minLength?: number;
   maxlength?: number;
+  maxLength?: number;
   step?: number;
   disabled?: boolean;
   success?: boolean;
@@ -28,6 +30,9 @@ interface InputProps {
   required?: boolean;
   readOnly?: boolean;
   lang?:string
+  pattern?: string;
+  autoComplete?: string;
+  onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
 }
 
 const Input: FC<InputProps> = ({
@@ -56,7 +61,12 @@ const Input: FC<InputProps> = ({
   readOnly= false,
   lang,
   minlength,
-  maxlength
+  minLength,
+  maxlength,
+  maxLength,
+  pattern,
+  autoComplete,
+  onPaste
 }) => {
   let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${className}`;
 
@@ -94,9 +104,11 @@ const Input: FC<InputProps> = ({
         required={required}
         readOnly={readOnly}
         lang={lang}
-        minLength={minlength}
-        maxLength={maxlength}
-        
+        minLength={minlength || minLength}
+        maxLength={maxlength || maxLength}
+        pattern={pattern}
+        autoComplete={autoComplete}
+        onPaste={onPaste}
       />
 
       {hint && (

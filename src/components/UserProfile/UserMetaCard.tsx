@@ -119,20 +119,25 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
     >
       <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-          <div
-            className="w-20 h-20 overflow-hidden border border-gray-100 rounded-full dark:border-gray-800 cursor-default"
-            // className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800"
-          >
-            <img 
-              src={userData.photo || "/images/notification/user.jpg"} 
-              alt={t("userform.profilePhoto")} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/images/notification/user.jpg";
-              }}
-            />
-          </div>
+          {userData?.photo ? (
+            <div className="w-20 h-20 overflow-hidden border border-gray-100 rounded-full dark:border-gray-800 cursor-default">
+              <img 
+                src={userData.photo || "/images/notification/user.jpg"} 
+                alt={t("userform.profilePhoto")} 
+                // className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/notification/user.jpg";
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-2xl">
+              <span className="w-20 text-center uppercase">
+                {userData.firstName[0]}{userData.lastName[0]}
+              </span>
+            </div>
+          )}
           <div className="order-3 xl:order-2 cursor-default">
             <h4
               className="mb-2 text-lg font-semibold text-center text-gray-900 dark:text-white xl:text-left"
@@ -141,7 +146,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
               {userData.displayName || `${userData.firstName} ${userData.middleName} ${userData.lastName}`.trim()}
             </h4>
             {(userData.email || userData?.address) && (
-              <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
+              <div className="flex flex-col items-center xl:items-start gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 {userData?.email && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {userData.email}

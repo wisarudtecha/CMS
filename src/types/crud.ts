@@ -68,6 +68,7 @@ export interface TableViewProps<T> {
   columns: TableColumn<T>[];
   data: T[];
   isAllSelected: boolean;
+  module?: string;
   selectedItems: T[];
   sortConfig: { key: string | keyof T; direction: "asc" | "desc" };
   onClickItem: (item: T) => void;

@@ -1,27 +1,31 @@
 // /src/components/crud/ClickableTableRow.tsx
 import React from "react";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { TableCell } from "@/components/ui/table";
 import Button from "@/components/ui/button/Button";
 import type { TableColumn, CrudAction } from "@/types/crud";
 
 interface ClickableTableRowProps<T> {
-  item: T;
-  columns: TableColumn<T>[];
   actions?: CrudAction<T>[];
-  onClick: (item: T) => void;
-  selectedItems: T[];
-  onSelectItem: (item: T) => void;
   bulkSelectionEnabled?: boolean;
+  columns: TableColumn<T>[];
+  item: T;
+  module?: string;
+  selectedItems: T[];
+  onClick: (item: T) => void;
+  onSelectItem: (item: T) => void;
 }
 
 export const ClickableTableRow = <T extends { id: string }>({
-  item,
-  columns,
   actions,
-  onClick,
+  bulkSelectionEnabled = false,
+  columns,
+  item,
+  module,
   selectedItems,
+  onClick,
   onSelectItem,
-  bulkSelectionEnabled = false
+  
 }: ClickableTableRowProps<T>) => {
   // const isSelected = selectedItems.some(selected => selected.id === item.id);
   const isSelected = (item: T) => selectedItems.some(selected => selected.id === item.id);
@@ -88,17 +92,19 @@ export const ClickableTableRow = <T extends { id: string }>({
               .map((action) => {
                 const Icon = action.icon;
                 return (
-                  <Button
-                    key={action.key}
-                    onClick={() => action.onClick(item)}
-                    variant={action.variant}
-                    size="xs"
-                    title={action.label}
-                    className="action-button"
-                  >
-                    {Icon && <Icon />}
-                    {action.label}
-                  </Button>
+                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                    <Button
+                      key={action.key}
+                      onClick={() => action.onClick(item)}
+                      variant={action.variant}
+                      size="xs"
+                      title={action.label}
+                      className="action-button"
+                    >
+                      {Icon && <Icon />}
+                      {action.label}
+                    </Button>
+                  </PermissionGate>
                 );
               })}
           </div>

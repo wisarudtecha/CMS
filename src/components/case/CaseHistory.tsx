@@ -60,6 +60,7 @@ import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerA
 import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import FormViewer from "@/components/form/dynamic-form/FormViewValue";
+import distIdCommaSeparate from "@/components/profile/profileDistId";
 import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
@@ -166,7 +167,7 @@ const CaseHistoryComponent: React.FC<{
     caseId: "",
     countryId: "",
     provId: "",
-    distId: "",
+    distId: distIdCommaSeparate() || "",
     category: "",
     createBy: "",
     orderBy: "",
@@ -250,7 +251,7 @@ const CaseHistoryComponent: React.FC<{
       caseId: "",
       countryId: "",
       provId: "",
-      distId: "",
+      distId: distIdCommaSeparate() || "",
       category: "",
       createBy: "",
       orderBy: "",

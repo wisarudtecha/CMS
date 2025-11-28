@@ -1,4 +1,28 @@
 {
+  "0.4.2": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "fix: user management + role and permission:\n- Fix defect DF_06-07.\n- Enhance permission gate to protect user not have permission to access CRUD components.\n- Enhance user management page UI same as other crud page.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.1": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "add video view && fixed loading case bug in case assignment in list view",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.3.5": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "fix: work order history:\n- Add responsibility area and role of currently logged in user  to filter of loading/searching work orders.",
+    "author": "Wisarud Techa"
+  },
+  "0.3.4": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fix bug loading case in case assingment in list view",
+    "author": "Phanuphong Manopkawee"
+  },
   "0.3.3": {
     "date": "2025-11-26",
     "segment": "PATCH",

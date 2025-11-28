@@ -16,6 +16,7 @@ interface SelectProps {
   value?: string;
   disabled?: boolean;
   multiple?: boolean;
+  required?: boolean;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -26,7 +27,8 @@ const Select: React.FC<SelectProps> = ({
   // defaultValue = "",
   value = "",
   disabled = false,
-  multiple = false
+  multiple = false,
+  required = false
 }) => {
   // Manage the selected value
   // const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
@@ -71,6 +73,7 @@ const Select: React.FC<SelectProps> = ({
       // defaultValue={defaultValue}
       disabled={disabled}
       multiple={multiple}
+      required={required}
     >
       {/* Placeholder option */}
       <option

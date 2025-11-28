@@ -262,7 +262,7 @@ const UserManagementComponent: React.FC<{
         label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (userItem: UserProfile) => navigate(`/user/edit/${userItem.id}`),
+        onClick: (userItem: UserProfile) => navigate(`/user/${userItem.id}/edit`),
         condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
       },
       {
@@ -355,7 +355,7 @@ const UserManagementComponent: React.FC<{
         variant: "warning",
         onClick: (userItem: UserProfile, closePreview: () => void) => {
           closePreview();
-          navigate(`/user/edit/${userItem.id}`);
+          navigate(`/user/${userItem.id}/edit`);
         },
         condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
       },

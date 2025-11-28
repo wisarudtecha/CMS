@@ -781,7 +781,7 @@ export default function CasesView() {
 
         {visibleListCount < allFilteredCases.length && (
           <div ref={listLoadMoreRef} className="h-20 w-full flex items-center justify-center">
-            <span className="text-gray-500 dark:text-gray-400">Loading more...</span>
+            <span className="text-gray-500 dark:text-gray-400">{t("common.loading")}...</span>
           </div>
         )}
 
@@ -830,7 +830,7 @@ export default function CasesView() {
     return () => {
       observer.unobserve(currentRef);
     };
-  }, [viewMode, listLoadMoreRef, visibleListCount]);
+  }, [viewMode, listLoadMoreRef, visibleListCount ,isCaseLoading]);
 
   const hasActiveFilters = () => {
     return Object.entries(advancedFilters).some(([key, value]) => {

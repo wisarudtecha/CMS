@@ -14,18 +14,25 @@ interface FilePreviewCardProps {
     formatFileSize: (bytes: number) => string
     disabled?: boolean
     type?: string
-    className?:string
+    className?: string
 }
 
 
 interface ZoomImageProps {
-    imageUrl: string | null;
-    imageName: string;
+    mediaUrl: string | null;
+    mediaName: string;
     isOpen: boolean;
     onClose: () => void;
+    mediaType?: 'image' | 'video';
 }
 
-export const ZoomImage: React.FC<ZoomImageProps> = ({ imageUrl, imageName, isOpen, onClose }) => {
+export const ZoomImage: React.FC<ZoomImageProps> = ({
+    mediaUrl,
+    mediaName,
+    isOpen,
+    onClose,
+    mediaType = 'image'
+}) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -43,10 +50,7 @@ export const ZoomImage: React.FC<ZoomImageProps> = ({ imageUrl, imageName, isOpe
             disableBgColor={true}
         >
             <div className="rounded-2xl flex flex-col h-full max-h-[85vh] overflow-hidden">
-                {/* Title */}
-
-
-                {/* Image Container */}
+                {/* Media Container */}
                 <div className="flex-1 flex items-center justify-center relative overflow-hidden">
                     {isLoading && (
                         <div className="text-center absolute">
@@ -54,14 +58,25 @@ export const ZoomImage: React.FC<ZoomImageProps> = ({ imageUrl, imageName, isOpe
                             <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading...</p>
                         </div>
                     )}
-                    {imageUrl && (
+                    {mediaUrl && mediaType === 'image' && (
                         <img
-                            src={imageUrl}
-                            alt={imageName}
+                            src={mediaUrl}
+                            alt={mediaName}
                             className="max-w-full max-h-full w-auto h-auto object-contain rounded-2xl"
                             onLoad={() => setIsLoading(false)}
                             onError={() => setIsLoading(false)}
                         />
+                    )}
+                    {mediaUrl && mediaType === 'video' && (
+                        <video
+                            src={mediaUrl}
+                            controls
+                            className="max-w-full max-h-full w-auto h-auto object-contain rounded-2xl"
+                            onLoadedData={() => setIsLoading(false)}
+                            onError={() => setIsLoading(false)}
+                        >
+                            Your browser does not support the video tag.
+                        </video>
                     )}
                 </div>
             </div>
@@ -80,6 +95,7 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
     className,
 }) => {
     const [preview, setPreview] = useState<string | null>(null);
+    const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
     const [isRemoving, setIsRemoving] = useState<boolean>(false);
     const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
 
@@ -97,17 +113,30 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
     React.useEffect(() => {
         if (isAttachment(file)) {
             const isImage = file.attUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+            const isVideo = file.attUrl.match(/\.(mp4|webm|ogg|mov)$/i);
+
             if (isImage) {
                 setPreview(file.attUrl);
+                setMediaType('image');
+            } else if (isVideo) {
+                setPreview(file.attUrl);
+                setMediaType('video');
             }
-            fetch(file.attUrl, { method: 'HEAD' })
-                .catch(error => {
-                    console.error('Failed to fetch file size:', error);
-                });
+
+            // fetch(file.attUrl, { method: 'HEAD' })
+            //     .catch(error => {
+            //         console.error('Failed to fetch file size:', error);
+            //     });
         } else {
             if (file?.type?.startsWith('image/')) {
                 const objectUrl = URL.createObjectURL(file);
                 setPreview(objectUrl);
+                setMediaType('image');
+                return () => URL.revokeObjectURL(objectUrl);
+            } else if (file?.type?.startsWith('video/')) {
+                const objectUrl = URL.createObjectURL(file);
+                setPreview(objectUrl);
+                setMediaType('video');
                 return () => URL.revokeObjectURL(objectUrl);
             }
         }
@@ -147,11 +176,22 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
                 <div className="p-3">
                     {preview ? (
                         <div className="mb-2">
-                            <img
-                                src={preview}
-                                alt={fileName}
-                                className={`w-full h-50 aspect-[3/4] object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${className}`} onClick={handleZoom}
-                            />
+                            {mediaType === 'image' ? (
+                                <img
+                                    src={preview}
+                                    alt={fileName}
+                                    className={`w-full h-50 aspect-[3/4] object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${className}`}
+                                    onClick={handleZoom}
+                                />
+                            ) : (
+                                <video
+                                    src={preview}
+                                    className={`w-full h-50 aspect-[3/4] object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${className}`}
+                                    onClick={handleZoom}
+                                    muted
+                                    playsInline
+                                />
+                            )}
                         </div>
                     ) : (
                         <div
@@ -164,12 +204,13 @@ export const FilePreviewCard: React.FC<FilePreviewCardProps> = ({
                 </div>
             </div>
 
-            {/* Zoom Image Modal */}
+            {/* Zoom Media Modal */}
             <ZoomImage
-                imageUrl={preview}
-                imageName={fileName}
+                mediaUrl={preview}
+                mediaName={fileName}
                 isOpen={isZoomOpen}
                 onClose={handleCloseZoom}
+                mediaType={mediaType}
             />
         </>
     );

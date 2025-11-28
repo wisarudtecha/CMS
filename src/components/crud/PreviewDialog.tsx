@@ -13,6 +13,7 @@ import {
   // InfoIcon,
   // SettingsIcon
 } from "@/icons";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { Modal } from "@/components/ui/modal";
 import type { PreviewConfig, PreviewState } from "@/types/enhanced-crud";
 import Button from "@/components/ui/button/Button";
@@ -25,6 +26,7 @@ interface PreviewDialogProps<T> {
   onClose: () => void;
   onNext?: () => void;
   onPrev?: () => void;
+  module?: string;
 }
 
 export const PreviewDialog = <T extends { id: string }>({
@@ -34,7 +36,8 @@ export const PreviewDialog = <T extends { id: string }>({
   previewState,
   onClose,
   onNext,
-  onPrev
+  onPrev,
+  module
 }: PreviewDialogProps<T>) => {
   const [activeTab, setActiveTab] = useState(0);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -298,15 +301,17 @@ export const PreviewDialog = <T extends { id: string }>({
               .map(action => {
                 const Icon = action.icon;
                 return (
-                  <Button
-                    key={action.key}
-                    onClick={() => action.onClick(item, onClose)}
-                    variant={`${action.variant}`}
-                    className="w-full xl:w-auto mb-3 xl:mb-0"
-                  >
-                    {Icon && <Icon />}
-                    {action.label}
-                  </Button>
+                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                    <Button
+                      key={action.key}
+                      onClick={() => action.onClick(item, onClose)}
+                      variant={`${action.variant}`}
+                      className="w-full xl:w-auto mb-3 xl:mb-0"
+                    >
+                      {Icon && <Icon />}
+                      {action.label}
+                    </Button>
+                  </PermissionGate>
                 );
               })}
           </div>

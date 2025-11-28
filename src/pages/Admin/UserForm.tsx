@@ -5,8 +5,15 @@ import { getTranslations, Language, loadTranslations } from "@/config/i18n";
 import { DropdownOption } from "@/types";
 import { Organization } from "@/types/organization";
 import { UserFormData } from "@/types/user";
+import { AuthService } from "@/utils/authService";
 import { APP_CONFIG } from "@/utils/constants";
+import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
+import type { Address } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import Input from "@/components/form/input/InputField";
+import TextArea from "@/components/form/input/TextArea";
+import Select from "@/components/form/Select";
+import Button from "@/components/ui/button/Button";
 import Toast from "@/components/toast/Toast";
 
 /* ---------------- i18n helpers ---------------- */
@@ -38,6 +45,7 @@ const getByPath = (
 
 const UserForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -290,7 +298,8 @@ const UserForm: React.FC = () => {
         setError(tt("errors.loadOrgData"));
       }
       finally {
-        if (!id) setLoading(false);
+        // if (!id) setLoading(false);
+        setLoading(false);
       }
     };
     fetchInitialData();
@@ -308,6 +317,11 @@ const UserForm: React.FC = () => {
           const result = await response.json();
           const data = result.data || {};
           const formattedBod = data.bod ? new Date(data.bod).toISOString().split("T")[0] : "";
+
+          const rawAddress: string = data?.address || "";
+          const location: Address = isValidJsonString(rawAddress) ? JSON.parse(rawAddress) : null;
+          data.address = location ? formatAddress(location) : rawAddress;
+
           setFormData((prev) => ({
             ...prev,
             ...data,
@@ -590,169 +604,189 @@ const UserForm: React.FC = () => {
       </div>
     );
 
-  if (isView) {
-    return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PageBreadcrumb
-          pageTitle={tt("userform.view")}
-          items={
-            fromProfile
-              ? [
-                  { label: tt("userform.home"), href: "/" },
-                  { label: tt("userform.profile"), href: "/profile" },
-                  { label: tt("userform.view") },
-                ]
-              : [
-                  { label: tt("userform.home"), href: "/" },
-                  { label: tt("userform.userMgmt"), href: "/users" },
-                  { label: tt("userform.view") },
-                ]
-          }
-        />
+  // if (isView) {
+  //   return (
+  //     <div
+  //       className="mx-auto w-full"
+  //       // className="container mx-auto px-4 lg:px-6 xl:px-8 py-8"
+  //     >
+  //       <PageBreadcrumb
+  //         pageTitle={tt("userform.view")}
+  //         items={
+  //           fromProfile
+  //             ? [
+  //                 { label: tt("userform.home"), href: "/" },
+  //                 { label: tt("userform.profile"), href: "/profile" },
+  //                 { label: tt("userform.view") },
+  //               ]
+  //             : [
+  //                 { label: tt("userform.home"), href: "/" },
+  //                 { label: tt("userform.userMgmt"), href: "/users" },
+  //                 { label: tt("userform.view") },
+  //               ]
+  //         }
+  //       />
 
-        <div className="flex justify-end items-center mt-2">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors"
-            >
-              {tt("userform.back")}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                navigate(`/user/edit/${id}`, {
-                  state: { from: fromProfile ? "profile" : undefined },
-                })
-              }
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              {tt("userform.switchToEdit")}
-            </button>
-          </div>
-        </div>
+  //       <div className="flex justify-end items-center mt-2">
+  //         <div className="flex gap-2">
+  //           <button
+  //             type="button"
+  //             onClick={() => navigate(-1)}
+  //             className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors"
+  //           >
+  //             {tt("userform.back")}
+  //           </button>
+  //           <button
+  //             type="button"
+  //             onClick={() =>
+  //               navigate(`/user/edit/${id}`, {
+  //                 state: { from: fromProfile ? "profile" : undefined },
+  //               })
+  //             }
+  //             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+  //           >
+  //             {tt("userform.switchToEdit")}
+  //           </button>
+  //         </div>
+  //       </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mt-6">
-          {/* Left: Photo + Org + Timestamps */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md text-center">
-              <h3 className="font-semibold mb-4 text-gray-800 dark:text-white">
-                {tt("userform.profilePhoto")}
-              </h3>
-              <div className="relative w-40 h-40 mx-auto mb-4">
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-                  />
-                ) : (
-                  <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-700" />
-                )}
-              </div>
-            </div>
+  //       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start mt-6">
+  //         {/* Left: Photo + Org + Timestamps */}
+  //         <div className="xl:col-span-1 space-y-6">
+  //           <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6 text-center">
+  //             <div className="mx-auto w-full">
+  //               <h3 className="font-semibold mb-4 text-gray-800 dark:text-white cursor-default">
+  //                 {tt("userform.profilePhoto")}
+  //               </h3>
+  //               <div className="relative w-40 h-40 mx-auto mb-4">
+  //                 {imagePreview ? (
+  //                   <img
+  //                     src={imagePreview}
+  //                     alt="Profile"
+  //                     className="w-full h-full rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+  //                   />
+  //                 ) : (
+  //                   <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-700" />
+  //                 )}
+  //               </div>
+  //             </div>
+  //           </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.orgInfo")}
-              </h3>
-              <div className="space-y-4">
-                <FieldDisplay
-                  label={tt("userform.department")}
-                  value={departmentOptions.find((d) => d.id === formData.deptId)?.name || "-"}
-                />
-                <FieldDisplay
-                  label={tt("userform.command")}
-                  value={commandOptions.find((c) => c.id === formData.commId)?.name || "-"}
-                />
-                <FieldDisplay
-                  label={tt("userform.station")}
-                  value={stationOptions.find((s) => s.id === formData.stnId)?.name || "-"}
-                />
-                <FieldDisplay
-                  label={tt("userform.role")}
-                  value={rolesData.find((r) => r.id === formData.roleId)?.name || "-"}
-                />
-              </div>
-            </div>
+  //           <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+  //             <div className="mx-auto w-full">
+  //               <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+  //                 {tt("userform.orgInfo")}
+  //               </h3>
+  //               <div className="space-y-4">
+  //                 <FieldDisplay
+  //                   label={tt("userform.department")}
+  //                   value={departmentOptions.find((d) => d.id === formData.deptId)?.name || "-"}
+  //                 />
+  //                 <FieldDisplay
+  //                   label={tt("userform.command")}
+  //                   value={commandOptions.find((c) => c.id === formData.commId)?.name || "-"}
+  //                 />
+  //                 <FieldDisplay
+  //                   label={tt("userform.station")}
+  //                   value={stationOptions.find((s) => s.id === formData.stnId)?.name || "-"}
+  //                 />
+  //                 <FieldDisplay
+  //                   label={tt("userform.role")}
+  //                   value={rolesData.find((r) => r.id === formData.roleId)?.name || "-"}
+  //                 />
+  //                 <FieldDisplay
+  //                   label={tt("userform.empId")}
+  //                   value={formData?.empId || "-"}
+  //                 />
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {id && (
-              <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-                <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                  {tt("userform.timestamps")}
-                </h3>
-                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                  <p>
-                    <strong>{tt("userform.created")}:</strong>{" "}
-                    {formatDateTime(formData.createdAt)}{" "}
-                    {formData.createdBy ? ` ${tt("userform.by")} ${formData.createdBy}` : ""}
-                  </p>
-                  <p>
-                    <strong>{tt("userform.updated")}:</strong>{" "}
-                    {formatDateTime(formData.updatedAt)}{" "}
-                    {formData.updatedBy ? ` ${tt("userform.by")} ${formData.updatedBy}` : ""}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+  //           {id && (
+  //             <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6 cursor-default">
+  //               <div className="mx-auto w-full">
+  //                 <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
+  //                   {tt("userform.timestamps")}
+  //                 </h3>
+  //                 <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+  //                   <p>
+  //                     <strong>{tt("userform.created")}:</strong>{" "}
+  //                     {formatDateTime(formData.createdAt)}{" "}
+  //                     {formData.createdBy ? ` ${tt("userform.by")} ${formData.createdBy}` : ""}
+  //                   </p>
+  //                   <p>
+  //                     <strong>{tt("userform.updated")}:</strong>{" "}
+  //                     {formatDateTime(formData.updatedAt)}{" "}
+  //                     {formData.updatedBy ? ` ${tt("userform.by")} ${formData.updatedBy}` : ""}
+  //                   </p>
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           )}
+  //         </div>
 
-          {/* Right: Account + Personal */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.accountLogin")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                <FieldDisplay label={tt("userform.username")} value={formData.username || "-"} />
-                <FieldDisplay label={tt("userform.displayName")} value={formData.displayName || "-"} />
-              </div>
-            </div>
+  //         {/* Right: Account + Personal */}
+  //         <div className="xl:col-span-2 space-y-6">
+  //           <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+  //             <div className="mx-auto w-full">
+  //               <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+  //                 {tt("userform.accountLogin")}
+  //               </h3>
+  //               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+  //                 <FieldDisplay label={tt("userform.username")} value={formData.username || "-"} />
+  //                 <FieldDisplay label={tt("userform.displayName")} value={formData.displayName || "-"} />
+  //               </div>
+  //             </div>
+  //           </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.personal")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
-                <FieldDisplay label={tt("userform.title")} value={formData.title || "-"} />
-                <FieldDisplay label={tt("userform.firstName")} value={formData.firstName || "-"} />
-                <FieldDisplay label={tt("userform.lastName")} value={formData.lastName || "-"} />
-                <FieldDisplay label={tt("userform.middleName")} value={formData.middleName || "-"} />
-                <FieldDisplay label={tt("userform.email")} value={formData.email || "-"} />
-                <FieldDisplay label={tt("userform.mobile")} value={formatMobileDisplay(formData.mobileNo)} />
-                <FieldDisplay
-                  label={tt("userform.citizenId")}
-                  value={formatCitizenIdDisplay(formData.citizenId)}
-                />
-                <FieldDisplay label={tt("userform.dob")} value={formData.bod || "-"} />
-                <FieldDisplay
-                  label={tt("userform.gender")}
-                  value={
-                    formData.gender === 0
-                      ? tt("userform.genderMale")
-                      : formData.gender === 1
-                      ? tt("userform.genderFemale")
-                      : formData.gender === 2
-                      ? tt("userform.genderOther")
-                      : "-"
-                  }
-                />
-                <FieldDisplay label={tt("userform.blood")} value={formData.blood || "-"} />
-                <div className="md:col-span-3">
-                  <FieldDisplay label={tt("userform.address")} value={formData.address || "-"} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //           <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+  //             <div className="mx-auto w-full">
+  //               <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+  //                 {tt("userform.personal")}
+  //               </h3>
+  //               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
+  //                 <FieldDisplay label={tt("userform.title")} value={formData.title || "-"} />
+  //                 <FieldDisplay label={tt("userform.firstName")} value={formData.firstName || "-"} />
+  //                 <FieldDisplay label={tt("userform.lastName")} value={formData.lastName || "-"} />
+  //                 <FieldDisplay label={tt("userform.middleName")} value={formData.middleName || "-"} />
+  //                 <FieldDisplay label={tt("userform.email")} value={formData.email || "-"} />
+  //                 <FieldDisplay label={tt("userform.mobile")} value={formatMobileDisplay(formData.mobileNo)} />
+  //                 <FieldDisplay
+  //                   label={tt("userform.citizenId")}
+  //                   value={formatCitizenIdDisplay(formData.citizenId)}
+  //                 />
+  //                 <FieldDisplay label={tt("userform.dob")} value={formData.bod || "-"} />
+  //                 <FieldDisplay
+  //                   label={tt("userform.gender")}
+  //                   value={
+  //                     formData.gender === 0
+  //                       ? tt("userform.genderMale")
+  //                       : formData.gender === 1
+  //                       ? tt("userform.genderFemale")
+  //                       : formData.gender === 2
+  //                       ? tt("userform.genderOther")
+  //                       : "-"
+  //                   }
+  //                 />
+  //                 <FieldDisplay label={tt("userform.blood")} value={formData.blood || "-"} />
+  //                 <div className="md:col-span-3">
+  //                   <FieldDisplay label={tt("userform.address")} value={formData.address || "-"} />
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   /* ---------------- CREATE/EDIT MODE ---------------- */
   return (
-    <div className="container mx-auto px-4  sm:px-6 lg:px-8 py-8">
+    <div
+      className="mx-auto w-full"
+      // className="container mx-auto px-4 lg:px-6 xl:px-8 py-8"
+    >
       <PageBreadcrumb
         pageTitle={pageMode === "Edit" ? tt("userform.editUser") : tt("userform.createUser")}
         items={
@@ -771,487 +805,687 @@ const UserForm: React.FC = () => {
       />
 
       <form onSubmit={handleSubmit} className="mt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
           {/* Left: Photo + Org */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md text-center">
-              <h3 className="font-semibold mb-4 text-gray-800 dark:text-white">{tt("userform.profilePhoto")}</h3>
-              <div className="relative w-40 h-40 mx-auto mb-4">
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Profile Preview"
-                    className="w-full h-full rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-                  />
-                ) : (
-                  <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-700" />
-                )}
-                <label
-                  htmlFor="photo-upload"
-                  className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-full cursor-pointer transition-opacity duration-300 opacity-0 hover:opacity-100"
-                >
-                  <div className="text-center">
-                    <CameraIcon className="w-8 h-8 text-white mx-auto" />
-                    <span className="text-xs text-white mt-1">{tt("userform.changePhoto")}</span>
-                  </div>
-                </label>
+          <div className="xl:col-span-1 space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6 text-center">
+              <div className="mx-auto w-full">
+                <h3 className="font-semibold mb-4 text-gray-800 dark:text-white cursor-default">{tt("userform.profilePhoto")}</h3>
+                <div className="relative w-40 h-40 mx-auto mb-4">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Profile Preview"
+                      className="w-full h-full rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                    />
+                  ) : (
+                    <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-700" />
+                  )}
+                  <label
+                    htmlFor="photo-upload"
+                    className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-full cursor-pointer transition-opacity duration-300 opacity-0 hover:opacity-100"
+                  >
+                    <div className="text-center">
+                      <CameraIcon className="w-8 h-8 text-white mx-auto" />
+                      <span className="text-xs text-white mt-1">{tt("userform.changePhoto")}</span>
+                    </div>
+                  </label>
+                </div>
+                <input
+                  id="photo-upload"
+                  type="file"
+                  name="photo"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">{tt("userform.allowedTypes")}</p>
               </div>
-              <input
-                id="photo-upload"
-                type="file"
-                name="photo"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400">{tt("userform.allowedTypes")}</p>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.orgInfo")}
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="deptId" className={labelClasses}>
-                    {tt("userform.department")}{" "}
-                    {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
-                  </label>
-                  <select
-                    id="deptId"
-                    name="deptId"
-                    value={formData.deptId}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required={pageMode === "Create"}
-                  >
-                    <option value="">{tt("userform.selectDepartment")}</option>
-                    {departmentOptions.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="commId" className={labelClasses}>
-                    {tt("userform.command")}{" "}
-                    {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
-                  </label>
-                  <select
-                    id="commId"
-                    name="commId"
-                    value={formData.commId}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required={pageMode === "Create"}
-                    disabled={!formData.deptId}
-                  >
-                    <option value="">{tt("userform.selectCommand")}</option>
-                    {commandOptions.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="stnId" className={labelClasses}>
-                    {tt("userform.station")}{" "}
-                    {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
-                  </label>
-                  <select
-                    id="stnId"
-                    name="stnId"
-                    value={formData.stnId}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required={pageMode === "Create"}
-                    disabled={!formData.commId}
-                  >
-                    <option value="">{tt("userform.selectStation")}</option>
-                    {stationOptions.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="roleId" className={labelClasses}>
-                    {tt("userform.role")} {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
-                  </label>
-                  <select
-                    id="roleId"
-                    name="roleId"
-                    value={formData.roleId}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required
-                  >
-                    <option value="">{tt("userform.selectRole")}</option>
-                    {rolesData.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+              <div className="mx-auto w-full">
+                <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+                  {tt("userform.orgInfo")}
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="deptId" className={labelClasses}>
+                      {tt("userform.department")}{" "}
+                      {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                    </label>
+                    <Select
+                      value={formData.deptId}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "deptId", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className="cursor-pointer"
+                      required={pageMode === "Create"}
+                      placeholder={tt("userform.selectDepartment")}
+                      options={departmentOptions?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select
+                      id="deptId"
+                      name="deptId"
+                      value={formData.deptId}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required={pageMode === "Create"}
+                    >
+                      <option value="">{tt("userform.selectDepartment")}</option>
+                      {departmentOptions.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                    */}
+                  </div>
+                  <div>
+                    <label htmlFor="commId" className={labelClasses}>
+                      {tt("userform.command")}{" "}
+                      {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                    </label>
+                    <Select
+                      value={formData.commId}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "commId", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className={`cursor-pointer ${!formData.deptId && "disabled:bg-gray-100 dark:disabled:bg-gray-800"}`}
+                      required={pageMode === "Create"}
+                      disabled={!formData.deptId}
+                      placeholder={tt("userform.selectCommand")}
+                      options={commandOptions?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select
+                      id="commId"
+                      name="commId"
+                      value={formData.commId}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required={pageMode === "Create"}
+                      disabled={!formData.deptId}
+                    >
+                      <option value="">{tt("userform.selectCommand")}</option>
+                      {commandOptions.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    */}
+                  </div>
+                  <div>
+                    <label htmlFor="stnId" className={labelClasses}>
+                      {tt("userform.station")}{" "}
+                      {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                    </label>
+                    <Select
+                      value={formData.stnId}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "stnId", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className={`cursor-pointer ${!formData.commId && "disabled:bg-gray-100 dark:disabled:bg-gray-800"}`}
+                      required={pageMode === "Create"}
+                      disabled={!formData.commId}
+                      placeholder={tt("userform.selectStation")}
+                      options={stationOptions?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select
+                      id="stnId"
+                      name="stnId"
+                      value={formData.stnId}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required={pageMode === "Create"}
+                      disabled={!formData.commId}
+                    >
+                      <option value="">{tt("userform.selectStation")}</option>
+                      {stationOptions.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    */}
+                  </div>
+                  <div>
+                    <label htmlFor="roleId" className={labelClasses}>
+                      {tt("userform.role")} {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                    </label>
+                    <Select
+                      value={formData.roleId}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "roleId", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className="cursor-pointer"
+                      required
+                      placeholder={tt("userform.selectRole")}
+                      options={rolesData?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select
+                      id="roleId"
+                      name="roleId"
+                      value={formData.roleId}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required
+                    >
+                      <option value="">{tt("userform.selectRole")}</option>
+                      {rolesData.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
+                    */}
+                  </div>
 
-                <div>
-                  <label htmlFor="empId" className={labelClasses}>
-                    {tt("userform.empId")}
-                    {pageMode === "Create" && <span className="text-red-500">*</span>}
-                  </label>
-                  {pageMode === "Create" ? (
-                    <input
+                  <div>
+                    <label htmlFor="empId" className={labelClasses}>
+                      {tt("userform.empId")}
+                      {pageMode === "Create" && <span className="text-red-500">*</span>}
+                    </label>
+                    <Input
                       type="text"
                       id="empId"
                       name="empId"
                       value={formData.empId}
                       onChange={handleInputChange}
-                      className={inputClasses}
+                      // className={inputClasses}
+                      className="text-gray-900 dark:text-white"
                       required
                       maxLength={30}
+                      disabled={pageMode !== "Create" && !isSystemAdmin}
                     />
-                  ) : (
-                    <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-                      {formData.empId || "-"}
-                    </div>
-                  )}
+                    {/*
+                    {pageMode === "Create" ? (
+                      <Input
+                        type="text"
+                        id="empId"
+                        name="empId"
+                        value={formData.empId}
+                        onChange={handleInputChange}
+                        // className={inputClasses}
+                        required
+                        maxLength={30}
+                      />
+                    ) : (
+                      <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                        {formData.empId || "-"}
+                      </div>
+                    )}
+                    */}
+                  </div>
                 </div>
               </div>
             </div>
 
             {id && (
-              <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-                <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                  {tt("userform.timestamps")}
-                </h3>
-                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                  <p>
-                    <strong>{tt("userform.created")}:</strong> {formatDateTime(formData.createdAt)}{" "}
-                    {formData.createdBy ? ` ${tt("userform.by")} ${formData.createdBy}` : ""}
-                  </p>
-                  <p>
-                    <strong>{tt("userform.updated")}:</strong> {formatDateTime(formData.updatedAt)}{" "}
-                    {formData.updatedBy ? ` ${tt("userform.by")} ${formData.updatedBy}` : ""}
-                  </p>
+              <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6 cursor-default">
+                <div className="mx-auto w-full">
+                  <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
+                    {tt("userform.timestamps")}
+                  </h3>
+                  <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                    <p>
+                      <strong>{tt("userform.created")}:</strong> {formatDateTime(formData.createdAt)}{" "}
+                      {formData.createdBy ? ` ${tt("userform.by")} ${formData.createdBy}` : ""}
+                    </p>
+                    <p>
+                      <strong>{tt("userform.updated")}:</strong> {formatDateTime(formData.updatedAt)}{" "}
+                      {formData.updatedBy ? ` ${tt("userform.by")} ${formData.updatedBy}` : ""}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
           {/* Right: Account + Personal */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.accountLogin")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                <div>
-                  <label htmlFor="username" className={labelClasses}>
-                    {tt("userform.username")}
-                    {pageMode === "Create" && <span className="text-red-500">*</span>}
-                  </label>
-                  {pageMode === "Create" ? (
-                    <input
+          <div className="xl:col-span-2 space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+              <div className="mx-auto w-full">
+                <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+                  {tt("userform.accountLogin")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                  <div>
+                    <label htmlFor="username" className={labelClasses}>
+                      {tt("userform.username")}
+                      {pageMode === "Create" && <span className="text-red-500">*</span>}
+                    </label>
+                    <Input
                       type="text"
                       id="username"
                       name="username"
                       value={formData.username}
                       onChange={handleInputChange}
-                      className={inputClasses}
+                      // className={inputClasses}
+                      className="text-gray-900 dark:text-white"
                       required
                       maxLength={30}
-                      pattern="[a-zA-Z0-9_\-]+"
+                      pattern="[a-zA-Z0-9_\-.]+"
                       title="Username can only contain letters, numbers, and underscores"
+                      disabled={pageMode !== "Create"}
                     />
+                    {/*
+                    {pageMode === "Create" ? (
+                      <Input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        // className={inputClasses}
+                        required
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9_\-]+"
+                        title="Username can only contain letters, numbers, and underscores"
+                      />
+                    ) : (
+                      <div className="mt-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                        {formData.username || "-"}
+                      </div>
+                    )}
+                    */}
+                  </div>
+
+                  <div>
+                    <label htmlFor="displayName" className={labelClasses}>
+                      {tt("userform.displayName")}
+                    </label>
+                    <Input
+                      type="text"
+                      id="displayName"
+                      name="displayName"
+                      value={formData.displayName}
+                      onChange={handleInputChange}
+                      // className={inputClasses}
+                      maxLength={25}
+                    />
+                  </div>
+
+                  {pageMode === "Create" ? (
+                    <>
+                      <div>
+                        <label htmlFor="password" className={labelClasses}>
+                          {tt("userform.password")} <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          type="password"
+                          id="password"
+                          name="password"
+                          value={formData.password || ""}
+                          onChange={handleInputChange}
+                          // className={inputClasses}
+                          required
+                          minLength={7}
+                          maxLength={30}
+                          title="Password must be at least 7 characters with 1 uppercase letter and 1 special character"
+                          autoComplete="new-password"
+                        />
+                        <span className="text-xs text-gray-500 dark:text-gray-300">{tt("userform.pwdHint")}</span>
+                      </div>
+                      <div>
+                        <label htmlFor="confirmPassword" className={labelClasses}>
+                          {tt("userform.confirmPassword")} <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          type="password"
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          value={formData.confirmPassword || ""}
+                          onChange={handleInputChange}
+                          // className={inputClasses}
+                          required
+                          minLength={7}
+                          maxLength={30}
+                          autoComplete="new-password"
+                        />
+                      </div>
+                    </>
                   ) : (
-                    <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-                      {formData.username || "-"}
-                    </div>
+                    <div className="md:col-span-2" />
                   )}
                 </div>
-
-                <div>
-                  <label htmlFor="displayName" className={labelClasses}>
-                    {tt("userform.displayName")}
-                  </label>
-                  <input
-                    type="text"
-                    id="displayName"
-                    name="displayName"
-                    value={formData.displayName}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    maxLength={25}
-                  />
-                </div>
-
-                {pageMode === "Create" ? (
-                  <>
-                    <div>
-                      <label htmlFor="password" className={labelClasses}>
-                        {tt("userform.password")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password || ""}
-                        onChange={handleInputChange}
-                        className={inputClasses}
-                        required
-                        minLength={7}
-                        maxLength={30}
-                        title="Password must be at least 7 characters with 1 uppercase letter and 1 special character"
-                        autoComplete="new-password"
-                      />
-                      <span className="text-xs text-gray-500 dark:text-gray-300">{tt("userform.pwdHint")}</span>
-                    </div>
-                    <div>
-                      <label htmlFor="confirmPassword" className={labelClasses}>
-                        {tt("userform.confirmPassword")} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        value={formData.confirmPassword || ""}
-                        onChange={handleInputChange}
-                        className={inputClasses}
-                        required
-                        minLength={7}
-                        maxLength={30}
-                        autoComplete="new-password"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="md:col-span-2" />
-                )}
               </div>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900/50 rounded-lg shadow-md">
-              <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">
-                {tt("userform.personal")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
-                <div className="md:col-span-1">
-                  <label htmlFor="title" className={labelClasses}>
-                    {tt("userform.title")}
-                  </label>
-                  <select id="title" name="title" value={formData.title} onChange={handleInputChange} className={inputClasses}>
-                    <option value="">{tt("userform.selectTitle")}</option>
-                    <option value="Mr.">Mr.</option>
-                    <option value="Mrs.">Mrs.</option>
-                    <option value="Ms.">Ms.</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="firstName" className={labelClasses}>
-                    {tt("userform.firstName")} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required
-                    maxLength={50}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="middleName" className={labelClasses}>
-                    {tt("userform.middleName")}
-                  </label>
-                  <input
-                    type="text"
-                    id="middleName"
-                    name="middleName"
-                    value={formData.middleName}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    maxLength={50}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="lastName" className={labelClasses}>
-                    {tt("userform.lastName")} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className={inputClasses}
-                    required
-                    maxLength={50}
-                  />
-                </div>
-
-                {pageMode === "Create" ? (
-                  <div className="md:col-span-3">
-                    <label htmlFor="email" className={labelClasses}>
-                      {tt("userform.email")} <span className="text-red-500">*</span>
+            <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
+              <div className="mx-auto w-full">
+                <h3 className="font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-5 cursor-default">
+                  {tt("userform.personal")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
+                  <div className="md:col-span-1">
+                    <label htmlFor="title" className={labelClasses}>
+                      {tt("userform.title")}
                     </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={inputClasses}
+                    <Select
+                      value={formData.title}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "title", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className="cursor-pointer"
                       required
-                      maxLength={100}
-                      pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
-                      title="Please enter a valid email address"
+                      placeholder={tt("userform.selectTitle")}
+                      options={[
+                        {id: "Mr.", name: "Mr."},
+                        {id: "Mrs.", name: "Mrs."},
+                        {id: "Ms.", name: "Ms."}
+                      ]?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select id="title" name="title" value={formData.title} onChange={handleInputChange} className={inputClasses}>
+                      <option value="">{tt("userform.selectTitle")}</option>
+                      <option value="Mr.">Mr.</option>
+                      <option value="Mrs.">Mrs.</option>
+                      <option value="Ms.">Ms.</option>
+                    </select>
+                    */}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="firstName" className={labelClasses}>
+                      {tt("userform.firstName")} <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      // className={inputClasses}
+                      required
+                      maxLength={50}
                     />
                   </div>
-                ) : (
-                  <div className="md:col-span-3">
-                    <label className={labelClasses}>{tt("userform.email")}</label>
-                    <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-                      {formData.email || "-"}
+
+                  <div>
+                    <label htmlFor="middleName" className={labelClasses}>
+                      {tt("userform.middleName")}
+                    </label>
+                    <Input
+                      type="text"
+                      id="middleName"
+                      name="middleName"
+                      value={formData.middleName}
+                      onChange={handleInputChange}
+                      // className={inputClasses}
+                      maxLength={50}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="lastName" className={labelClasses}>
+                      {tt("userform.lastName")} <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      // className={inputClasses}
+                      required
+                      maxLength={50}
+                    />
+                  </div>
+
+                  {pageMode === "Create" ? (
+                    <div className="md:col-span-3">
+                      <label htmlFor="email" className={labelClasses}>
+                        {tt("userform.email")} <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        // className={inputClasses}
+                        required
+                        maxLength={100}
+                        pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                        title="Please enter a valid email address"
+                      />
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="md:col-span-3">
+                      <label className={labelClasses}>{tt("userform.email")}</label>
+                      <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                        {formData.email || "-"}
+                      </div>
+                    </div>
+                  )}
 
-                <div>
-                  <label htmlFor="mobileNo" className={labelClasses}>
-                    {tt("userform.mobile")}
-                  </label>
-                  <input
-                    type="tel"
-                    id="mobileNo"
-                    name="mobileNo"
-                    value={mobileDisplay}
-                    onChange={(e) => handleMobileChange(e.target.value)}
-                    className={inputClasses}
-                    maxLength={12} // Include dashes: 0XX-XXX-XXXX
-                    pattern="[0-9-]*"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="citizenId" className={labelClasses}>
-                    {tt("userform.citizenId")}
-                  </label>
-                  <input
-                    type="text"
-                    id="citizenId"
-                    name="citizenId"
-                    value={citizenIdDisplay}
-                    onChange={(e) => handleCitizenIdChange(e.target.value)}
-                    className={inputClasses}
-                    maxLength={17} // Include dashes: X-XXXX-XXXXX-XX-X
-                    pattern="[0-9-]*"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="bod" className={labelClasses}>
-                    {tt("userform.dob")}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      id="bod"
-                      name="bod"
-                      value={formData.bod}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, bod: e.target.value }))}
-                      className={`${inputClasses} pr-10 ${isDatePickerOpen ? 'ring-2 ring-blue-500 border-blue-500' : ''}`}
-                      min={getDateLimits().min}
-                      max={getDateLimits().max}
-                      onKeyDown={(e) => {
-                        // Block typing - only allow calendar picker
-                        e.preventDefault();
-                      }}
-                      onPaste={(e) => {
-                        // Block pasting
-                        e.preventDefault();
-                      }}
-                      placeholder=""
-                      readOnly
+                  <div>
+                    <label htmlFor="mobileNo" className={labelClasses}>
+                      {tt("userform.mobile")}
+                    </label>
+                    <Input
+                      type="tel"
+                      id="mobileNo"
+                      name="mobileNo"
+                      value={mobileDisplay}
+                      onChange={(e) => handleMobileChange(e.target.value)}
+                      // className={inputClasses}
+                      maxLength={12} // Include dashes: 0XX-XXX-XXXX
+                      pattern="[0-9-]*"
                     />
-                    <div 
-                      className={`absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer transition-colors ${
-                        isDatePickerOpen 
-                          ? 'text-blue-600 dark:text-blue-400' 
-                          : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
-                      }`}
-                      onClick={handleDatePickerClick}
+                  </div>
+
+                  <div>
+                    <label htmlFor="citizenId" className={labelClasses}>
+                      {tt("userform.citizenId")}
+                    </label>
+                    <Input
+                      type="text"
+                      id="citizenId"
+                      name="citizenId"
+                      value={citizenIdDisplay}
+                      onChange={(e) => handleCitizenIdChange(e.target.value)}
+                      // className={inputClasses}
+                      maxLength={17} // Include dashes: X-XXXX-XXXXX-XX-X
+                      pattern="[0-9-]*"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="bod" className={labelClasses}>
+                      {tt("userform.dob")}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type="date"
+                        id="bod"
+                        name="bod"
+                        value={formData.bod}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, bod: e.target.value }))}
+                        className={`${inputClasses} pr-10 ${isDatePickerOpen ? 'ring-2 ring-blue-500 border-blue-500' : ''}`}
+                        min={getDateLimits().min}
+                        max={getDateLimits().max}
+                        onKeyDown={(e) => {
+                          // Block typing - only allow calendar picker
+                          e.preventDefault();
+                        }}
+                        onPaste={(e) => {
+                          // Block pasting
+                          e.preventDefault();
+                        }}
+                        placeholder=""
+                        readOnly
+                      />
+                      <div 
+                        className={`absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer transition-colors ${
+                          isDatePickerOpen 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+                        }`}
+                        onClick={handleDatePickerClick}
+                      >
+                        <CalendarIcon className="h-5 w-5" />
+                      </div>
+                    </div>
+                  
+                  </div>
+
+                  <div>
+                    <label htmlFor="gender" className={labelClasses}>
+                      {tt("userform.gender")}
+                    </label>
+                    <Select
+                      value={formData.gender === null ? "" : formData.gender.toString()}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "gender", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className="cursor-pointer"
+                      required
+                      placeholder={tt("userform.selectGender")}
+                      options={[
+                        {id: "1", name: tt("userform.genderMale")},
+                        {id: "2", name: tt("userform.genderFemale")},
+                        {id: "0", name: tt("userform.genderOther")}
+                      ]?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select 
+                      id="gender" 
+                      name="gender" 
+                      value={formData.gender === null ? "" : formData.gender.toString()} 
+                      onChange={handleInputChange} 
+                      className={inputClasses}
                     >
-                      <CalendarIcon className="h-5 w-5" />
-                    </div>
+                      <option value="">{tt("userform.selectGender")}</option>
+                      <option value="0">{tt("userform.genderMale")}</option>
+                      <option value="1">{tt("userform.genderFemale")}</option>
+                      <option value="2">{tt("userform.genderOther")}</option>
+                    </select>
+                    */}
                   </div>
-                
-                </div>
 
-                <div>
-                  <label htmlFor="gender" className={labelClasses}>
-                    {tt("userform.gender")}
-                  </label>
-                  <select 
-                    id="gender" 
-                    name="gender" 
-                    value={formData.gender === null ? "" : formData.gender.toString()} 
-                    onChange={handleInputChange} 
-                    className={inputClasses}
-                  >
-                    <option value="">{tt("userform.selectGender")}</option>
-                    <option value="0">{tt("userform.genderMale")}</option>
-                    <option value="1">{tt("userform.genderFemale")}</option>
-                    <option value="2">{tt("userform.genderOther")}</option>
-                  </select>
-                </div>
+                  <div>
+                    <label htmlFor="blood" className={labelClasses}>
+                      {tt("userform.blood")}
+                    </label>
+                    <Select
+                      value={formData.blood}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "blood", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      // className={inputClasses}
+                      className="cursor-pointer"
+                      required
+                      placeholder={tt("userform.selectBlood")}
+                      options={[
+                        {id: "A", name: "A"},
+                        {id: "B", name: "B"},
+                        {id: "AB", name: "AB"},
+                        {id: "O", name: "O"}
+                      ]?.map(d => ({
+                        value: d?.id,
+                        label: d?.name
+                      }))}
+                    />
+                    {/*
+                    <select id="blood" name="blood" value={formData.blood} onChange={handleInputChange} className={inputClasses}>
+                      <option value="">{tt("userform.selectBlood")}</option>
+                      <option>A</option>
+                      <option>B</option>
+                      <option>AB</option>
+                      <option>O</option>
+                    </select>
+                    */}
+                  </div>
 
-                <div>
-                  <label htmlFor="blood" className={labelClasses}>
-                    {tt("userform.blood")}
-                  </label>
-                  <select id="blood" name="blood" value={formData.blood} onChange={handleInputChange} className={inputClasses}>
-                    <option value="">{tt("userform.selectBlood")}</option>
-                    <option>A</option>
-                    <option>B</option>
-                    <option>AB</option>
-                    <option>O</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-3">
-                  <label htmlFor="address" className={labelClasses}>
-                    {tt("userform.address")}
-                  </label>
-                  <textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className={inputClasses}
-                    placeholder={lang === "th" ? tt("userform.addressPlaceholderTh") : tt("userform.addressPlaceholderEn")}
-                    maxLength={255}
-                  ></textarea>
+                  <div className="md:col-span-3">
+                    <label htmlFor="address" className={labelClasses}>
+                      {tt("userform.address")}
+                    </label>
+                    <TextArea
+                      // id="address"
+                      // name="address"
+                      value={formData.address}
+                      // onChange={handleInputChange}
+                      onChange={value =>
+                        handleInputChange({
+                          target: {name: "address", value: value }
+                        } as React.ChangeEvent<HTMLSelectElement>)
+                      }
+                      rows={3}
+                      // className={inputClasses}
+                      placeholder={lang === "th" ? tt("userform.addressPlaceholderTh") : tt("userform.addressPlaceholderEn")}
+                      maxLength={255}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {error && (
-              <p className="text-sm text-red-500 bg-red-100 dark:bg-red-900/50 p-3 rounded-md text-center lg:col-span-2">
+              <p className="text-sm text-red-500 bg-red-100 dark:bg-red-900/50 p-3 rounded-md text-center xl:col-span-2">
                 {error}
               </p>
             )}
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-4">
+              <Button
+                onClick={() => (fromProfile ? navigate("/profile") : navigate(-1))}
+                variant="outline"
+              >
+                {tt("common.cancel")}
+              </Button>
+              <Button
+                onClick={() => handleSubmit}
+                disabled={loading}
+                variant="primary"
+              >
+                {loading ? tt("userform.saving") : isEdit ? tt("userform.saveChanges") : tt("userform.create")}
+              </Button>
+              {/*
               <button
                 type="button"
                 onClick={() => (fromProfile ? navigate("/profile") : navigate(-1))}
@@ -1266,6 +1500,7 @@ const UserForm: React.FC = () => {
               >
                 {loading ? tt("userform.saving") : isEdit ? tt("userform.saveChanges") : tt("userform.create")}
               </button>
+              */}
             </div>
           </div>
         </div>
@@ -1285,13 +1520,13 @@ const UserForm: React.FC = () => {
 };
 
 /* ---------------- Small Readonly Field ---------------- */
-const FieldDisplay: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
-  <div>
-    <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-    <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-      {value ?? "-"}
-    </div>
-  </div>
-);
+// const FieldDisplay: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
+//   <div>
+//     <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+//     <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+//       {value ?? "-"}
+//     </div>
+//   </div>
+// );
 
 export default UserForm;

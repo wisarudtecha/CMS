@@ -12,6 +12,7 @@ export function TableView<T extends { id: string }>({
   data,
   columns,
   isAllSelected,
+  module,
   selectedItems,
   sortConfig,
   onClickItem,
@@ -76,6 +77,7 @@ export function TableView<T extends { id: string }>({
                 bulkSelectionEnabled={bulkSelectionEnabled}
                 columns={columns}
                 selectedItems={selectedItems}
+                module={module}
                 onClick={onClickItem}
                 onSelectItem={selectItem}
               />
