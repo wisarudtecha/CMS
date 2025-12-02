@@ -483,7 +483,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                         value={searchInput}
                         onChange={setSearchInput}
                         // onSearch={handleSearch}
-                        onSearch={() => apiConfig?.serverSide &&onSearch?.(searchInput.trim()) || handleSearch}
+                        // onSearch={() => apiConfig?.serverSide && onSearch?.(searchInput.trim()) || handleSearch}
+                        onSearch={() => apiConfig?.serverSide && onSearch?.(searchInput.trim()) || handleSearch()}
                         onClear={handleClearSearch}
                         placeholder={`${t("crud.common.search")} ${config.entityNamePlural.toLowerCase()}...`}
                       />

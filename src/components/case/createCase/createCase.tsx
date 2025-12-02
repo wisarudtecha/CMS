@@ -203,6 +203,7 @@ const saveCase = useCallback(
             caseDuration: 0,
             caseLat: "",
             caseLon: "",
+            caseId:caseState.workOrderNummber,
             caseSTypeId: caseState?.caseType?.sTypeId || "",
             caseTypeId: caseState?.caseType?.typeId || "",
             caseVersion,
@@ -241,8 +242,6 @@ const saveCase = useCallback(
             let data: any;
 
             if (!caseState.workOrderNummber) {
-                // ===== CREATE NEW CASE =====
-                console.log("📝 Creating new case...");
 
                 // Step 1: Create case first (without files)
                 data = await createCase({ 
@@ -255,7 +254,6 @@ const saveCase = useCallback(
                 }
 
                 const newCaseId = data.caseId;
-                console.log(`✅ Case created: ${newCaseId}`);
 
                 // Step 2: Upload files with the new case ID
                 let uploadedAttachments: UploadFileRes[] = [];

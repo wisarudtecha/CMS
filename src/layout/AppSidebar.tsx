@@ -214,7 +214,8 @@ const AppSidebar: React.FC = () => {
       icon: <PlugInIcon />,
       name: t("navigation.sidebar.main.system_configuration.title"),
       permission: permissions.hasAnyPermission([
-        "service.view", "unit.view", "user.view",
+        // "service.view", "unit.view", "user.view",
+        "service.view", "unit.view", "settings.view",
       ]),
       subItems: [
         {
@@ -242,7 +243,8 @@ const AppSidebar: React.FC = () => {
         {
           name: t("navigation.sidebar.main.system_configuration.nested.skill_management"),
           path: "/skill",
-          permission: permissions.hasPermission("user.view"),
+          // permission: permissions.hasPermission("user.view"),
+          permission: permissions.hasPermission("settings.view"),
         },
         // {
         //   name: t("navigation.sidebar.main.system_configuration.nested.property_management"),
@@ -252,7 +254,8 @@ const AppSidebar: React.FC = () => {
         {
           name: t("navigation.sidebar.main.system_configuration.nested.area_management"),
           path: "/area",
-          permission: permissions.hasPermission("service.view"),
+          // permission: permissions.hasPermission("service.view"),
+          permission: permissions.hasPermission("settings.view"),
         },
       ],
     },

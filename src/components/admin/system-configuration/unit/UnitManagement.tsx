@@ -247,13 +247,13 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Latitude</label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                    {unitItem.locLat.toFixed(6)}
+                    {unitItem?.locLat?.toFixed(6)}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Longitude</label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                    {unitItem.locLon.toFixed(6)}
+                    {unitItem?.locLon?.toFixed(6)}
                   </div>
                 </div>
                 <div>

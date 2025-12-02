@@ -153,39 +153,102 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // ===================================================================
 
   const filteredTypes = useMemo(() => {
+    const searchLower = searchQuery?.toLowerCase() || '';
+    
     const filtered = caseType.filter(type => {
-      // Search filter
+      // Check if type itself matches
       if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const typeMatches = 
           type.en.toLowerCase().includes(searchLower) ||
-          type.th.toLowerCase().includes(searchLower) ||
-          type.typeId.toLowerCase().includes(searchLower);
-        if (!matchesSearch) {
-          return false;
+          type.th.toLowerCase().includes(searchLower);
+        
+        if (typeMatches) {
+          return !showInactive ? type.active : true;
         }
-      }
-
-      // Category filter
-      // if (filterCategory !== "all" && type.category !== filterCategory) {
-      //   return false;
-      // }
-
-      // Active filter
-      if (!showInactive && !type.active) {
+        
+        // Check if any child subtype matches
+        const hasMatchingChild = caseSubType.some(subType => 
+          subType.typeId === type.typeId && (
+            subType.en.toLowerCase().includes(searchLower) ||
+            subType.th.toLowerCase().includes(searchLower) ||
+            subType.sTypeCode.toLowerCase().includes(searchLower)
+          )
+        );
+        
+        if (hasMatchingChild) {
+          return !showInactive ? type.active : true;
+        }
+        
         return false;
       }
 
-      return true;
+      // No search query - apply other filters
+      return !showInactive ? type.active : true;
     });
 
     return filtered.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  }, [
-    caseType,
-    searchQuery,
-    // filterCategory,
-    showInactive
-  ]);
+  }, [caseType, caseSubType, searchQuery, showInactive]);
+
+  const filteredSubTypes = useMemo(() => {
+    if (!searchQuery) {
+      return caseSubType;
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    
+    // Get IDs of filtered parent types
+    const filteredTypeIds = filteredTypes.map(t => t.typeId);
+    
+    return caseSubType.filter(subType => {
+      // Include if parent type is in filtered list
+      if (filteredTypeIds.includes(subType.typeId)) {
+        return true;
+      }
+      
+      // OR include if subtype itself matches search
+      const matchesSearch = 
+        subType.en.toLowerCase().includes(searchLower) ||
+        subType.th.toLowerCase().includes(searchLower) ||
+        subType.sTypeCode.toLowerCase().includes(searchLower);
+      
+      return matchesSearch;
+    });
+  }, [caseSubType, filteredTypes, searchQuery]);
+
+  // const filteredTypes = useMemo(() => {
+  //   const filtered = caseType.filter(type => {
+  //     // Search filter
+  //     if (searchQuery) {
+  //       const searchLower = searchQuery.toLowerCase();
+  //       const matchesSearch = 
+  //         type.en.toLowerCase().includes(searchLower) ||
+  //         type.th.toLowerCase().includes(searchLower) ||
+  //         type.typeId.toLowerCase().includes(searchLower);
+  //       if (!matchesSearch) {
+  //         return false;
+  //       }
+  //     }
+
+  //     // Category filter
+  //     // if (filterCategory !== "all" && type.category !== filterCategory) {
+  //     //   return false;
+  //     // }
+
+  //     // Active filter
+  //     if (!showInactive && !type.active) {
+  //       return false;
+  //     }
+
+  //     return true;
+  //   });
+
+  //   return filtered.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  // }, [
+  //   caseType,
+  //   searchQuery,
+  //   // filterCategory,
+  //   showInactive
+  // ]);
 
   // ===================================================================
   // Validation before saving
@@ -522,8 +585,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   const renderServiceHierarchy = () => (
     <ServiceTypeAndSubTypeComponent
       // analytics={mockAnalytics}
-      caseSubTypes={caseSubType || []}
-      caseTypes={caseType || []}
+      caseSubTypes={filteredSubTypes || caseSubType || []}
+      caseTypes={filteredTypes || caseType || []}
       filteredTypes={filteredTypes || []}
       properties={property}
       searchQuery={searchQuery}

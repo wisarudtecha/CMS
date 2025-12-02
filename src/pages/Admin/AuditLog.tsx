@@ -393,7 +393,9 @@ export default function AuditLog() {
                 return (
                     log?.username?.toLowerCase()?.includes(searchLower) ||
                     log?.txId?.toLowerCase()?.includes(searchLower) ||
-                    log?.message?.toLowerCase()?.includes(searchLower)
+                    log?.message?.toLowerCase()?.includes(searchLower) ||
+                    log?.mainFunc?.toLowerCase()?.includes(searchLower) ||
+                    log?.action?.toLowerCase()?.includes(searchLower)
                 );
             }
 

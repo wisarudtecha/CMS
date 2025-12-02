@@ -110,8 +110,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Input
             id="priority"
             type="number"
-            value={formData.priority || 0}
-            onChange={e => onChange("priority", e.target.value)}
+            value={Number(formData?.priority) || 0}
+            onChange={e => onChange("priority", Number(e.target.value))}
             error={!!errors.priority}
           />
         </div>
@@ -136,8 +136,8 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <Input
             id="breakDuration"
             type="number"
-            value={formData.breakDuration || 0}
-            onChange={e => onChange("breakDuration", e.target.value)}
+            value={Number(formData?.breakDuration) || 0}
+            onChange={e => onChange("breakDuration", Number(e.target.value))}
             error={!!errors.breakDuration}
           />
         </div>

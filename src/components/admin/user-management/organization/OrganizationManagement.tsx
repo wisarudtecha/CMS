@@ -18,7 +18,7 @@ import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
-// import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   useCreateDepartmentsMutation,
   useCreateCommandsMutation,
@@ -48,7 +48,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // const navigate = useNavigate();
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
-  // const { t } = useTranslation();
+  const { language, t } = useTranslation();
 
   const [createDepartment] = useCreateDepartmentsMutation();
   const [createCommand] = useCreateCommandsMutation();
@@ -136,72 +136,177 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Filter and search logic
   // ===================================================================
 
-  const filteredOrganizations = useMemo(() => {
-    const filteredDepartment = department.filter(dept => {
-      // Search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
-          dept.th.toLowerCase().includes(searchLower) ||
-          dept.en.toLowerCase().includes(searchLower)
-        if (!matchesSearch) {
-          return false;
-        }
+  const { filteredDepartments, filteredCommands, filteredStations } = useMemo(() => {
+    if (!searchQuery) {
+      return {
+        filteredDepartments: department,
+        filteredCommands: command,
+        filteredStations: station
+      };
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    
+    // Track which items match the search at each level
+    const matchingDeptIds = new Set<string>();
+    const matchingCommIds = new Set<string>();
+    const matchingStnIds = new Set<string>();
+
+    // Check departments
+    department.forEach(dept => {
+      const matches = 
+        dept.th.toLowerCase().includes(searchLower) ||
+        dept.en.toLowerCase().includes(searchLower);
+      
+      if (matches && (!showInactive || dept.active)) {
+        matchingDeptIds.add(dept.deptId);
       }
-      // Active filter
+    });
+
+    // Check commands
+    command.forEach(cmd => {
+      const matches = 
+        cmd.th.toLowerCase().includes(searchLower) ||
+        cmd.en.toLowerCase().includes(searchLower);
+      
+      if (matches && (!showInactive || cmd.active)) {
+        matchingCommIds.add(cmd.commId);
+        matchingDeptIds.add(cmd.deptId); // Also include parent department
+      }
+    });
+
+    // Check stations
+    station.forEach(stn => {
+      const matches = 
+        stn.th.toLowerCase().includes(searchLower) ||
+        stn.en.toLowerCase().includes(searchLower);
+      
+      if (matches && (!showInactive || stn.active)) {
+        matchingStnIds.add(stn.stnId);
+        matchingCommIds.add(stn.commId); // Also include parent command
+        matchingDeptIds.add(stn.deptId); // Also include parent department
+      }
+    });
+
+    // Filter departments - include if:
+    // 1. Department itself matches, OR
+    // 2. Has a matching command, OR
+    // 3. Has a matching station (through command)
+    const filteredDepts = department.filter(dept => {
       if (!showInactive && !dept.active) {
         return false;
       }
-      return true;
+      return matchingDeptIds.has(dept.deptId);
     });
 
-    const filteredCommand = command.filter(cmd => {
-      // Search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
-          cmd.th.toLowerCase().includes(searchLower) ||
-          cmd.en.toLowerCase().includes(searchLower)
-        if (!matchesSearch) {
-          return false;
-        }
-      }
-      // Active filter
+    // Filter commands - include if:
+    // 1. Command itself matches, OR
+    // 2. Has a matching station, OR
+    // 3. Parent department is in filtered list
+    const filteredComms = command.filter(cmd => {
       if (!showInactive && !cmd.active) {
         return false;
       }
-      return true;
+      
+      // Include if command matches or has matching children
+      if (matchingCommIds.has(cmd.commId)) {
+        return true;
+      }
+      
+      // Include if parent department is in filtered list
+      return matchingDeptIds.has(cmd.deptId);
     });
 
-    const filteredStation = station.filter(stn => {
-      // Search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
-          stn.th.toLowerCase().includes(searchLower) ||
-          stn.en.toLowerCase().includes(searchLower)
-        if (!matchesSearch) {
-          return false;
-        }
-      }
-      // Active filter
+    // Filter stations - include if:
+    // 1. Station itself matches, OR
+    // 2. Parent command is in filtered list
+    const filteredStns = station.filter(stn => {
       if (!showInactive && !stn.active) {
         return false;
       }
-      return true;
+      
+      // Include if station matches
+      if (matchingStnIds.has(stn.stnId)) {
+        return true;
+      }
+      
+      // Include if parent command is in filtered list
+      return matchingCommIds.has(stn.commId);
     });
 
-    return filteredStation?.length > 0 ? filteredStation
-      : filteredCommand?.length > 0 ? filteredCommand
-      : filteredDepartment?.length > 0 ? filteredDepartment
-      : [];
-  }, [
-    department,
-    command,
-    station,
-    searchQuery,
-    showInactive
-  ]);
+    return {
+      filteredDepartments: filteredDepts,
+      filteredCommands: filteredComms,
+      filteredStations: filteredStns
+    };
+  }, [department, command, station, searchQuery, showInactive]);
+
+  // const filteredOrganizations = useMemo(() => {
+  //   const filteredDepartment = department.filter(dept => {
+  //     // Search filter
+  //     if (searchQuery) {
+  //       const searchLower = searchQuery.toLowerCase();
+  //       const matchesSearch = 
+  //         dept.th.toLowerCase().includes(searchLower) ||
+  //         dept.en.toLowerCase().includes(searchLower)
+  //       if (!matchesSearch) {
+  //         return false;
+  //       }
+  //     }
+  //     // Active filter
+  //     if (!showInactive && !dept.active) {
+  //       return false;
+  //     }
+  //     return true;
+  //   });
+
+  //   const filteredCommand = command.filter(cmd => {
+  //     // Search filter
+  //     if (searchQuery) {
+  //       const searchLower = searchQuery.toLowerCase();
+  //       const matchesSearch = 
+  //         cmd.th.toLowerCase().includes(searchLower) ||
+  //         cmd.en.toLowerCase().includes(searchLower)
+  //       if (!matchesSearch) {
+  //         return false;
+  //       }
+  //     }
+  //     // Active filter
+  //     if (!showInactive && !cmd.active) {
+  //       return false;
+  //     }
+  //     return true;
+  //   });
+
+  //   const filteredStation = station.filter(stn => {
+  //     // Search filter
+  //     if (searchQuery) {
+  //       const searchLower = searchQuery.toLowerCase();
+  //       const matchesSearch = 
+  //         stn.th.toLowerCase().includes(searchLower) ||
+  //         stn.en.toLowerCase().includes(searchLower)
+  //       if (!matchesSearch) {
+  //         return false;
+  //       }
+  //     }
+  //     // Active filter
+  //     if (!showInactive && !stn.active) {
+  //       return false;
+  //     }
+  //     return true;
+  //   });
+
+  //   return filteredStation?.length > 0 ? filteredStation
+  //     : filteredCommand?.length > 0 ? filteredCommand
+  //     : filteredDepartment?.length > 0 ? filteredDepartment
+  //     : [];
+  // }, [
+  //   department,
+  //   command,
+  //   station,
+  //   searchQuery,
+  //   showInactive
+  // ]);
 
   // ===================================================================
   // Validation before saving
@@ -586,9 +691,9 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
 
   const renderOrganizationHierarchy = () => (
     <OrganizationHierarchyView
-      departments={department || []}
-      commands={command || []}
-      stations={station || []}
+      departments={filteredDepartments || department || []}
+      commands={filteredCommands || command || []}
+      stations={filteredStations || station || []}
       showInactive={showInactive}
       handleDepartmentDelete={handleDepartmentDelete}
       handleDepartmentReset={handleDepartmentReset}
@@ -853,6 +958,17 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   //   </>
   // );
 
+  const [localValue, setLocalValue] = useState<string>("");
+
+  const handleResetQuery = () => {
+    if (setLocalValue) {
+      setLocalValue("");
+    }
+    if (setSearchQuery) {
+      setSearchQuery("");
+    }
+  }
+
   return (
     <>
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
@@ -892,12 +1008,40 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
                   {/* Toolbar */}
                   <div className="xl:flex space-y-2 xl:space-y-0 items-center space-x-4">
                     {/* Search */}
+                    {/*
                     <div className="relative">
                       <Input
                         placeholder="Search department or command or station..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
                       />
+                    </div>
+                    */}
+
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Input
+                          value={localValue}
+                          onChange={e => setLocalValue && setLocalValue(e.target.value)}
+                          placeholder={language === "th" && "ค้นหาหน่วยงาน..." || "Search organization..."}
+                        />
+                        {localValue && (
+                          <Button
+                            onClick={handleResetQuery}
+                            className="absolute right-0 top-1/2 transform -translate-y-1/2"
+                            variant="outline"
+                          >
+                            <CloseIcon className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => setSearchQuery && setSearchQuery(localValue)}
+                        variant="dark"
+                        className="h-11"
+                      >
+                        {t("crud.common.search")}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -921,7 +1065,15 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               </div>
             )}
             {/* Content */}
-            {!isLoading && filteredOrganizations?.length !== 0 && (
+            {!isLoading 
+              && 
+              // filteredOrganizations?.length !== 0 
+              (
+                filteredDepartments?.length > 0 || 
+                filteredCommands?.length > 0 || 
+                filteredStations?.length > 0
+              ) 
+              && (
               <>
                 {viewMode === "hierarchy" && renderOrganizationHierarchy()}
                 {viewMode === "list" && (
@@ -932,7 +1084,13 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               </>
             )}
             {/* Empty state */}
-            {!isLoading && filteredOrganizations?.length === 0 && (
+            {!isLoading 
+              && 
+              // filteredOrganizations?.length === 0 
+              filteredDepartments?.length === 0 && 
+              filteredCommands?.length === 0 && 
+              filteredStations?.length === 0 
+              && (
               <div className="text-center py-12">
                 <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
@@ -1132,9 +1290,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               value={stnCommId || ""}
               onChange={value => setStnCommId && setStnCommId(value)}
               // options={commandsOptions?.filter(option => option.deptId === stnDeptId) || []}
-              options={commandsOptions || []}
+              // options={commandsOptions || []}
+              options={commandsOptions?.filter(option => option.deptId === stnDeptId) || []}  // Add filter
               placeholder="Select Command"
               className="cursor-pointer"
+              disabled={!stnDeptId} // Disable if no department selected
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{stnValidateErrors.commId}</span>
           </div>

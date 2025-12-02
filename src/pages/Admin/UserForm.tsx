@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { getTranslations, Language, loadTranslations } from "@/config/i18n";
+import { usePostUploadFileMutationMutation } from "@/store/api/file";
 import { DropdownOption } from "@/types";
 import { Organization } from "@/types/organization";
 import { UserFormData } from "@/types/user";
@@ -44,10 +45,12 @@ const getByPath = (
 };
 
 const UserForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const isSystemAdmin = AuthService.isSystemAdmin();
-  const navigate = useNavigate();
+
+  const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [postUploadFile] = usePostUploadFileMutationMutation();
 
   const [lang, setLang] = useState<Language>(getCurrentLanguage());
   // const [trs, setTrs] = useState<any>({});
@@ -526,12 +529,17 @@ const UserForm: React.FC = () => {
 
     if (payload.photo instanceof File) {
       try {
-        payload.photo = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = (error) => reject(error);
-          reader.readAsDataURL(payload.photo as File);
-        });
+        const result = await postUploadFile({ path: "profile", file: payload.photo }).unwrap();
+        if (result?.data?.attUrl) {
+          payload.photo = result?.data?.attUrl;
+        }
+
+        // payload.photo = await new Promise<string>((resolve, reject) => {
+        //   const reader = new FileReader();
+        //   reader.onload = () => resolve(reader.result as string);
+        //   reader.onerror = (error) => reject(error);
+        //   reader.readAsDataURL(payload.photo as File);
+        // });
       }
       catch {
         const errorMessage = tt("errors.readImageFailed");
@@ -1134,7 +1142,7 @@ const UserForm: React.FC = () => {
                     />
                   </div>
 
-                  {pageMode === "Create" ? (
+                  {(pageMode === "Create" || (isSystemAdmin as unknown as boolean)) ? (
                     <>
                       <div>
                         <label htmlFor="password" className={labelClasses}>

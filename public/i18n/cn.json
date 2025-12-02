@@ -30,7 +30,8 @@
     "search_placeholder": "搜索...",
     "refresh": "刷新",
     "home": "家",
-    "retry": "重试"
+    "retry": "重试",
+    "close": "关闭"
   },
   "auth": {
     "signin": {
@@ -973,6 +974,9 @@
     "userTypeSuperAdmin": "超级管理员",
     "userTypeUnknown": "未知",
     "resetPassword": "重置密码",
+    "resetPasswordDescription": "请联系管理员或客服重置密码",
+    "resetPasswordContactEmail": "电子邮件",
+    "resetPasswordContactPhone": "电话",
     "changePassword": "修改密码",
     "changePasswordDescription": "输入您的当前密码和新密码来更改您的密码。",
     "currentPassword": "当前密码",

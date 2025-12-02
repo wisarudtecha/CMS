@@ -1,7 +1,12 @@
 // /src/components/admin/system-configuration/service/ServiceTypeAndSubType.tsx
 import React, { useEffect, useState } from "react";
 import { Folder, Plus, RefreshCw } from "lucide-react";
-// import { FolderIcon, ListIcon } from "@/icons";
+import {
+  CloseIcon
+  // FolderIcon,
+  // ListIcon
+} from "@/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import ServiceHierarchyView from "@/components/admin/system-configuration/service/ServiceHierarchyView";
 // import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
@@ -46,6 +51,8 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   setUserSkillList,
   setWfId
 }) => {
+  const { language, t } = useTranslation();
+
   // State management
   const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
   const [caseType, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
@@ -111,6 +118,17 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
     />
   );
 
+  const [localValue, setLocalValue] = useState<string>("");
+
+  const handleResetQuery = () => {
+    if (setLocalValue) {
+      setLocalValue("");
+    }
+    if (setSearchQuery) {
+      setSearchQuery("");
+    }
+  }
+
   return (
     <div className={`mx-auto w-full ${className}`}>
       {/* Header */}
@@ -145,14 +163,42 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
             */}
             
             {/* Toolbar */}
-            <div className="xl:flex space-y-2 xl:space-y-0 items-center space-x-4">
+            <div className="xl:flex space-y-2 xl:space-y-0 items-center space-x-2">
               {/* Search */}
+              {/*
               <div className="relative">
                 <Input
                   placeholder="Search types and sub-types..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
                 />
+              </div>
+              */}
+
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Input
+                    value={localValue}
+                    onChange={e => setLocalValue && setLocalValue(e.target.value)}
+                    placeholder={language === "th" && "ค้นหาบริการ / บริการย่อย..." || "Search type / sub-type..."}
+                  />
+                  {localValue && (
+                    <Button
+                      onClick={handleResetQuery}
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2"
+                      variant="outline"
+                    >
+                      <CloseIcon className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  onClick={() => setSearchQuery && setSearchQuery(localValue)}
+                  variant="dark"
+                  className="h-11"
+                >
+                  {t("crud.common.search")}
+                </Button>
               </div>
               
               {/* Category Filter */}

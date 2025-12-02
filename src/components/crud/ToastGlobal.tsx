@@ -80,7 +80,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         window.addEventListener('caseLoadingStart', handleLoadingStart);
         window.addEventListener('caseLoadingEnd', handleLoadingEnd);
         window.addEventListener('caseLoadingProgress', handleLoadingProgress);
-        window.addEventListener('caseLoadingFail', handleLoadingProgress);
+        window.addEventListener('caseLoadingFail', handleLoadingFail);
         return () => {
             window.removeEventListener('caseLoadingStart', handleLoadingStart);
             window.removeEventListener('caseLoadingEnd', handleLoadingEnd);

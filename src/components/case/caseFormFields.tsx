@@ -301,7 +301,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                             onChange={handleCaseTypeChange}
                             placeholder={t("case.display.select_types_placeholder")}
                             className={`2xsm:mx-3 mb-2`}
-                            disabled={!isCreate}
+                            disabled={!isCreate || !!caseState.workOrderNummber}
                         />
                     </div>
                     <div className="px-3 col-span-1">

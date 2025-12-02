@@ -364,7 +364,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         module="skill"
         // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
         previewConfig={previewConfig as PreviewConfig<Skill & { id: string }>}
-        searchFields={["th", "active"]}
+        searchFields={["th", "en"]}
         // customFilterFunction={() => true}
         onCreate={() => {
           handleSkillReset();

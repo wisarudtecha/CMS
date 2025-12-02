@@ -65,11 +65,7 @@ export const fetchCase = async (params: CaseListParams) => {
         const result = await store.dispatch(
           caseApi.endpoints.getListCase.initiate(fetchParams, { forceRefetch: true })
         );
-
-        // Check if we have a successful response
-        if (result.data !== undefined) {
-          return result;
-        }
+        // Check if we have a successful response     
 
         // If result.error exists, retry
         if (result.error) {
@@ -82,8 +78,10 @@ export const fetchCase = async (params: CaseListParams) => {
           if (attempt === retries) {
             throw new Error("Unexpected API response");
           }
+        } 
+        if (result.data !== undefined) {
+          return result;
         }
-
         // Exponential backoff: wait longer between retries
         const backoffDelay = delay * Math.pow(2, attempt);
         await new Promise(resolve => setTimeout(resolve, backoffDelay));

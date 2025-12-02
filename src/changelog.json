@@ -1,4 +1,28 @@
 {
+  "0.4.8": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_02,DF_08,DF_09,DF_12,DF_20,DF_28,DF_29,DF_30.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.7": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: report and save daft bug",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.6": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF-38",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.5": {
+    "date": "2025-12-01",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_11,DF_20,DF_22,DF_27,DF_32.",
+    "author": "Wisarud Techa"
+  },
   "0.4.4": {
     "date": "2025-11-28",
     "segment": "PATCH",

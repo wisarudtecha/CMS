@@ -12,7 +12,8 @@ import Input from "@/components/form/input/InputField";
 import Checkbox from "@/components/form/input/Checkbox";
 import LangDropdown from "@/components/header/LangDropdown";
 import Button from "@/components/ui/button/Button";
-import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
+// import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
+import ResetPasswordModal from "@/components/auth/ForgotPassword";
 
 declare const __APP_VERSION__: string;
 

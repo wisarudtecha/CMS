@@ -1,0 +1,241 @@
+## [2.0.2] - 2025-11-28
+### Added
+- feat: role & privilege
+- feat: role & privilege
+- feat, refactor, perf: enhance ui dynamically
+- feat(i18n): Chinese language
+- feat: new page and components with enhance UI.
+- feat: new page and components of service mgmt.
+- feat: new page and components
+- feat(Dashboard): enhance ui
+- feat(Dashboard): enhance ui
+- feat(logo): dark theme
+- feat(Workflow): node type
+- feat(CaseHistory): enhance preview dialog
+- feat(Theme): theme customization
+- feat(Select): customizable select
+- feat: permission's access
+- feat(package): install need to use and helper package dependencies
+- feat: role mgmt and audit viewer
+- feat(Security): security and error handling
+- feat(Admin): User Management Dashboard
+- feat(Admin): User Management Dashboard
+- feat(CaseHistory): custom preview dialog
+- feat(Case): add case history page v0.2
+- feat(Dashboard): major enhancements implemented
+- feat(CRUD): extract reusable CRUD components from the Workflow List
+- feat: dashboard mockup
+- feat: Dashboard Framework First Release v0.1
+- feat: authentication system
+- feat: authentication system
+- feat: Workflow #4 release v0.2.1
+- feat: menu and navigation customization
+- feat: Workflow #3 release v0.2.0
+- feat: Workflow #2 release v0.1.7
+- feat: custom components attribute
+- feat: Workflow first release v0.1.3
+- feat: custom Alert component message
+- feat: custom select component attribute
+- feat: custom button component class name
+- feat: modify PageBreadcrumb component to support multiple
+- feat: change i18n library script
+- feat: add i18n support for user interface text
+
+### Changed
+- perf: unit management and form - Add skill tab on preview dialog. - Fix select (multiple) display label instead value.
+- perf: case history - Enhance preview data same as case assignment. - Re-structure of unit API and Types.
+- perf: service management - Add create/update/delete.
+- perf: enhance ui
+- perf: case history
+- perf: case history
+- perf(Admin): organization
+- refactor: JSON structure
+- refactor: env
+- refactor: rewrite
+- refactor: rewrite
+- refactor: env
+- refactor: env
+- refactor: env
+- refactor: env and package
+- perf, fix: enhance ui and functionality
+- refactor casedetail and create
+- perf: enhance ui
+- perf: enhance ui
+- refactor caseDetail caseTypeSelect com && sperate create case normal and create case schedule
+- refactor: dashboard
+- perf,fix: unit, language, profile
+- perf(Notification): enhance UI
+- perf: enhance project folder structure
+- perf: vite config
+- perf(ServiceMgmt.): enhance ui
+- perf: enhance ui
+- refactor: backend modification
+- refactor: backend modification
+- refactor: backend modification
+- perf: enhance ui
+- perf(CaseHistory): enhance ui
+- perf: enhance ui
+- perf: enhance case history and role management
+- refactor case interface
+- perf(CaseHistory): fix case card and table
+- refactor(Workflow): node type
+- perf(Workflow): enhance workflow and SOP management
+- perf: general optimization
+- refactor case detail
+- refactor
+- perf: auth, theme, filter, workflow
+- perf(Workflow): workflow creation
+- perf: workflow, user, and role with permission management
+- refactor & when create case append to localstore
+- perf: workflow, user, and role with permission management
+- perf(Workflow): update form input and permission
+- perf: permission's access
+- perf(Role): role and permission management
+- perf(Auth): token refreshing issue
+- perf: enhanced components and service
+- perf(Auth): enhance authentication
+- perf: utility function naming
+- perf(Autocomplete): enhance autocomplete suggestion
+- refactor(CaseHistory): API changing
+- perf(auth): login credentials modification
+- perf(menu): archives menu display
+- perf(workflow): Workflow Builder UI
+- perf(CaseHistory): enhance components list
+- perf(SOP): enhance CRUD components
+- refactor(Auth): change session expire time from 15 min. to 60 min.
+- perf: turn off no use dependencies
+- refactor: Workflow default template
+
+### Fixed
+- fix: case history
+- fixed sla hour to minute
+- fixed sla ===0 is not assign
+- fixed sla kanban view
+- fixed comment spam new msg && close job in unit && fixed search function in assign officer
+- fixed loading user infomation
+- fixed env
+- fixed can chick 2 times in assign but
+- fixed sla kanban visual
+- fixed wording && case about case file
+- fixed z-index
+- fixed bg maximal comment
+- fixed dynamicform validate
+- fixed wrong type
+- fixed date error
+- fix: vite config
+- fix minor console error
+- fixed import localimage
+- fix, perf: enhance ui
+- fixed cant create in schedule create case
+- fixed wording lang in preview before submit
+- fixed username to createby
+- fixed auto fill in dynamic form color bg change
+- fixed upload wrong env
+- fixed getting dynamic form
+- fixed sla sop render and wording in case detail
+- fixed dynamic form wrong render
+- fix(Notification): enhance UI
+- fixed update kanban  case list from socket
+- fixed date slatime line
+- fix: authentication
+- fixed sop steps wrong render and ui officer.
+- fixed status dont update when get sopdata
+- fixed iot date
+- fixed get unit sop issue
+- fixed on back
+- fixed date + 7 and casestatus && search
+- fixed dispatch not update
+- fixed case Type logic change or not
+- fixed ui issue and dispatch unit
+- fixed show dynamic form in casedetail
+- Fixed UI Design User Audit Log and Reset Password Modal
+- fixed create case example data previewbefore summit ui  and refactor
+- fixed error
+- fixed genid
+- fixed render unit sop
+- Fix UserProfile Menu UI and Audit Log page for admin and user Add Modal Change Password and Reset Password
+- fixed dispatch
+- fixed dynamicform load in casedetail
+- Fix audit log (Success log)
+- Fix Toast Bug (Toast Stacking & set time out)
+- fixed work order number
+- fix(Workflow): canvas issue
+- fixed checkbox in unit
+- fixed small screen rendering
+- fixed await case setup
+- fixed comment light css
+- fixed unit name
+- fixed case value display
+- Fix Notification Preference Fix Notification Pop up
+- fixed loading
+- fixed customer
+- fixed h-w loading
+- Fixed Create User
+- fix
+- fixed customer source.
+- fixed create case value
+- fixed confi
+- fixed confic
+- fixed customer input
+- Fix ui
+- fix: defect of version control
+- fix: defect of version control
+- fix URL
+- Fixed Navigate edit{id} ==> edit/{id} Fx Navigate users ==> user
+- Fix Mutiple Prefix (api/v1) by Delta
+- fixed error
+- fix filter formanager
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross orgin on production (staging)
+- fix(secure): cross origin
+- Fixed Login Func Autocomplete/suggestions
+- fix: CRUD display mode and select components issue
+- fixed image error
+- fixed infi loop in caseDetail
+- fixed del assign officer but still show data
+- fixed get type error and text color in searchSelect
+- fixed caseDetailview not working
+- fix layout
+- fix(auth): stay logged in issue
+- Fixed UI
+- fix(stash): main and sidebar menu conflict
+- fixed dynamic form resposive
+- fixed add input button to handle resposive.
+- fix: file merge problem
+- fix: file merge problem
+- fix: file merge problem
+- fixed json data case
+- fixed dynamicform css when disable edit
+- fixed css bg caseview
+- fix bg caseview
+- fixed count wrong in caseview
+- fixed radio input
+- fixed image second icon on muti image
+- fixed css dynamic form
+- fix: logo image not display
+- fixed the error in input component
+- fixed dynamic form css
+- fix: public resource missing
+- fixed header in dynamic form
+- fixed col span dynamic form
+- fixed dynamic field can be add in group
+- fixed build error
+- fix css kanban & add CreateCase Pages
+- fixed css
+- fixed renden bug
+
+### Removed
+- remove rounded in activity time
+- remove pageMeta title in caseSchedule
+- remove unuse file case
+- remove update officer data update
+- remove case sort
+- remove duplicate casetype form
+- remove unit wo button
+- remove search select position cal
+

@@ -96,7 +96,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
 
   const handleEdit = () => {
     if (userData?.id) {
-      navigate(`/user/edit/${userData.id}`, { state: { from: "profile" } });
+      navigate(`/user/${userData.id}/edit`, { state: { from: "profile" } });
     }
   };
 

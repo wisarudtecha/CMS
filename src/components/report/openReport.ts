@@ -15,7 +15,7 @@ export function openJasperReport(url: string) {
     form.target = "jasperWin";
 
     // เปิดหน้าต่างใหม่ + เก็บ reference
-    jasperWin = window.open("", "jasperWin");
+    
 
     const params: Record<string, string> = {
         j_username: import.meta.env.VITE_JASPER_USERNAME || "" ,
@@ -40,7 +40,7 @@ export function openJasperReport(url: string) {
     form.submit();
 
     // หลัง login แล้ว redirect → เปิด report
-    setTimeout(() => {
-        jasperWin?.location.assign(url);
-    }, 1500);
+    
+        jasperWin = window.open(url, "jasperWin");
+
 }
