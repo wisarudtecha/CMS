@@ -1015,6 +1015,7 @@
     "userTypeUnknown": "ไม่ทราบ",
     "resetPassword": "รีเซ็ตรหัสผ่าน",
     "resetPasswordDescription": "ติดต่อผู้ดูแลระบบหรือฝ่ายสนับสนุน เพื่อรีเซ็ตรหัสผ่านของคุณ",
+    "resetPasswordDescriptionForAdmin": "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต",
     "resetPasswordContactEmail": "อีเมล์",
     "resetPasswordContactPhone": "โทรศัพท์",
     "changePassword": "เปลี่ยนรหัสผ่าน",

@@ -40,7 +40,7 @@ const AreaManagementPage: React.FC = () => {
         description="This is React.js Area Response Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["service.view"]}>
+      <ProtectedRoute requiredPermissions={["settings.view"]}>
         <PageBreadcrumb pageTitle="Area Response Management" />
 
         <AreaManagementComponent areas={areas} />

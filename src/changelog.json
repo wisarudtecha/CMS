@@ -1,4 +1,22 @@
 {
+  "0.4.11": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "fixed : toast still loading",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.10": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "feat: area management:\n- Add area with hierarchy view into page.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.9": {
+    "date": "2025-12-03",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_02.",
+    "author": "Wisarud Techa"
+  },
   "0.4.8": {
     "date": "2025-12-02",
     "segment": "PATCH",

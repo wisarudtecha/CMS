@@ -1,18 +1,30 @@
 // /src/components/UserProfile/UserMetaCard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LockIcon, PencilIcon } from "@/icons";
 // import { useUserProfile } from "@/context/UserProfileContext";
 import { useUserProfile } from "@/context/UserProfileContextObject";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { AuthService } from "@/utils/authService";
 import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
 import type { Address, UserMetaCardProps } from "@/types/user";
 import Toast from "@/components/toast/Toast";
 import ChangePasswordModal from "@/components/UserProfile/ChangePasswordModal";
-
+import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
 
 export default function UserMetaCard({ userData: propUserData, loading: propLoading, error: propError }: UserMetaCardProps = {}) {
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  useEffect(() => {
+    const fetchSystemAdminStatus = async () => {
+      setIsSystemAdmin(await AuthService.isSystemAdmin());
+    }
+    fetchSystemAdminStatus();
+  }, [isSystemAdmin]);
+  
   const navigate = useNavigate();
+  const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
   const { t } = useTranslation();
 
@@ -58,6 +70,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
     instagram: "",
   });
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
 
   const rawAddress: string = userData?.address || "";
   const location: Address = isValidJsonString(rawAddress) ? JSON.parse(rawAddress) : null;
@@ -222,6 +235,7 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
             </div>
           )}
 
+          {/*
           {selfProfile && (
             <div className="flex items-center order-3 gap-2 grow xl:order-4 xl:justify-end">
               <button
@@ -242,6 +256,35 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
                 </svg>
                 {t("userform.changePassword")}
               </button>
+            </div>
+          )}
+          */}
+
+          {(selfProfile || permissions.hasPermission("user.update") || permissions.hasPermission("user.reset_password") || isSystemAdmin) && (
+            <div className={`${selfProfile && "flex items-center" || "text-right space-x-2 space-y-2"} order-3 gap-2 grow xl:order-4 xl:justify-end`}>
+              {(selfProfile || permissions.hasPermission("user.update") || isSystemAdmin) && (
+                <button
+                  onClick={handleEdit}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white my-1 px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+                >
+                  <PencilIcon className="w-4 h-4" />
+                  {t("common.edit")}
+                </button>
+              )}
+              {(selfProfile || permissions.hasPermission("user.reset_password") || isSystemAdmin) && (
+                <button
+                  onClick={() => (
+                      selfProfile && setShowChangePasswordModal(true)
+                    ) || (
+                      (permissions.hasPermission("user.reset_password") || isSystemAdmin) && setShowResetPasswordModal(true)
+                    ) || {}
+                  }
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-blue-300 bg-blue-50 my-1 px-4 py-3 text-sm font-medium text-blue-700 shadow-theme-xs hover:bg-blue-100 hover:text-blue-800 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 lg:inline-flex lg:w-auto"
+                >
+                  <LockIcon className="w-4 h-4" />
+                  {t("userform.changePassword")}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -275,13 +318,21 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
       */}
 
       {/* Modals */}
-      <ChangePasswordModal 
-        isOpen={showChangePasswordModal}
-        onClose={() => setShowChangePasswordModal(false)}
-        userId={userData?.id?.toString()}
-        onSuccess={handlePasswordChangeSuccess}
-      />
-
+      {selfProfile && (
+        <ChangePasswordModal 
+          isOpen={showChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
+          userId={userData?.id?.toString()}
+          onSuccess={handlePasswordChangeSuccess}
+        />
+      ) || ((permissions.hasPermission("user.reset_password") || isSystemAdmin) && (
+        <ResetPasswordModal
+          isOpen={showResetPasswordModal}
+          onClose={() => setShowResetPasswordModal(false)}
+          onSuccess={handlePasswordChangeSuccess}
+        />
+      )) || ""}
+      
       {/* Toast Notifications */}
       {toasts.map((toast) => (
         <Toast

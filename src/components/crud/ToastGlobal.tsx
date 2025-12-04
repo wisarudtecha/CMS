@@ -35,9 +35,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
             if (loadingToastIdRef.current) {
                 removeToast(loadingToastIdRef.current);
             }
-            const id = Date.now().toString();
-            loadingToastIdRef.current = id;
-            addToast("loading", "case.display.toast.loading_case", 0, true);
+            loadingToastIdRef.current = addToast("loading", "case.display.toast.loading_case", 0, true);
         };
 
         const handleLoadingEnd = () => {
@@ -64,17 +62,15 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
             const { current, total } = customEvent.detail;
             if (loadingToastIdRef.current) {
                 removeToast(loadingToastIdRef.current);
-                const id = Date.now().toString();
-                loadingToastIdRef.current = id;
-                addToast(
-                    "loading",
-                    t(`common.loadingPercentage`).replace(
-                        "_percentage_",
-                        `(${Math.floor((current * 100) / total)}%)`
-                    ),
-                    0
-                );
             }
+            loadingToastIdRef.current = addToast(
+                "loading",
+                t(`common.loadingPercentage`).replace(
+                    "_percentage_",
+                    `(${Math.floor((current * 100) / total)}%)`
+                ),
+                0
+            );
         };
 
         window.addEventListener('caseLoadingStart', handleLoadingStart);
@@ -84,7 +80,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         return () => {
             window.removeEventListener('caseLoadingStart', handleLoadingStart);
             window.removeEventListener('caseLoadingEnd', handleLoadingEnd);
-            window.removeEventListener('caseLoadingProgress', handleLoadingFail);
+            window.removeEventListener('caseLoadingProgress', handleLoadingProgress);
             window.removeEventListener('caseLoadingFail', handleLoadingFail);
         };
     }, [addToast, removeToast, t]);

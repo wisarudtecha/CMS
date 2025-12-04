@@ -40,7 +40,7 @@ export function openJasperReport(url: string) {
     form.submit();
 
     // หลัง login แล้ว redirect → เปิด report
-    
+    setTimeout(() => {
         jasperWin = window.open(url, "jasperWin");
-
+    }, 1500);
 }

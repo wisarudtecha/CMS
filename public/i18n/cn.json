@@ -975,6 +975,7 @@
     "userTypeUnknown": "未知",
     "resetPassword": "重置密码",
     "resetPasswordDescription": "请联系管理员或客服重置密码",
+    "resetPasswordDescriptionForAdmin": "请输入邮箱地址、用户名和新密码进行重置",
     "resetPasswordContactEmail": "电子邮件",
     "resetPasswordContactPhone": "电话",
     "changePassword": "修改密码",

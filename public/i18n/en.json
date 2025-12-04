@@ -1040,6 +1040,7 @@
     "userTypeUnknown": "Unknown",
     "resetPassword": "Reset Password",
     "resetPasswordDescription": "Contact administrator or support to reset your password.",
+    "resetPasswordDescriptionForAdmin": "Enter email, username, and new password to reset.",
     "resetPasswordContactEmail": "Email",
     "resetPasswordContactPhone": "Phone",
     "changePassword": "Change Password",

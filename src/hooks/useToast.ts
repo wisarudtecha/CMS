@@ -4,7 +4,7 @@ import type { Toast } from "@/types/crud";
 
 export interface UseToastResult {
   toasts: Toast[];
-  addToast: (type: Toast["type"], message: string, duration?: number , isI18N?: boolean) => void;
+  addToast: (type: Toast["type"], message: string, duration?: number , isI18N?: boolean) => string;
   removeToast: (id: string) => void;
   clearToasts: () => void;
 }
@@ -28,6 +28,7 @@ export const useToast = (): UseToastResult => {
         removeToast(id);
       }, duration);
     }
+    return id
   };
 
   const removeToast = (id: string) => {

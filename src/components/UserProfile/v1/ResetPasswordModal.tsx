@@ -114,7 +114,7 @@ const ResetPasswordModal = ({
             {t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน"}
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t("userform.resetPasswordDescriptionForAdmin") || "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต"}
+            {t("userform.resetPasswordDescription") || "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต"}
           </DialogDescription>
         </DialogHeader>
 
