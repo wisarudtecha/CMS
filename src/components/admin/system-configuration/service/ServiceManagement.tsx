@@ -13,6 +13,7 @@ import {
   useUpdateCaseSubTypesMutation,
   useDeleteCaseSubTypesMutation
 } from "@/store/api/serviceApi";
+import { useGetWorkflowQuery } from "@/store/api/workflowApi";
 import type {
   CaseSubTypesCreateData,
   CaseSubTypesUpdateData,
@@ -25,7 +26,7 @@ import type {
 } from "@/types/case";
 import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
-import type { Workflow } from "@/types/workflow";
+import type { Workflow, WorkflowData } from "@/types/workflow";
 import ServiceTypeAndSubTypeComponent from "@/components/admin/system-configuration/service/ServiceTypeAndSubType";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Input from "@/components/form/input/InputField";
@@ -86,6 +87,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   const [userSkillList, setUserSkillList] = useState<string[]>([]);
   const [wfId, setWfId] = useState("");
   const [mDeviceType, setMDeviceType] = useState<string>("");
+  const [mDeviceTypeName, setMDeviceTypeName] = useState<string>("");
   const [mWorkOrderType, setMWorkOrderType] = useState<string>("");
   const [sTypeValidateErrors, setSTypeValidateErrors] = useState<{
     sTypeTh: string,
@@ -98,10 +100,31 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     userSkillList: string,
     wfId: string,
     mDeviceType: string,
+    mDeviceTypeName: string,
     mWorkOrderType: string
   }>({
-    sTypeTh: "", sTypeEn: "", sTypeCode: "", sTypeTypeId: "", caseSla: "", priority: "", unitPropLists: "", userSkillList: "", wfId: "", mDeviceType: "", mWorkOrderType: ""
+    sTypeTh: "",
+    sTypeEn: "",
+    sTypeCode: "",
+    sTypeTypeId: "",
+    caseSla: "",
+    priority: "",
+    unitPropLists: "",
+    userSkillList: "",
+    wfId: "",
+    mDeviceType: "",
+    mDeviceTypeName: "",
+    mWorkOrderType: ""
   });
+
+  const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
+  const { data: workflowsData } = useGetWorkflowQuery(selectedWorkflow ?? "" , { skip: !selectedWorkflow });
+  useEffect(() => {
+    const workflows = workflowsData?.data as unknown as WorkflowData || [];
+    if (workflows?.metadata?.totalSla) {
+      setCaseSla(String(workflows?.metadata?.totalSla));
+    }
+  }, [workflowsData]);
 
   // Case Type
   const [caseType, setCaseType] = useState<EnhancedCaseType[]>(caseTypes || []);
@@ -479,6 +502,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       userSkillList: "",
       wfId: "",
       mDeviceType: "",
+      mDeviceTypeName: "",
       mWorkOrderType: ""
     });
   };
@@ -878,18 +902,6 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.sTypeEn}</span>
           </div>
           <div>
-            <label htmlFor="caseSla" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              SLA
-            </label>
-            <Input
-              id="caseSla"
-              placeholder="Fill SLA"
-              value={caseSla}
-              onChange={(e) => setCaseSla && setCaseSla(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.caseSla}</span>
-          </div>
-          <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Priority
             </label>
@@ -934,12 +946,34 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             </label>
             <Select
               value={wfId || ""}
-              onChange={value => setWfId && setWfId(value)}
+              onChange={value => {
+                if (setWfId) {
+                  setWfId(value);
+                  setSelectedWorkflow(value);
+                }
+              }}
               options={workflowsOptions || []}
               placeholder="Select Workflow"
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.wfId}</span>
+          </div>
+          <div>
+            <label htmlFor="caseSla" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              SLA
+            </label>
+            <div className=" h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:placeholder:text-white/30  bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90 dark:focus:border-brand-800 cursor-default">
+              {caseSla || 0}
+            </div>
+            {/*
+            <Input
+              id="caseSla"
+              placeholder="Fill SLA"
+              value={caseSla}
+              onChange={(e) => setCaseSla && setCaseSla(e.target.value)}
+            />
+            <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.caseSla}</span>
+            */}
           </div>
           <div>
             <label htmlFor="mDeviceType" className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -952,6 +986,18 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               onChange={(e) => setMDeviceType && setMDeviceType(e.target.value)}
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.mDeviceType}</span>
+          </div>
+          <div>
+            <label htmlFor="mDeviceTypeName" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              Device Type Name
+            </label>
+            <Input
+              id="mDeviceTypeName"
+              placeholder="Fill Device Type Name"
+              value={mDeviceTypeName}
+              onChange={(e) => setMDeviceTypeName && setMDeviceTypeName(e.target.value)}
+            />
+            <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.mDeviceTypeName}</span>
           </div>
           <div>
             <label htmlFor="mWorkOrderType" className="text-sm font-medium text-gray-700 dark:text-gray-200">

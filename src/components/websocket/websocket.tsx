@@ -4,6 +4,8 @@ import {  getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUp
 import { CaseEntity } from '@/types/case';
 import { idbStorage } from '../idb/idb';
 
+const isLocalhost: boolean = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "[::1]";
+
 export interface WebSocketMessage {
   type: string;
   data: any;
@@ -172,7 +174,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
 
     reconnectAttemptsRef.current++;
-    console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
+    if (!isLocalhost) {
+      console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
+    }
 
     reconnectTimeoutRef.current = setTimeout(() => {
       websocket(config || defalutWebsocketConfig);
@@ -235,7 +239,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
           setLastMessage(message);
           switch (message.data.EVENT != null) {
-            case message.data.EVENT.includes("CASE"):
+            case message.data.EVENT?.includes("CASE"):
               WebSocketCaseEvent(message)
               break;
             default:
@@ -257,7 +261,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+        if (!isLocalhost) {
+          console.log('WebSocket disconnected:', event.code, event.reason);
+        }
         setIsConnected(false);
         setConnectionState('disconnected');
         isConnectingRef.current = false;
@@ -270,7 +276,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        if (!isLocalhost) {
+          console.error('WebSocket error:', error);
+        }
         setConnectionState('error');
         isConnectingRef.current = false;
         // connect(defalutWebsocketConfig)
@@ -292,7 +300,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     configRef.current = null;
 
     if (wsRef.current) {
-      wsRef.current.close(1000, 'Manual disconnect');
+      if (!isLocalhost) {
+        wsRef.current.close(1000, 'Manual disconnect');
+      }
       wsRef.current = null;
     }
 

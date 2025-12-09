@@ -608,7 +608,7 @@ const UserForm: React.FC = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-64 text-lg">
+      <div className="flex justify-center items-center h-64 text-lg text-gray-900 dark:text-white">
         {tt("userform.loadingUserData")}
       </div>
     );
@@ -829,15 +829,15 @@ const UserForm: React.FC = () => {
                         className="w-full h-full rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
                       />
                     ) : (
-                      <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-700" />
+                      <UserCircleIcon className="w-full h-full text-gray-300 dark:text-gray-600" />
                     )}
                     <label
                       htmlFor="photo-upload"
-                      className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-full cursor-pointer transition-opacity duration-300 opacity-0 hover:opacity-100"
+                      className="absolute inset-0 bg-black dark:bg-white bg-opacity-40 flex items-center justify-center rounded-full cursor-pointer transition-opacity duration-300 opacity-0 hover:opacity-100"
                     >
                       <div className="text-center">
-                        <CameraIcon className="w-8 h-8 text-white mx-auto" />
-                        <span className="text-xs text-white mt-1">{tt("userform.changePhoto")}</span>
+                        <CameraIcon className="w-8 h-8 text-white dark:text-gray-900 mx-auto" />
+                        <span className="text-xs text-white dark:text-gray-900 mt-1">{tt("userform.changePhoto")}</span>
                       </div>
                     </label>
                   </div>
@@ -862,7 +862,7 @@ const UserForm: React.FC = () => {
                     <div>
                       <label htmlFor="deptId" className={labelClasses}>
                         {tt("userform.department")}{" "}
-                        {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                        {!isEdit && pageMode === "Create" ? <span className="text-red-500 dark:text-red-400">*</span> : null}
                       </label>
                       <Select
                         value={formData.deptId}
@@ -901,7 +901,7 @@ const UserForm: React.FC = () => {
                     <div>
                       <label htmlFor="commId" className={labelClasses}>
                         {tt("userform.command")}{" "}
-                        {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                        {!isEdit && pageMode === "Create" ? <span className="text-red-500 dark:text-red-400">*</span> : null}
                       </label>
                       <Select
                         value={formData.commId}
@@ -942,7 +942,7 @@ const UserForm: React.FC = () => {
                     <div>
                       <label htmlFor="stnId" className={labelClasses}>
                         {tt("userform.station")}{" "}
-                        {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                        {!isEdit && pageMode === "Create" ? <span className="text-red-500 dark:text-red-400">*</span> : null}
                       </label>
                       <Select
                         value={formData.stnId}
@@ -982,7 +982,7 @@ const UserForm: React.FC = () => {
                     </div>
                     <div>
                       <label htmlFor="roleId" className={labelClasses}>
-                        {tt("userform.role")} {!isEdit && pageMode === "Create" ? <span className="text-red-500">*</span> : null}
+                        {tt("userform.role")} {!isEdit && pageMode === "Create" ? <span className="text-red-500 dark:text-red-400">*</span> : null}
                       </label>
                       <Select
                         value={formData.roleId}
@@ -1022,7 +1022,7 @@ const UserForm: React.FC = () => {
                     <div>
                       <label htmlFor="empId" className={labelClasses}>
                         {tt("userform.empId")}
-                        {pageMode === "Create" && <span className="text-red-500">*</span>}
+                        {pageMode === "Create" && <span className="text-red-500 dark:text-red-400">*</span>}
                       </label>
                       <Input
                         type="text"
@@ -1091,7 +1091,7 @@ const UserForm: React.FC = () => {
                     <div>
                       <label htmlFor="username" className={labelClasses}>
                         {tt("userform.username")}
-                        {pageMode === "Create" && <span className="text-red-500">*</span>}
+                        {pageMode === "Create" && <span className="text-red-500 dark:text-red-400">*</span>}
                       </label>
                       <Input
                         type="text"
@@ -1148,7 +1148,7 @@ const UserForm: React.FC = () => {
                       <>
                         <div>
                           <label htmlFor="password" className={labelClasses}>
-                            {tt("userform.password")} <span className="text-red-500">*</span>
+                            {tt("userform.password")} <span className="text-red-500 dark:text-red-400">*</span>
                           </label>
                           <Input
                             type="password"
@@ -1163,11 +1163,11 @@ const UserForm: React.FC = () => {
                             title="Password must be at least 7 characters with 1 uppercase letter and 1 special character"
                             autoComplete="new-password"
                           />
-                          <span className="text-xs text-gray-500 dark:text-gray-300">{tt("userform.pwdHint")}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{tt("userform.pwdHint")}</span>
                         </div>
                         <div>
                           <label htmlFor="confirmPassword" className={labelClasses}>
-                            {tt("userform.confirmPassword")} <span className="text-red-500">*</span>
+                            {tt("userform.confirmPassword")} <span className="text-red-500 dark:text-red-400">*</span>
                           </label>
                           <Input
                             type="password"
@@ -1232,7 +1232,7 @@ const UserForm: React.FC = () => {
 
                     <div className="md:col-span-2">
                       <label htmlFor="firstName" className={labelClasses}>
-                        {tt("userform.firstName")} <span className="text-red-500">*</span>
+                        {tt("userform.firstName")} <span className="text-red-500 dark:text-red-400">*</span>
                       </label>
                       <Input
                         type="text"
@@ -1263,7 +1263,7 @@ const UserForm: React.FC = () => {
 
                     <div className="md:col-span-2">
                       <label htmlFor="lastName" className={labelClasses}>
-                        {tt("userform.lastName")} <span className="text-red-500">*</span>
+                        {tt("userform.lastName")} <span className="text-red-500 dark:text-red-400">*</span>
                       </label>
                       <Input
                         type="text"
@@ -1277,10 +1277,29 @@ const UserForm: React.FC = () => {
                       />
                     </div>
 
+                    <div className="md:col-span-3">
+                      <label htmlFor="email" className={labelClasses}>
+                        {tt("userform.email")} <span className="text-red-500 dark:text-red-400">*</span>
+                      </label>
+                      <Input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="text-gray-900 dark:text-white"
+                        required
+                        maxLength={100}
+                        pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                        title="Please enter a valid email address"
+                        disabled={pageMode !== "Create"}
+                      />
+                    </div>
+                    {/*
                     {pageMode === "Create" ? (
                       <div className="md:col-span-3">
                         <label htmlFor="email" className={labelClasses}>
-                          {tt("userform.email")} <span className="text-red-500">*</span>
+                          {tt("userform.email")} <span className="text-red-500 dark:text-red-400">*</span>
                         </label>
                         <Input
                           type="email"
@@ -1298,11 +1317,12 @@ const UserForm: React.FC = () => {
                     ) : (
                       <div className="md:col-span-3">
                         <label className={labelClasses}>{tt("userform.email")}</label>
-                        <div className="mt-1 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
+                        <div className="mt-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
                           {formData.email || "-"}
                         </div>
                       </div>
                     )}
+                    */}
 
                     <div>
                       <label htmlFor="mobileNo" className={labelClasses}>
@@ -1364,7 +1384,7 @@ const UserForm: React.FC = () => {
                         <div 
                           className={`absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer transition-colors ${
                             isDatePickerOpen 
-                              ? 'text-blue-600 dark:text-blue-400' 
+                              ? 'text-blue-500 dark:text-blue-400' 
                               : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                           }`}
                           onClick={handleDatePickerClick}
@@ -1476,7 +1496,7 @@ const UserForm: React.FC = () => {
               </div>
 
               {error && (
-                <p className="text-sm text-red-500 bg-red-100 dark:bg-red-900/50 p-3 rounded-md text-center xl:col-span-2">
+                <p className="text-sm text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-800 p-3 rounded-md text-center xl:col-span-2">
                   {error}
                 </p>
               )}

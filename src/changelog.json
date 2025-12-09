@@ -1,4 +1,22 @@
 {
+  "0.4.14": {
+    "date": "2025-12-09",
+    "segment": "PATCH",
+    "notes": "perf: unit, user, service management:\n- Update i18n (TH/EN/CN).\n- Add mDeviceTypeName into ServiceManagement component.\n- Enhance set caseSLA by workflow selection in ServiceManagement component.\n- Update input field UI in unit-form components.\n- Enhance children dropdown selection relate with own parent.\n- Update display UI in UnitManagement component.\n- Update User Form UI.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.13": {
+    "date": "2025-12-05",
+    "segment": "PATCH",
+    "notes": "fixed : fixed done can cancedl and schedule can only be ackno",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.12": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "fixed : create case schedule bug.",
+    "author": "Phanuphong Manopkawee"
+  },
   "0.4.11": {
     "date": "2025-12-04",
     "segment": "PATCH",

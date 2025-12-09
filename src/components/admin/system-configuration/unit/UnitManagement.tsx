@@ -2,13 +2,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
-import { CircleCheck, CircleX, MapPinCheck, MapPinX } from "lucide-react";
+import {
+  CircleCheck,
+  CircleX,
+  // MapPinCheck,
+  // MapPinX
+} from "lucide-react";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGetUserSkillsByUsernameQuery } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
+import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Unit } from "@/types/unit";
 import type { UserSkill } from "@/types/user";
@@ -19,17 +25,20 @@ const UnitLocation: React.FC<{
   isOutArea: boolean;
   isLogin: boolean;
 }> = ({
-  isOutArea,
+  // isOutArea,
   isLogin
 }) => {
-  const isOutAreaIcon = isOutArea ? <MapPinX className="w-4 h-4" /> : <MapPinCheck className="w-4 h-4" />;
-  const isOutAreaLabel = isOutArea ? " Out of Area " : " In Area ";
+  // const isOutAreaIcon = isOutArea ? <MapPinX className="w-4 h-4" /> : <MapPinCheck className="w-4 h-4" />;
+  // const isOutAreaLabel = isOutArea ? " Out of Area " : " In Area ";
   const isOnlineIcon = isLogin ? <CircleCheck className="w-4 h-4" /> : <CircleX className="w-4 h-4" />;
   const isOnlineLabel = isLogin ? " Online " : " Offline ";
   return (
     <div className="xl:flex items-center justify-start gap-2 text-gray-900 dark:text-white text-sm">
-      <span className="flex items-center justify-start gap-1">{isOutAreaIcon} {isOutAreaLabel}</span>
-      <span className="flex items-center justify-start gap-1">{isOnlineIcon} {isOnlineLabel}</span>
+      {/* <span className="flex items-center justify-start gap-1">{isOutAreaIcon} {isOutAreaLabel}</span> */}
+      {/* <span className="flex items-center justify-start gap-1">{isOnlineIcon} {isOnlineLabel}</span> */}
+      <span className={`flex items-center justify-start gap-1 ${isLogin && "text-green-500 dark:text-green-400" || "text-gray-400 dark:text-gray-500"}`}>
+        {isOnlineIcon} {isOnlineLabel}
+      </span>
     </div>
   );
 }
@@ -105,7 +114,8 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
                   {unitItem?.unitName.trim()}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                  {unitItem?.unitId && unitItem?.unitId.trim()}{unitItem?.plateNo && ` • ${unitItem?.plateNo.trim()}`}
+                  {/* {unitItem?.unitId && unitItem?.unitId.trim()}{unitItem?.plateNo && ` • ${unitItem?.plateNo.trim()}`} */}
+                  {unitItem?.unitId && unitItem?.unitId.trim()}
                 </div>
               </div>
             </div>
@@ -123,6 +133,18 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         label: t("crud.unit.list.header.location"),
         sortable: true,
         render: (unitItem: Unit) => <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
+      },
+      {
+        key: "createdAt",
+        label: t("common.createAt"),
+        sortable: true,
+        render: (unitItem: Unit) => formatDate(unitItem.createdAt || "")
+      },
+      {
+        key: "createdBy",
+        label: t("common.createBy"),
+        sortable: true,
+        render: (unitItem: Unit) => unitItem.createdBy
       }
     ],
     actions: [
@@ -200,7 +222,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         // icon: InfoIcon,
         render: (unitItem: Unit) => {
           return (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="flex items-start justify-start gap-2">
                 <label className="text-sm font-medium text-gray-600 dark:text-gray-300">ID:</label>
                 <div className="font-mono text-gray-900 dark:text-white text-sm">
@@ -213,16 +235,18 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
                   {unitItem.unitName}
                 </div>
               </div>
+              {/*
               <div className="flex items-start justify-start gap-2">
                 <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Priority:</label>
                 <div className="font-mono text-gray-900 dark:text-white text-sm">
                   {unitItem.priority}
                 </div>
               </div>
+              */}
               <div className="flex items-start justify-start gap-2">
                 <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Status:</label>
                 <UnitStatus status={unitItem.active ? "active" : "inactive"} />
-                <UnitStatus status={unitItem.isLogin ? "online" : "offline"} />
+                <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
               </div>
             </div>
           )

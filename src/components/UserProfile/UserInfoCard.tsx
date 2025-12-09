@@ -67,7 +67,7 @@ export default function UserInfoCard({ userData: propUserData, loading: propLoad
   // const { userData, loading, error } = contextData;
 
   if (loading) {
-    return <div className="p-5 text-center">{t("userform.loadingUserData")}</div>;
+    return <div className="p-5 text-center text-gray-900 dark:text-white">{t("userform.loadingUserData")}</div>;
   }
 
   if (error) {
@@ -75,7 +75,7 @@ export default function UserInfoCard({ userData: propUserData, loading: propLoad
   }
 
   if (!userData) {
-    return <div className="p-5 text-center">{t("userform.noUserData")}</div>;
+    return <div className="p-5 text-center text-gray-500 dark:text-gray-400">{t("userform.noUserData")}</div>;
   }
 
   return (

@@ -25,6 +25,10 @@ export const closeStatus = "S007"
 
 export const cancelStatus = "S014"
 
+export const doneStatus = "S016"
+
+export const AcknowledgedStatus = "S003"
+
 export const cancelAndCloseStatus = [closeStatus, cancelStatus]
 
 export interface CaseStatusInterface {

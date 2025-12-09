@@ -9,7 +9,8 @@ import Input from "@/components/form/input/InputField";
 interface BasicInfoSectionProps {
   errors: Partial<Record<keyof UnitFormData, string>>;
   formData: UnitFormData;
-  sources: { value: string; label: string }[];
+  // provinces: { value: string; label: string }[];
+  // sources: { value: string; label: string }[];
   unitTypes: { value: string; label: string }[];
   users: { value: string; label: string }[];
   onChange: (field: keyof UnitFormData, value: unknown) => void;
@@ -18,7 +19,8 @@ interface BasicInfoSectionProps {
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   errors,
   formData,
-  sources,
+  // provinces,
+  // sources,
   unitTypes,
   users,
   onChange
@@ -79,19 +81,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
         <div>
           <Label>
-            {t("crud.unit.form.basic_information.sections.unitSourceId.label")}
-          </Label>
-          <CustomizableSelect
-            options={sources}
-            value={formData.unitSourceId}
-            onChange={value => onChange("unitSourceId", value)}
-            placeholder={t("crud.unit.form.basic_information.sections.unitSourceId.placeholder")}
-            multiple={false}
-          />
-        </div>
-
-        <div>
-          <Label>
             {t("crud.unit.form.basic_information.sections.username.label")}
           </Label>
           <CustomizableSelect
@@ -103,6 +92,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           />
         </div>
 
+        {/*
         <div>
           <Label htmlFor="priority">
             {t("crud.unit.form.basic_information.sections.priority.label")}
@@ -128,6 +118,20 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             error={!!errors.plateNo}
           />
         </div>
+
+        <div>
+          <Label>
+            {t("crud.unit.form.organization_details.sections.provinceCode.label")}
+          </Label>
+          <CustomizableSelect
+            options={provinces}
+            value={formData.provinceCode}
+            onChange={value => onChange("provinceCode", value)}
+            placeholder={t("crud.unit.form.organization_details.sections.provinceCode.placeholder")}
+            multiple={false}
+          />
+        </div>
+        */}
 
         <div>
           <Label htmlFor="breakDuration">

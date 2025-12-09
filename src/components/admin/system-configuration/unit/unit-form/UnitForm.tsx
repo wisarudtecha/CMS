@@ -5,9 +5,9 @@ import { Modal } from "@/components/ui/modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { UnitFormData, UnitFormProps } from "@/types/unit";
 import BasicInfoSection from "@/components/admin/system-configuration/unit/unit-form/sections/BasicInfoSection";
-import LocationSection from "@/components/admin/system-configuration/unit/unit-form/sections/LocationSection";
+// import LocationSection from "@/components/admin/system-configuration/unit/unit-form/sections/LocationSection";
 import OrganizationSection from "@/components/admin/system-configuration/unit/unit-form/sections/OrganizationSection";
-import StatusSection from "@/components/admin/system-configuration/unit/unit-form/sections/StatusSection";
+// import StatusSection from "@/components/admin/system-configuration/unit/unit-form/sections/StatusSection";
 import Button from "@/components/ui/button/Button";
 
 const defaultFormData: UnitFormData = {
@@ -51,7 +51,7 @@ const defaultFormData: UnitFormData = {
 };
 
 const UnitForm: React.FC<UnitFormProps> = ({
-  areas,
+  // areas,
   commands,
   companies,
   departments,
@@ -78,7 +78,7 @@ const UnitForm: React.FC<UnitFormProps> = ({
   const [commandsOptions, setCommandsOptions] = useState<{ value: string; label: string }[]>([]);
   const [companiesOptions, setCompaniesOptions] = useState<{ value: string; label: string }[]>([]);
   const [departmentsOptions, setDepartmentsOptions] = useState<{ value: string; label: string }[]>([]);
-  const [provincesOptions, setProvincesOptions] = useState<{ value: string; label: string }[]>([]);
+  // const [provincesOptions, setProvincesOptions] = useState<{ value: string; label: string }[]>([]);
   const [sourcesOptions, setSourcesOptions] = useState<{ value: string; label: string }[]>([]);
   const [stationsOptions, setStationsOptions] = useState<{ value: string; label: string }[]>([]);
   const [unitTypesOptions, setUnitTypesOptions] = useState<{ value: string; label: string }[]>([]);
@@ -148,11 +148,11 @@ const UnitForm: React.FC<UnitFormProps> = ({
   }, [id, initialData]);
 
   useEffect(() => {
-    setCommandsOptions(commands?.map(comm => ({
+    setCommandsOptions((formData.deptId && commands?.filter(comm => comm.deptId === formData.deptId) || commands)?.map(comm => ({
       value: String(comm.commId),
       label: language === "th" && comm.th || comm.en
     })) || []);
-  }, [commands, language]);
+  }, [commands, formData.deptId, language]);
 
   useEffect(() => {
     setCompaniesOptions(companies?.map(comp => ({
@@ -168,14 +168,14 @@ const UnitForm: React.FC<UnitFormProps> = ({
     })) || []);
   }, [departments, language]);
 
-  useEffect(() => {
-    setProvincesOptions(areas?.length && areas.filter(
-      (item, index, self) => index === self.findIndex(t => t.provId === item.provId)
-    )?.map(a => ({
-      value: String(a.provId),
-      label: language === "th" ? a.provinceTh : a.provinceEn
-    })) || []);
-  }, [areas, language]);
+  // useEffect(() => {
+  //   setProvincesOptions(areas?.length && areas.filter(
+  //     (item, index, self) => index === self.findIndex(t => t.provId === item.provId)
+  //   )?.map(a => ({
+  //     value: String(a.provId),
+  //     label: language === "th" ? a.provinceTh : a.provinceEn
+  //   })) || []);
+  // }, [areas, language]);
 
   useEffect(() => {
     setSourcesOptions(sources?.map(s => ({
@@ -185,11 +185,11 @@ const UnitForm: React.FC<UnitFormProps> = ({
   }, [language, sources]);
 
   useEffect(() => {
-    setStationsOptions(stations?.map(s => ({
+    setStationsOptions((formData.commId && stations?.filter(stn => stn.commId === formData.commId) || stations)?.map(s => ({
       value: String(s.stnId),
       label: language === "th" && s.th || s.en
     })) || []);
-  }, [language, stations]);
+  }, [language, formData.commId, stations]);
 
   useEffect(() => {
     setUnitTypesOptions(unitTypes?.map(ut => ({
@@ -213,7 +213,8 @@ const UnitForm: React.FC<UnitFormProps> = ({
             <BasicInfoSection
               formData={formData}
               errors={errors}
-              sources={sourcesOptions}
+              // provinces={provincesOptions}
+              // sources={sourcesOptions}
               unitTypes={unitTypesOptions}
               users={usersOptions}
               onChange={handleChange}
@@ -229,13 +230,15 @@ const UnitForm: React.FC<UnitFormProps> = ({
               departments={departmentsOptions}
               formData={formData}
               errors={errors}
-              provinces={provincesOptions}
+              // provinces={provincesOptions}
+              sources={sourcesOptions}
               stations={stationsOptions}
               onChange={handleChange}
             />
           </div>
         </div>
 
+        {/*
         <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-6">
           <div className="mx-auto w-full">
             <StatusSection
@@ -255,6 +258,7 @@ const UnitForm: React.FC<UnitFormProps> = ({
             />
           </div>
         </div>
+        */}
 
         <div className="flex items-end justify-end gap-4">
           {onCancel && (

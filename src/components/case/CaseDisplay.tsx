@@ -7,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/utils/crud";
 import { cancelAndCloseStatus, closeStatus } from "../ui/status/status";
 import AttachedFiles from "../Attachment/AttachmentPreviewList";
+import Badge from "../ui/badge/Badge";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -33,12 +34,15 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
 
 
             </div>}
-            <div className={`bg-gray-50 dark:bg-gray-900 p-4 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
+            <div className={`bg-gray-50 dark:bg-gray-900 p-4 space-x-2 space-y-2 rounded-lg ${caseData?.workOrderRef ? "" : "col-span-2 sm:col-span-1"}`}>
                 <span className=" text-md text-blue-500 dark:text-blue-400 " >{t("case.display.case_information")}</span>
+                {caseData?.requireSchedule && <Badge variant="outline" size="sm" >
+                    {t(`case.display.request_schedule_date`)}
+                </Badge>}
                 {!isCreate ? (
                     <div className="flex mb-2 text-gray-500 dark:text-gray-400">
                         <Ticket />
-                        <div className="ml-2">
+                        <div className="mx-2">
                             <span className="text-md text-gray-500 dark:text-gray-400">
                                 {t("case.display.no")} # <span className="text-md font-medium text-gray-900 dark:text-white">
                                     {caseData?.workOrderNummber || "-"}

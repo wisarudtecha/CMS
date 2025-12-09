@@ -76,6 +76,8 @@ export const DEV_CONFIG = {
   ENABLE_DEVTOOLS: import.meta.env.DEV,
 } as const;
 
+export const INTERNAL_UNIT_SOURCE_ID = "3c48bb37-22a4-4aca-b659-955feadeb5c1" as const;
+
 export const PERMISSIONS = {
   TICKETS: {
     READ: "tickets:read",

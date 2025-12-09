@@ -22,13 +22,14 @@ const UnitCardContent: React.FC<{
           <div className="flex items-center gap-3">
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white truncate" title={unit.unitName}>{unit.unitName}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{unit.unitId} • {unit.plateNo}</p>
+              {/* <p className="text-sm text-gray-500 dark:text-gray-400">{unit.unitId} • {unit.plateNo}</p> */}
+              <p className="text-sm text-gray-500 dark:text-gray-400">{unit.unitId}</p>
             </div>
           </div>
         </div>
 
         {/* Status and Type */}
-        <div className="xl:flex items-center gap-2 mb-3 justify-between">
+        <div className="flex items-center gap-2 mb-3 justify-start">
           <UnitStatus status={unit.active ? "active" : "inactive"} />
           <UnitLocation isOutArea={unit?.isOutArea} isLogin={unit?.isLogin} />
         </div>

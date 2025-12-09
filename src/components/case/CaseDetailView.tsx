@@ -24,7 +24,7 @@ import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { cancelAndCloseStatus, CaseStatusInterface, RequestCloesStage } from "../ui/status/status"
+import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, doneStatus, RequestCloesStage } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
@@ -46,6 +46,10 @@ import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from
 import { updateCaseInLocalStorage } from "./caseLocalStorage.tsx/caseListUpdate"
 import RetryButton from "../form/input/RetryButton"
 
+interface schedule {
+    isSchedule: boolean,
+    scheduleDate: string
+}
 
 const CaseHeader = memo(({
     disablePageMeta,
@@ -98,6 +102,7 @@ const OfficerItem = memo(({
     handleCancel,
     canCancel,
     caseStatus,
+    schedule,
 }: {
     officer: UnitWithSop;
     onSelectOfficer: (officer: UnitWithSop) => void;
@@ -106,6 +111,7 @@ const OfficerItem = memo(({
     unitStatus: CaseStatusInterface[]
     canCancel: boolean,
     caseStatus: string,
+    schedule: schedule
 }) => {
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const hasAction = officer.Sop?.nextStage?.nodeId && officer.Sop?.nextStage?.data?.data?.config?.action;
@@ -114,7 +120,7 @@ const OfficerItem = memo(({
     }, [officer.Sop?.nextStage?.nodeId]);
     const { t, language } = useTranslation();
     const permissions = usePermissions();
-
+    const scheduleDisable = schedule.isSchedule && (schedule.scheduleDate ? new Date() <= new Date(schedule.scheduleDate): false )
     const handleOfficerClick = useCallback(() => {
         if (permissions.hasPermission("case.view_timeline")) {
             onSelectOfficer(officer);
@@ -146,7 +152,7 @@ const OfficerItem = memo(({
                             size="xxs"
                             className={`mx-1 ${!hasAction ? 'cursor-default' : ''}`}
                             variant="success"
-                            disabled={disableButton || !hasAction || cancelAndCloseStatus.includes(caseStatus)}
+                            disabled={disableButton || !hasAction || cancelAndCloseStatus.includes(caseStatus) || (caseStatus != AcknowledgedStatus && scheduleDisable)}
                         >
                             {unitStatus.find((item) =>
                                 officer?.Sop?.nextStage?.data?.data?.config?.action === item.statusId
@@ -178,6 +184,7 @@ const AssignedOfficers = memo(({
     handleCancel,
     canCancel,
     caseStatus,
+    schedule
 }: {
     SopUnit: UnitWithSop[] | null;
     onSelectOfficer: (officer: UnitWithSop) => void;
@@ -186,7 +193,8 @@ const AssignedOfficers = memo(({
     handleCancel: (officer: UnitWithSop) => void;
     unitStatus: CaseStatusInterface[];
     canCancel: boolean;
-    caseStatus: string
+    caseStatus: string;
+    schedule: schedule
 }) => {
     if (!SopUnit?.length) return null;
     const { t } = useTranslation();
@@ -207,6 +215,7 @@ const AssignedOfficers = memo(({
                     handleCancel={handleCancel}
                     canCancel={canCancel}
                     caseStatus={caseStatus}
+                    schedule={schedule}
                 />
             ))}
         </div>
@@ -558,6 +567,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 updateBy: sopData.data?.updatedBy,
                 attachFile: sopData.data?.attachments as FileItem[],
                 attachFileResult: [] as File[],
+                requireSchedule: sopData.data?.scheduleFlag || false,
+                scheduleDate:sopData.data?.scheduleDate || "",
                 deviceMetaData: sopData.data.deviceMetaData,
                 resultDetail: sopData.data.resDetail,
                 resultId: closeCaseOption.find(result => {
@@ -880,7 +891,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             {/* <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                                 The case you're looking for doesn't exist or couldn't be loaded.
                             </p> */}
-                            <RetryButton refetch={refetch}/>
+                            <RetryButton refetch={refetch} />
                         </div>
                     </div>
                 </div>
@@ -925,6 +936,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                     handleCancel={handleCancelUnitClick}
                                     canCancel={canCancelUnit}
                                     caseStatus={caseState?.status || ""}
+                                    schedule={{
+                                        isSchedule: caseState?.requireSchedule || false
+                                        , scheduleDate: caseState?.scheduleDate || ""
+                                    }}
                                 />
                                 {showOfficersData && <OfficerDataModal officer={showOfficersData} onOpenChange={() => setShowOFFicersData(null)} />}
                             </div>
@@ -1007,9 +1022,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                                     caseId={caseState?.workOrderNummber}
                                                 /> */}
                                                 <div className="flex justify-end items-end space-x-3">
-                                                    <div className="justify-end items-end flex">
+                                                    {caseState?.status !==doneStatus && <div className="justify-end items-end flex">
                                                         <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
-                                                    </div>
+                                                    </div>}
                                                     {permissions.hasPermission("case.close") &&
                                                         <div className="ml-2">
                                                             <Button size="sm" variant="primary" onClick={() => setShowCloseCaseModal(true)} disabled={!isCloseStage || disableButton}>{t("case.display.close_case")}</Button>

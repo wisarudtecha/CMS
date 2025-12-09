@@ -164,7 +164,9 @@ export interface CaseSop {
     formAnswer: FormFieldWithNode;
     slaTimelines: SlaTimelineEntry[];
     deviceMetaData: DeviceMetaData;
-    attachments: Attachment[]
+    attachments: Attachment[];
+    scheduleFlag:boolean;
+    scheduleDate:string;
 }
 
 export interface DeviceMetaData {

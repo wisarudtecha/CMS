@@ -74,7 +74,7 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
           if (isAttachment(file))
             continue
           const result = await postUploadFile({
-            path: "close",
+            path: type,
             file: file,
             caseId: caseId || ""
           }).unwrap();

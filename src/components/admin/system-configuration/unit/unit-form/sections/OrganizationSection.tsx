@@ -1,6 +1,7 @@
 // /src/components/admin/system-configuration/unit/unit-form/sections/OrganizationSection.tsx
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { INTERNAL_UNIT_SOURCE_ID } from "@/utils/constants";
 import type { UnitFormData } from "@/types/unit";
 import CustomizableSelect from "@/components/form/CustomizableSelect";
 import Label from "@/components/form/Label";
@@ -11,7 +12,8 @@ interface OrganizationSectionProps {
   departments: { value: string; label: string }[];
   errors: Partial<Record<keyof UnitFormData, string>>;
   formData: UnitFormData;
-  provinces: { value: string; label: string }[];
+  // provinces: { value: string; label: string }[];
+  sources: { value: string; label: string }[];
   stations: { value: string; label: string }[];
   onChange: (field: keyof UnitFormData, value: unknown) => void;
 }
@@ -22,7 +24,8 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
   departments,
   // errors,
   formData,
-  provinces,
+  // provinces,
+  sources,
   stations,
   onChange
 }) => {
@@ -33,6 +36,27 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
       <h3 className="font-semibold mb-4 text-lg text-gray-800 dark:text-gray-100 cursor-default">
         {t("crud.unit.form.organization_details.header")}
       </h3>
+
+      <div className="gap-4 grid grid-cols-1 xl:grid-cols-4 mb-4">
+        <div>
+          <Label>
+            {t("crud.unit.form.basic_information.sections.unitSourceId.label")}
+          </Label>
+          <CustomizableSelect
+            options={sources}
+            value={formData.unitSourceId}
+            onChange={value => {
+              onChange("stnId", "");
+              onChange("commId", "");
+              onChange("deptId", "");
+              onChange("compId", "");
+              onChange("unitSourceId", value);
+            }}
+            placeholder={t("crud.unit.form.basic_information.sections.unitSourceId.placeholder")}
+            multiple={false}
+          />
+        </div>
+      </div>
       
       <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">
         <div>
@@ -42,9 +66,12 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
           <CustomizableSelect
             options={companies}
             value={formData.compId}
-            onChange={value => onChange("compId", value)}
+            onChange={value => {
+              onChange("compId", value);
+            }}
             placeholder={t("crud.unit.form.organization_details.sections.compId.placeholder")}
             multiple={false}
+            disabled={!formData.unitSourceId}
           />
         </div>
 
@@ -55,9 +82,14 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
           <CustomizableSelect
             options={departments}
             value={formData.deptId}
-            onChange={value => onChange("deptId", value)}
+            onChange={value => {
+              onChange("stnId", "");
+              onChange("commId", "");
+              onChange("deptId", value);
+            }}
             placeholder={t("crud.unit.form.organization_details.sections.deptId.placeholder")}
             multiple={false}
+            disabled={!formData.unitSourceId || formData.unitSourceId !== INTERNAL_UNIT_SOURCE_ID}
           />
         </div>
 
@@ -68,9 +100,13 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
           <CustomizableSelect
             options={commands}
             value={formData.commId}
-            onChange={value => onChange("commId", value)}
+            onChange={value => {
+              onChange("stnId", "");
+              onChange("commId", value);
+            }}
             placeholder={t("crud.unit.form.organization_details.sections.commId.placeholder")}
             multiple={false}
+            disabled={!formData.deptId || formData.unitSourceId !== INTERNAL_UNIT_SOURCE_ID}
           />
         </div>
 
@@ -84,19 +120,7 @@ const OrganizationSection: React.FC<OrganizationSectionProps> = ({
             onChange={value => onChange("stnId", value)}
             placeholder={t("crud.unit.form.organization_details.sections.stnId.placeholder")}
             multiple={false}
-          />
-        </div>
-
-        <div>
-          <Label>
-            {t("crud.unit.form.organization_details.sections.provinceCode.label")}
-          </Label>
-          <CustomizableSelect
-            options={provinces}
-            value={formData.provinceCode}
-            onChange={value => onChange("provinceCode", value)}
-            placeholder={t("crud.unit.form.organization_details.sections.provinceCode.placeholder")}
-            multiple={false}
+            disabled={!formData.commId || formData.unitSourceId !== INTERNAL_UNIT_SOURCE_ID}
           />
         </div>
       </div>
