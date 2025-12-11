@@ -1,7 +1,9 @@
 // /src/components/admin/system-configuration/area/AreaHierarchyView.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FileIcon } from "@/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Area } from "@/store/api/area";
+import { capitalizeWords } from "@/utils/stringFormatters";
 import type { HierarchyItem, HierarchyConfig } from "@/types/hierarchy";
 import HierarchyView from "@/components/admin/HierarchyView";
 
@@ -11,6 +13,8 @@ interface OrganizationHierarchyViewProps {
 }
 
 const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ areas, showInactive }) => {
+  const { language, t } = useTranslation();
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Convert country, provinces and districts to generic hierarchy items
@@ -25,8 +29,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
         items.push({
           id: area.countryId,
           parentId: null, // Explicitly set to null for root items
-          name: area.countryTh,
-          secondaryName: area.countryEn,
+          name: language === "th" && area.countryTh || capitalizeWords(area.countryEn || ""),
+          secondaryName: language === "th" && capitalizeWords(area.countryEn || "") || area.countryTh,
           active: area.countryActive,
           level: 0
         });
@@ -38,8 +42,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
         items.push({
           id: area.provId,
           parentId: area.countryId,
-          name: area.provinceTh,
-          secondaryName: area.provinceEn,
+          name: language === "th" && area.provinceTh || capitalizeWords(area.provinceEn || ""),
+          secondaryName: language === "th" && capitalizeWords(area.provinceEn || "") || area.provinceTh,
           active: area.provinceActive,
           level: 1,
           metadata: {
@@ -53,8 +57,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
       items.push({
         id: area.distId,
         parentId: area.provId,
-        name: area.districtTh,
-        secondaryName: area.districtEn,
+        name: language === "th" && area.districtTh || capitalizeWords(area.districtEn || ""),
+        secondaryName: language === "th" && capitalizeWords(area.districtEn || "") || area.districtTh,
         active: area.districtActive,
         level: 2,
         metadata: {
@@ -65,7 +69,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
     });
     
     return items;
-  }, [areas]);
+  }, [areas, language]);
 
   const [hierarchyItems, setHierarchyItems] = useState<HierarchyItem[]>(
     convertToHierarchyItems()
@@ -89,10 +93,10 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
       // Level 0
       {
         canHaveChildren: true,
-        emptyChildrenMessage: "No provinces defined for this country",
+        emptyChildrenMessage: t("crud.area.list.header.province.no_data"),
         childCountLabel: {
-          plural: "provinces",
-          singular: "province"
+          plural: t("crud.area.list.header.province.plural"),
+          singular: t("crud.area.list.header.province.singular")
         },
         metadataDisplay: {
           showChildCount: true,
@@ -101,7 +105,9 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
-              metadata.push(`${childCount} ${childCount === 1 ? "province" : "provinces"}`);
+              metadata.push(`${childCount} ${childCount === 1
+                ? t("crud.area.list.header.province.singular")
+                : t("crud.area.list.header.province.plural")}`);
             }
             return metadata;
           }
@@ -114,10 +120,10 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
       // Level 1
       {
         canHaveChildren: true,
-        emptyChildrenMessage: "No district defined for this province",
+        emptyChildrenMessage: t("crud.area.list.header.district.no_data"),
         childCountLabel: {
-          plural: "districts",
-          singular: "district"
+          plural: t("crud.area.list.header.district.plural"),
+          singular: t("crud.area.list.header.district.singular")
         },
         metadataDisplay: {
           showChildCount: true,
@@ -126,7 +132,9 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
-              metadata.push(`${childCount} ${childCount === 1 ? "district" : "districts"}`);
+              metadata.push(`${childCount} ${childCount === 1
+                ? t("crud.area.list.header.district.singular")
+                : t("crud.area.list.header.district.plural")}`);
             }
             return metadata;
           }
@@ -154,7 +162,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({ a
         actions: []
       }
     ]
-  }), []);
+  }), [t]);
 
   return (
     <>

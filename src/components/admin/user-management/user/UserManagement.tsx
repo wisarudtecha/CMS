@@ -289,13 +289,13 @@ const UserManagementComponent: React.FC<{
     // UserEntity
     UserProfile
   > = {
-    title: () => "User Information",
+    title: () => t("crud.user.list.preview.header"),
     size: "xl",
     enableNavigation: true,
     tabs: [
       {
         key: "profile",
-        label: "Profile",
+        label: t("crud.user.list.preview.tab.header.profile"),
         // icon: InfoIcon,
         render: (
           userItem: UserProfile
@@ -327,6 +327,20 @@ const UserManagementComponent: React.FC<{
           )
         }
       },
+      {
+        key: "skills",
+        label: t("crud.user.list.preview.tab.header.skills"),
+        // icon: InfoIcon,
+        render: (
+          // userItem: UserProfile
+        ) => {
+          return (
+            <div className="space-y-6">
+              
+            </div>
+          )
+        }
+      },
       // {
       //   key: "activity",
       //   label: "Activity",
@@ -337,7 +351,7 @@ const UserManagementComponent: React.FC<{
       // },
       {
         key: "auditLog",
-        label: "Audit Log",
+        label: t("crud.user.list.preview.tab.header.audit_log"),
         // icon: FileIcon,
         render: (userItem: UserProfile) => (
           // <AuditTrailViewer user={userItem as UserProfile} isOpen={true} />

@@ -484,7 +484,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
             <CloseIcon className="w-4 h-4" />
           </Button>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4 text-gray-800 dark:text-gray-100">
           {deleteMessage}
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">

@@ -718,6 +718,7 @@
           "last_login": "Last Login"
         },
         "preview": {
+          "header": "User Information",
           "tab": {
             "header": {
               "profile": "Profile",
@@ -742,6 +743,71 @@
         }
       }
     },
+    "area": {
+      "name": "Area",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search areas..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "Provinces",
+            "singular": "Province",
+            "no_data": "No provinces defined for this country"
+          },
+          "district": {
+            "plural": "Districts",
+            "singular": "District",
+            "no_data": "No districts defined for this province"
+          }
+        }
+      }
+    },
+    "skill": {
+      "name": "Skill",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search skills..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Skill Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Skill",
+          "update": "Edit Skill"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter skill name in Thai language",
+          "required": "Skill name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter skill name in English language",
+          "required": "Skill name (English) is required"
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Skill created successfully",
+          "error": "Failed to create skill"
+        },
+        "update": {
+          "success": "Skill updated successfully",
+          "error": "Failed to update skill"
+        }
+      }
+    },
     "unit": {
       "name": "Unit",
       "list": {
@@ -754,6 +820,29 @@
           "unit": "Unit #",
           "status": "Status",
           "location": "Location"
+        },
+        "preview": {
+          "header": "Unit Information",
+          "tab": {
+            "header": {
+              "overview": "Basic Info",
+              "skill": "Skills",
+              "location": "Location"
+            },
+            "unitId": "ID",
+            "unitName": "Name",
+            "active": "Status",
+            "current_user": "Currently Active User",
+            "locLat": "Latitude",
+            "locLon": "Longitude",
+            "locAccuracy": "GPS Accuracy",
+            "locBearing": "Bearing",
+            "locSpeed": "Speed",
+            "locSatellites": "Satellites",
+            "locProvider": "Provider",
+            "locLastUpdateTime": "Last Update",
+            "locStatus": "Location Status"
+          }
         }
       },
       "form": {
@@ -908,6 +997,10 @@
           "success": "Unit updated successfully",
           "error": "Failed to update unit"
         }
+      },
+      "unit": {
+        "accuracy": "m",
+        "speed": "km/h"
       }
     }
   },

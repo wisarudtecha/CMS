@@ -1,6 +1,9 @@
 // /src/components/admin/system-configuration/area/AreaManagement.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { Folder, RefreshCw } from "lucide-react";
+import {
+  Folder,
+  // RefreshCw
+} from "lucide-react";
 import { CloseIcon } from "@/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Area } from "@/store/api/area";
@@ -9,14 +12,14 @@ import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 
 const AreaManagementComponent: React.FC<{ areas: Area[] }> = ({ areas }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   
   // ===================================================================
   // State management
   // ===================================================================
 
   const [area, setArea] = useState<Area[]>(areas || []);
-  const [isLoading, ] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showInactive, ] = useState(false);
   const [viewMode, ] = useState<"hierarchy" | "list">("hierarchy");
@@ -45,6 +48,10 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = ({ areas }) => {
   useEffect(() => {
     setArea(areas || []);
   }, [areas]);
+
+  useEffect(() => {
+    setIsLoading(areas?.length === 0 ? true : false);
+  }, [areas?.length]);
 
   const renderAreaHierarchy = () => (
     <AreaHierarchyView
@@ -81,7 +88,7 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = ({ areas }) => {
                         <Input
                           value={localValue}
                           onChange={e => setLocalValue && setLocalValue(e.target.value)}
-                          placeholder={language === "th" && "ค้นหาพื้นที่..." || "Search area..."}
+                          placeholder={t("crud.area.list.toolbar.search.placeholder")}
                         />
                         {localValue && (
                           <Button
@@ -107,19 +114,23 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = ({ areas }) => {
             </div>
             {/* Loading state */}
             {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-300" />
+              <div className="flex items-center justify-center py-12 text-gray-500 dark:text-gray-400 cursor-default">
+                {/* <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-300" /> */}
+                {t("crud.common.loading_records")}
               </div>
             )}
             {/* Content */}
             {!isLoading && area?.length > 0 && (
               <>
                 {viewMode === "hierarchy" && renderAreaHierarchy()}
+                
+                {/*
                 {viewMode === "list" && (
                   <div className="text-center py-12 text-gray-400 dark:text-gray-500 cursor-default">
                     <p>List view implementation coming soon...</p>
                   </div>
                 )}
+                */}
               </>
             )}
             {/* Empty state */}
@@ -127,10 +138,10 @@ const AreaManagementComponent: React.FC<{ areas: Area[] }> = ({ areas }) => {
               <div className="text-center py-12">
                 <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
-                  No area found
+                  {t("crud.common.zero_records")}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-4 cursor-default">
-                  {searchQuery ? "Try adjusting your search criteria" : "Get started by creating your first area"}
+                  {searchQuery ? t("crud.common.no_filters_active") : t("crud.common.no_records").replace("_ENTITY_", t("crud.area.name"))}
                 </p>
               </div>
             )}

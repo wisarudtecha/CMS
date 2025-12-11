@@ -3,6 +3,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { BoxIcon } from "../../icons";
+import { capitalizeWords } from "@/utils/stringFormatters";
 
 export default function ButtonsCustomize() {
   const variantClasses: Array<
@@ -58,9 +59,9 @@ export default function ButtonsCustomize() {
     "lg"
   ];
 
-  const capitalizeWords = (str: string) => {
-    return str.replace(/\b\w/g, (char: string) => char.toUpperCase());
-  }
+  // const capitalizeWords = (str: string) => {
+  //   return str.replace(/\b\w/g, (char: string) => char.toUpperCase());
+  // }
 
   const componentCard: React.ReactNode[] = [];
   let button: React.ReactNode[] = [];

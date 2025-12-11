@@ -1,4 +1,10 @@
 {
+  "0.4.15": {
+    "date": "2025-12-11",
+    "segment": "PATCH",
+    "notes": "perf: perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.",
+    "author": "Wisarud Techa"
+  },
   "0.4.14": {
     "date": "2025-12-09",
     "segment": "PATCH",

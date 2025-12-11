@@ -8,6 +8,10 @@ export const camelToCap = (input: string): string => {
     .replace(/\b\w/g, str => str.toUpperCase()); // capitalize each word
 }
 
+export const capitalizeWords = (str: string) => {
+  return str.replace(/\b\w/g, (char: string) => char.toUpperCase());
+}
+
 export const formatAddress = (address: Address): string => {
   const parts = [
     address.street,

@@ -700,6 +700,16 @@
           "department": "部门",
           "status": "状态",
           "last_login": "上次登录"
+        },
+        "preview": {
+          "header": "用户信息",
+          "tab": {
+            "header": {
+              "profile": "个人资料",
+              "skills": "技能",
+              "audit_log": "审计日志"
+            }
+          }
         }
       },
       "unit": {
@@ -717,6 +727,71 @@
         }
       }
     },
+    "area": {
+      "name": "区域",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索区域..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "省份",
+            "singular": "省份",
+            "no_data": "该国未定义省份"
+          },
+          "district": {
+            "plural": "区/县",
+            "singular": "区/县",
+            "no_data": "该省未划分任何行政区"
+          }
+        }
+      }
+    },
+    "skill": {
+      "name": "技能",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索技能..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "技能信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建技能",
+          "update": "编辑技能"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语技能名称",
+          "required": "技能名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语技能名称",
+          "required": "技能名称（英语）为必填项"
+        }
+      },
+      "action": {
+        "create": {
+          "success": "技能创建成功",
+          "error": "技能创建失败"
+        },
+        "update": {
+          "success": "技能更新成功",
+          "error": "技能更新失败"
+        }
+      }
+    },
     "unit": {
       "name": "单位",
       "list": {
@@ -729,6 +804,29 @@
           "unit": "单位编号",
           "status": "状态",
           "location": "位置"
+        },
+        "preview": {
+          "header": "单元信息",
+          "tab": {
+            "header": {
+              "overview": "基本信息",
+              "skill": "技能",
+              "location": "地点"
+            },
+            "unitId": "ID",
+            "unitName": "名称",
+            "active": "已激活",
+            "current_user": "当前用户",
+            "locLat": "纬度",
+            "locLon": "经度",
+            "locAccuracy": "精度",
+            "locBearing": "方位角",
+            "locSpeed": "速度",
+            "locSatellites": "卫星",
+            "locProvider": "提供商",
+            "locLastUpdateTime": "最后更新时间",
+            "locStatus": "位置状态"
+          }
         }
       },
       "form": {
@@ -883,6 +981,10 @@
           "success": "单元更新成功",
           "error": "单元更新失败"
         }
+      },
+      "unit": {
+        "accuracy": " 仪表",
+        "speed": "公里/小时"
       }
     }
   },

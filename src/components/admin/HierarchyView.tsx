@@ -172,6 +172,7 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
         <div
           key={compositeKey}
           // key={item.id}
+          className="cursor-default"
         >
           <HierarchyItemComponent
             analytics={itemAnalytics}

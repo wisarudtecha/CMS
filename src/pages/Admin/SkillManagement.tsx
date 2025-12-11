@@ -22,6 +22,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetSkillQuery } from "@/store/api/skillApi";
 import type { Skill } from "@/types/skill";
 import SkillManagementComponent from "@/components/admin/system-configuration/skill/SkillManagement";
@@ -29,6 +30,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const SkillManagementPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -43,7 +46,7 @@ const SkillManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["settings.view"]}>
-        <PageBreadcrumb pageTitle="Skill Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.skill_management")} />
 
         <SkillManagementComponent skills={skills} />
       </ProtectedRoute>

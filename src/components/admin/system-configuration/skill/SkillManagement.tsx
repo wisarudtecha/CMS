@@ -6,8 +6,10 @@ import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCreateSkillMutation, useUpdateSkillMutation } from "@/store/api/skillApi";
 import { AuthService } from "@/utils/authService";
+import { capitalizeWords } from "@/utils/stringFormatters";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Skill, SkillCreateData, SkillManagementProps, SkillUpdateData } from "@/types/skill";
 import Input from "@/components/form/input/InputField";
@@ -16,6 +18,7 @@ import Button from "@/components/ui/button/Button";
 const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const permissions = usePermissions();
+  const { language, t } = useTranslation();
   const { toasts, addToast, removeToast } = useToast();
 
   const [createSkill] = useCreateSkillMutation();
@@ -40,15 +43,15 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
   const validateError = useCallback((): string[] => {
     const errors: string[] = [];
     if (!th.trim()) {
-      errors.push("Skill name (Thai) is required");
-      setValidationErrors(prev => ({ ...prev, th: "Skill name (Thai) is required" }));
+      errors.push(t("crud.skill.form.th.required"));
+      setValidationErrors(prev => ({ ...prev, th: t("crud.skill.form.th.required") }));
     }
     if (!en.trim()) {
-      errors.push("Skill name (English) is required");
-      setValidationErrors(prev => ({ ...prev, en: "Skill name (English) is required" }));
+      errors.push(t("crud.skill.form.en.required"));
+      setValidationErrors(prev => ({ ...prev, en: t("crud.skill.form.en.required") }));
     }
     return errors;
-  }, [th, en]);
+  }, [th, en, t]);
 
   const handleSkillSave = useCallback(async () => {
     const errors = validateError();
@@ -77,20 +80,22 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Skill Management: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Skill Management: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", t("crud.skill.action.create.success"));
         setTimeout(() => {
           window.location.replace(`/skill`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Skill Management: ${error}`);
+      // addToast("error", `Skill Management: ${error}`);
+      addToast("error", `${t("crud.skill.action.create.error")}: ${error}`);
     }
     finally {
       setIsOpen(false);
@@ -98,7 +103,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       setLoading(false);
     }
   }, [
-    active, addToast, createSkill, en, permissions, skillId, th, updateSkill, validateError
+    active, addToast, createSkill, en, permissions, skillId, th, t, updateSkill, validateError
   ]);
 
   // ===================================================================
@@ -119,8 +124,8 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
   // ===================================================================
 
   const config = {
-    entityName: "Skill",
-    entityNamePlural: "Skills",
+    entityName: t("crud.skill.name"),
+    entityNamePlural: t("crud.skill.name"),
     apiEndpoints: {
       list: "/api/skill",
       create: "/api/skill",
@@ -132,14 +137,17 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
     },
     columns: [
       {
-        key: "th",
-        label: "Name",
+        key: language === "th" && "th" || "en",
+        label: t("crud.skill.list.header.name"),
         sortable: true,
-        render: (skillItem: Skill) => `${skillItem.th} (${skillItem.en})`
+        render: (skillItem: Skill) => 
+          <span className="text-gray-900 dark:text-white">
+            {language === "th" && skillItem.th || capitalizeWords(skillItem.en || "")} ({language === "th" && capitalizeWords(skillItem.en || "") || skillItem.th})
+          </span>,
       },
       {
         key: "status",
-        label: "Status",
+        label: t("crud.skill.list.header.status"),
         sortable: true,
         render: (skillItem: Skill) => {
           const statusConfig = skillItem.active
@@ -149,7 +157,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
           return (
             <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
               <Icon className="w-4 h-4 inline mr-1" />
-              {skillItem.active ? "Active" : "Inactive"}
+              {skillItem.active ? t("common.active") : t("common.inactive")}
             </span>
           );
         }
@@ -158,14 +166,14 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
     actions: [
       {
         key: "view",
-        label: "View",
+        label: t("crud.common.read"),
         variant: "primary" as const,
         onClick: () => {},
         condition: () => (permissions.hasPermission("skill.view") || isSystemAdmin) as boolean
       },
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         variant: "warning" as const,
         onClick: (skillItem: Skill) => {
           setSkillId(skillItem.skillId);
@@ -178,7 +186,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         variant: "outline" as const,
         onClick: (skillItem: Skill) => {
           console.log("Delete skill:", skillItem.skillId);
@@ -195,23 +203,27 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
   const previewConfig: PreviewConfig<
     Skill
   > = {
-    title: () => "Skill Information",
+    title: () => t("crud.skill.list.preview.header"),
     size: "xl",
     enableNavigation: true,
     tabs: [
       {
         key: "overview",
-        label: "Overview",
+        label: "",
         // icon: InfoIcon,
         fields: [
           {
-            key: "th",
-            label: "Name",
-            type: "text" as const,
+            key: language === "th" && "th" || "en",
+            label: t("crud.skill.list.header.name"),
+            type: "custom" as const,
+            render: (_, skillItem: Skill) => 
+              <span className="text-gray-900 dark:text-white">
+                {language === "th" && skillItem.th || capitalizeWords(skillItem.en || "")} ({language === "th" && capitalizeWords(skillItem.en || "") || skillItem.th})
+              </span>,
           },
           {
             key: "active",
-            label: "Status",
+            label: t("crud.skill.list.header.status"),
             type: "custom",
             render: value => {
               const statusConfig = value
@@ -221,7 +233,8 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
               return (
                 <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
                   <Icon className="w-4 h-4 inline mr-1" />
-                  {value ? "Active" : "Inactive"}
+                  {/* {value ? "Active" : "Inactive"} */}
+                  {value ? t("common.active") : t("common.inactive")}
                 </span>
               );
             }
@@ -232,7 +245,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
     actions: [
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "warning",
         onClick: (skillItem: Skill) => {
@@ -288,11 +301,13 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
           <div className="min-w-0 flex-1">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate capitalize">
-              {skillItem.th.trim()} ({skillItem.en.trim()})
+              {/* {skillItem.th.trim()} ({skillItem.en.trim()}) */}
+              {language === "th" && skillItem.th || capitalizeWords(skillItem.en || "")} ({language === "th" && capitalizeWords(skillItem.en || "") || skillItem.th})
             </h3>
             <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
               <Icon className="w-4 h-4 inline mr-1" />
-              {skillItem.active ? "Active" : "Inactive"}
+              {/* {skillItem.active ? "Active" : "Inactive"} */}
+              {skillItem.active ? t("common.active") : t("common.inactive")}
             </span>
           </div>
         </div>

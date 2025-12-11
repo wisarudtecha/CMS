@@ -44,12 +44,13 @@ const UnitLocation: React.FC<{
 }
 
 const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline" }> = ({ status }) => {
+  const { t } = useTranslation();
   return (
     <Badge className={`capitalize text-xs ${status === "active" || status === "online"
       ? "bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200"
       : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
     }`}>
-      {status}
+      {status === "active" && t("common.active") || t("common.inactive")}
     </Badge>
   );
 }
@@ -138,13 +139,13 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         key: "createdAt",
         label: t("common.createAt"),
         sortable: true,
-        render: (unitItem: Unit) => formatDate(unitItem.createdAt || "")
+        render: (unitItem: Unit) => <span className="text-gray-800 dark:text-gray-100">{formatDate(unitItem.createdAt || "")}</span>
       },
       {
         key: "createdBy",
         label: t("common.createBy"),
         sortable: true,
-        render: (unitItem: Unit) => unitItem.createdBy
+        render: (unitItem: Unit) => <span className="text-gray-800 dark:text-gray-100">{unitItem.createdBy}</span>
       }
     ],
     actions: [
@@ -194,7 +195,9 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       <>
         <div className="grid grid-cols-1 gap-4">
           <div className="flex items-start justify-start gap-2">
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Currently Active User:</label>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              {t("crud.unit.list.preview.tab.current_user")}:
+            </label>
             <div className="font-mono text-gray-900 dark:text-white text-sm">
               {unitItem.username}
             </div>
@@ -212,25 +215,29 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   };
 
   const previewConfig: PreviewConfig<Unit> = {
-    title: () => "Unit Information",
+    title: () => t("crud.unit.list.preview.header"),
     size: "xl",
     enableNavigation: true,
     tabs: [
       {
         key: "basicInfo",
-        label: "Basic Info",
+        label: t("crud.unit.list.preview.tab.header.overview"),
         // icon: InfoIcon,
         render: (unitItem: Unit) => {
           return (
             <div className="grid grid-cols-1 gap-4">
               <div className="flex items-start justify-start gap-2">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">ID:</label>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {t("crud.unit.list.preview.tab.unitId")}:
+                </label>
                 <div className="font-mono text-gray-900 dark:text-white text-sm">
                   {unitItem.unitId}
                 </div>
               </div>
               <div className="flex items-start justify-start gap-2">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Name:</label>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {t("crud.unit.list.preview.tab.unitName")}:
+                </label>
                 <div className="font-mono text-gray-900 dark:text-white text-sm">
                   {unitItem.unitName}
                 </div>
@@ -244,7 +251,9 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
               </div>
               */}
               <div className="flex items-start justify-start gap-2">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Status:</label>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {t("crud.unit.list.preview.tab.active")}:
+                </label>
                 <UnitStatus status={unitItem.active ? "active" : "inactive"} />
                 <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
               </div>
@@ -254,7 +263,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "skill",
-        label: "Skill",
+        label: t("crud.unit.list.preview.tab.header.skill"),
         // icon: InfoIcon,
         render: (unitItem: Unit) => {
           return (<SkillTab unitItem={unitItem} />)
@@ -262,51 +271,64 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "location",
-        label: "Location",
+        label: t("crud.unit.list.preview.tab.header.location"),
         // icon: MapPin,
         render: (unitItem: Unit) => {
           return (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Latitude</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locLat")}:
+                  </label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                     {unitItem?.locLat?.toFixed(6)}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Longitude</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locLon")}:
+                  </label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                     {unitItem?.locLon?.toFixed(6)}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">GPS Accuracy</label>
-                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locAccuracy}m</div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locAccuracy")}:
+                  </label>
+                  <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locAccuracy}{t("crud.unit.unit.accuracy")}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Satellites</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locSatellites")}:
+                  </label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locSatellites}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Provider</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locProvider")}:
+                  </label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{unitItem.locProvider}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Last Update</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    {t("crud.unit.list.preview.tab.locLastUpdateTime")}:
+                  </label>
                   <div className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
-                    {unitItem.locLastUpdateTime && new Date(unitItem.locLastUpdateTime).toLocaleString()}
+                    {/* {unitItem.locLastUpdateTime && new Date(unitItem.locLastUpdateTime).toLocaleString()} */}
+                    {unitItem.locLastUpdateTime && formatDate(unitItem.locLastUpdateTime) || ""}
                   </div>
                 </div>
               </div>
 
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">Location Status</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">{t("crud.unit.list.preview.tab.locStatus")}</h4>
                   <UnitLocation isOutArea={unitItem?.isOutArea} isLogin={unitItem?.isLogin} />
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
-                  Speed: {unitItem.locSpeed} km/h • Bearing: {unitItem.locBearing}°
+                  {t("crud.unit.list.preview.tab.locSpeed")}: {unitItem.locSpeed} {t("crud.unit.unit.speed")} • {t("crud.unit.list.preview.tab.locBearing")}: {unitItem.locBearing}°
                 </div>
               </div>
             </div>
@@ -317,7 +339,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     actions: [
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "warning",
         onClick: (unitItem: Unit, closePreview: () => void) => {
@@ -328,7 +350,7 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         // icon: CheckLineIcon,
         variant: "outline",
         onClick: (unitItem: Unit, closePreview: () => void) => {

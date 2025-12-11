@@ -700,6 +700,16 @@
           "department": "แผนก",
           "status": "สถานะ",
           "last_login": "เข้าสู่ระบบครั้งล่าสุด"
+        },
+        "preview": {
+          "header": "ข้อมูลผู้ใช้",
+          "tab": {
+            "header": {
+              "profile": "โปรไฟล์",
+              "skills": "ทักษะ",
+              "audit_log": "บันทึกการตรวจสอบ"
+            }
+          }
         }
       },
       "unit": {
@@ -717,6 +727,71 @@
         }
       }
     },
+    "area": {
+      "name": "พื้นที่",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาพื้นที่..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "จังหวัด",
+            "singular": "จังหวัด",
+            "no_data": "ไม่มีจังหวัดสำหรับประเทศนี้"
+          },
+          "district": {
+            "plural": "เขต",
+            "singular": "เขต",
+            "no_data": "ไม่มีเขตการปกครองสำหรับจังหวัดนี้"
+          }
+        }
+      }
+    },
+    "skill": {
+      "name": "ทักษะ",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาทักษะ..."
+          }
+        },
+        "header": {
+          "name": "ชื่อ",
+          "status": "สถานะ"
+        },
+        "preview": {
+          "header": "ข้อมูลทักษะ"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "สร้างทักษะ",
+          "update": "แก้ไขทักษะ"
+        },
+        "th": {
+          "label": "ชื่อ (ภาษาไทย)",
+          "placeholder": "กรอกชื่อทักษะเป็นภาษาไทย",
+          "required": "ต้องกรอกชื่อทักษะ"
+        },
+        "en": {
+          "label": "ชื่อ (ภาษาอังกฤษ)",
+          "placeholder": "กรอกชื่อทักษะเป็นภาษาอังกฤษ",
+          "required": "ต้องกรอกชื่อทักษะ"
+        }
+      },
+      "action": {
+        "create": {
+          "success": "สร้างทักษะสำเร็จ",
+          "error": "สร้างทักษะไม่สำเร็จ"
+        },
+        "update": {
+          "success": "อัปเดตทักษะสำเร็จ",
+          "error": "อัปเดตทักษะไม่สำเร็จ"
+        }
+      }
+    },
     "unit": {
       "name": "หน่วย",
       "list": {
@@ -729,6 +804,29 @@
           "unit": "หน่วย",
           "status": "สถานะ",
           "location": "สถานที่"
+        },
+        "preview": {
+          "header": "ข้อมูลหน่วย",
+          "tab": {
+            "header": {
+              "overview": "ข้อมูลพื้นฐาน",
+              "skill": "ทักษะ",
+              "location": "สถานที่"
+            },
+            "unitId": "ไอดี",
+            "unitName": "ชื่อ",
+            "active": "สถานะ",
+            "current_user": "ผู้ใช้งานปัจจุบัน",
+            "locLat": "ละติจูด",
+            "locLon": "ลองจิจูด",
+            "locAccuracy": "ความแม่นยำ",
+            "locBearing": "ตำแหน่งทิศทาง",
+            "locSpeed": "ความเร็ว",
+            "locSatellites": "ดาวเทียม",
+            "locProvider": "ผู้ให้บริการ",
+            "locLastUpdateTime": "เวลาอัปเดตล่าสุด",
+            "locStatus": "สถานะสถานที่"
+          }
         }
       },
       "form": {
@@ -883,6 +981,10 @@
           "success": "อัปเดตหน่วยสำเร็จ",
           "error": "อัปเดตหน่วยไม่สำเร็จ"
         }
+      },
+      "unit": {
+        "accuracy": " ม.",
+        "speed": "กม./ชม."
       }
     }
   },

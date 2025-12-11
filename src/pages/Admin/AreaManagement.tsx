@@ -19,6 +19,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetAreaQuery } from "@/store/api/area";
 import type { Area } from "@/store/api/area";
 // import type { ResponseArea } from "@/types/area";
@@ -27,6 +28,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const AreaManagementPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -41,7 +44,7 @@ const AreaManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["settings.view"]}>
-        <PageBreadcrumb pageTitle="Area Response Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.area_management")} />
 
         <AreaManagementComponent areas={areas} />
       </ProtectedRoute>

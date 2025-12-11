@@ -258,7 +258,10 @@ export const PreviewDialog = <T extends { id: string }>({
           {currentTab.render ? (
             currentTab.render(item)
           ) : (
-            <div className="space-y-6 overflow-y-auto">
+            <div
+              // className="space-y-6 overflow-y-auto"
+              className="space-y-6"
+            >
               {currentTab.fields?.map(field => {
                 const value = (item as Record<string, string>)[field.key];
                 
