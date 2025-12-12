@@ -69,14 +69,25 @@ export interface DecodedJWT {
   };
 }
 
+// export interface LoginCredentials {
+//   username: string;
+//   email?: string;
+//   password: string;
+//   organization?: string;
+//   rememberMe: boolean;
+//   captcha?: string;
+//   twoFactorCode?: string;
+// }
+
 export interface LoginCredentials {
-  username: string;
+  username?: string;
   email?: string;
-  password: string;
+  password?: string;
   organization?: string;
   rememberMe: boolean;
   captcha?: string;
   twoFactorCode?: string;
+  token?: string;
 }
 
 export interface LoginFormData {

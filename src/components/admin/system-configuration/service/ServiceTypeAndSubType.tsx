@@ -51,7 +51,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   setUserSkillList,
   setWfId
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
 
   // State management
   const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
@@ -180,7 +180,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
                   <Input
                     value={localValue}
                     onChange={e => setLocalValue && setLocalValue(e.target.value)}
-                    placeholder={language === "th" && "ค้นหาบริการ / บริการย่อย..." || "Search type / sub-type..."}
+                    placeholder={t("crud.service.list.toolbar.search.placeholder")}
                   />
                   {localValue && (
                     <Button
@@ -237,7 +237,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
                   handleTypeReset!();
                   setTypeIsOpen!(true);
                 }} size="sm">
-                Create Type
+                {t("crud.service.form.type.header.create")}
               </Button>
             </div>
           </div>
@@ -255,11 +255,14 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       {!isLoading && filteredTypes?.length !== 0 && (
         <>
           {viewMode === "hierarchy" && renderTypeHierarchy()}
+          
+          {/*
           {viewMode === "list" && (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500 cursor-default">
               <p>List view implementation coming soon...</p>
             </div>
           )}
+          */}
         </>
       )}
 
@@ -268,17 +271,17 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
         <div className="text-center py-12">
           <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
-            No case types found
+            {t("crud.service.list.header.type.no_data")}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4 cursor-default">
-            {searchQuery ? "Try adjusting your search criteria" : "Get started by creating your first case type"}
+            {searchQuery ? t("crud.common.no_filters_active") : t("crud.common.no_records").replace("_ENTITY_", t("crud.service.name"))}
           </p>
           <button
             onClick={handleCreateType}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 dark:bg-blue-300 text-white dark:text-gray-900 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-200 mx-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Case Type</span>
+            <span>{t("crud.service.form.type.header.create")}</span>
           </button>
         </div>
       )}

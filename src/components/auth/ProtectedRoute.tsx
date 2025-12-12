@@ -1,10 +1,20 @@
 // /src/components/auth/ProtectedRoute.tsx
-import React, { useEffect, useState } from "react";
+import React
+  ,
+  {
+    useEffect,
+    useRef,
+    // useState
+  }
+from "react";
 import { AlertIcon } from "@/icons";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { getSsoToken } from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
+import { MAX_SSO_LOGIN_ATTEMPTS } from "@/utils/constants";
 import { PermissionManager } from "@/utils/permissionManager";
 import type {
   ProtectedRouteProps,
@@ -20,16 +30,29 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   action = "view",
   fallback: Fallback
 }) => {
-  const { state } = useAuth();
+  const { state, login } = useAuth();
   const { t } = useTranslation();
 
-  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  // useEffect(() => {
+  //   const fetchAuthService = async () => {
+  //     setIsSystemAdmin(await AuthService.isSystemAdmin());
+  //   }
+  //   fetchAuthService();
+  // }, [isSystemAdmin]);
+  const isSystemAdmin = useIsSystemAdmin();
+  const ssoToken = getSsoToken();
+
+  // Max attempts for automatic SSO login to avoid infinite retries
+  const ssoLoginAttempts = useRef(0);
+  // const ssoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    const fetchAuthService = async () => {
-      setIsSystemAdmin(await AuthService.isSystemAdmin());
+    if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
+      ssoLoginAttempts.current++;
+      void login({ token: ssoToken ?? undefined, rememberMe: true });
     }
-    fetchAuthService();
-  }, [isSystemAdmin]);
+  }, [state.user, state.isLoading, ssoToken, login]);
 
   if (state.isLoading || state.isRefreshing) {
     return (
@@ -45,7 +68,30 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
+  //   return <LoginForm />;
+  // }
+
   if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
+    if (ssoToken) {
+      // If exceeded attempts, fall back to explicit login form
+      if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
+        return <LoginForm />;
+      }
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {t("auth.signin.state.is_loading")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">{t("auth.signin.state.wating")}</p>
+          </div>
+        </div>
+      );
+    }
+
     return <LoginForm />;
   }
 

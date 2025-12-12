@@ -1,5 +1,5 @@
 // /src/utils/authService.ts
-import { API_CONFIG } from "@/config/api";
+import { API_CONFIG, getSsoToken } from "@/config/api";
 import { SYSTEM_ROLE } from "@/utils/constants";
 import { HttpClient } from "@/utils/httpClient";
 import { PermissionManager } from "@/utils/permissionManager";
@@ -163,12 +163,13 @@ export class AuthService {
 
         // Real API mode
         const params = {
-          username: credentials.username,
-          password: credentials.password,
-          organization: String(credentials.organization),
+          username: credentials.username || "",
+          password: credentials.password || "",
+          organization: String(credentials.organization) || "",
           rememberMe: String(credentials.rememberMe),
           twoFactorCode: credentials.twoFactorCode || "",
-          captcha: credentials.captcha || ""
+          captcha: credentials.captcha || "",
+          token: credentials.token || ""
         };
 
         // METHOD GET (suspended)
@@ -179,7 +180,7 @@ export class AuthService {
 
         // METHOD POST
         const response = await this.httpClient.post<LoginResponse>(
-          API_CONFIG.ENDPOINTS.LOGIN, params
+          getSsoToken() ? API_CONFIG.ENDPOINTS.VERIFY : API_CONFIG.ENDPOINTS.LOGIN, params
         );
 
         if (!response.data) {

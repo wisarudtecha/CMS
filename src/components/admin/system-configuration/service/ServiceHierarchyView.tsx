@@ -2,64 +2,70 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FileIcon } from "@/icons";
 import { Modal } from "@/components/ui/modal";
+import { useTranslation } from "@/hooks/useTranslation";
+import { PRIORITY_LABELS, PRIORITY_CONFIG } from "@/utils/constants";
 import type {
   EnhancedCaseSubType,
   EnhancedCaseType,
   // TypeAnalytics
 } from "@/types/case";
-import type { HierarchyItem, HierarchyConfig, PriorityLevel } from "@/types/hierarchy";
+import type {
+  HierarchyItem,
+  HierarchyConfig,
+  // PriorityLevel
+} from "@/types/hierarchy";
 import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
 import HierarchyView from "@/components/admin/HierarchyView";
 import Button from "@/components/ui/button/Button";
 
-const PRIORITY_LEVELS: PriorityLevel[] = [
-  { value: 0, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
-  { value: 1, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
-  { value: 2, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
-  { value: 3, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
-  { value: 4, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
-  { value: 5, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
-  { value: 6, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
-  { value: 7, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
-  { value: 8, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
-  { value: 9, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
-];
+// const PRIORITY_LEVELS: PriorityLevel[] = [
+//   { value: 0, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+//   { value: 1, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+//   { value: 2, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+//   { value: 3, label: "High", color: "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 border-red-200 dark:border-red-700" },
+//   { value: 4, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+//   { value: 5, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+//   { value: 6, label: "Medium", color: "bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+//   { value: 7, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
+//   { value: 8, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
+//   { value: 9, label: "Low", color: "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 border-green-200 dark:border-green-700" },
+// ];
 
 interface ServiceHierarchyViewProps {
   // analytics?: Record<string, TypeAnalytics>;
-    caseSubTypes?: EnhancedCaseSubType[];
-    caseTypes?: EnhancedCaseType[];
-    className?: string;
-    filteredTypes?: EnhancedCaseType[];
-    properties?: Property[];
-    searchQuery?: string;
-    showInactive?: boolean;
-    skills?: EnhancedSkill[];
-    workflows?: Workflow[];
-    handleSTypeDelete: (id: number) => void;
-    handleSTypeReset: () => void;
-    handleTypeDelete: (id: number) => void;
-    handleTypeReset: () => void;
-    setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
-    setCaseSla: (sla: string) => void;
-    setMDeviceType: (deviceType: string) => void;
-    setMWorkOrderType: (workOrderType: string) => void;
-    setPriority: (priority: string) => void;
-    setSTypeCode: (code: string) => void;
-    setSTypeEn: (en: string) => void;
-    setSTypeId: (id: string) => void;
-    setSTypeIsOpen: (isOpen: boolean) => void;
-    setSTypeTh: (th: string) => void;
-    setSTypeTypeId: (typeId: string) => void;
-    setTypeEn: (th: string) => void;
-    setTypeId: (id: string) => void;
-    setTypeIsOpen: (isOpen: boolean) => void;
-    setTypeTh: (en: string) => void;
-    setUnitPropLists: (propId: string[]) => void;
-    setUserSkillList: (skillId: string[]) => void;
-    setWfId: (wfId: string) => void;
+  caseSubTypes?: EnhancedCaseSubType[];
+  caseTypes?: EnhancedCaseType[];
+  className?: string;
+  filteredTypes?: EnhancedCaseType[];
+  properties?: Property[];
+  searchQuery?: string;
+  showInactive?: boolean;
+  skills?: EnhancedSkill[];
+  workflows?: Workflow[];
+  handleSTypeDelete: (id: number) => void;
+  handleSTypeReset: () => void;
+  handleTypeDelete: (id: number) => void;
+  handleTypeReset: () => void;
+  setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
+  setCaseSla: (sla: string) => void;
+  setMDeviceType: (deviceType: string) => void;
+  setMWorkOrderType: (workOrderType: string) => void;
+  setPriority: (priority: string) => void;
+  setSTypeCode: (code: string) => void;
+  setSTypeEn: (en: string) => void;
+  setSTypeId: (id: string) => void;
+  setSTypeIsOpen: (isOpen: boolean) => void;
+  setSTypeTh: (th: string) => void;
+  setSTypeTypeId: (typeId: string) => void;
+  setTypeEn: (th: string) => void;
+  setTypeId: (id: string) => void;
+  setTypeIsOpen: (isOpen: boolean) => void;
+  setTypeTh: (en: string) => void;
+  setUnitPropLists: (propId: string[]) => void;
+  setUserSkillList: (skillId: string[]) => void;
+  setWfId: (wfId: string) => void;
 }
 
 const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
@@ -96,6 +102,21 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   setUserSkillList,
   setWfId
 }) => {
+  const { language, t } = useTranslation();
+
+  const generatePriorityConfigs = () => {
+    const langKey = language as keyof typeof PRIORITY_LABELS.high;
+    return PRIORITY_CONFIG.flatMap(({ type, count, color, icon }) =>
+      Array(count).fill(null).map((_, index) => ({
+        color,
+        icon,
+        label: PRIORITY_LABELS[type][langKey],
+        value: index
+      }))
+    );
+  }
+  const PRIORITY_LEVELS = generatePriorityConfigs();
+
   // const handleToggleActive = (
   //   item: HierarchyItem, type: string
   //   // id: string, isType: boolean
@@ -164,12 +185,13 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     
     // Add parent items (case types)
     (caseTypes || []).forEach(type => {
+      const childCount = (caseSubTypes || []).filter(subType => subType.typeId === type.typeId).length;
       items.push({
         // id: type.id,
         id: type.typeId,
         parentId: null, // Explicitly set to null for root items
-        name: type.th,
-        secondaryName: type.en,
+        name: language === "th" && type.th || type.en,
+        secondaryName: language === "th" && type.en || type.th,
         icon: type.icon,
         active: type.active,
         level: 0,
@@ -177,7 +199,8 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
           typeId: type.typeId,
           color: type.color,
           createdAt: type.createdAt,
-          updatedAt: type.updatedAt
+          updatedAt: type.updatedAt,
+          childCount
         }
       });
     });
@@ -192,9 +215,9 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
           // parentId: parentType.id,
           // parentId: parentType.typeId,
           parentId: subType.typeId,
-          name: subType.th,
-          secondaryName: subType.en,
-          customName: `${subType.sTypeCode}-${subType.th || ""}`,
+          name: language === "th" && subType.th || subType.en,
+          secondaryName: language === "th" && subType.en || subType.th,
+          customName: `${subType.sTypeCode}-${language === "th" && subType.th || subType.en || ""}`,
           active: subType.active,
           priority: subType.priority,
           level: 1,
@@ -215,7 +238,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     });
 
     return items;
-  }, [caseSubTypes, caseTypes]);
+  }, [caseSubTypes, caseTypes, language]);
 
   const [hierarchyItems, setHierarchyItems] = useState<HierarchyItem[]>(
     convertToHierarchyItems()
@@ -227,44 +250,53 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   }, [caseSubTypes, caseTypes, convertToHierarchyItems]);
 
   const handleDelete = useCallback(async (item: HierarchyItem, type: string) => {
-    console.log("🚀 ~ ServiceHierarchyView ~ item:", item);
+    // console.log("🚀 ~ ServiceHierarchyView ~ item:", item);
     // Check if item has children
-    const hasChildren = hierarchyItems.some(
-      hierarchyItem => hierarchyItem.parentId === item.id
-    );
+    // const hasChildren = hierarchyItems.some(
+    //   hierarchyItem => hierarchyItem.parentId === item.id
+    // );
 
-    if (hasChildren) {
-      const childLabelMap: Record<string, string> = {
-        "caseType": "Type",
-        "caseSubType": "Sub-Type",
-      };
+    // if (hasChildren) {
+    //   const childLabelMap: Record<string, string> = {
+    //     "caseType": "Type",
+    //     "caseSubType": "Sub-Type",
+    //   };
       
-      const childLabel = childLabelMap[type] || "child items";
+    //   const childLabel = childLabelMap[type] || "child items";
       
-      alert(
-        `Cannot delete this ${type}. It has ${childLabel}. ` +
-        `Please remove all ${childLabel} first before deleting this item.`
-      );
-      return;
-    }
+    //   alert(
+    //     `Cannot delete this ${type}. It has ${childLabel}. ` +
+    //     `Please remove all ${childLabel} first before deleting this item.`
+    //   );
+    //   return;
+    // }
 
-    const confirmMessage = `Are you sure you want to delete this ${type}?${item?.level !== undefined && item.level > 1 ? " This will also delete all its children." : ""}`;
-    
+    // const confirmMessage = `Are you sure you want to delete this ${type}?${item?.level !== undefined && item.level > 1 ? " This will also delete all its children." : ""}`;
+    const confirmMessage = item?.customName || item.name || "";
+
     setIsLoading(true);
 
     setDeleteId(item.id as number);
     setDeleteIsOpen(true);
-    setDeleteMessage(confirmMessage);
+    // setDeleteMessage(confirmMessage);
     setDeleteType(type);
     
     if (type === "caseType") {
-      setDeleteHeader(`Type: ${item.name}`);
+      // setDeleteHeader(`Type: ${item.name}`);
+      setDeleteHeader(t("crud.service.confirm.type.delete.title"));
+      setDeleteMessage(t("crud.service.confirm.type.delete.message").replace("_TYPE_", confirmMessage || "this type"));
     } 
     else if (type === "caseSubType") {
-      setDeleteHeader(`Sub-Type: ${item.name}`);
+      // setDeleteHeader(`Sub-Type: ${item.name}`);
+      setDeleteHeader(t("crud.service.confirm.sub_type.delete.title"));
+      setDeleteMessage(t("crud.service.confirm.sub_type.delete.message").replace("_SUB_TYPE_", confirmMessage || "this sub-type"));
     }
+
     setIsLoading(false);
-  }, [hierarchyItems]);
+  }, [
+    // hierarchyItems,
+    t
+  ]);
 
   const handleDeleteSelection = (id: number, type: string) => {
     if (type === "caseType") {
@@ -278,7 +310,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   // Event handlers (converted to work with generic hierarchy items)
   const handleEditType = useCallback((item: HierarchyItem) => {
     // Implementation for editing case type
-    console.log("Edit type:", item);
+    // console.log("Edit type:", item);
 
     handleSTypeReset();
     handleTypeReset();
@@ -291,7 +323,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
 
   const handleEditSubType = useCallback((item: HierarchyItem) => {
     // Implementation for editing case sub-type
-    console.log("Edit sub-type:", item);
+    // console.log("Edit sub-type:", item);
 
     handleSTypeReset();
     handleTypeReset();
@@ -334,12 +366,12 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
       // Level 0
       {
         canHaveChildren: true,
-        createChildLabel: "Add Sub-Type",
-        emptyChildrenMessage: "No sub-types defined for this type",
+        createChildLabel: t("crud.service.list.header.subType.create_child"),
+        emptyChildrenMessage: t("crud.service.list.header.subType.no_data"),
         // icon: <FileIcon className="w-5 h-5 text-blue-600 dark:text-blue-300" />,
         childCountLabel: {
-          plural: "sub-types",
-          singular: "sub-type"
+          plural: t("crud.service.list.header.subType.plural"),
+          singular: t("crud.service.list.header.subType.singular")
         },
         metadataDisplay: {
           showChildCount: true,
@@ -348,7 +380,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
-              metadata.push(`${childCount} ${childCount === 1 ? "sub-type" : "sub-types"}`);
+              metadata.push(`${childCount} ${childCount === 1 ? t("crud.service.list.header.subType.singular") : t("crud.service.list.header.subType.plural")}`);
             }
             return metadata;
           }
@@ -359,12 +391,14 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
         },
         actions: [
           {
-            label: "Edit",
+            key: "update",
+            label: t("crud.common.update"),
             variant: "warning",
             onClick: (item) => handleEditType(item)
           },
           {
-            label: "Delete",
+            key: "delete",
+            label: t("crud.common.delete"),
             variant: "outline",
             onClick: (item) => handleDelete(item, "caseType")
           }
@@ -381,12 +415,15 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
             const metadata: string[] = [];
             // Show SLA
             if (item.metadata?.caseSla) {
-              metadata.push(`SLA: ${item.metadata.caseSla}min`);
+              metadata.push(`SLA: ${item.metadata.caseSla}${t("crud.service.unit.minutes")}`);
             }
             // Show skill requirements
             if (Array.isArray(item.metadata?.skillRequirements) && item.metadata.skillRequirements.length) {
               const skillCount = item.metadata.skillRequirements.length;
-              metadata.push(`${skillCount} ${skillCount === 1 ? "skill" : "skills"} required`);
+              // metadata.push(`${skillCount} ${skillCount === 1 ? "skill" : "skills"} required`);
+              metadata.push(`${skillCount} ${skillCount === 1
+                ? t("crud.service.list.header.subType.skill_required.singular")
+                : t("crud.service.list.header.subType.skill_required.plural")}`);
             }
             return metadata;
           }
@@ -396,12 +433,12 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
         },
         actions: [
           {
-            label: "Edit",
+            label: t("crud.common.update"),
             variant: "warning",
             onClick: (item) => handleEditSubType(item)
           },
           {
-            label: "Delete",
+            label: t("crud.common.delete"),
             variant: "outline",
             onClick: (item) => handleDelete(item, "caseSubType")
           }
@@ -458,10 +495,12 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     // ]
   }), [
     // caseTypes,
+    PRIORITY_LEVELS,
     handleDelete,
     handleEditSubType,
     handleEditType,
-    // handleToggleActive
+    // handleToggleActive,
+    t
   ]);
 
   const handleCreateChild = (
@@ -502,25 +541,25 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
         // onItemsChange={setHierarchyItems}
       />
 
-      <Modal isOpen={deleteIsOpen} onClose={() => setDeleteIsOpen(false)} className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto">
+      <Modal isOpen={deleteIsOpen} onClose={() => setDeleteIsOpen(false)} className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto cursor-default">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            Delete {deleteHeader}
+            {deleteHeader}
           </h3>
           <Button onClick={() => setDeleteIsOpen(false)} size="sm" variant="ghost">
             <CloseIcon className="w-4 h-4" />
           </Button>
         </div>
-        <div className="space-y-4">
-          {deleteMessage}
+        <div className="space-y-4 text-gray-800 dark:text-gray-100">
+          {deleteMessage} {deleteHeader}
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
-            <Button onClick={() => setDeleteIsOpen(false)} variant="outline">Cancel</Button>
+            <Button onClick={() => setDeleteIsOpen(false)} variant="outline">{t("crud.service.confirm.button.cancel")}</Button>
             <Button onClick={() => {
               handleDeleteSelection(deleteId, deleteType);
               setDeleteIsOpen(false);
-            }} variant="error">Confirm</Button>
+            }} variant="error">{!isLoading && t("crud.service.confirm.button.confirm") || t("crud.service.confirm.button.deleting")}</Button>
           </div>
         </div>
       </Modal>

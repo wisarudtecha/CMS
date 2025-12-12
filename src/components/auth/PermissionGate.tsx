@@ -1,7 +1,8 @@
 // /src/components/auth/PermissionGate.tsx
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthService } from "@/utils/authService";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
+// import { AuthService } from "@/utils/authService";
 import { PermissionManager } from "@/utils/permissionManager";
 
 export const PermissionGate: React.FC<{
@@ -24,13 +25,14 @@ export const PermissionGate: React.FC<{
 }) => {
   const { state } = useAuth();
 
-  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
-  useEffect(() => {
-    const fetchAuthService = async () => {
-      setIsSystemAdmin(await AuthService.isSystemAdmin());
-    }
-    fetchAuthService();
-  }, [isSystemAdmin]);
+  // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  // useEffect(() => {
+  //   const fetchAuthService = async () => {
+  //     setIsSystemAdmin(await AuthService.isSystemAdmin());
+  //   }
+  //   fetchAuthService();
+  // }, [isSystemAdmin]);
+  const isSystemAdmin = useIsSystemAdmin();
 
   if (!state.user) {
     return <>{fallback}</>;

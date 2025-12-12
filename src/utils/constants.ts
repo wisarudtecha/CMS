@@ -78,6 +78,9 @@ export const DEV_CONFIG = {
 
 export const INTERNAL_UNIT_SOURCE_ID = "3c48bb37-22a4-4aca-b659-955feadeb5c1" as const;
 
+export const MAX_LOGIN_ATTEMPTS_INTERVAL_MS = 1000 as const; // 1 seconds
+export const MAX_SSO_LOGIN_ATTEMPTS = 3 as const;
+
 export const PERMISSIONS = {
   TICKETS: {
     READ: "tickets:read",

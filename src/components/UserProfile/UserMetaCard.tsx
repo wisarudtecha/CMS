@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { LockIcon, PencilIcon } from "@/icons";
 // import { useUserProfile } from "@/context/UserProfileContext";
 import { useUserProfile } from "@/context/UserProfileContextObject";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import { formatAddress, isValidJsonString } from "@/utils/stringFormatters";
 import type { Address, UserMetaCardProps } from "@/types/user";
 import Toast from "@/components/toast/Toast";
@@ -15,13 +16,14 @@ import ChangePasswordModal from "@/components/UserProfile/ChangePasswordModal";
 import ResetPasswordModal from "@/components/UserProfile/ResetPasswordModal";
 
 export default function UserMetaCard({ userData: propUserData, loading: propLoading, error: propError }: UserMetaCardProps = {}) {
-  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
-  useEffect(() => {
-    const fetchSystemAdminStatus = async () => {
-      setIsSystemAdmin(await AuthService.isSystemAdmin());
-    }
-    fetchSystemAdminStatus();
-  }, [isSystemAdmin]);
+  // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  // useEffect(() => {
+  //   const fetchSystemAdminStatus = async () => {
+  //     setIsSystemAdmin(await AuthService.isSystemAdmin());
+  //   }
+  //   fetchSystemAdminStatus();
+  // }, [isSystemAdmin]);
+  const isSystemAdmin = useIsSystemAdmin();
   
   const navigate = useNavigate();
   const permissions = usePermissions();

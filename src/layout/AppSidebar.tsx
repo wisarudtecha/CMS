@@ -22,9 +22,10 @@ import {
 import { BoxIcon } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { useSidebar } from "@/context/SidebarContext";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import changelog from "@/changelog.json";
 // import Button from "@/components/ui/button/Button";
 // import SidebarWidget from "@/layout/SidebarWidget";
@@ -53,13 +54,14 @@ type NavItem = {
 };
 
 const AppSidebar: React.FC = () => {
-  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
-  useEffect(() => {
-    const fetchSystemAdminStatus = async () => {
-      setIsSystemAdmin(await AuthService.isSystemAdmin());
-    }
-    fetchSystemAdminStatus();
-  }, [isSystemAdmin]);
+  // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  // useEffect(() => {
+  //   const fetchSystemAdminStatus = async () => {
+  //     setIsSystemAdmin(await AuthService.isSystemAdmin());
+  //   }
+  //   fetchSystemAdminStatus();
+  // }, [isSystemAdmin]);
+  const isSystemAdmin = useIsSystemAdmin();
 
   const permissions = usePermissions();
   const { language, t } = useTranslation();

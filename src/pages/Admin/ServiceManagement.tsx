@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetSubTypeQuery, useGetTypeQuery } from "@/store/api/caseApi";
 import { useGetPropertiesQuery } from "@/store/api/unitApi";
 import { useGetSkillsQuery } from "@/store/api/userApi";
@@ -33,6 +34,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const CaseManagementPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -59,7 +62,7 @@ const CaseManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["service.view"]}>
-        <PageBreadcrumb pageTitle="Service Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.service_management")} />
 
         <ServiceManagementComponent
           caseSubTypes={caseSubTypes}

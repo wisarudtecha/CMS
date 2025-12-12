@@ -727,6 +727,187 @@
         }
       }
     },
+    "service": {
+      "name": "服务",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索类型 / 子类型..."
+          }
+        },
+        "header": {
+          "type": {
+            "no_data": "未找到类型"
+          },
+          "subType": {
+            "plural": "子类型",
+            "singular": "子类型",
+            "no_data": "此类型未定义子类型",
+            "create_child": "添加子类型",
+            "skill_required": {
+              "plural": "所需技能",
+              "singular": "所需技能"
+            }
+          }
+        }
+      },
+      "form": {
+        "type": {
+          "header": {
+            "create": "创建类型",
+            "update": "编辑类型"
+          },
+          "typeTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "请输入泰语类型名称",
+            "required": "类型名称 (泰语) 为必填项"
+          },
+          "typeEn": {
+            "label": "名称 (英语)",
+            "placeholder": "请输入英语类型名称",
+            "required": "类型名称 (英语) 为必填项"
+          }
+        },
+        "sub_type": {
+          "header": {
+            "create": "添加子类型",
+            "update": "编辑子类型"
+          },
+          "sTypeTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "请输入泰语子类型名称",
+            "required": "子类型名称 (泰语) 为必填项"
+          },
+          "sTypeEn": {
+            "label": "名称 (英语)",
+            "placeholder": "请输入英语子类型名称",
+            "required": "子类型名称 (英语) 为必填项"
+          },
+          "sTypeCode": {
+            "label": "子类型代码",
+            "placeholder": "请输入子类型代码",
+            "required": "子类型代码为必填项"
+          },
+          "sTypeTypeId": {
+            "label": "类型",
+            "placeholder": "选择类型",
+            "required": "类型为必填项"
+          },
+          "caseSla": {
+            "label": "SLA (分钟)"
+          },
+          "priority": {
+            "label": "优先级",
+            "placeholder": "选择优先级",
+            "required": "优先级为必填项"
+          },
+          "unitPropLists": {
+            "label": "属性",
+            "placeholder": "选择属性",
+            "required": "属性为必填项"
+          },
+          "userSkillList": {
+            "label": "技能",
+            "placeholder": "选择技能",
+            "required": "技能为必填项"
+          },
+          "wfId": {
+            "label": "工作流",
+            "placeholder": "选择工作流",
+            "required": "工作流为必填项"
+          },
+          "mDeviceType": {
+            "label": "设备类型",
+            "placeholder": "请输入设备类型",
+            "required": "设备类型为必填项"
+          },
+          "mDeviceTypeName": {
+            "label": "设备类型名称",
+            "placeholder": "请输入设备类型名称",
+            "required": "设备类型名称为必填项"
+          },
+          "mWorkOrderType": {
+            "label": "工单类型",
+            "placeholder": "请输入工单类型",
+            "required": "工单类型为必填项"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "创建类型确认",
+            "message": "请确认以创建 _TYPE_。"
+          },
+          "update": {
+            "title": "更新类型确认",
+            "message": "请确认以更新 _TYPE_。"
+          },
+          "delete": {
+            "title": "删除类型确认",
+            "message": "确定要删除 _TYPE_ 吗？此操作无法撤销。"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "创建子类型确认",
+            "message": "请确认以创建 _SUB_TYPE_。"
+          },
+          "update": {
+            "title": "更新子类型确认",
+            "message": "请确认以更新 _SUB_TYPE_。"
+          },
+          "delete": {
+            "title": "删除子类型确认",
+            "message": "确定要删除 _SUB_TYPE_ 吗？此操作无法撤销。"
+          }
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存...",
+          "deleting": "正在删除..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "类型创建成功",
+            "error": "类型创建失败"
+          },
+          "update": {
+            "success": "类型更新成功",
+            "error": "类型更新失败"
+          },
+          "delete": {
+            "success": "类型删除成功",
+            "error": "类型删除失败"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "子类型创建成功",
+            "error": "子类型创建失败"
+          },
+          "update": {
+            "success": "子类型更新成功",
+            "error": "子类型更新失败"
+          },
+          "delete": {
+            "success": "子类型删除成功",
+            "error": "子类型删除失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "unit": {
+        "minutes": " 分钟"
+      }
+    },
     "area": {
       "name": "区域",
       "list": {

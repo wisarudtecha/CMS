@@ -1,5 +1,6 @@
 // /src/types/hierarchy.ts
 export interface HierarchyAction {
+  key?: string;
   label: string;
   size?: "xs" | "sm" | "md" | "lg";
   variant: "primary" | "secondary" | "success" | "error" | "warning" | "info" | "light" | "dark" | "outline" | "ghost";

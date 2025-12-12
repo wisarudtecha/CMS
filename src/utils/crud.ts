@@ -21,8 +21,12 @@ export const formatDate = (
   dateString: string | Date,
   options: DateFormatOptions = {}
 ) => {
-  const { language } = UseTranslation();
-  const langLocale = { th: "th-TH", en: "en-US", cn: "zh-CN" };
+  // const { language } = UseTranslation();
+  const storage = localStorage || sessionStorage;
+  const language = storage.getItem("language") || "th";
+  
+  // const langLocale = { th: "th-TH", en: "en-US", cn: "zh-CN" };
+  const langLocale: { [key: string]: string } = { th: "th-TH", en: "en-US", cn: "zh-CN" };
 
   const { 
     locale = langLocale[language] || "en-US", 

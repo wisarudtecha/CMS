@@ -743,6 +743,333 @@
         }
       }
     },
+
+
+
+    "organization": {
+      "name": "Organization",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search organizations..."
+          }
+        },
+        "header": {
+          "dept": {
+            "no_data": "No department found"
+          },
+          "comm": {
+            "plural": "Commands",
+            "singular": "Command",
+            "no_data": "No command defined for this department",
+            "create_child": "Add Command"
+          },
+          "stn": {
+            "plural": "Stations",
+            "singular": "Station",
+            "no_data": "No station defined for this command",
+            "create_child": "Add Station"
+          }
+        }
+      },
+      "form": {
+        "dept": {
+          "header": {
+            "create": "Create Department",
+            "update": "Edit Department"
+          },
+          "deptTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter department name in Thai language",
+            "required": "Department name (Thai) is required"
+          },
+          "deptEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter department name in English language",
+            "required": "Department name (English) is required"
+          }
+        },
+        "comm": {
+          "header": {
+            "create": "Add Command",
+            "update": "Edit Command"
+          },
+          "commTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter command name in Thai language",
+            "required": "Command name (Thai) is required"
+          },
+          "commEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter command name in English language",
+            "required": "Command name (English) is required"
+          },
+          "commDeptId": {
+            "label": "Deparetment",
+            "placeholder": "Select department",
+            "required": "Deparetment is required"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "Create type Confirmation",
+            "message": "Please confirm to create _TYPE_."
+          },
+          "update": {
+            "title": "Update type Confirmation",
+            "message": "Please confirm to update _TYPE_."
+          },
+          "delete": {
+            "title": "Delete type Confirmation",
+            "message": "Are you sure you want to delete _TYPE_? This action cannot be undone."
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "Create sub-type Confirmation",
+            "message": "Please confirm to create _SUB_TYPE_."
+          },
+          "update": {
+            "title": "Update sub-type Confirmation",
+            "message": "Please confirm to update _SUB_TYPE_."
+          },
+          "delete": {
+            "title": "Delete sub-type Confirmation",
+            "message": "Are you sure you want to delete _SUB_TYPE_? This action cannot be undone."
+          }
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "Type created successfully",
+            "error": "Failed to create type"
+          },
+          "update": {
+            "success": "Type updated successfully",
+            "error": "Failed to update type"
+          },
+          "delete": {
+            "success": "Type deleted successfully",
+            "error": "Failed to delete type"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "Sub-type created successfully",
+            "error": "Failed to create sub-type"
+          },
+          "update": {
+            "success": "Sub-type updated successfully",
+            "error": "Failed to update sub-type"
+          },
+          "delete": {
+            "success": "Sub-type deleted successfully",
+            "error": "Failed to delete sub-type"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "unit": {
+        "minutes": " min."
+      }
+    },
+
+
+
+    "service": {
+      "name": "Service",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search types / sub-types..."
+          }
+        },
+        "header": {
+          "type": {
+            "no_data": "No type found"
+          },
+          "subType": {
+            "plural": "Sub-Types",
+            "singular": "Sub-Type",
+            "no_data": "No sub-type defined for this type",
+            "create_child": "Add Sub-Type",
+            "skill_required": {
+              "plural": "Skills required",
+              "singular": "Skill required"
+            }
+          }
+        }
+      },
+      "form": {
+        "type": {
+          "header": {
+            "create": "Create Type",
+            "update": "Edit Type"
+          },
+          "typeTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter type name in Thai language",
+            "required": "Type name (Thai) is required"
+          },
+          "typeEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter type name in English language",
+            "required": "Type name (English) is required"
+          }
+        },
+        "sub_type": {
+          "header": {
+            "create": "Add Sub-Type",
+            "update": "Edit Sub-Type"
+          },
+          "sTypeTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter sub-type name in Thai language",
+            "required": "Sub-type name (Thai) is required"
+          },
+          "sTypeEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter sub-type name in English language",
+            "required": "Sub-type name (English) is required"
+          },
+          "sTypeCode": {
+            "label": "Sub-Type Code",
+            "placeholder": "Enter sub-type code",
+            "required": "Sub-Type code is required"
+          },
+          "sTypeTypeId": {
+            "label": "Type",
+            "placeholder": "Select type",
+            "required": "Type is required"
+          },
+          "caseSla": {
+            "label": "SLA (Minutes)"
+          },
+          "priority": {
+            "label": "Priority",
+            "placeholder": "Select priority",
+            "required": "Priority is required"
+          },
+          "unitPropLists": {
+            "label": "Properties",
+            "placeholder": "Select properties",
+            "required": "Properties is required"
+          },
+          "userSkillList": {
+            "label": "Skills",
+            "placeholder": "Select skills",
+            "required": "Skills is required"
+          },
+          "wfId": {
+            "label": "Workflow",
+            "placeholder": "Select workflow",
+            "required": "Workflow is required"
+          },
+          "mDeviceType": {
+            "label": "Device Type",
+            "placeholder": "Enter device type",
+            "required": "Device type is required"
+          },
+          "mDeviceTypeName": {
+            "label": "Device Type Name",
+            "placeholder": "Enter device type name",
+            "required": "Device type name is required"
+          },
+          "mWorkOrderType": {
+            "label": "Work Order Type",
+            "placeholder": "Enter work order type",
+            "required": "Work order type is required"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "Create type Confirmation",
+            "message": "Please confirm to create _TYPE_."
+          },
+          "update": {
+            "title": "Update type Confirmation",
+            "message": "Please confirm to update _TYPE_."
+          },
+          "delete": {
+            "title": "Delete type Confirmation",
+            "message": "Are you sure you want to delete _TYPE_? This action cannot be undone."
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "Create sub-type Confirmation",
+            "message": "Please confirm to create _SUB_TYPE_."
+          },
+          "update": {
+            "title": "Update sub-type Confirmation",
+            "message": "Please confirm to update _SUB_TYPE_."
+          },
+          "delete": {
+            "title": "Delete sub-type Confirmation",
+            "message": "Are you sure you want to delete _SUB_TYPE_? This action cannot be undone."
+          }
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "Type created successfully",
+            "error": "Failed to create type"
+          },
+          "update": {
+            "success": "Type updated successfully",
+            "error": "Failed to update type"
+          },
+          "delete": {
+            "success": "Type deleted successfully",
+            "error": "Failed to delete type"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "Sub-type created successfully",
+            "error": "Failed to create sub-type"
+          },
+          "update": {
+            "success": "Sub-type updated successfully",
+            "error": "Failed to update sub-type"
+          },
+          "delete": {
+            "success": "Sub-type deleted successfully",
+            "error": "Failed to delete sub-type"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "unit": {
+        "minutes": " min."
+      }
+    },
     "area": {
       "name": "Area",
       "list": {

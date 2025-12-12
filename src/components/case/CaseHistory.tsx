@@ -28,6 +28,7 @@ import { source } from "@/components/case/constants/caseConstants";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 // import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Area } from "@/store/api/area";
@@ -39,7 +40,7 @@ import {
 } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { useGetUserByUserNameQuery } from "@/store/api/userApi";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS_SHORT, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
 import type { CaseListParams } from "@/store/api/caseApi";
@@ -84,7 +85,8 @@ const CaseHistoryComponent: React.FC<{
 }) => {
   const { t, language } = useTranslation();
 
-  const isSystemAdmin = AuthService.isSystemAdmin();
+  // const isSystemAdmin = AuthService.isSystemAdmin();
+  const isSystemAdmin = useIsSystemAdmin();
 
   // const { data: userData, isLoading } = useGetUserByUserNameQuery({ username: officer.unit.username });
   const navigate = useNavigate();
@@ -333,11 +335,21 @@ const CaseHistoryComponent: React.FC<{
   );
 
   const isCancelAvailable = (data: CaseEntity) => {
-    return (permissions.hasPermission("case.delete") || isSystemAdmin) as boolean && !CASE_CANNOT_DELETE.includes(data.statusId as typeof CASE_CANNOT_DELETE[number])
+    const canCancel = permissions.hasPermission("case.delete") && !CASE_CANNOT_DELETE.includes(data.statusId as typeof CASE_CANNOT_DELETE[number]);
+    // console.log("🚀 ~ isCancelAvailable ~ canCancel:", canCancel);
+    return canCancel || isSystemAdmin;
   }
 
   const isEditAvailable = (data: CaseEntity) => {
-    return (permissions.hasPermission("case.update") || isSystemAdmin) as boolean && !CASE_CANNOT_UPDATE.includes(data.statusId as typeof CASE_CANNOT_UPDATE[number])
+    const canEdit = permissions.hasPermission("case.update") && !CASE_CANNOT_UPDATE.includes(data.statusId as typeof CASE_CANNOT_UPDATE[number]);
+    // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
+    return canEdit || isSystemAdmin;
+  }
+
+  const isViewAvailable = () => {
+    const canView = permissions.hasPermission("case.view");
+    // console.log("🚀 ~ isCancelAvailable ~ canView:", canView);
+    return canView || isSystemAdmin;
   }
 
   // ===================================================================
@@ -729,10 +741,11 @@ const CaseHistoryComponent: React.FC<{
         variant: "primary" as const,
         // icon: EyeIcon,
         onClick: () => {},
-        condition: () => (permissions.hasPermission("case.view") || isSystemAdmin) as boolean
+        // condition: () => (permissions.hasPermission("case.view") || isSystemAdmin) as boolean isViewAvailable
+        condition: () => isViewAvailable()
       },
       {
-        key: "edit",
+        key: "update",
         label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
@@ -1292,7 +1305,7 @@ const CaseHistoryComponent: React.FC<{
     ],
     actions: [
       {
-        key: "edit",
+        key: "update",
         label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "warning",
@@ -1304,7 +1317,7 @@ const CaseHistoryComponent: React.FC<{
         condition: (caseItem: CaseEntity) => isEditAvailable(caseItem)
       },
       {
-        key: "cancel",
+        key: "delete",
         label: t("crud.case_history.list.body.actions.cancel"),
         // icon: TimeIcon,
         variant: "outline",

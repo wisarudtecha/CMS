@@ -5,6 +5,7 @@ import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   useCreateCaseTypesMutation,
   useUpdateCaseTypesMutation,
@@ -62,6 +63,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
 }) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
+  const { language, t } = useTranslation();
 
   const [createCaseSubTypes] = useCreateCaseSubTypesMutation();
   const [updateCaseSubTypes] = useUpdateCaseSubTypesMutation();
@@ -146,7 +148,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   const [workflow, setWorkflow] = useState<Workflow[]>(workflows || []);
 
   // const [isLoading, ] = useState(false);
-  const [, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showInactive, ] = useState(false);
   // const [filterCategory, ] = useState<string>("all");
@@ -281,65 +283,69 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   const validateType = useCallback((): string[] => {
     const errors: string[] = [];
     if (!typeTh.trim()) {
-      errors.push("Type name (Thai) is required");
-      setTypeValidateErrors(prev => ({ ...prev, typeTh: "Type name (Thai) is required" }));
+      errors.push(t("crud.service.form.type.typeTh.required"));
+      setTypeValidateErrors(prev => ({ ...prev, typeTh: t("crud.service.form.type.typeTh.required") }));
     }
     if (!typeEn.trim()) {
-      errors.push("Type name (English) is required");
-      setTypeValidateErrors(prev => ({ ...prev, typeEn: "Type name (English) is required" }));
+      errors.push(t("crud.service.form.type.typeEn.required"));
+      setTypeValidateErrors(prev => ({ ...prev, typeEn: t("crud.service.form.type.typeEn.required") }));
     }
     return errors;
-  }, [typeEn, typeTh]);
+  }, [typeEn, typeTh, t]);
 
   // Validate Sub-Type
   const validateSubType = useCallback((): string[] => {
     const errors: string[] = [];
     if (!sTypeTh.trim()) {
-      errors.push("Sub-Type name (Thai) is required");
-      setSTypeValidateErrors(prev => ({ ...prev, sTypeTh: "Sub-Type name (Thai) is required" }));
+      errors.push(t("crud.service.form.sub_type.sTypeTh.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, sTypeTh: t("crud.service.form.sub_type.sTypeTh.required") }));
     }
     if (!sTypeEn.trim()) {
-      errors.push("Sub-Type name (English) is required");
-      setSTypeValidateErrors(prev => ({ ...prev, sTypeEn: "Sub-Type name (English) is required" }));
+      errors.push(t("crud.service.form.sub_type.sTypeEn.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, sTypeEn: t("crud.service.form.sub_type.sTypeEn.required") }));
     }
     if (!sTypeCode.trim()) {
-      errors.push("Sub-Type code is required");
-      setSTypeValidateErrors(prev => ({ ...prev, sTypeCode: "Sub-Type code is required" }));
+      errors.push(t("crud.service.form.sub_type.sTypeCode.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, sTypeCode: t("crud.service.form.sub_type.sTypeCode.required") }));
     }
     if (!sTypeTypeId.trim()) {
-      errors.push("Type ID is required");
-      setSTypeValidateErrors(prev => ({ ...prev, sTypeTypeId: "Type ID is required" }));
+      errors.push(t("crud.service.form.sub_type.sTypeTypeId.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, sTypeTypeId: t("crud.service.form.sub_type.sTypeTypeId.required") }));
     }
     if (!caseSla.trim()) {
-      errors.push("SLA is required");
-      setSTypeValidateErrors(prev => ({ ...prev, caseSla: "SLA is required" }));
+      // errors.push(t("crud.service.form.sub_type.caseSla.required"));
+      // setSTypeValidateErrors(prev => ({ ...prev, caseSla: t("crud.service.form.sub_type.caseSla.required") }));
     }
     if (!priority.trim()) {
-      errors.push("Priority is required");
-      setSTypeValidateErrors(prev => ({ ...prev, priority: "Priority is required" }));
+      errors.push(t("crud.service.form.sub_type.priority.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, priority: t("crud.service.form.sub_type.priority.required") }));
     }
     if (!unitPropLists) {
-      errors.push("Unit Property List is required");
-      setSTypeValidateErrors(prev => ({ ...prev, unitPropLists: "Unit Property List is required" }));
+      errors.push(t("crud.service.form.sub_type.unitPropLists.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, unitPropLists: t("crud.service.form.sub_type.unitPropLists.required") }));
     }
     if (!userSkillList) {
-      errors.push("User Skill List is required");
-      setSTypeValidateErrors(prev => ({ ...prev, userSkillList: "User Skill List is required" }));
+      errors.push(t("crud.service.form.sub_type.userSkillList.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, userSkillList: t("crud.service.form.sub_type.userSkillList.required") }));
     }
     if (!wfId) {
-      errors.push("Workflow is required");
-      setSTypeValidateErrors(prev => ({ ...prev, wfId: "Workflow is required" }));
+      errors.push(t("crud.service.form.sub_type.wfId.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, wfId: t("crud.service.form.sub_type.wfId.required") }));
     }
     if (!mDeviceType.trim()) {
-      errors.push("Device Type is required");
-      setSTypeValidateErrors(prev => ({ ...prev, mDeviceType: "Device Type is required" }));
+      errors.push(t("crud.service.form.sub_type.mDeviceType.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, mDeviceType: t("crud.service.form.sub_type.mDeviceType.required") }));
+    }
+    if (!mDeviceTypeName.trim()) {
+      errors.push(t("crud.service.form.sub_type.mDeviceTypeName.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, mDeviceTypeName: t("crud.service.form.sub_type.mDeviceTypeName.required") }));
     }
     if (!mWorkOrderType.trim()) {
-      errors.push("Work Order Type is required");
-      setSTypeValidateErrors(prev => ({ ...prev, mWorkOrderType: "Work Order Type is required" }));
+      errors.push(t("crud.service.form.sub_type.mWorkOrderType.required"));
+      setSTypeValidateErrors(prev => ({ ...prev, mWorkOrderType: t("crud.service.form.sub_type.mWorkOrderType.required") }));
     }
     return errors;
-  }, [caseSla, priority, sTypeCode, sTypeEn, sTypeTh, sTypeTypeId, unitPropLists, userSkillList, wfId, mDeviceType, mWorkOrderType]);
+  }, [caseSla, priority, sTypeCode, sTypeEn, sTypeTh, sTypeTypeId, unitPropLists, userSkillList, wfId, mDeviceType, mDeviceTypeName, mWorkOrderType, t]);
 
   // ===================================================================
   // Type CRUD
@@ -348,7 +354,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // Delete Type
   const handleTypeDelete = useCallback(async (id: number) => {
     if (!id) {
-      throw new Error("Type ID not found");
+      // throw new Error("Type ID not found");
+      return; // Don"t save if there are validation errors
     }
     try {
       // console.log("🚀 ~ ServiceManagementComponent ~ handleTypeDelete - id:", id);
@@ -360,25 +367,27 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         response = await deleteCaseTypes(id).unwrap();
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Delete successfully"}`);
+        // addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Delete successfully"}`);
+        addToast("success", t("crud.service.action.type.delete.success"));
         setTimeout(() => {
           window.location.replace(`/service`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Service Management - Type: ${error}`);
+      // addToast("error", `Service Management - Type: ${error}`);
+      addToast("error", `${t("crud.service.action.type.delete.error")}: ${error}`);
     }
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteCaseTypes]);
+  }, [permissions, addToast, deleteCaseTypes, t]);
 
   // Reset Department
   const handleTypeReset = () => {
@@ -417,26 +426,28 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", typeId && t("crud.service.action.type.update.success") || t("crud.service.action.type.create.success"));
         setTimeout(() => {
           window.location.replace(`/service`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Service Management - Type: ${error}`);
+      // addToast("error", `Service Management - Type: ${error}`);
+      addToast("error", `${typeId && t("crud.service.action.type.update.success") || t("crud.service.action.type.create.success")}: ${error}`);
     }
     finally {
       setTypeIsOpen(false);
       setLoading(false);
     }
-  }, [typeEn, typeId, typeTh, permissions, addToast, createCaseTypes, updateCaseTypes, validateType]);
+  }, [typeEn, typeId, typeTh, permissions, addToast, createCaseTypes, t, updateCaseTypes, validateType]);
 
   // ===================================================================
   // Sub-Type CRUD
@@ -445,7 +456,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // Delete Sub-Type
   const handleSTypeDelete = useCallback(async (id: number) => {
     if (!id) {
-      throw new Error("Sub-Type ID not found");
+      // throw new Error("Sub-Type ID not found");
+      return; // Don"t save if there are validation errors
     }
     try {
       // console.log("🚀 ~ ServiceManagementComponent ~ handleSTypeDelete - id:", id);
@@ -457,25 +469,27 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         response = await deleteCaseSubTypes(id).unwrap();
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Delete successfully"}`);
+        // addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Delete successfully"}`);
+        addToast("success", t("crud.service.action.sub_type.delete.success"));
         setTimeout(() => {
           window.location.replace(`/service`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Service Management - Sub-Type: ${error}`);
+      // addToast("error", `Service Management - Sub-Type: ${error}`);
+      addToast("error", `${t("crud.service.action.sub_type.delete.error")}: ${error}`);
     }
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteCaseSubTypes]);
+  }, [permissions, addToast, deleteCaseSubTypes, t]);
 
   // Reset Sub-Type
   const handleSTypeReset = () => {
@@ -545,20 +559,22 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", sTypeId && t("crud.service.action.sub_type.update.success") || t("crud.service.action.sub_type.create.success"));
         setTimeout(() => {
           window.location.replace(`/service`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Service Management - Sub-Type: ${error}`);
+      // addToast("error", `Service Management - Sub-Type: ${error}`);
+      addToast("error", `${sTypeId && t("crud.service.action.sub_type.update.success") || t("crud.service.action.sub_type.create.success")}: ${error}`);
     }
     finally {
       setSTypeIsOpen(false);
@@ -566,7 +582,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     }
   }, [
     caseSla, permissions, priority, sTypeCode, sTypeEn, sTypeId, sTypeTh, sTypeTypeId, unitPropLists, userSkillList, wfId, mDeviceType, mWorkOrderType,
-    addToast, createCaseSubTypes, updateCaseSubTypes, validateSubType
+    addToast, createCaseSubTypes, t, updateCaseSubTypes, validateSubType
   ]);
 
   // ===================================================================
@@ -720,7 +736,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {typeId && "Edit" || "Create"} Type
+            {typeId && t("crud.service.form.type.header.update") || t("crud.service.form.type.header.create")}
           </h3>
           <Button
             onClick={() => {
@@ -737,11 +753,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         <div className="space-y-4">
           <div>
             <label htmlFor="typeTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Type Name (TH)
+              {t("crud.service.form.type.typeTh.label")}
             </label>
             <Input
               id="typeTh"
-              placeholder="Fill type name in Thai language"
+              placeholder={t("crud.service.form.type.typeTh.placeholder")}
               value={typeTh}
               onChange={(e) => setTypeTh && setTypeTh(e.target.value)}
             />
@@ -749,11 +765,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="typeEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Type Name (EN)
+              {t("crud.service.form.type.typeEn.label")}
             </label>
             <Input
               id="typeEn"
-              placeholder="Fill type name in English language"
+              placeholder={t("crud.service.form.type.typeEn.placeholder")}
               value={typeEn}
               onChange={(e) => setTypeEn && setTypeEn(e.target.value)}
             />
@@ -764,7 +780,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           <div className="flex gap-3">
             {!typeId && (
               <Button onClick={handleTypeReset} variant="outline">
-                Reset
+                {t("crud.service.action.button.reset")}
               </Button>
             )}
             <Button 
@@ -774,7 +790,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               }}
               variant="primary"
             >
-              Save
+              {t("crud.service.action.button.save")}
             </Button>
           </div>
         </div>
@@ -791,7 +807,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            Confirm {typeId && "Edit" || "Create"} Type
+            {typeId && t("crud.service.confirm.type.update.title") || t("crud.service.confirm.type.create.title")}
           </h3>
           <Button
             onClick={() => {
@@ -804,8 +820,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             <CloseIcon className="w-4 h-4" />
           </Button>
         </div>
-        <div className="space-y-4">
-          Please confirm to {typeId && "edit" || "create"} {typeTh} {typeEn}.
+        <div className="space-y-4 text-gray-800 dark:text-gray-100">
+          {typeId
+            && t("crud.service.confirm.type.update.message").replace("_TYPE_", language === "th" && typeTh || typeEn)
+            || t("crud.service.confirm.type.create.message").replace("_TYPE_", language === "th" && typeTh || typeEn)
+          }
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
@@ -816,10 +835,10 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               }}
               variant="outline"
             >
-              Cancel
+              {t("crud.service.confirm.button.cancel")}
             </Button>
-            <Button onClick={handleTypeSave} variant="success">
-              Confirm
+            <Button onClick={handleTypeSave} variant="success" disabled={isLoading} className={`${isLoading && "cursor-not-allowed disabled"}`}>
+              {!isLoading && t("crud.service.confirm.button.confirm") || t("crud.service.confirm.button.saving")}
             </Button>
           </div>
         </div>
@@ -837,7 +856,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {sTypeId && "Edit" || "Create"} Sub-Type
+            {sTypeId && t("crud.service.form.sub_type.header.update") || t("crud.service.form.sub_type.header.create")}
           </h3>
           <Button
             onClick={() => {
@@ -854,24 +873,24 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Type
+              {t("crud.service.form.sub_type.sTypeTypeId.label")}
             </label>
             <Select
               value={sTypeTypeId || ""}
               onChange={value => setSTypeTypeId && setSTypeTypeId(value)}
               options={caseTypesOptions || []}
-              placeholder="Select Type"
+              placeholder={t("crud.service.form.sub_type.sTypeTypeId.placeholder")}
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.sTypeTypeId}</span>
           </div>
           <div>
             <label htmlFor="sTypeCode" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Sub-Type Code
+              {t("crud.service.form.sub_type.sTypeCode.label")}
             </label>
             <Input
               id="sTypeCode"
-              placeholder="Fill sub-type code"
+              placeholder={t("crud.service.form.sub_type.sTypeCode.placeholder")}
               value={sTypeCode}
               onChange={(e) => setSTypeCode && setSTypeCode(e.target.value)}
             />
@@ -879,11 +898,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="sTypeTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Sub-Type Name (TH)
+              {t("crud.service.form.sub_type.sTypeTh.label")}
             </label>
             <Input
               id="sTypeTh"
-              placeholder="Fill sub-type name in Thai language"
+              placeholder={t("crud.service.form.sub_type.sTypeTh.placeholder")}
               value={sTypeTh}
               onChange={(e) => setSTypeTh && setSTypeTh(e.target.value)}
             />
@@ -891,11 +910,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="sTypeEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Sub-Type Name (EN)
+              {t("crud.service.form.sub_type.sTypeEn.label")}
             </label>
             <Input
               id="sTypeEn"
-              placeholder="Fill sub-type name in English language"
+              placeholder={t("crud.service.form.sub_type.sTypeEn.placeholder")}
               value={sTypeEn}
               onChange={(e) => setSTypeEn && setSTypeEn(e.target.value)}
             />
@@ -903,7 +922,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Priority
+              {t("crud.service.form.sub_type.priority.label")}
             </label>
             <Select
               value={priority || ""}
@@ -911,38 +930,38 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               options={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => {
                 return { value: String(n), label: String(n) }
               })}
-              placeholder="Select Priority"
+              placeholder={t("crud.service.form.sub_type.priority.placeholder")}
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.priority}</span>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Properties
+              {t("crud.service.form.sub_type.unitPropLists.label")}
             </label>
             <CustomizableSelect
               options={propertiesOptions}
               value={Array.isArray(unitPropLists) ? unitPropLists : []}
               onChange={value => setUnitPropLists(value as string[])}
-              placeholder="Select Properties"
+              placeholder={t("crud.service.form.sub_type.unitPropLists.placeholder")}
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.unitPropLists}</span>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Skills
+              {t("crud.service.form.sub_type.userSkillList.label")}
             </label>
             <CustomizableSelect
               options={skillsOptions}
               value={Array.isArray(userSkillList) ? userSkillList : []}
               onChange={value => setUserSkillList(value as string[])}
-              placeholder="Select Skills"
+              placeholder={t("crud.service.form.sub_type.userSkillList.placeholder")}
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.userSkillList}</span>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Workflow
+              {t("crud.service.form.sub_type.wfId.label")}
             </label>
             <Select
               value={wfId || ""}
@@ -953,7 +972,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
                 }
               }}
               options={workflowsOptions || []}
-              placeholder="Select Workflow"
+              placeholder={t("crud.service.form.sub_type.wfId.placeholder")}
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.wfId}</span>
@@ -977,11 +996,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="mDeviceType" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Device Type
+              {t("crud.service.form.sub_type.mDeviceType.label")}
             </label>
             <Input
               id="mDeviceType"
-              placeholder="Fill Device Type"
+              placeholder={t("crud.service.form.sub_type.mDeviceType.placeholder")}
               value={mDeviceType}
               onChange={(e) => setMDeviceType && setMDeviceType(e.target.value)}
             />
@@ -989,11 +1008,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="mDeviceTypeName" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Device Type Name
+              {t("crud.service.form.sub_type.mDeviceTypeName.label")}
             </label>
             <Input
               id="mDeviceTypeName"
-              placeholder="Fill Device Type Name"
+              placeholder={t("crud.service.form.sub_type.mDeviceTypeName.placeholder")}
               value={mDeviceTypeName}
               onChange={(e) => setMDeviceTypeName && setMDeviceTypeName(e.target.value)}
             />
@@ -1001,11 +1020,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           </div>
           <div>
             <label htmlFor="mWorkOrderType" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Work Order Type
+              {t("crud.service.form.sub_type.mWorkOrderType.label")}
             </label>
             <Input
               id="mWorkOrderType"
-              placeholder="Fill Work Order Type"
+              placeholder={t("crud.service.form.sub_type.mWorkOrderType.placeholder")}
               value={mWorkOrderType}
               onChange={(e) => setMWorkOrderType && setMWorkOrderType(e.target.value)}
             />
@@ -1016,7 +1035,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           <div className="flex gap-3">
             {!sTypeId && (
               <Button onClick={handleSTypeReset} variant="outline">
-                Reset
+                {t("crud.service.action.button.reset")}
               </Button>
             )}
             <Button
@@ -1026,7 +1045,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               }}
               variant="primary"
             >
-              Save
+              {t("crud.service.action.button.save")}
             </Button>
           </div>
         </div>
@@ -1043,7 +1062,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            Confirm {sTypeId && "Edit" || "Create"} Sub-Type
+            {sTypeId && t("crud.service.confirm.sub_type.update.title") || t("crud.service.confirm.sub_type.create.title")}
           </h3>
           <Button
             onClick={() => {
@@ -1056,8 +1075,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             <CloseIcon className="w-4 h-4" />
           </Button>
         </div>
-        <div className="space-y-4">
-          Please confirm to {sTypeId && "edit" || "create"} {sTypeCode} {sTypeTh} {sTypeEn}.
+        <div className="space-y-4 text-gray-800 dark:text-gray-100">
+          {sTypeId
+            && t("crud.service.confirm.sub_type.update.message").replace("_SUB_TYPE_", language === "th" && sTypeTh || sTypeEn)
+            || t("crud.service.confirm.sub_type.create.message").replace("_SUB_TYPE_", language === "th" && sTypeTh || sTypeEn)
+          }
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
@@ -1068,10 +1090,10 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
               }}
               variant="outline"
             >
-              Cancel
+              {t("crud.service.confirm.button.cancel")}
             </Button>
             <Button onClick={handleSTypeSave} variant="success">
-              Confirm
+              {!isLoading && t("crud.service.confirm.button.confirm") || t("crud.service.confirm.button.saving")}
             </Button>
           </div>
         </div>

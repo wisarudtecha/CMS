@@ -88,7 +88,10 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
   // Check if action should be disabled (for delete with children)
   const isActionDisabled = (action: HierarchyAction): boolean => {
     // Disable delete action if item has children
-    if (action.label.toLowerCase().includes('delete') && canHaveChildren && childCount > 0) {
+    if (action.label.toLowerCase().includes("delete") && canHaveChildren && childCount > 0) {
+      return true;
+    }
+    else if (action.key?.toLowerCase().includes("delete") && canHaveChildren && childCount > 0) {
       return true;
     }
     return false;
@@ -269,7 +272,7 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
             {/* Dynamic Metadata Display */}
             {metadataItems.length > 0 && (
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                {metadataItems.join(' • ')}
+                {metadataItems.join(" • ")}
                 {analytics && (
                   <span className="ml-2">
                     {analytics.usageCount !== undefined && ` • ${analytics.usageCount} uses`}
