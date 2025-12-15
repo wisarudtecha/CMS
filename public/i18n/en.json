@@ -16,6 +16,7 @@
     "search": "Search",
     "loading": "Loading...",
     "loadingPercentage": "Loading..._percentage_",
+    "loading_translations": "Loading Translations...",
     "error": "Error",
     "success": "Success",
     "back": "Back",
@@ -743,9 +744,6 @@
         }
       }
     },
-
-
-
     "organization": {
       "name": "Organization",
       "list": {
@@ -794,50 +792,90 @@
             "create": "Add Command",
             "update": "Edit Command"
           },
-          "commTh": {
+          "commandTh": {
             "label": "Name (TH)",
             "placeholder": "Enter command name in Thai language",
             "required": "Command name (Thai) is required"
           },
-          "commEn": {
+          "commandEn": {
             "label": "Name (EN)",
             "placeholder": "Enter command name in English language",
             "required": "Command name (English) is required"
           },
           "commDeptId": {
+            "label": "Department",
+            "placeholder": "Select department",
+            "required": "Department is required"
+          }
+        },
+        "stn": {
+          "header": {
+            "create": "Add Station",
+            "update": "Edit Station"
+          },
+          "stationTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter station name in Thai language",
+            "required": "Station name (Thai) is required"
+          },
+          "stationEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter station name in English language",
+            "required": "Station name (English) is required"
+          },
+          "stnDeptId": {
             "label": "Deparetment",
             "placeholder": "Select department",
             "required": "Deparetment is required"
+          },
+          "stnCommId": {
+            "label": "Command",
+            "placeholder": "Select command",
+            "required": "Command is required"
           }
         }
       },
       "confirm": {
-        "type": {
+        "dept": {
           "create": {
-            "title": "Create type Confirmation",
-            "message": "Please confirm to create _TYPE_."
+            "title": "Create department confirmation",
+            "message": "Please confirm to create _DEPT_."
           },
           "update": {
-            "title": "Update type Confirmation",
-            "message": "Please confirm to update _TYPE_."
+            "title": "Update department confirmation",
+            "message": "Please confirm to update _DEPT_."
           },
           "delete": {
-            "title": "Delete type Confirmation",
-            "message": "Are you sure you want to delete _TYPE_? This action cannot be undone."
+            "title": "Delete department confirmation",
+            "message": "Are you sure you want to delete _DEPT_? This action cannot be undone."
           }
         },
-        "sub_type": {
+        "comm": {
           "create": {
-            "title": "Create sub-type Confirmation",
-            "message": "Please confirm to create _SUB_TYPE_."
+            "title": "Create command confirmation",
+            "message": "Please confirm to create _COMM_."
           },
           "update": {
-            "title": "Update sub-type Confirmation",
-            "message": "Please confirm to update _SUB_TYPE_."
+            "title": "Update command confirmation",
+            "message": "Please confirm to update _COMM_."
           },
           "delete": {
-            "title": "Delete sub-type Confirmation",
-            "message": "Are you sure you want to delete _SUB_TYPE_? This action cannot be undone."
+            "title": "Delete command confirmation",
+            "message": "Are you sure you want to delete _COMM_? This action cannot be undone."
+          }
+        },
+        "stn": {
+          "create": {
+            "title": "Create station confirmation",
+            "message": "Please confirm to create _STN_."
+          },
+          "update": {
+            "title": "Update station confirmation",
+            "message": "Please confirm to update _STN_."
+          },
+          "delete": {
+            "title": "Delete station confirmation",
+            "message": "Are you sure you want to delete _STN_? This action cannot be undone."
           }
         },
         "button": {
@@ -848,32 +886,46 @@
         }
       },
       "action": {
-        "type": {
+        "dept": {
           "create": {
-            "success": "Type created successfully",
-            "error": "Failed to create type"
+            "success": "Department created successfully",
+            "error": "Failed to create department"
           },
           "update": {
-            "success": "Type updated successfully",
-            "error": "Failed to update type"
+            "success": "Department updated successfully",
+            "error": "Failed to update department"
           },
           "delete": {
-            "success": "Type deleted successfully",
-            "error": "Failed to delete type"
+            "success": "Department deleted successfully",
+            "error": "Failed to delete department"
           }
         },
-        "sub_type": {
+        "comm": {
           "create": {
-            "success": "Sub-type created successfully",
-            "error": "Failed to create sub-type"
+            "success": "Command created successfully",
+            "error": "Failed to create command"
           },
           "update": {
-            "success": "Sub-type updated successfully",
-            "error": "Failed to update sub-type"
+            "success": "Command updated successfully",
+            "error": "Failed to update command"
           },
           "delete": {
-            "success": "Sub-type deleted successfully",
-            "error": "Failed to delete sub-type"
+            "success": "Command deleted successfully",
+            "error": "Failed to delete command"
+          }
+        },
+        "stn": {
+          "create": {
+            "success": "Station created successfully",
+            "error": "Failed to create station"
+          },
+          "update": {
+            "success": "Station updated successfully",
+            "error": "Failed to update station"
+          },
+          "delete": {
+            "success": "Station deleted successfully",
+            "error": "Failed to delete station"
           }
         },
         "button": {
@@ -881,14 +933,8 @@
           "delete": "Delete",
           "reset": "Reset"
         }
-      },
-      "unit": {
-        "minutes": " min."
       }
     },
-
-
-
     "service": {
       "name": "Service",
       "list": {
@@ -998,29 +1044,29 @@
       "confirm": {
         "type": {
           "create": {
-            "title": "Create type Confirmation",
+            "title": "Create type confirmation",
             "message": "Please confirm to create _TYPE_."
           },
           "update": {
-            "title": "Update type Confirmation",
+            "title": "Update type confirmation",
             "message": "Please confirm to update _TYPE_."
           },
           "delete": {
-            "title": "Delete type Confirmation",
+            "title": "Delete type confirmation",
             "message": "Are you sure you want to delete _TYPE_? This action cannot be undone."
           }
         },
         "sub_type": {
           "create": {
-            "title": "Create sub-type Confirmation",
+            "title": "Create sub-type confirmation",
             "message": "Please confirm to create _SUB_TYPE_."
           },
           "update": {
-            "title": "Update sub-type Confirmation",
+            "title": "Update sub-type confirmation",
             "message": "Please confirm to update _SUB_TYPE_."
           },
           "delete": {
-            "title": "Delete sub-type Confirmation",
+            "title": "Delete sub-type confirmation",
             "message": "Are you sure you want to delete _SUB_TYPE_? This action cannot be undone."
           }
         },
@@ -1626,7 +1672,7 @@
       "submit": "Submit",
       "Assigned Officer": "Assigned Officer",
       "Assigned Officers": "Assigned Officers",
-      "schedule_placeholder": "dd/hh/yyyy",
+      "schedule_placeholder": "mm/dd/yyyy",
       "updateAt": "Update At",
       "updateBy": "Update By",
       "edit": "Edit",

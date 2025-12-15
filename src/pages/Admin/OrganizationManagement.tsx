@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetDepartmentsQuery, useGetCommandsQuery, useGetStationsQuery, useGetOrganizationsQuery } from "@/store/api/organizationApi";
 import type { Department, Command, Station, Organization } from "@/types/organization";
 import OrganizationManagementComponent from "@/components/admin/user-management/organization/OrganizationManagement";
@@ -27,6 +28,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
 
 const OrganizationManagementPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -50,7 +53,7 @@ const OrganizationManagementPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["organization.view"]}>
-        <PageBreadcrumb pageTitle="Organization Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.organization")} />
 
         <OrganizationManagementComponent
           departments={departments}

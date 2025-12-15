@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 import {
   Folder,
-  // Plus,
+  Plus,
   RefreshCw
 } from "lucide-react";
 import {
@@ -316,55 +316,55 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   const validateDepartment = useCallback((): string[] => {
     const errors: string[] = [];
     if (!deptTh.trim()) {
-      errors.push("Department name (Thai) is required");
-      setDeptValidateErrors(prev => ({ ...prev, deptTh: "Department name (Thai) is required" }));
+      errors.push(t("crud.organization.form.dept.deptTh.required"));
+      setDeptValidateErrors(prev => ({ ...prev, deptTh: t("crud.organization.form.dept.deptTh.required") }));
     }
     if (!deptEn.trim()) {
-      errors.push("Department name (English) is required");
-      setDeptValidateErrors(prev => ({ ...prev, deptEn: "Department name (English) is required" }));
+      errors.push(t("crud.organization.form.dept.deptEn.required"));
+      setDeptValidateErrors(prev => ({ ...prev, deptEn: t("crud.organization.form.dept.deptEn.required") }));
     }
     return errors;
-  }, [deptEn, deptTh]);
+  }, [deptEn, deptTh, t]);
 
   // Validate command
   const validateCommand = useCallback((): string[] => {
     const errors: string[] = [];
     if (!commDeptId.trim()) {
-      errors.push("Department is required");
-      setCommValidateErrors(prev => ({ ...prev, deptId: "Department is required" }));
+      errors.push(t("crud.organization.form.comm.commDeptId.required"));
+      setCommValidateErrors(prev => ({ ...prev, deptId: t("crud.organization.form.comm.commDeptId.required") }));
     }
     if (!commandTh.trim()) {
-      errors.push("Command name (Thai) is required");
-      setCommValidateErrors(prev => ({ ...prev, commandTh: "Command name (Thai) is required" }));
+      errors.push(t("crud.organization.form.comm.commandTh.required"));
+      setCommValidateErrors(prev => ({ ...prev, commandTh: t("crud.organization.form.comm.commandTh.required") }));
     }
     if (!commandEn.trim()) {
-      errors.push("Command name (English) is required");
-      setCommValidateErrors(prev => ({ ...prev, commandEn: "Command name (English) is required" }));
+      errors.push(t("crud.organization.form.comm.commandEn.required"));
+      setCommValidateErrors(prev => ({ ...prev, commandEn: t("crud.organization.form.comm.commandEn.required") }));
     }
     return errors;
-  }, [commDeptId, commandEn, commandTh]);
+  }, [commDeptId, commandEn, commandTh, t]);
 
   // Validate station
   const validateStation = useCallback((): string[] => {
     const errors: string[] = [];
     if (!stnDeptId.trim()) {
-      errors.push("Department is required");
-      setStnValidateErrors(prev => ({ ...prev, deptId: "Department is required" }));
+      errors.push(t("crud.organization.form.stn.stnDeptId.required"));
+      setStnValidateErrors(prev => ({ ...prev, deptId: t("crud.organization.form.stn.stnDeptId.required") }));
     }
     if (!stnCommId.trim()) {
-      errors.push("Command is required");
-      setStnValidateErrors(prev => ({ ...prev, commId: "Command is required" }));
+      errors.push(t("crud.organization.form.stn.stnCommId.required"));
+      setStnValidateErrors(prev => ({ ...prev, commId: t("crud.organization.form.stn.stnCommId.required") }));
     }
     if (!stationTh.trim()) {
-      errors.push("Station name (Thai) is required");
-      setCommValidateErrors(prev => ({ ...prev, stationTh: "Station name (Thai) is required" }));
+      errors.push(t("crud.organization.form.stn.stationTh.required"));
+      setCommValidateErrors(prev => ({ ...prev, stationTh: t("crud.organization.form.stn.stationTh.required") }));
     }
     if (!stationEn.trim()) {
-      errors.push("Station name (English) is required");
-      setCommValidateErrors(prev => ({ ...prev, stationEn: "Station name (English) is required" }));
+      errors.push(t("crud.organization.form.stn.stationEn.required"));
+      setCommValidateErrors(prev => ({ ...prev, stationEn: t("crud.organization.form.stn.stationEn.required") }));
     }
     return errors;
-  }, [stationEn, stationTh, stnCommId, stnDeptId]);
+  }, [stationEn, stationTh, stnCommId, stnDeptId, t]);
 
   // ===================================================================
   // Department CRUD
@@ -373,7 +373,8 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Department
   const handleDepartmentDelete = useCallback(async (id: number) => {
     if (!id) {
-      throw new Error("Department ID not found");
+      // throw new Error("Department ID not found");
+      return; // Don"t save if there are validation errors
     }
     try {
       // console.log("🚀 ~ OrganizationManagementComponent ~ handleDepartmentDelete - id:", id);
@@ -385,25 +386,27 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         response = await deleteDepartment(id).unwrap();
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Delete successfully"}`);
+        // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Delete successfully"}`);
+        addToast("success", t("crud.organization.action.dept.delete.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Department: ${error}`);
+      // addToast("error", `Organization Management - Department: ${error}`);
+      addToast("error", `${t("crud.organization.action.dept.delete.error")}: ${error}`);
     }
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteDepartment]);
+  }, [permissions, addToast, deleteDepartment, t]);
 
   // Reset Department
   const handleDepartmentReset = () => {
@@ -442,26 +445,28 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", deptId && t("crud.organization.action.dept.update.success") || t("crud.organization.action.dept.create.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Department: ${error}`);
+      // addToast("error", `Organization Management - Department: ${error}`);
+      addToast("error", `${deptId && t("crud.organization.action.dept.update.success") || t("crud.organization.action.dept.create.success")}: ${error}`);
     }
     finally {
       setDeptIsOpen(false);
       setLoading(false);
     }
-  }, [deptEn, deptId, deptTh, permissions, addToast, createDepartment, updateDepartment, validateDepartment]);
+  }, [deptEn, deptId, deptTh, permissions, addToast, createDepartment, t, updateDepartment, validateDepartment]);
 
   // ===================================================================
   // Command CRUD
@@ -470,7 +475,8 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Command
   const handleCommandDelete = useCallback(async (id: number) => {
     if (!id) {
-      throw new Error("Command ID not found");
+      // throw new Error("Command ID not found");
+      return; // Don"t save if there are validation errors
     }
     try {
       // console.log("🚀 ~ OrganizationManagementComponent ~ handleCommandDelete - id:", id);
@@ -482,25 +488,27 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         response = await deleteCommand(id).unwrap();
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Delete successfully"}`);
+        // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Delete successfully"}`);
+        addToast("success", t("crud.organization.action.comm.delete.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Command: ${error}`);
+      // addToast("error", `Organization Management - Command: ${error}`);
+      addToast("error", `${t("crud.organization.action.comm.delete.error")}: ${error}`);
     }
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteCommand]);
+  }, [permissions, addToast, deleteCommand, t]);
 
   // Reset Command
   const handleCommandReset = () => {
@@ -541,26 +549,28 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", commId && t("crud.organization.action.comm.update.success") || t("crud.organization.action.comm.create.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Command: ${error}`);
+      // addToast("error", `Organization Management - Command: ${error}`);
+      addToast("error", `${commId && t("crud.organization.action.comm.update.success") || t("crud.organization.action.comm.create.success")}: ${error}`);
     }
     finally {
       setCommIsOpen(false);
       setLoading(false);
     }
-  }, [commDeptId, commandEn, commandTh, commId, permissions, addToast, createCommand, updateCommand, validateCommand]);
+  }, [commDeptId, commandEn, commandTh, commId, permissions, addToast, createCommand, t, updateCommand, validateCommand]);
 
   // ===================================================================
   // Station CRUD
@@ -569,7 +579,8 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Station
   const handleStationDelete = useCallback(async (id: number) => {
     if (!id) {
-      throw new Error("Station ID not found");
+      // throw new Error("Station ID not found");
+      return; // Don"t save if there are validation errors
     }
     try {
       // console.log("🚀 ~ OrganizationManagementComponent ~ handleStationDelete - id:", id);
@@ -581,25 +592,27 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         response = await deleteStation(id).unwrap();
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Delete successfully"}`);
+        // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Delete successfully"}`);
+        addToast("success", t("crud.organization.action.stn.delete.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Station: ${error}`);
+      // addToast("error", `Organization Management - Station: ${error}`);
+      addToast("error", `${t("crud.organization.action.stn.delete.error")}: ${error}`);
     }
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteStation]);
+  }, [permissions, addToast, deleteStation, t]);
 
   // Reset Command
   const handleStationReset = () => {
@@ -642,26 +655,28 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", stnId && t("crud.organization.action.stn.update.success") || t("crud.organization.action.stn.create.success"));
         setTimeout(() => {
           window.location.replace(`/organization`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Organization Management - Station: ${error}`);
+      // addToast("error", `Organization Management - Station: ${error}`);
+      addToast("error", `${stnId && t("crud.organization.action.stn.update.success") || t("crud.organization.action.stn.create.success")}: ${error}`);
     }
     finally {
       setStnIsOpen(false);
       setLoading(false);
     }
-  }, [permissions, stationEn, stationTh, stnCommId, stnDeptId, stnId, addToast, createStation, updateStation, validateStation]);
+  }, [permissions, stationEn, stationTh, stnCommId, stnDeptId, stnId, addToast, createStation, t, updateStation, validateStation]);
 
   // ===================================================================
   // Render
@@ -677,17 +692,17 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   useEffect(() => {
     setDepartmentsOptions(departments?.map(dept => ({
       value: String(dept.deptId),
-      label: `${dept.th} (${dept.en})`
+      label: language === "th" && `${dept.th} (${dept.en})` || `${dept.en} (${dept.th})`
     })) || []);
-  }, [departments]);
+  }, [departments, language]);
 
   useEffect(() => {
     setCommandsOptions(commands?.map(comm => ({
       value: String(comm.commId),
-      label: `${comm.th} (${comm.en})`,
+      label: language === "th" && `${comm.th} (${comm.en})` || `${comm.en} (${comm.th})`,
       deptId: String(comm.deptId)
     })) || []);
-  }, [commands]);
+  }, [commands, language]);
 
   const renderOrganizationHierarchy = () => (
     <OrganizationHierarchyView
@@ -1023,7 +1038,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
                         <Input
                           value={localValue}
                           onChange={e => setLocalValue && setLocalValue(e.target.value)}
-                          placeholder={language === "th" && "ค้นหาหน่วยงาน..." || "Search organization..."}
+                          placeholder={t("crud.organization.list.toolbar.search.placeholder")}
                         />
                         {localValue && (
                           <Button
@@ -1052,7 +1067,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
                         handleDepartmentReset();
                         setDeptIsOpen(true);
                       }} size="sm">
-                      Create Department
+                      {t("crud.organization.form.dept.header.create")}
                     </Button>
                   </div>
                 </div>
@@ -1076,11 +1091,14 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               && (
               <>
                 {viewMode === "hierarchy" && renderOrganizationHierarchy()}
+
+                {/*
                 {viewMode === "list" && (
                   <div className="text-center py-12 text-gray-400 dark:text-gray-500 cursor-default">
                     <p>List view implementation coming soon...</p>
                   </div>
                 )}
+                */}
               </>
             )}
             {/* Empty state */}
@@ -1094,20 +1112,22 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               <div className="text-center py-12">
                 <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
-                  No organization found
+                  {t("crud.organization.list.header.dept.no_data")}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-4 cursor-default">
-                  {searchQuery ? "Try adjusting your search criteria" : "Get started by creating your first organization"}
+                  {searchQuery ? t("crud.common.no_filters_active") : t("crud.common.no_records").replace("_ENTITY_", t("crud.organization.name"))}
                 </p>
-                {/*
                 <button
                   // onClick={handleCreateOrganization}
+                  onClick={() => {
+                    handleDepartmentReset();
+                    setDeptIsOpen(true);
+                  }}
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 dark:bg-blue-300 text-white dark:text-gray-900 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-200 mx-auto"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Create Organization</span>
+                  <span>{t("crud.organization.form.dept.header.create")}</span>
                 </button>
-                */}
               </div>
             )}
           </div>
@@ -1127,7 +1147,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {deptId && "Edit" || "Create"} Department
+            {deptId && t("crud.organization.form.dept.header.update") || t("crud.organization.form.dept.header.create")}
           </h3>
           <Button
             onClick={() => setDeptIsOpen(false)}
@@ -1140,11 +1160,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="space-y-4">
           <div>
             <label htmlFor="deptTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Department (TH)
+              {t("crud.organization.form.dept.deptTh.label")}
             </label>
             <Input
               id="deptTh"
-              placeholder="Fill department name in Thai language"
+              placeholder={t("crud.organization.form.dept.deptTh.placeholder")}
               value={deptTh}
               onChange={(e) => setDeptTh && setDeptTh(e.target.value)}
             />
@@ -1152,11 +1172,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
           </div>
           <div>
             <label htmlFor="deptEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Department (EN)
+              {t("crud.organization.form.dept.deptEn.label")}
             </label>
             <Input
               id="deptEn"
-              placeholder="Fill department name in English language"
+              placeholder={t("crud.organization.form.dept.deptEn.placeholder")}
               value={deptEn}
               onChange={(e) => setDeptEn && setDeptEn(e.target.value)}
             />
@@ -1166,10 +1186,10 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
             <Button onClick={handleDepartmentReset} variant="outline">
-              Reset
+              {t("crud.organization.action.button.reset")}
             </Button>
             <Button onClick={handleDepartmentSave} variant="primary">
-              Confirm
+              {!isLoading && t("crud.organization.confirm.button.confirm") || t("crud.organization.confirm.button.saving")}
             </Button>
           </div>
         </div>
@@ -1186,7 +1206,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {commId && "Edit" || "Create"} Command
+            {commId && t("crud.organization.form.comm.header.update") || t("crud.organization.form.comm.header.create")}
           </h3>
           <Button
             onClick={() => setCommIsOpen(false)}
@@ -1199,24 +1219,24 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Department
+              {t("crud.organization.form.comm.commDeptId.label")}
             </label>
             <Select
               value={commDeptId || ""}
               onChange={value => setCommDeptId && setCommDeptId(value)}
               options={departmentsOptions || []}
-              placeholder="Select Department"
+              placeholder={t("crud.organization.form.comm.commDeptId.placeholder")}
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{commValidateErrors.deptId}</span>
           </div>
           <div>
             <label htmlFor="commandTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Command (TH)
+              {t("crud.organization.form.comm.commandTh.label")}
             </label>
             <Input
               id="commandTh"
-              placeholder="Fill command name in Thai language"
+              placeholder={t("crud.organization.form.comm.commandTh.placeholder")}
               value={commandTh}
               onChange={(e) => setCommandTh && setCommandTh(e.target.value)}
             />
@@ -1224,11 +1244,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
           </div>
           <div>
             <label htmlFor="commandEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Command (EN)
+              {t("crud.organization.form.comm.commandEn.label")}
             </label>
             <Input
               id="commandEn"
-              placeholder="Fill command name in English language"
+              placeholder={t("crud.organization.form.comm.commandEn.placeholder")}
               value={commandEn}
               onChange={(e) => setCommandEn && setCommandEn(e.target.value)}
             />
@@ -1238,10 +1258,10 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
             <Button onClick={handleCommandReset} variant="outline">
-              Reset
+              {t("crud.organization.action.button.reset")}
             </Button>
             <Button onClick={handleCommandSave} variant="primary">
-              Confirm
+              {!isLoading && t("crud.organization.confirm.button.confirm") || t("crud.organization.confirm.button.saving")}
             </Button>
           </div>
         </div>
@@ -1258,7 +1278,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {stnId && "Edit" || "Create"} Station
+            {stnId && t("crud.organization.form.stn.header.update") || t("crud.organization.form.stn.header.create")}
           </h3>
           <Button
             onClick={() => setStnIsOpen(false)}
@@ -1271,20 +1291,20 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Department
+              {t("crud.organization.form.stn.stnDeptId.label")}
             </label>
             <Select
               value={stnDeptId || ""}
               onChange={value => setStnDeptId && setStnDeptId(value)}
               options={departmentsOptions || []}
-              placeholder="Select Department"
+              placeholder={t("crud.organization.form.stn.stnDeptId.placeholder")}
               className="cursor-pointer"
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{stnValidateErrors.deptId}</span>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Command
+              {t("crud.organization.form.stn.stnCommId.label")}
             </label>
             <Select
               value={stnCommId || ""}
@@ -1292,7 +1312,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               // options={commandsOptions?.filter(option => option.deptId === stnDeptId) || []}
               // options={commandsOptions || []}
               options={commandsOptions?.filter(option => option.deptId === stnDeptId) || []}  // Add filter
-              placeholder="Select Command"
+              placeholder={t("crud.organization.form.stn.stnCommId.placeholder")}
               className="cursor-pointer"
               disabled={!stnDeptId} // Disable if no department selected
             />
@@ -1300,11 +1320,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
           </div>
           <div>
             <label htmlFor="stationTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Station (TH)
+              {t("crud.organization.form.stn.stationTh.label")}
             </label>
             <Input
               id="stationTh"
-              placeholder="Fill station name in Thai language"
+              placeholder={t("crud.organization.form.stn.stationTh.placeholder")}
               value={stationTh}
               onChange={(e) => setStationTh && setStationTh(e.target.value)}
             />
@@ -1312,11 +1332,11 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
           </div>
           <div>
             <label htmlFor="stationEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Station (EN)
+              {t("crud.organization.form.stn.stationEn.label")}
             </label>
             <Input
               id="stationEn"
-              placeholder="Fill station name in English language"
+              placeholder={t("crud.organization.form.stn.stationEn.placeholder")}
               value={stationEn}
               onChange={(e) => setStationEn && setStationEn(e.target.value)}
             />
@@ -1326,10 +1346,10 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
             <Button onClick={handleStationReset} variant="outline">
-              Reset
+              {t("crud.organization.action.button.reset")}
             </Button>
             <Button onClick={handleStationSave} variant="primary">
-              Confirm
+              {!isLoading && t("crud.organization.confirm.button.confirm") || t("crud.organization.confirm.button.saving")}
             </Button>
           </div>
         </div>

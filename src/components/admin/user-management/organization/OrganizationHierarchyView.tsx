@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FileIcon } from "@/icons";
 import { Modal } from "@/components/ui/modal";
+import { useTranslation } from "@/hooks/useTranslation";
 import type {
   Department,
   Command,
@@ -77,6 +78,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
   // onStationsChange,
   // onOrganizationsChange
 }) => {
+  const { language, t } = useTranslation();
+
   const [deleteId, setDeleteId] = useState(0);
   const [deleteIsOpen, setDeleteIsOpen] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState("");
@@ -94,8 +97,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         // id: dept.id,
         id: dept.deptId,
         parentId: null, // Explicitly set to null for root items
-        name: dept.th,
-        secondaryName: dept.en,
+        name: language === "th" && dept.th || dept.en,
+        secondaryName: language === "th" && dept.en || dept.th,
         // icon: dept.icon,
         active: dept.active,
         level: 0,
@@ -116,8 +119,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
           // parentId: parentType.id,
           // parentId: parentType.deptId,
           parentId: cmd.deptId,
-          name: cmd.th,
-          secondaryName: cmd.en,
+          name: language === "th" && cmd.th || cmd.en,
+          secondaryName: language === "th" && cmd.en || cmd.th,
           active: cmd.active,
           // priority: cmd.priority,
           level: 1,
@@ -138,8 +141,8 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
           // parentId: parentType.id,
           // parentId: parentType.commId,
           parentId: stn.commId,
-          name: stn.th,
-          secondaryName: stn.en,
+          name: language === "th" && stn.th || stn.en,
+          secondaryName: language === "th" && stn.en || stn.th,
           active: stn.active,
           // priority: stn.priority,
           level: 2,
@@ -152,7 +155,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     });
     
     return items;
-  }, [departments, commands, stations]);
+  }, [departments, commands, language, stations]);
 
   const [hierarchyItems, setHierarchyItems] = useState<HierarchyItem[]>(
     convertToHierarchyItems()
@@ -165,27 +168,28 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
 
   const handleDelete = useCallback(async (item: HierarchyItem, type: string) => {
     // Check if item has children
-    const hasChildren = hierarchyItems.some(
-      hierarchyItem => hierarchyItem.parentId === item.id
-    );
+    // const hasChildren = hierarchyItems.some(
+    //   hierarchyItem => hierarchyItem.parentId === item.id
+    // );
 
-    if (hasChildren) {
-      const childLabelMap: Record<string, string> = {
-        "department": "commands",
-        "command": "stations",
-      };
+    // if (hasChildren) {
+    //   const childLabelMap: Record<string, string> = {
+    //     "department": "commands",
+    //     "command": "stations",
+    //   };
       
-      const childLabel = childLabelMap[type] || "child items";
+    //   const childLabel = childLabelMap[type] || "child items";
       
-      alert(
-        `Cannot delete this ${type}. It has ${childLabel}. ` +
-        `Please remove all ${childLabel} first before deleting this item.`
-      );
-      return;
-    }
+    //   alert(
+    //     `Cannot delete this ${type}. It has ${childLabel}. ` +
+    //     `Please remove all ${childLabel} first before deleting this item.`
+    //   );
+    //   return;
+    // }
 
-    const confirmMessage = `Are you sure you want to delete this ${type}?${item?.level !== undefined && item.level > 2 ? " This will also delete all its children." : ""}`;
-    
+    // const confirmMessage = `Are you sure you want to delete this ${type}?${item?.level !== undefined && item.level > 2 ? " This will also delete all its children." : ""}`;
+    const confirmMessage = item?.customName || item.name || "";
+
     // if (confirm(confirmMessage)) {
       setIsLoading(true);
 
@@ -200,7 +204,9 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         ) {
           // handleDepartmentDelete(item.id as number);
 
-          setDeleteHeader(`Department: ${item.name}`);
+          // setDeleteHeader(`Department: ${item.name}`);
+          setDeleteHeader(t("crud.organization.confirm.dept.delete.title"));
+          setDeleteMessage(t("crud.organization.confirm.dept.delete.message").replace("_DEPT_", confirmMessage || "this department"));
 
           // Also remove associated commands and stations
           // const updatedDepartments = departments.filter(dept => dept.id !== item.id);
@@ -223,7 +229,9 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         ) {
           // handleCommandDelete(item.id as number);
 
-          setDeleteHeader(`Command: ${item.name}`);
+          // setDeleteHeader(`Command: ${item.name}`);
+          setDeleteHeader(t("crud.organization.confirm.comm.delete.title"));
+          setDeleteMessage(t("crud.organization.confirm.comm.delete.message").replace("_COMM_", confirmMessage || "this command"));
 
           // Also remove associated stations
           // const updatedCommands = commands.filter(cmd => cmd.id !== item.id);
@@ -239,7 +247,9 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         ) {
           // handleStationDelete(item.id as number);
 
-          setDeleteHeader(`Station: ${item.name}`);
+          // setDeleteHeader(`Station: ${item.name}`);
+          setDeleteHeader(t("crud.organization.confirm.stn.delete.title"));
+          setDeleteMessage(t("crud.organization.confirm.stn.delete.message").replace("_STN_", confirmMessage || "this station"));
 
           // const updatedStations = stations.filter(stn => stn.id !== item.id);
           // onStationsChange(updatedStations);
@@ -248,10 +258,11 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
       // }, 1000);
     // }
   }, [
-    hierarchyItems,
+    // hierarchyItems,
     // handleDepartmentDelete,
     // handleCommandDelete,
-    // handleStationDelete
+    // handleStationDelete,
+    t
   ]);
 
   const handleDeleteSelection = (id: number, type: string) => {
@@ -274,12 +285,12 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     handleCommandReset();
     handleStationReset();
     setDeptId(item.id as string);
-    setDeptTh(item.name || "");
-    setDeptEn(item.secondaryName || "");
+    setDeptTh(language === "th" && item.name || item.secondaryName || "");
+    setDeptEn(language === "th" && item.secondaryName || item.name || "");
     setDeptIsOpen(true);
     setCommIsOpen(false);
     setStnIsOpen(false);
-  }, [handleCommandReset, handleStationReset, setDeptId, setDeptTh, setDeptEn, setDeptIsOpen, setCommIsOpen, setStnIsOpen]);
+  }, [language, handleCommandReset, handleStationReset, setDeptId, setDeptTh, setDeptEn, setDeptIsOpen, setCommIsOpen, setStnIsOpen]);
 
   const handleEditCommand = useCallback((item: HierarchyItem) => {
     // Implementation for editing command
@@ -288,13 +299,13 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     handleDepartmentReset();
     handleStationReset();
     setCommId(item.id as string);
-    setCommandTh(item.name || "");
-    setCommandEn(item.secondaryName || "");
+    setCommandTh(language === "th" && item.name || item.secondaryName || "");
+    setCommandEn(language === "th" && item.secondaryName || item.name || "");
     setCommDeptId(item?.metadata?.deptId as string || "");
     setDeptIsOpen(false);
     setCommIsOpen(true);
     setStnIsOpen(false);
-  }, [handleDepartmentReset, handleStationReset, setCommandEn, setCommandTh, setCommDeptId, setCommId, setCommIsOpen, setDeptIsOpen, setStnIsOpen]);
+  }, [language, handleDepartmentReset, handleStationReset, setCommandEn, setCommandTh, setCommDeptId, setCommId, setCommIsOpen, setDeptIsOpen, setStnIsOpen]);
 
   const handleEditStation = useCallback((item: HierarchyItem) => {
     // Implementation for editing station
@@ -303,14 +314,14 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     handleDepartmentReset();
     handleCommandReset();
     setStnId(item.id as string);
-    setStnTh(item.name || "");
-    setStnEn(item.secondaryName || "");
+    setStnTh(language === "th" && item.name || item.secondaryName || "");
+    setStnEn(language === "th" && item.secondaryName || item.name || "");
     setStnCommId(item?.metadata?.commId as string || "");
     setStnDeptId(item?.metadata?.deptId as string || "");
     setDeptIsOpen(false);
     setCommIsOpen(false);
     setStnIsOpen(true);
-  }, [handleDepartmentReset, handleCommandReset, setStnId, setStnTh, setStnEn, setStnCommId, setStnDeptId, setDeptIsOpen, setCommIsOpen, setStnIsOpen]);
+  }, [language, handleDepartmentReset, handleCommandReset, setStnId, setStnTh, setStnEn, setStnCommId, setStnDeptId, setDeptIsOpen, setCommIsOpen, setStnIsOpen]);
 
   // Configuration for the hierarchy view
   const hierarchyConfig: HierarchyConfig = useMemo(() => ({
@@ -327,12 +338,12 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
       // Level 0
       {
         canHaveChildren: true,
-        createChildLabel: "Add Command",
-        emptyChildrenMessage: "No commands defined for this department",
+        createChildLabel: t("crud.organization.list.header.comm.create_child"),
+        emptyChildrenMessage: t("crud.organization.list.header.comm.no_data"),
         // icon: <FileIcon className="w-5 h-5 text-blue-600 dark:text-blue-300" />,
         childCountLabel: {
-          plural: "commands",
-          singular: "command"
+          plural: t("crud.organization.list.header.comm.plural"),
+          singular: t("crud.organization.list.header.comm.singular")
         },
         metadataDisplay: {
           showChildCount: true,
@@ -341,7 +352,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
-              metadata.push(`${childCount} ${childCount === 1 ? "command" : "commands"}`);
+              metadata.push(`${childCount} ${childCount === 1 ? t("crud.organization.list.header.comm.singular") : t("crud.organization.list.header.comm.plural")}`);
             }
             return metadata;
           }
@@ -351,12 +362,12 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         },
         actions: [
           {
-            label: "Edit",
+            label: t("crud.common.update"),
             variant: "warning",
             onClick: (item) => handleEditDepartment(item)
           },
           {
-            label: "Delete",
+            label: t("crud.common.delete"),
             variant: "outline",
             onClick: (item) => handleDelete(item, "department")
           }
@@ -365,11 +376,11 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
       // Level 1
       {
         canHaveChildren: true,
-        createChildLabel: "Add Station",
-        emptyChildrenMessage: "No station defined for this command",
+        createChildLabel: t("crud.organization.list.header.stn.create_child"),
+        emptyChildrenMessage: t("crud.organization.list.header.stn.no_data"),
         childCountLabel: {
-          plural: "stations",
-          singular: "station"
+          plural: t("crud.organization.list.header.stn.plural"),
+          singular: t("crud.organization.list.header.stn.singular"),
         },
         metadataDisplay: {
           showChildCount: true,
@@ -378,7 +389,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
-              metadata.push(`${childCount} ${childCount === 1 ? "station" : "stations"}`);
+              metadata.push(`${childCount} ${childCount === 1 ? t("crud.organization.list.header.stn.singular") : t("crud.organization.list.header.stn.plural")}`);
             }
             return metadata;
           }
@@ -388,12 +399,12 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         },
         actions: [
           {
-            label: "Edit",
+            label: t("crud.common.update"),
             variant: "warning",
             onClick: (item) => handleEditCommand(item)
           },
           {
-            label: "Delete",
+            label: t("crud.common.delete"),
             variant: "outline",
             onClick: (item) => handleDelete(item, "command")
           }
@@ -416,19 +427,19 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
         },
         actions: [
           {
-            label: "Edit",
+            label: t("crud.common.update"),
             variant: "warning",
             onClick: (item) => handleEditStation(item)
           },
           {
-            label: "Delete",
+            label: t("crud.common.delete"),
             variant: "outline",
             onClick: (item) => handleDelete(item, "station")
           }
         ]
       }
     ]
-  }), [handleDelete, handleEditCommand, handleEditDepartment, handleEditStation]);
+  }), [handleDelete, handleEditCommand, handleEditDepartment, handleEditStation, t]);
 
   const handleCreateChild = (
     _parentId: string,
@@ -485,15 +496,15 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
           </Button>
         </div>
         <div className="space-y-4 text-gray-800 dark:text-gray-100">
-          {deleteMessage}
+          {deleteMessage} {deleteHeader}
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
-            <Button onClick={() => setDeleteIsOpen(false)} variant="outline">Cancel</Button>
+            <Button onClick={() => setDeleteIsOpen(false)} variant="outline">{t("crud.organization.confirm.button.cancel")}</Button>
             <Button onClick={() => {
               handleDeleteSelection(deleteId, deleteType);
               setDeleteIsOpen(false);
-            }} variant="error">Confirm</Button>
+            }} variant="error">{!isLoading && t("crud.organization.confirm.button.confirm") || t("crud.organization.confirm.button.deleting")}</Button>
           </div>
         </div>
       </Modal>

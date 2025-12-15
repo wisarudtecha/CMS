@@ -5,10 +5,11 @@ import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useCreateSkillMutation, useUpdateSkillMutation } from "@/store/api/skillApi";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import { capitalizeWords } from "@/utils/stringFormatters";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Skill, SkillCreateData, SkillManagementProps, SkillUpdateData } from "@/types/skill";
@@ -16,7 +17,9 @@ import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 
 const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) => {
-  const isSystemAdmin = AuthService.isSystemAdmin();
+  // const isSystemAdmin = AuthService.isSystemAdmin();
+  const isSystemAdmin = useIsSystemAdmin();
+
   const permissions = usePermissions();
   const { language, t } = useTranslation();
   const { toasts, addToast, removeToast } = useToast();
@@ -106,6 +109,24 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
     active, addToast, createSkill, en, permissions, skillId, th, t, updateSkill, validateError
   ]);
 
+  const isDeleteAvailable = () => {
+    const canDelete = permissions.hasPermission("settings.delete");
+    // console.log("🚀 ~ isDeleteAvailable ~ canDelete:", canDelete);
+    return canDelete || isSystemAdmin;
+  }
+
+  const isEditAvailable = () => {
+    const canEdit = permissions.hasPermission("settings.update");
+    // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
+    return canEdit || isSystemAdmin;
+  }
+
+  const isViewAvailable = () => {
+    const canView = permissions.hasPermission("settings.view");
+    // console.log("🚀 ~ isDeleteAvailable ~ canView:", canView);
+    return canView || isSystemAdmin;
+  }
+
   // ===================================================================
   // Mock Data
   // ===================================================================
@@ -169,7 +190,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         label: t("crud.common.read"),
         variant: "primary" as const,
         onClick: () => {},
-        condition: () => (permissions.hasPermission("skill.view") || isSystemAdmin) as boolean
+        condition: () => isViewAvailable()
       },
       {
         key: "update",
@@ -182,7 +203,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
           setEn(skillItem.en);
           setIsOpen(true);
         },
-        condition: () => (permissions.hasPermission("skill.update") || isSystemAdmin) as boolean
+        condition: () => isEditAvailable()
       },
       {
         key: "delete",
@@ -191,7 +212,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         onClick: (skillItem: Skill) => {
           console.log("Delete skill:", skillItem.skillId);
         },
-        condition: () => (permissions.hasPermission("skill.delete") || isSystemAdmin) as boolean
+        condition: () => isDeleteAvailable()
       }
     ]
   };
@@ -255,7 +276,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
           setEn(skillItem.en);
           setIsOpen(true);
         },
-        condition: () => (permissions.hasPermission("skill.update") || isSystemAdmin) as boolean
+        condition: () => isEditAvailable()
       },
       // {
       //   key: "delete",
@@ -267,7 +288,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       //     closePreview();
       //     // console.log("Delete skill:", skillItem.skillId);
       //   },
-      //   condition: () => (permissions.hasPermission("skill.delete") || isSystemAdmin) as boolean
+      //   condition: () => isDeleteAvailable()
       // }
     ]
   };
@@ -376,7 +397,8 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         }}
         // keyboardShortcuts={[]}
         loading={!skills}
-        module="skill"
+        // module="skill"
+        module="settings"
         // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
         previewConfig={previewConfig as PreviewConfig<Skill & { id: string }>}
         searchFields={["th", "en"]}

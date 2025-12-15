@@ -139,13 +139,8 @@ export const getDisplayDate = (dateString: string | undefined, language: string)
     return language === 'th' ? convertToThaiYear(date) : date;
 };
 
-export const getTodayDate = (language: string): Date => {
+export const getTodayDate = (): Date => {
     const today = new Date();
-    if (language === 'th') {
-        const thaiDate = new Date(today);
-        thaiDate.setFullYear(thaiDate.getFullYear() + 543);
-        return thaiDate;
-    }
     return today;
 };
 

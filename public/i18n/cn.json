@@ -16,6 +16,7 @@
     "search": "搜索",
     "loading": "加载中...",
     "loadingPercentage": "加载中..._percentage_",
+    "loading_translations": "正在加载翻译...",
     "error": "错误",
     "success": "成功",
     "back": "后退",
@@ -724,6 +725,197 @@
         "status": {
           "active": "已激活",
           "inactive": "已失效"
+        }
+      }
+    },
+    "organization": {
+      "name": "组织机构",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索组织..."
+          }
+        },
+        "header": {
+          "dept": {
+            "no_data": "未找到部门"
+          },
+          "comm": {
+            "plural": "指挥部",
+            "singular": "指挥部",
+            "no_data": "该部门下未定义指挥部",
+            "create_child": "添加指挥部"
+          },
+          "stn": {
+            "plural": "站点",
+            "singular": "站点",
+            "no_data": "该指挥部下未定义站点",
+            "create_child": "添加站点"
+          }
+        }
+      },
+      "form": {
+        "dept": {
+          "header": {
+            "create": "创建部门",
+            "update": "编辑部门"
+          },
+          "deptTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语部门名称",
+            "required": "部门名称 (泰语) 为必填项"
+          },
+          "deptEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语部门名称",
+            "required": "部门名称 (英语) 为必填项"
+          }
+        },
+        "comm": {
+          "header": {
+            "create": "添加指挥部",
+            "update": "编辑指挥部"
+          },
+          "commandTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语指挥部名称",
+            "required": "指挥部名称 (泰语) 为必填项"
+          },
+          "commandEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语指挥部名称",
+            "required": "指挥部名称 (英语) 为必填项"
+          },
+          "commDeptId": {
+            "label": "部门",
+            "placeholder": "选择部门",
+            "required": "部门为必填项"
+          }
+        },
+        "stn": {
+          "header": {
+            "create": "添加站点",
+            "update": "编辑站点"
+          },
+          "stationTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语站点名称",
+            "required": "站点名称 (泰语) 为必填项"
+          },
+          "stationEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语站点名称",
+            "required": "站点名称 (英语) 为必填项"
+          },
+          "stnDeptId": {
+            "label": "部门",
+            "placeholder": "选择部门",
+            "required": "部门为必填项"
+          },
+          "stnCommId": {
+            "label": "指挥部",
+            "placeholder": "选择指挥部",
+            "required": "指挥部为必填项"
+          }
+        }
+      },
+      "confirm": {
+        "dept": {
+          "create": {
+            "title": "创建部门确认",
+            "message": "请确认创建 _DEPT_。"
+          },
+          "update": {
+            "title": "更新部门确认",
+            "message": "请确认更新 _DEPT_。"
+          },
+          "delete": {
+            "title": "删除部门确认",
+            "message": "您确定要删除 _DEPT_ 吗？此操作无法撤销。"
+          }
+        },
+        "comm": {
+          "create": {
+            "title": "创建指挥部确认",
+            "message": "请确认创建 _COMM_。"
+          },
+          "update": {
+            "title": "更新指挥部确认",
+            "message": "请确认更新 _COMM_。"
+          },
+          "delete": {
+            "title": "删除指挥部确认",
+            "message": "您确定要删除 _COMM_ 吗？此操作无法撤销。"
+          }
+        },
+        "stn": {
+          "create": {
+            "title": "创建站点确认",
+            "message": "请确认创建 _STN_。"
+          },
+          "update": {
+            "title": "更新站点确认",
+            "message": "请确认更新 _STN_。"
+          },
+          "delete": {
+            "title": "删除站点确认",
+            "message": "您确定要删除 _STN_ 吗？此操作无法撤销。"
+          }
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "保存中...",
+          "deleting": "删除中..."
+        }
+      },
+      "action": {
+        "dept": {
+          "create": {
+            "success": "部门创建成功",
+            "error": "部门创建失败"
+          },
+          "update": {
+            "success": "部门更新成功",
+            "error": "部门更新失败"
+          },
+          "delete": {
+            "success": "部门删除成功",
+            "error": "部门删除失败"
+          }
+        },
+        "comm": {
+          "create": {
+            "success": "指挥部创建成功",
+            "error": "指挥部创建失败"
+          },
+          "update": {
+            "success": "指挥部更新成功",
+            "error": "指挥部更新失败"
+          },
+          "delete": {
+            "success": "指挥部删除成功",
+            "error": "指挥部删除失败"
+          }
+        },
+        "stn": {
+          "create": {
+            "success": "站点创建成功",
+            "error": "站点创建失败"
+          },
+          "update": {
+            "success": "站点更新成功",
+            "error": "站点更新失败"
+          },
+          "delete": {
+            "success": "站点删除成功",
+            "error": "站点删除失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
         }
       }
     },

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { AlertIcon, CloseIcon, EnvelopeIcon, EyeCloseIcon, EyeIcon,  } from "@/icons";
 // import { API_CONFIG } from "@/config/api";
 import { Autocomplete } from "@/components/form/form-elements/Autocomplete";
+import { getSsoToken } from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LoginCredentials } from "@/types/auth";
@@ -34,6 +35,8 @@ export const LoginForm: React.FC = () => {
   const [isPasswordResetSent, setIsPasswordResetSent] = useState(false);
 
   const versionInfo = Object.entries(changelog).map(([version, info]) => ({ version, ...info }));
+
+  const ssoToken = getSsoToken();
 
   // console.log("🔐 LoginForm rendered - Network:", state.networkStatus, "Loading:", state.isLoading);
 
@@ -102,7 +105,7 @@ export const LoginForm: React.FC = () => {
   };
 
   const handleShowPassword = () => {
-    if (!state.isLoading && !state.isLocked) {
+    if (!state.isLoading && !state.isLocked && ssoToken) {
       setShowPassword(!showPassword);
     }
   }
@@ -158,7 +161,7 @@ export const LoginForm: React.FC = () => {
               */}
 
               {/* Account lockout warning */}
-              {state.isLocked && (
+              {state.isLocked && !ssoToken && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg cursor-default">
                   <div className="flex items-center">
                     <AlertIcon className="w-5 h-5 text-red-500 mr-2" />
@@ -269,7 +272,7 @@ export const LoginForm: React.FC = () => {
                         onChange={(e) => handleInputChange("username", e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                         placeholder={t("auth.signin.username.placeholder")}
-                        disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
+                        disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                         required
                       />
                     </div>
@@ -292,7 +295,7 @@ export const LoginForm: React.FC = () => {
                           onChange={(e) => handleInputChange("password", e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                           placeholder={t("auth.signin.password.placeholder")}
-                          disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
+                          disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                           required
                         />
                         <span
@@ -323,7 +326,7 @@ export const LoginForm: React.FC = () => {
                         value={credentials.organization || "SKY-AI"}
                         onSelect={(value) => handleInputChange("organization", value)}
                         placeholder={t("auth.signin.organization.placeholder")}
-                        disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
+                        disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                         required
                         suggestions={["BMA", "SKY-AI"]}
                       />
@@ -341,7 +344,7 @@ export const LoginForm: React.FC = () => {
                           // id="remember-me"
                           checked={credentials.rememberMe}
                           onChange={(checked) => handleInputChange("rememberMe", checked)}
-                          disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
+                          disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                         />
                         <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-200 cursor-default">
                           {t("auth.signin.keep_logged_in")}
@@ -365,7 +368,7 @@ export const LoginForm: React.FC = () => {
                         className="w-full"
                         size="sm"
                         onClick={handleSubmit}
-                        disabled={state.isLoading || state.isLocked || state.networkStatus === "offline"}
+                        disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                       >
                         {state.isLoading ? t("auth.signin.loading") : t("auth.signin.button")}
                       </Button>

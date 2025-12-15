@@ -1,14 +1,38 @@
 {
+  "0.5.3": {
+    "date": "2025-12-15",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_42,DF_43,DF_47,DF_48,DF_49,DF_50.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.2": {
+    "date": "2025-12-15",
+    "segment": "PATCH",
+    "notes": "fixed defect 44-45.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.1": {
+    "date": "2025-12-12",
+    "segment": "PATCH",
+    "notes": "feat: sso (single-sign-on):\n- Change ThemeContext default from light to dark.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.0": {
+    "date": "2025-12-12",
+    "segment": "MINOR",
+    "notes": "feat: sso (single-sign-on):\n- Enhance ProtectedRoute to verify instead display LoginForm if site access from 3rd-party.",
+    "author": "Wisarud Techa"
+  },
   "0.4.16": {
     "date": "2025-12-12",
     "segment": "PATCH",
-    "notes": "perf: perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.\n- Enhance isSystemAdmin function.",
+    "notes": "perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.\n- Enhance isSystemAdmin function.",
     "author": "Wisarud Techa"
   },
   "0.4.15": {
     "date": "2025-12-11",
     "segment": "PATCH",
-    "notes": "perf: perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.",
+    "notes": "perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.",
     "author": "Wisarud Techa"
   },
   "0.4.14": {

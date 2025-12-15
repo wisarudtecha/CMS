@@ -11,7 +11,7 @@ import DynamicForm from "@/components/form/dynamic-form/DynamicForm"
 import { formType, FormField, FormFieldWithNode } from "@/components/interface/FormField"
 import { getPriorityColorClass } from "../../function/Prioriy"
 import Input from "../../form/input/InputField"
-import { convertFromThaiYear, getLocalISOString, getTodayDate, TodayDate } from "../../date/DateToString"
+import { getLocalISOString, getTodayDate, TodayDate } from "../../date/DateToString"
 import { CaseTypeSubType } from "../../interface/CaseType"
 import type { Custommer } from "@/types";
 import React from "react"
@@ -187,14 +187,14 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 <h3 className="text-gray-900 dark:text-gray-400 mr-2">{t("case.display.request_schedule_date")} :</h3>
             </div>
             <DatePickerLocal
-                selected={caseState?.scheduleDate?new Date(caseState?.scheduleDate):null}
+                selected={caseState?.scheduleDate ? new Date(caseState?.scheduleDate) : null}
                 onChange={(date: Date | null) => {
                     handleScheduleDate(date);
                 }}
                 language={language}
                 // showTimeSelect
-                dateFormat="P"               
-                minDate={getTodayDate(language)}
+                dateFormat="P"
+                minDate={getTodayDate()}
                 popperClassName="z-50"
                 wrapperClassName="w-full"
                 className={`p-2 w-full dark:[&::-webkit-calendar-picker-indicator]:invert ${commonInputCss}`}
@@ -333,7 +333,7 @@ const CaseFormFields = memo<CaseFormFieldsProps>(({
                 <Button variant="outline-no-transparent" onClick={handleSaveDrafts} className="mx-3">
                     {t("case.display.save_as_draft")}
                 </Button>
-                <Button  onClick={handlePreviewShow}>
+                <Button onClick={handlePreviewShow}>
                     {t("case.display.submit")}
                 </Button>
             </div>
@@ -592,7 +592,7 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             statusId: statusId,
             userarrive: "",
             userclose: "",
-            caseId:caseState.workOrderNummber,
+            caseId: caseState.workOrderNummber,
             usercommand: caseState?.serviceCenter?.commandTh || "",
             usercreate: profile?.username || "",
             userreceive: "",
@@ -602,150 +602,150 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
             versions: caseState?.caseType?.formField?.versions || "",
             scheduleFlag: true,
             scheduleDate: caseState?.scheduleDate
-                ? (language === 'th' ? convertFromThaiYear(new Date(caseState.scheduleDate+"Z")) : new Date(caseState.scheduleDate+"Z").toISOString())
+                ? new Date(caseState.scheduleDate + "Z").toISOString()
                 : undefined,
 
         } as CreateCase;
 
         try {
-                    let data: any;
-        
-                    if (!caseState.workOrderNummber) {
-        
-                        // Step 1: Create case first (without files)
-                        data = await createCase({ 
-                            ...createJson, 
-                            attachments: [] 
-                        }).unwrap();
-                        
-                        if (data?.msg !== "Success") {
-                            throw new Error(data?.desc || "Failed to create case");
-                        }
-        
-                        const newCaseId = data.caseId;
-        
-                        // Step 2: Upload files with the new case ID
-                        let uploadedAttachments: UploadFileRes[] = [];
-                        
-                        if (caseState.attachFile && caseState.attachFile.length > 0) {
-                            const newFiles = caseState.attachFile.filter(
-                                (item): item is File => item instanceof File
-                            );
-        
-                            if (newFiles.length > 0) {
-                                console.log(`📤 Uploading ${newFiles.length} file(s)...`);
-                                uploadedAttachments = await uploadFileToServer(newFiles, postUploadFile,newCaseId);
-        
-                                if (uploadedAttachments.length !== newFiles.length) {
-                                    addToast("warning", t("case.display.toast.partial_upload"));
-                                }
-                            }
-                        }
-        
-                        // Step 3: Update state with case ID and convert uploaded files to attachments
-                        const attachmentFiles: FileItem[] = uploadedAttachments.map(file => file as FileItem);
-        
-                        setCaseState(prev =>
-                            prev ? { 
-                                ...prev, 
-                                workOrderNummber: newCaseId, 
-                                status: statusId,
-                                attachFile: attachmentFiles
-                            } : prev
-                        );
-        
-                        setOriginalFiles(attachmentFiles);
-                        console.log(`📎 Tracking ${attachmentFiles.length} attachments`);
-        
-                        // const newCase = {
-                        //     ...(casePayload as object),
-                        //     caseId: newCaseId,
-                        //     createdAt: TodayDate(),
-                        //     createdBy: profile?.username || ""
-                        // } as CaseEntity;
-                        // insertCaseToLocalStorage(newCase);
-        
-                    } else {
-                        // ===== UPDATE EXISTING CASE =====
-                        console.log(`📝 Updating case: ${caseState.workOrderNummber}`);
-                        console.log(`Current files: ${caseState.attachFile?.length || 0}`);
-                        console.log(`Original files: ${originalFiles.length}`);
-        
-                        // Step 1: Handle file changes (DELETE FROM SERVER & UPLOAD NEW)
-                        const fileChanges = await handleFileChanges(
-                            caseState.attachFile || [],
-                            originalFiles,
-                            caseState.workOrderNummber,
-                            delFileApi
-                        );
-        
-                        if (fileChanges.errors.length > 0) {
-                            console.warn("⚠️ File operation errors:", fileChanges.errors);
-                            addToast("warning", `File issues: ${fileChanges.errors.join(", ")}`);
-                        }
-        
-                        // Step 2: Prepare updated attachments list
-                        const newAttachments: FileItem[] = fileChanges.uploaded.map(file => file as FileItem);
-                        const updatedAttachments = [
-                            ...fileChanges.remainingAttachments,
-                            ...newAttachments
-                        ];
-        
-                        console.log(`📎 Total attachments after changes: ${updatedAttachments.length}`);
-        
-                        // Step 3: Update case with new attachment list
-                        const updateResult = await updateCase({
-                            caseId: caseState.workOrderNummber,
-                            updateCase: {
-                                ...createJson,
-                                attachments: updatedAttachments as UploadFileRes[]
-                            },
-                        }).unwrap();
-        
-                        console.log(`✅ Case updated successfully`);
-                        console.log('Update result:', updateResult);
-        
-                        updateCaseInLocalStorage(createJson, caseState.workOrderNummber, profile);
-        
-                        // Step 4: Update tracking
-                        setOriginalFiles(updatedAttachments);
-        
-                        // Step 5: Update state
-                        setCaseState(prev =>
-                            prev ? { 
-                                ...prev, 
-                                attachFile: updatedAttachments,
-                                status: isDraft ? "S000" : "S001"
-                            } : prev
-                        );
-                    }
-        
-                    // Navigate if submitting
-                    if (!isDraft) {
-                        navigate(`/case/${caseState.workOrderNummber || data?.caseId}`);
-                    }
-        
-                    addToast(
-                        "success", 
-                        isDraft 
-                            ? t("case.display.toast.savedaft_success") 
-                            : t("case.display.toast.add_case_success")
-                    );
-                    setShowPreviewData(false);
-        
-                    return true;
-        
-                } catch (error: any) {
-                    console.error("❌ Save case error:", error);
-                    addToast(
-                        "error", 
-                        isDraft 
-                            ? t("case.display.toast.savedaft_fail") 
-                            : t("case.display.toast.add_case_fail")
-                    );
-                    setShowPreviewData(false);
-                    return false;
+            let data: any;
+
+            if (!caseState.workOrderNummber) {
+
+                // Step 1: Create case first (without files)
+                data = await createCase({
+                    ...createJson,
+                    attachments: []
+                }).unwrap();
+
+                if (data?.msg !== "Success") {
+                    throw new Error(data?.desc || "Failed to create case");
                 }
+
+                const newCaseId = data.caseId;
+
+                // Step 2: Upload files with the new case ID
+                let uploadedAttachments: UploadFileRes[] = [];
+
+                if (caseState.attachFile && caseState.attachFile.length > 0) {
+                    const newFiles = caseState.attachFile.filter(
+                        (item): item is File => item instanceof File
+                    );
+
+                    if (newFiles.length > 0) {
+                        console.log(`📤 Uploading ${newFiles.length} file(s)...`);
+                        uploadedAttachments = await uploadFileToServer(newFiles, postUploadFile, newCaseId);
+
+                        if (uploadedAttachments.length !== newFiles.length) {
+                            addToast("warning", t("case.display.toast.partial_upload"));
+                        }
+                    }
+                }
+
+                // Step 3: Update state with case ID and convert uploaded files to attachments
+                const attachmentFiles: FileItem[] = uploadedAttachments.map(file => file as FileItem);
+
+                setCaseState(prev =>
+                    prev ? {
+                        ...prev,
+                        workOrderNummber: newCaseId,
+                        status: statusId,
+                        attachFile: attachmentFiles
+                    } : prev
+                );
+
+                setOriginalFiles(attachmentFiles);
+                console.log(`📎 Tracking ${attachmentFiles.length} attachments`);
+
+                // const newCase = {
+                //     ...(casePayload as object),
+                //     caseId: newCaseId,
+                //     createdAt: TodayDate(),
+                //     createdBy: profile?.username || ""
+                // } as CaseEntity;
+                // insertCaseToLocalStorage(newCase);
+
+            } else {
+                // ===== UPDATE EXISTING CASE =====
+                console.log(`📝 Updating case: ${caseState.workOrderNummber}`);
+                console.log(`Current files: ${caseState.attachFile?.length || 0}`);
+                console.log(`Original files: ${originalFiles.length}`);
+
+                // Step 1: Handle file changes (DELETE FROM SERVER & UPLOAD NEW)
+                const fileChanges = await handleFileChanges(
+                    caseState.attachFile || [],
+                    originalFiles,
+                    caseState.workOrderNummber,
+                    delFileApi
+                );
+
+                if (fileChanges.errors.length > 0) {
+                    console.warn("⚠️ File operation errors:", fileChanges.errors);
+                    addToast("warning", `File issues: ${fileChanges.errors.join(", ")}`);
+                }
+
+                // Step 2: Prepare updated attachments list
+                const newAttachments: FileItem[] = fileChanges.uploaded.map(file => file as FileItem);
+                const updatedAttachments = [
+                    ...fileChanges.remainingAttachments,
+                    ...newAttachments
+                ];
+
+                console.log(`📎 Total attachments after changes: ${updatedAttachments.length}`);
+
+                // Step 3: Update case with new attachment list
+                const updateResult = await updateCase({
+                    caseId: caseState.workOrderNummber,
+                    updateCase: {
+                        ...createJson,
+                        attachments: updatedAttachments as UploadFileRes[]
+                    },
+                }).unwrap();
+
+                console.log(`✅ Case updated successfully`);
+                console.log('Update result:', updateResult);
+
+                updateCaseInLocalStorage(createJson, caseState.workOrderNummber, profile);
+
+                // Step 4: Update tracking
+                setOriginalFiles(updatedAttachments);
+
+                // Step 5: Update state
+                setCaseState(prev =>
+                    prev ? {
+                        ...prev,
+                        attachFile: updatedAttachments,
+                        status: isDraft ? "S000" : "S001"
+                    } : prev
+                );
+            }
+
+            // Navigate if submitting
+            if (!isDraft) {
+                navigate(`/case/${caseState.workOrderNummber || data?.caseId}`);
+            }
+
+            addToast(
+                "success",
+                isDraft
+                    ? t("case.display.toast.savedaft_success")
+                    : t("case.display.toast.add_case_success")
+            );
+            setShowPreviewData(false);
+
+            return true;
+
+        } catch (error: any) {
+            console.error("❌ Save case error:", error);
+            addToast(
+                "error",
+                isDraft
+                    ? t("case.display.toast.savedaft_fail")
+                    : t("case.display.toast.add_case_fail")
+            );
+            setShowPreviewData(false);
+            return false;
+        }
         return true;
     }, [caseState, profile, createCase, navigate]);
 

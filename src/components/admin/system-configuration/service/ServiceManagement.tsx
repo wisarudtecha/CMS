@@ -597,23 +597,23 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   useEffect(() => {
     setCaseTypesOptions(caseTypes?.map(t => ({
       value: String(t.typeId),
-      label: `${t.th} (${t.en})`
+      label: language === "th" && `${t.th} (${t.en})` || `${t.en} (${t.th})`
     })) || []);
-  }, [caseTypes]);
+  }, [caseTypes, language]);
 
   useEffect(() => {
     setPropertiesOptions(properties?.map(p => ({
       value: String(p.propId),
-      label: `${p.th} (${p.en})`,
+      label: language === "th" && `${p.th} (${p.en})` || `${p.en} (${p.th})`,
     })) || []);
-  }, [properties]);
+  }, [properties, language]);
 
   useEffect(() => {
     setSkillsOptions(skills?.map(s => ({
       value: String(s.skillId),
-      label: `${s.th} (${s.en})`,
+      label: language === "th" && `${s.th} (${s.en})` || `${s.en} (${s.th})`,
     })) || []);
-  }, [skills]);
+  }, [skills, language]);
 
   useEffect(() => {
     setWorkflowsOptions(workflows?.map(w => ({

@@ -344,6 +344,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       
       if (actionKey === "view" && (
         module === "case" ||
+        module === "settings" ||
         module === "skill" ||
         module === "user" ||
         module === "unit"

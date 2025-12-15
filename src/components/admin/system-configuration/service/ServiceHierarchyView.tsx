@@ -315,11 +315,11 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     handleSTypeReset();
     handleTypeReset();
     setSTypeIsOpen(false as boolean);
-    setTypeEn(item.secondaryName as string || "");
+    setTypeEn(language === "th" && item.secondaryName || item.name as string || "");
     setTypeId(item.id as string);
     setTypeIsOpen(true as boolean);
-    setTypeTh(item.name as string || "");
-  }, [handleSTypeReset, handleTypeReset, setSTypeIsOpen, setTypeEn, setTypeId, setTypeIsOpen, setTypeTh]);
+    setTypeTh(language === "th" && item.name || item.secondaryName as string || "");
+  }, [language, handleSTypeReset, handleTypeReset, setSTypeIsOpen, setTypeEn, setTypeId, setTypeIsOpen, setTypeTh]);
 
   const handleEditSubType = useCallback((item: HierarchyItem) => {
     // Implementation for editing case sub-type
@@ -332,16 +332,17 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     setMWorkOrderType(item.metadata?.mWorkOrderType as string || "");
     setPriority(item.metadata?.priority as string || "");
     setSTypeCode(item.metadata?.sTypeCode as string || "");
-    setSTypeEn(item.secondaryName as string || "");
+    setSTypeEn(language === "th" && item.secondaryName || item.name as string || "");
     setSTypeId(item.id as string);
     setSTypeIsOpen(true as boolean);
-    setSTypeTh(item.name as string || "");
+    setSTypeTh(language === "th" && item.name || item.secondaryName as string || "");
     setSTypeTypeId(item.parentId as string || "");
     setTypeIsOpen(false as boolean);
     setUnitPropLists(item.metadata?.unitPropLists as string[] || []);
     setUserSkillList(item.metadata?.userSkillList as string[] || []);
     setWfId(item.metadata?.wfId as string || "");
   }, [
+    language,
     handleSTypeReset, handleTypeReset,
     setCaseSla, setMDeviceType, setMWorkOrderType, setPriority, setSTypeCode, setSTypeEn, setSTypeId, setSTypeIsOpen, setSTypeTh, setSTypeTypeId,
     setTypeIsOpen,
