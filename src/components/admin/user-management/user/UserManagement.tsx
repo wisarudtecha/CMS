@@ -373,7 +373,7 @@ const UserManagementComponent: React.FC<{
       // },
       {
         key: "update",
-        label: "Edit",
+        label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "warning",
         onClick: (userItem: UserProfile, closePreview: () => void) => {
@@ -384,7 +384,7 @@ const UserManagementComponent: React.FC<{
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         // icon: CheckLineIcon,
         variant: "outline",
         onClick: (userItem: UserProfile, closePreview: () => void) => {

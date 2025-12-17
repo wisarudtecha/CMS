@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useGetWorkflowsQuery } from "@/store/api/workflowApi";
 import type { Workflow } from "@/types/workflow";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -27,6 +28,8 @@ import PageMeta from "@/components/common/PageMeta";
 import WorkflowListComponent from "@/components/workflow/list/List";
 
 const WorkflowListPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -41,7 +44,7 @@ const WorkflowListPage: React.FC = () => {
       />
 
       <ProtectedRoute requiredPermissions={["workflow.view"]}>
-        <PageBreadcrumb pageTitle="Workflow Management" />
+        <PageBreadcrumb pageTitle={t("navigation.sidebar.main.workflow.nested.workflow_management")} />
 
         <WorkflowListComponent workflows={workflows} />
       </ProtectedRoute>

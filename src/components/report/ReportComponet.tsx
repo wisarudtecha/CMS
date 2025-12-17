@@ -5,7 +5,7 @@ import { openJasperReport } from "./openReport";
 
 const ReportComponent: React.FC = () => {
     const { t } = useTranslation();
-
+    const  jasperUrl = import.meta.env.VITE_JASPER_URL
     return (
         <div className="space-y-6 rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
             {reportConfix.map((section) => (
@@ -28,7 +28,7 @@ const ReportComponent: React.FC = () => {
                                     <tr
                                         key={v4()}
                                         className="hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                                        onClick={()=>openJasperReport(item.url)}
+                                        onClick={()=>openJasperReport(jasperUrl+item.url)}
                                     >
                                         <td className="px-6 py-4">
                                             <div className="text-sm font-medium text-gray-700 dark:text-gray-400">

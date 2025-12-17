@@ -38,7 +38,7 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         required: field.required,
         disabled: !editFormData,
     };
-    
+
     const { t } = useTranslation();
     const [postUploadFile] = usePostUploadFileMutationMutation();
     const { toasts, addToast, removeToast } = useToast();
@@ -50,7 +50,7 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         }
 
         const uploadKey = `${fieldId}-${files.map(f => `${f.name}-${f.size}`).join('-')}-${Date.now()}`;
-        
+
         if (uploadingRef.current.has(uploadKey)) {
             console.log('⚠️ Upload already in progress, skipping');
             return;
@@ -142,7 +142,9 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
         }
         const errors = validateFieldValue(field);
         if (errors.length > 0) {
-            return <p className="text-red-500 text-xs italic mt-1">{errors[0]}</p>;
+            return <div>
+                {errors.map((item)=>{return<p className="text-red-500 text-xs italic mt-1">{item}</p>})}
+            </div>;
         }
         return null;
     }, [showValidationErrors]);
@@ -150,28 +152,28 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     const handleFieldChange = useCallback((id: string, newValue: any) => {
         if (field.type === "image" || field.type === "dndImage") {
             let fileToUpload: File | null = null;
-            
+
             if (newValue instanceof FileList && newValue.length > 0) {
                 fileToUpload = newValue[0];
             } else if (newValue instanceof File) {
                 fileToUpload = newValue;
             }
-            
+
             if (fileToUpload) {
                 handleFileUpload(id, [fileToUpload], false);
                 return;
             }
         }
-        
+
         if (field.type === "multiImage" || field.type === "dndMultiImage") {
             let filesToUpload: File[] = [];
-            
+
             if (newValue instanceof FileList) {
                 filesToUpload = Array.from(newValue);
             } else if (Array.isArray(newValue)) {
                 filesToUpload = newValue.filter((f): f is File => f instanceof File);
             }
-            
+
             if (filesToUpload.length > 0) {
                 handleFileUpload(id, filesToUpload, true);
                 return;

@@ -24,6 +24,9 @@ export const fetchUnitStatus = async () => {
   );
   if (unitStatusDataResult.data?.data)
     localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data));
+  else{
+    return "apiSetUp.fetchUnitStatusFail"
+  }
 };
 
 export const fetchCase = async (params: CaseListParams) => {
@@ -78,7 +81,7 @@ export const fetchCase = async (params: CaseListParams) => {
           if (attempt === retries) {
             throw new Error("Unexpected API response");
           }
-        } 
+        }
         if (result.data !== undefined) {
           return result;
         }
@@ -210,6 +213,7 @@ export const fetchCaseResults = async () => {
     localStorage.setItem("caseResultsList", JSON.stringify(result.data?.data));
   } else {
     localStorage.setItem("caseResultsList", "[]");
+    return "apiSetUp.fetchCaseResultFail"
   }
 };
 
@@ -219,6 +223,9 @@ export const fetchTypeSubType = async () => {
   );
   if (caseTypeSubType.data?.data)
     localStorage.setItem("caseTypeSubType", JSON.stringify(caseTypeSubType.data?.data));
+  else {
+    return "apiSetUp.fetchcaseTypeFail"
+  }
 };
 
 export const fetchSubTypeForm = async (subType: string) => {
@@ -251,6 +258,9 @@ export const fetchDeptCommandStations = async () => {
   );
   if (result.data?.data)
     localStorage.setItem("DeptCommandStations", JSON.stringify(result.data?.data));
+  else {
+    return "apiSetUp.fetchDeptCommandStationFail"
+  }
 };
 
 export const fetchCaseStatus = async () => {
@@ -259,6 +269,9 @@ export const fetchCaseStatus = async () => {
   );
   if (result.data?.data)
     localStorage.setItem("caseStatus", JSON.stringify(result.data?.data));
+  else{
+    return "apiSetUp.fetchCaseStatusFail"
+  }
 };
 
 export const fetchArea = async () => {
@@ -267,15 +280,20 @@ export const fetchArea = async () => {
   );
   if (result.data?.data)
     localStorage.setItem("area", JSON.stringify(result.data?.data));
+  else{
+    return "apiSetUp.fetchAreaFail"
+  }
 };
 
 export const caseApiSetup = async () => {
   // await fetchCustomers()
-  await fetchTypeSubType();
-  await fetchDeptCommandStations();
-  await fetchCaseStatus();
-  await fetchCaseResults();
-  await fetchUnitStatus();
-  await fetchArea();
+  let err: string[] = []
+  err.push(await fetchTypeSubType() || "")
+  err.push(await fetchDeptCommandStations() || "");
+  err.push(await fetchCaseStatus() || "");
+  err.push(await fetchCaseResults() || "");
+  err.push(await fetchUnitStatus() || "");
+  err.push(await fetchArea() || "");
   fetchCase({});
+  return err
 };

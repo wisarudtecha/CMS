@@ -45,7 +45,10 @@ const SkillManagementPage: React.FC = () => {
         description="This is React.js Skill Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <ProtectedRoute requiredPermissions={["settings.view"]}>
+      <ProtectedRoute
+        // requiredPermissions={["settings.view"]}
+        requiredPermissions={["unit.view"]}
+      >
         <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.skill_management")} />
 
         <SkillManagementComponent skills={skills} />

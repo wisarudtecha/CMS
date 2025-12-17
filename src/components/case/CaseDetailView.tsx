@@ -31,7 +31,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { COMMON_INPUT_CSS, resultStringLimit, source } from "./constants/caseConstants";
 import { CaseFormFields } from "./caseFormFields";
 import { CaseTypeSubType } from "../interface/CaseType"
-import { getLocalISOString, TodayDate } from "../date/DateToString"
+import { getDaysDifference, getLocalISOString, TodayDate } from "../date/DateToString"
 import { validateCaseForSubmission } from "./caseDataValidation/caseDataValidation"
 import { SearchableSelect } from "../SearchInput/SearchSelectInput"
 import { usePermissions, useToast } from "@/hooks"
@@ -120,7 +120,9 @@ const OfficerItem = memo(({
     }, [officer.Sop?.nextStage?.nodeId]);
     const { t, language } = useTranslation();
     const permissions = usePermissions();
-    const scheduleDisable = schedule.isSchedule && (schedule.scheduleDate ? new Date() <= new Date(schedule.scheduleDate): false )
+    const scheduleDisable = schedule.isSchedule && (schedule.scheduleDate ?
+        getDaysDifference(new Date(), new Date(schedule.scheduleDate)) >= 0
+        : false)
     const handleOfficerClick = useCallback(() => {
         if (permissions.hasPermission("case.view_timeline")) {
             onSelectOfficer(officer);
@@ -568,7 +570,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 attachFile: sopData.data?.attachments as FileItem[],
                 attachFileResult: [] as File[],
                 requireSchedule: sopData.data?.scheduleFlag || false,
-                scheduleDate:sopData.data?.scheduleDate || "",
+                scheduleDate: sopData.data?.scheduleDate || "",
                 deviceMetaData: sopData.data.deviceMetaData,
                 resultDetail: sopData.data.resDetail,
                 resultId: closeCaseOption.find(result => {
@@ -764,7 +766,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             deptId: caseState?.serviceCenter?.deptId || undefined,
             commId: caseState?.serviceCenter?.commId || undefined,
             stnId: caseState?.serviceCenter?.stnId || undefined,
-            scheduleFlag: isScheduleDate,
+            scheduleFlag: caseState?.requireSchedule,
         } as CreateCase;
 
         try {
@@ -1022,7 +1024,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                                     caseId={caseState?.workOrderNummber}
                                                 /> */}
                                                 <div className="flex justify-end items-end space-x-3">
-                                                    {caseState?.status !==doneStatus && <div className="justify-end items-end flex">
+                                                    {caseState?.status !== doneStatus && <div className="justify-end items-end flex">
                                                         <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
                                                     </div>}
                                                     {permissions.hasPermission("case.close") &&

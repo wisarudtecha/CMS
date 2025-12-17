@@ -9,9 +9,10 @@ export function openJasperReport(url: string) {
     }
 
     // ไม่มี window → สร้างใหม่และทำ login
+    const  jasperUrl = import.meta.env.VITE_JASPER_URL
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://jasper-stg.metthier.ai/jasperserver/j_spring_security_check";
+    form.action = jasperUrl+"jasperserver/j_spring_security_check";
     form.target = "jasperWin";
 
     // เปิดหน้าต่างใหม่ + เก็บ reference

@@ -7,6 +7,7 @@ import { SESSION_TIMEOUT_TIMER, SESSION_TIMEOUT_WARNING } from "@/utils/constant
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
 import { caseApiSetup } from "@/components/case/uitls/CaseApiManager";
+import { useToastContext } from "@/components/crud/ToastGlobal";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const getInitialAuthState = (): AuthState => {
@@ -81,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(authReducer, getInitialAuthState());
   const [sessionTimer, setSessionTimer] = useState<NodeJS.Timeout | null>(null);
   const [refreshTimer, setRefreshTimer] = useState<NodeJS.Timeout | null>(null);
-
+  const {addToast}=useToastContext();
   // Network status monitoring
   useEffect(() => {
     const handleOnline = () => dispatch({ type: "SET_NETWORK_STATUS", payload: "online" });
@@ -246,8 +247,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.user
       );
 
-      await caseApiSetup();
-
+      let err = (await caseApiSetup()).filter((item)=>{return item!=""});
+      
+      if(err.length !=0){
+        err.map((item)=>{addToast('error',item,5000,true)})
+      }
+      
 
       dispatch({ 
         type: "LOGIN_SUCCESS", 

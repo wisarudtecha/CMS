@@ -23,8 +23,8 @@ createRoot(document.getElementById("root")!).render(
       <ThemeProvider>
         <LanguageProvider>
           <TranslationLoader fallback={<LoadingScreen />}>
+          <ToastProvider>
             <AuthProvider>
-              <ToastProvider>
                 <SessionTimeoutWarning />
                 <ProtectedRoute>
                   <AppWrapper>
@@ -33,8 +33,8 @@ createRoot(document.getElementById("root")!).render(
                     </WebSocketProvider>
                   </AppWrapper>
                 </ProtectedRoute>
-              </ToastProvider>
             </AuthProvider>
+            </ToastProvider>
           </TranslationLoader>
         </LanguageProvider>
       </ThemeProvider>

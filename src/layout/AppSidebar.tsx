@@ -246,7 +246,8 @@ const AppSidebar: React.FC = () => {
           name: t("navigation.sidebar.main.system_configuration.nested.skill_management"),
           path: "/skill",
           // permission: permissions.hasPermission("user.view"),
-          permission: permissions.hasPermission("settings.view"),
+          // permission: permissions.hasPermission("settings.view"),
+          permission: permissions.hasAnyPermission(["unit.view"]),
         },
         // {
         //   name: t("navigation.sidebar.main.system_configuration.nested.property_management"),

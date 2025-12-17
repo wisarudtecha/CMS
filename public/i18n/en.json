@@ -40,11 +40,13 @@
     "noOption": "No Option.",
     "publish": "Publish",
     "unpublish": "Unpublish",
+    "draft": "Draft",
+    "locked": "Locked",
     "active": "Active",
     "inactive": "Inactive",
     "at": "At",
     "createAt": "Create At",
-    "by":"By",
+    "by": "By",
     "createBy": "Create By",
     "at_time": "At",
     "new_version": "New Version",
@@ -71,10 +73,10 @@
     "room": "Room",
     "floor": "Floor",
     "using": "Using",
-    "used":"Used",
+    "used": "Used",
     "current": "Current",
     "report": "Report",
-    "status":"Status"
+    "status": "Status"
   },
   "auth": {
     "signin": {
@@ -677,6 +679,75 @@
           "actions": {
             "cancel": "Cancel"
           }
+        }
+      },
+      "metrics": {
+        "total": "Total",
+        "active": "Active",
+        "published": "Published",
+        "locked": "Locked"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search workflows..."
+          }
+        },
+        "header": {
+          "title": "Name",
+          "active": "Status",
+          "createdAt": "Created At"
+        },
+        "preview": {
+          "header": "_TITLE_ Workflow",
+          "tab": {
+            "header": {
+              "overview": "Overview",
+              "configuration": "Configuration",
+              "activity": "Activity"
+            },
+            "overview": {
+              "description": "Description",
+              "status": "Status",
+              "version": "Version",
+              "createdAt": "Created At",
+              "createdBy": "by",
+              "updatedAt": "Updated At",
+              "updatedBy": "by"
+            },
+            "configuration": {
+              "header": "Workflow Configuration",
+              "description": "View workflow nodes and connections",
+              "node": "Node",
+              "connection": "Connection",
+              "start_node": "Start Node",
+              "process_node": "Process Node",
+              "dispatch_node": "Dispatch Node",
+              "end_node": "End Node"
+            },
+            "activity": {
+              "header": "Workflow Activity",
+              "no_activity": "No activity recorded for this workflow"
+            }
+          }
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Workflow created successfully",
+          "error": "Failed to create workflow"
+        },
+        "update": {
+          "success": "Workflow updated successfully",
+          "error": "Failed to update workflow"
+        },
+        "delete": {
+          "success": "Workflow deleted successfully",
+          "error": "Failed to delete workflow"
+        },
+        "button": {
+          "edit": "Edit",
+          "delete": "Delete"
         }
       },
       "unit": {
@@ -1999,8 +2070,17 @@
   "form_manager": {
     "confirm_publish": "Do you want to publish this form?",
     "confirm_unpublish": "Do you want to unpublish this form?",
-    "delete_form_desc":"Do you want to Delete this form?"
-  },"toast":{
-    "delete_form_success":"Delete Form Successfully."
+    "delete_form_desc": "Do you want to Delete this form?"
+  },
+  "toast": {
+    "delete_form_success": "Delete Form Successfully."
+  },
+  "apiSetUp": {
+    "fetchcaseTypeFail": "Failed to load case type data",
+    "fetchDeptCommandStationFail": "Failed to load department data",
+    "fetchCaseStatusFail": "Failed to load case status data",
+    "fetchCaseResultFail": "Failed to load case result data",
+    "fetchUnitStatusFail": "Failed to load unit status data",
+    "fetchAreaFail": "Failed to load responsible area data"
   }
 }

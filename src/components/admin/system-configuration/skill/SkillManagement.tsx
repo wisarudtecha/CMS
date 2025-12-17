@@ -110,19 +110,22 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
   ]);
 
   const isDeleteAvailable = () => {
-    const canDelete = permissions.hasPermission("settings.delete");
+    // const canDelete = permissions.hasPermission("settings.delete");
+    const canDelete = permissions.hasPermission("unit.delete");
     // console.log("🚀 ~ isDeleteAvailable ~ canDelete:", canDelete);
     return canDelete || isSystemAdmin;
   }
 
   const isEditAvailable = () => {
-    const canEdit = permissions.hasPermission("settings.update");
+    // const canEdit = permissions.hasPermission("settings.update");
+    const canEdit = permissions.hasPermission("unit.update");
     // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
     return canEdit || isSystemAdmin;
   }
 
   const isViewAvailable = () => {
-    const canView = permissions.hasPermission("settings.view");
+    // const canView = permissions.hasPermission("settings.view");
+    const canView = permissions.hasPermission("unit.view");
     // console.log("🚀 ~ isDeleteAvailable ~ canView:", canView);
     return canView || isSystemAdmin;
   }
@@ -398,7 +401,8 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         // keyboardShortcuts={[]}
         loading={!skills}
         // module="skill"
-        module="settings"
+        // module="settings"
+        module="unit"
         // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
         previewConfig={previewConfig as PreviewConfig<Skill & { id: string }>}
         searchFields={["th", "en"]}

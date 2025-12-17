@@ -14,12 +14,13 @@ import {
   VideoIcon
 } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   // useDeleteWorkflowMutation,
   useGetWorkflowsQuery
 } from "@/store/api/workflowApi";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import { formatDate } from "@/utils/crud";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
@@ -34,12 +35,33 @@ import MetricsView from "@/components/admin/MetricsView";
 const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows }) => {
   // const [deleteWorkflow] = useDeleteWorkflowMutation();
   const { refetch: getWorkflows } = useGetWorkflowsQuery("");
-  const isSystemAdmin = AuthService.isSystemAdmin();
+  // const isSystemAdmin = AuthService.isSystemAdmin();
+  const isSystemAdmin = useIsSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
   const { t } = useTranslation();
   const [data, setData] = useState<(Workflow & { id: string })[]>([]);
   const [workflowAnalytics, setWorkflowAnalytics] = useState<WorkflowAnalytics>();
+
+  const isDeleteAvailable = (publish: boolean) => {
+    const canDelete = permissions.hasPermission("workflow.delete") && !publish;
+    // console.log("🚀 ~ isDeleteAvailable ~ canDelete:", canDelete);
+    // console.log("🚀 ~ isDeleteAvailable ~ publish:", publish);
+    return canDelete || isSystemAdmin;
+  }
+
+  const isEditAvailable = (publish: boolean) => {
+    const canEdit = permissions.hasPermission("workflow.update") && !publish;
+    // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
+    // console.log("🚀 ~ isEditAvailable ~ publish:", publish);
+    return canEdit || isSystemAdmin;
+  }
+
+  const isViewAvailable = () => {
+    const canView = permissions.hasPermission("workflow.view");
+    // console.log("🚀 ~ isDeleteAvailable ~ canView:", canView);
+    return canView || isSystemAdmin;
+  }
 
   // ===================================================================
   // Mock Data
@@ -117,8 +139,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   // ===================================================================
 
   const config = {
-    entityName: "Workflow",
-    entityNamePlural: "Workflows",
+    entityName: t("crud.workflow.name"),
+    entityNamePlural: t("crud.workflow.name"),
     apiEndpoints: {
       list: "/workflows",
       create: "/workflows",
@@ -131,7 +153,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     columns: [
       {
         key: "name",
-        label: "Name",
+        label: t("crud.workflow.list.header.title"),
         sortable: true,
         render: (workflow: Workflow) => (
           <div className="flex items-center gap-3">
@@ -149,7 +171,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       },
       {
         key: "status",
-        label: "Status",
+        label: t("crud.workflow.list.header.active"),
         sortable: true,
         render: (workflow: Workflow) => {
           return (
@@ -158,18 +180,18 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
                 ${statusConfig.find(s => s.active === workflow.active)?.color || ""}
               `}>
                 {statusConfig.find(s => s.active === workflow.active)?.icon || ""}
-                {workflow.active ? "Active" : "Inactive"}
+                {workflow.active ? t("common.active") : t("common.inactive")}
               </span>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-1
                 ${publicationConfig.find(p => p.publish === workflow.publish)?.color || ""}
               `}>
                 {publicationConfig.find(p => p.publish === workflow.publish)?.icon || ""}
-                {workflow.publish ? "Publish" : "Draft"}
+                {workflow.publish ? t("common.publish") : t("common.draft")}
               </span>
               {workflow.locks && (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-1 ${lockConfig.color}`}>
                   <LockIcon className="w-3 h-4" />
-                  Lock
+                  {t("common.locked")}
                 </span>
               )}
             </div>
@@ -178,11 +200,11 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       },
       {
         key: "createdAt",
-        label: "Created At",
+        label: t("crud.workflow.list.header.createdAt"),
         sortable: true,
         render: (workflow: Workflow) => (
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {formatDate(workflow.createdAt)}
+            {formatDate(workflow.createdAt)} {t("common.by")} {workflow.createdBy}
           </span>
         )
       },
@@ -207,7 +229,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "primary" as const,
         // icon: EyeIcon,
         onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}`),
-        condition: () => permissions.hasPermission("workflow.view")
+        // condition: () => permissions.hasPermission("workflow.view")
+        condition: () => isViewAvailable()
       },
       {
         key: "update",
@@ -215,7 +238,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "warning" as const,
         // icon: PencilIcon,
         onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}/edit`),
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
+        // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
+        condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
       },
       {
         key: "delete",
@@ -226,7 +250,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           // This will be intercepted by the container"s handleItemAction
           console.log("Delete action triggered for:", workflow.wfId);
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
+        // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
+        condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
       }
     ]
   };
@@ -245,78 +270,83 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     tabs: [
       {
         key: "overview",
-        label: "Overview",
+        label: t("crud.workflow.list.preview.tab.header.overview"),
         // icon: InfoIcon,
         fields: [
           {
             key: "desc",
-            label: "Description",
+            label: t("crud.workflow.list.preview.tab.overview.desc"),
             type: "text" as const,
           },
           {
             key: "active",
             label: "Status",
             type: "custom",
-            render: value => value ? "Active" : "Inactive"
+            render: value => value ? t("common.active") : t("common.inactive")
           },
           {
             key: "publish",
             label: "Publish",
             type: "custom",
-            render: value => value ? "Yes" : "No"
+            render: value => value ? t("common.yes") : t("common.no")
           },
           {
             key: "locks",
             label: "Locks",
             type: "custom",
-            render: value => value ? "Yes" : "No"
+            render: value => value ? t("common.yes") : t("common.no")
           },
           {
             key: "versions",
-            label: "Version",
+            label: t("crud.workflow.list.preview.tab.overview.versions"),
             type: "text" as const,
           },
           {
             key: "createdAt",
-            label: "Created",
+            label: t("crud.workflow.list.preview.tab.overview.createdAt"),
             type: "date" as const,
-          },
-          {
-            key: "updatedAt",
-            label: "Updated",
-            type: "date" as const,
+            render: value => value ? formatDate(value) : ""
           },
           {
             key: "createdBy",
-            label: "Created By",
+            label: t("crud.workflow.list.preview.tab.overview.createdBy"),
             type: "text" as const
           },
           {
+            key: "updatedAt",
+            label: t("crud.workflow.list.preview.tab.overview.updatedAt"),
+            type: "date" as const,
+            render: value => value ? formatDate(value) : ""
+          },
+          {
             key: "updatedBy",
-            label: "Updated By",
+            label: t("crud.workflow.list.preview.tab.overview.updatedBy"),
             type: "text" as const
           }
         ]
       },
       {
         key: "configuration",
-        label: "Configuration",
+        label: t("crud.workflow.list.preview.tab.header.configuration"),
         // icon: PencilIcon,
-        fields: [
-          {
-            key: "config",
-            label: "Configuration",
-            type: "json" as const
-          }
-        ]
+        // fields: [
+        //   {
+        //     key: "config",
+        //     label: "Configuration",
+        //     type: "json" as const
+        //   }
+        // ]
       },
       {
         key: "activity",
-        label: "Activity",
-        render: (item: unknown) => {
-          const workflow = item as Workflow;
+        label: t("crud.workflow.list.preview.tab.header.activity"),
+        render: (
+          // item: unknown
+        ) => {
+          // const workflow = item as Workflow;
           return (
             <div className="space-y-4">
+              {/*
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Recent Activity</h4>
                 <div className="space-y-2">
@@ -349,6 +379,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
                   </div>
                 </div>
               </div>
+              */}
 
               {/*
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
@@ -377,14 +408,15 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     actions: [
       {
         key: "edit",
-        label: "Edit",
+        label: t("crud.common.update"),
         // icon: PencilIcon,
         variant: "primary",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
           navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
+        // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
+        condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
       },
       // {
       //   key: "duplicate",
@@ -399,14 +431,15 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
       // },
       {
         key: "delete",
-        label: "Delete",
+        label: t("crud.common.delete"),
         // icon: TrashBinIcon,
         variant: "outline",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           console.log("Deleting workflow:", workflow.wfId);
           closePreview();
         },
-        condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
+        // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
+        condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
       }
     ]
   };
@@ -584,11 +617,11 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   // ===================================================================
 
   const attrMetrics = [
-    { key: "totalWorkflows", title: "Total", icon: GroupIcon, color: "blue", className: "text-blue-600" },
-    { key: "activeWorkflows", title: "Active", icon: CheckLineIcon, color: "green", className: "text-green-600" },
-    { key: "publishedWorkflows", title: "Published", icon: VideoIcon, color: "green", className: "text-green-600" },
+    { key: "totalWorkflows", title: t("crud.workflow.metrics.total"), icon: GroupIcon, color: "blue", className: "text-blue-600" },
+    { key: "activeWorkflows", title: t("crud.workflow.metrics.active"), icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "publishedWorkflows", title: t("crud.workflow.metrics.published"), icon: VideoIcon, color: "green", className: "text-green-600" },
     // { key: "draftWorkflows", title: "Draft", icon: PencilIcon, color: "yellow", className: "text-yellow-600" },
-    { key: "lockedWorkflows", title: "Locked", icon: LockIcon, color: "red", className: "text-red-600" },
+    { key: "lockedWorkflows", title: t("crud.workflow.metrics.locked"), icon: LockIcon, color: "red", className: "text-red-600" },
   ];
 
   return (

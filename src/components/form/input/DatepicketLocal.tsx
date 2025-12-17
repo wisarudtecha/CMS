@@ -74,9 +74,7 @@ const DatePickerLocal: React.FC<DatePickerLocalProps> = (props) => {
 
     return (
       <input
-        // Input display is controlled by displayValue (BE year for 'th', standard otherwise)
         value={displayValue}
-        // Pass the onClick handler to open the calendar
         onClick={onClick}
         readOnly={readOnly}
         disabled={disabled}

@@ -105,7 +105,7 @@ export const LoginForm: React.FC = () => {
   };
 
   const handleShowPassword = () => {
-    if (!state.isLoading && !state.isLocked && ssoToken) {
+    if (!state.isLoading && (!state.isLocked || ssoToken)) {
       setShowPassword(!showPassword);
     }
   }

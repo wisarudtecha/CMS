@@ -148,3 +148,12 @@ export function toDateInputString(date: Date): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
+export const getDaysDifference = (date1: Date, date2: Date): number => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+
+    const diffTime = d2.getTime() - d1.getTime();
+    return diffTime / (1000 * 60 * 60 * 24);
+}

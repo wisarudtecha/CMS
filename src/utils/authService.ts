@@ -171,6 +171,8 @@ export class AuthService {
           captcha: credentials.captcha || "",
           token: credentials.token || ""
         };
+        const verify = (!credentials.username && !credentials.password && getSsoToken()) ? API_CONFIG.ENDPOINTS.VERIFY : undefined;
+        const endpoint = verify || API_CONFIG.ENDPOINTS.LOGIN;
 
         // METHOD GET (suspended)
         // const queryParams = new URLSearchParams(params).toString();
@@ -180,7 +182,7 @@ export class AuthService {
 
         // METHOD POST
         const response = await this.httpClient.post<LoginResponse>(
-          getSsoToken() ? API_CONFIG.ENDPOINTS.VERIFY : API_CONFIG.ENDPOINTS.LOGIN, params
+          endpoint, params
         );
 
         if (!response.data) {

@@ -40,6 +40,8 @@
     "noOption": "无选项。",
     "publish": "发布",
     "unpublish": "取消发布",
+    "draft": "草稿",
+    "locked": "已锁定",
     "active": "启用",
     "inactive": "禁用",
     "at": "时间",
@@ -661,6 +663,75 @@
             }
           },
           "actions": { "cancel": "取消" }
+        }
+      },
+      "metrics": {
+        "total": "总计",
+        "active": "活跃",
+        "published": "已发布",
+        "locked": "已锁定"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索工作流..."
+          }
+        },
+        "header": {
+          "title": "名称",
+          "active": "状态",
+          "createdAt": "创建时间"
+        },
+        "preview": {
+          "header": "_TITLE_ 工作流",
+          "tab": {
+            "header": {
+              "overview": "概览",
+              "configuration": "配置",
+              "activity": "活动"
+            },
+            "overview": {
+              "desc": "描述",
+              "status": "状态",
+              "versions": "版本",
+              "createdAt": "创建时间",
+              "createdBy": "创建者",
+              "updatedAt": "更新时间",
+              "updatedBy": "更新者"
+            },
+            "configuration": {
+              "header": "工作流配置",
+              "description": "查看工作流节点和连接",
+              "node": "节点",
+              "connection": "连接",
+              "start_node": "开始节点",
+              "process_node": "处理节点",
+              "dispatch_node": "调度节点",
+              "end_node": "结束节点"
+            },
+            "activity": {
+              "header": "工作流活动",
+              "no_activity": "该工作流暂无活动记录"
+            }
+          }
+        }
+      },
+      "action": {
+        "create": {
+          "success": "工作流创建成功",
+          "error": "工作流创建失败"
+        },
+        "update": {
+          "success": "工作流更新成功",
+          "error": "工作流更新失败"
+        },
+        "delete": {
+          "success": "工作流删除成功",
+          "error": "工作流删除失败"
+        },
+        "button": {
+          "edit": "编辑",
+          "delete": "删除"
         }
       },
       "unit": {
