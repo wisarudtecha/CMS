@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { AlertIcon, CloseIcon, EnvelopeIcon, EyeCloseIcon, EyeIcon,  } from "@/icons";
 // import { API_CONFIG } from "@/config/api";
 import { Autocomplete } from "@/components/form/form-elements/Autocomplete";
-import { getSsoToken } from "@/config/api";
+import { isSSOAvailable } from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LoginCredentials } from "@/types/auth";
@@ -36,7 +36,7 @@ export const LoginForm: React.FC = () => {
 
   const versionInfo = Object.entries(changelog).map(([version, info]) => ({ version, ...info }));
 
-  const ssoToken = getSsoToken();
+  const ssoToken = isSSOAvailable();
 
   // console.log("🔐 LoginForm rendered - Network:", state.networkStatus, "Loading:", state.isLoading);
 

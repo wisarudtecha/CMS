@@ -1,4 +1,16 @@
 {
+  "0.5.9": {
+    "date": "2025-12-17",
+    "segment": "PATCH",
+    "notes": "fix: DF_53,DF_55(single-sign-on):\n- Check MDSS's Token, if they were deleted (logout), then remove cookie in Work Order too (force logout).\n- Fix defect in SSO login flow that cause infinite loop redirecting to MDSS login page.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.8": {
+    "date": "2025-12-17",
+    "segment": "PATCH",
+    "notes": "fix: DF_52(single-sign-on):\n- Check MDSS's Token, if they were deleted (logout), then remove cookie in Work Order too (force logout).",
+    "author": "Wisarud Techa"
+  },
   "0.5.7": {
     "date": "2025-12-16",
     "segment": "PATCH",

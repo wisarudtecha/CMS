@@ -9,6 +9,8 @@ export const APP_CONFIG = {
   VERSION: "1.0.0",
   // Environment-based API configuration
   API_BASE_URL: (() => {
+    const envName = import.meta.env.VITE_ENV;
+    console.log("ENV:", envName);
     const envApi = import.meta.env.VITE_API_BASE_URL || "/api/v1";
     // console.log("API_BASE_URL:", envApi);
     return envApi;

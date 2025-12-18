@@ -247,7 +247,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.user
       );
 
-      let err = (await caseApiSetup()).filter((item)=>{return item!=""});
+      const err = (await caseApiSetup()).filter((item)=>{return item!=""});
       
       if(err.length !=0){
         err.map((item)=>{addToast('error',item,5000,true)})

@@ -9,7 +9,7 @@ import React
 from "react";
 import { AlertIcon } from "@/icons";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { getSsoToken } from "@/config/api";
+import { isSSOAvailable, isSSOLogout } from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -30,7 +30,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   action = "view",
   fallback: Fallback
 }) => {
-  const { state, login } = useAuth();
+  const { state, login, logout } = useAuth();
   const { t } = useTranslation();
 
   // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
@@ -41,7 +41,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   //   fetchAuthService();
   // }, [isSystemAdmin]);
   const isSystemAdmin = useIsSystemAdmin();
-  const ssoToken = getSsoToken();
+  const ssoToken = isSSOAvailable();
 
   // Max attempts for automatic SSO login to avoid infinite retries
   const ssoLoginAttempts = useRef(0);
@@ -51,8 +51,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
       ssoLoginAttempts.current++;
       void login({ token: ssoToken ?? undefined, rememberMe: true });
+      console.log("🚀 ~ SSO: Logining...");
     }
-  }, [state.user, state.isLoading, ssoToken, login]);
+    else if (state.user) {
+      ssoLoginAttempts.current = 0;
+      if (!ssoToken) {
+        void logout();
+        console.log("🚀 ~ SSO: Logouting...");
+      }
+      else {
+        void isSSOLogout();
+        console.log("🚀 ~ SSO: Cookie Deleting...");
+      }
+    }
+  }, [ssoToken, state.user, state.isLoading, login, logout]);
 
   if (state.isLoading || state.isRefreshing) {
     return (
@@ -76,9 +88,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (ssoToken) {
       // If exceeded attempts, fall back to explicit login form
       if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
+        console.log("🚀 ~ Login: Form Displaying...");
         return <LoginForm />;
       }
-
+      
+      console.log("🚀 ~ Login: Loading...", null);
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
           <div className="text-center">

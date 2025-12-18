@@ -1,5 +1,5 @@
 // /src/utils/authService.ts
-import { API_CONFIG, getSsoToken } from "@/config/api";
+import { API_CONFIG, isSSOAvailable } from "@/config/api";
 import { SYSTEM_ROLE } from "@/utils/constants";
 import { HttpClient } from "@/utils/httpClient";
 import { PermissionManager } from "@/utils/permissionManager";
@@ -171,7 +171,7 @@ export class AuthService {
           captcha: credentials.captcha || "",
           token: credentials.token || ""
         };
-        const verify = (!credentials.username && !credentials.password && getSsoToken()) ? API_CONFIG.ENDPOINTS.VERIFY : undefined;
+        const verify = (!credentials.username && !credentials.password && isSSOAvailable()) ? API_CONFIG.ENDPOINTS.VERIFY : undefined;
         const endpoint = verify || API_CONFIG.ENDPOINTS.LOGIN;
 
         // METHOD GET (suspended)
