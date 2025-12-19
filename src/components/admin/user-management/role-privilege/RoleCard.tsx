@@ -14,7 +14,9 @@ import {
   // PencilIcon,
   // TimeIcon
 } from "@/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import { SYSTEM_ROLE } from "@/utils/constants";
+import { formatDate } from "@/utils/crud";
 import { permissionsByRole } from "@/utils/dataMappers";
 import type {
   Permission,
@@ -55,6 +57,8 @@ const RoleCardContent: React.FC<{
   // onClone,
   // onViewPermissions
 }) => {
+  const { t } = useTranslation();
+
   // const [showActions, setShowActions] = useState(false);
 
   const permissionByRole = Object.values(permissionsByRole(permission.filter(p => (role.permissions || []).includes(p.permId)))) || [];
@@ -79,13 +83,13 @@ const RoleCardContent: React.FC<{
                   : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                 }`}>
                 {role.active ? <CheckLineIcon className="w-3 h-3 mr-1" /> : <CloseLineIcon className="w-3 h-3 mr-1" />}
-                {role.active ? "Active" : "Inactive"}
+                {role.active ? t("common.active") : t("common.inactive")}
               </span>
 
               {role.id === SYSTEM_ROLE && (
                 <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                   <LockIcon className="w-3 h-3 mr-1" />
-                  System
+                  {t("crud.role_privilege.unit.system")}
                 </span>
               )}
 
@@ -168,13 +172,14 @@ const RoleCardContent: React.FC<{
         </div>
         */}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Permissions:</span>
+          <span className="text-gray-600 dark:text-gray-400">{t("crud.role_privilege.list.header.permission")}:</span>
           <span className="text-gray-900 dark:text-white">{role?.permissions?.length || 0}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Last Modified:</span>
+          <span className="text-gray-600 dark:text-gray-400">{t("crud.role_privilege.list.header.updatedAt")}:</span>
           <span className="text-gray-900 dark:text-white">
-            {new Date(role.updatedAt || "").toLocaleDateString()}
+            {/* {new Date(role.updatedAt || "").toLocaleDateString()} */}
+            {formatDate(role.updatedAt || "")}
           </span>
         </div>
       </div>
@@ -196,7 +201,7 @@ const RoleCardContent: React.FC<{
           })}
           {permissionByRole.length > 2 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              +{permissionByRole.length - 2} more
+              +{permissionByRole.length - 2} {t("crud.role_privilege.unit.more")}
             </span>
           )}
         </div>

@@ -20,6 +20,7 @@
 
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   useGetUserRolesQuery,
   useGetUserRolesPermissionsQuery,
@@ -31,6 +32,8 @@ import PageMeta from "@/components/common/PageMeta";
 import RoleManagementComponent from "@/components/admin/user-management/role-privilege/RoleManagement";
 
 const RolePrivilegeManagementPage: React.FC = () => {
+  const { t } = useTranslation();
+
   // ===================================================================
   // API Data
   // ===================================================================
@@ -64,7 +67,7 @@ const RolePrivilegeManagementPage: React.FC = () => {
         description="This is React.js Role Management page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
 
-      <PageBreadcrumb pageTitle="Role Management" />
+      <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.role_privilege")} />
 
       <ProtectedRoute requiredPermissions={["role.view"]}>
         <RoleManagementComponent

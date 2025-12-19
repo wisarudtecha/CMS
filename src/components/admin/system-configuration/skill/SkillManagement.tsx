@@ -87,7 +87,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       }
       if (response?.status) {
         // addToast("success", `Skill Management: ${response?.desc || response?.msg || "Save successfully"}`);
-        addToast("success", t("crud.skill.action.create.success"));
+        addToast("success", skillId && t("crud.skill.action.update.success") || t("crud.skill.action.create.success"));
         setTimeout(() => {
           window.location.replace(`/skill`);
         }, 1000);
@@ -98,7 +98,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
     }
     catch (error) {
       // addToast("error", `Skill Management: ${error}`);
-      addToast("error", `${t("crud.skill.action.create.error")}: ${error}`);
+      addToast("error", `${skillId && t("crud.skill.action.update.error") || t("crud.skill.action.create.error")}: ${error}`);
     }
     finally {
       setIsOpen(false);

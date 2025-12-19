@@ -815,6 +815,76 @@
         }
       }
     },
+    "role_privilege": {
+      "name": "Role",
+      "metrics": {
+        "total": "Total Roles",
+        "active": "Active Roles",
+        "avg": "Avg Permissions"
+      },
+      "list": {
+        "header": {
+          "user": "User",
+          "permission": "Permissions",
+          "updatedAt": "Last Modified",
+          "groupName": "Group"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Role",
+          "update": "Edit Role"
+        },
+        "roleName": {
+          "label": "Role Name",
+          "placeholder": "Enter role name",
+          "required": "Role name is required"
+        }
+      },
+      "confirm": {
+        "delete": {
+          "title": "Delete role confirmation",
+          "message": "Are you sure you want to delete _Role_? This action cannot be undone."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "role": {
+          "create": {
+            "success": "Role created successfully",
+            "error": "Failed to create role"
+          },
+          "update": {
+            "success": "Role updated successfully",
+            "error": "Failed to update role"
+          },
+          "delete": {
+            "success": "Role deleted successfully",
+            "error": "Failed to delete role"
+          }
+        },
+        "privilege": {
+          "update": {
+            "success": "Permission updated successfully",
+            "error": "Failed to update permission"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "unit": {
+        "more": "more",
+        "system": "System"
+      }
+    },
     "organization": {
       "name": "Organization",
       "list": {

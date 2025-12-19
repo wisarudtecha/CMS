@@ -7,12 +7,16 @@ import React
     // useState
   }
 from "react";
-import { AlertIcon } from "@/icons";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { isSSOAvailable, isSSOLogout } from "@/config/api";
+import {
+  isSSOAvailable,
+  // isSSOLogout
+} from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthMode } from "@/hooks/useAuthMode";
 import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
+import { AlertIcon } from "@/icons";
 // import { AuthService } from "@/utils/authService";
 import { MAX_SSO_LOGIN_ATTEMPTS } from "@/utils/constants";
 import { PermissionManager } from "@/utils/permissionManager";
@@ -31,7 +35,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   fallback: Fallback
 }) => {
   const { state, login, logout } = useAuth();
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
 
   // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   // useEffect(() => {
@@ -41,40 +45,75 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   //   fetchAuthService();
   // }, [isSystemAdmin]);
   const isSystemAdmin = useIsSystemAdmin();
+
+  const authMode = useAuthMode();
   const ssoToken = isSSOAvailable();
 
   // Max attempts for automatic SSO login to avoid infinite retries
   const ssoLoginAttempts = useRef(0);
   // const ssoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const SSOLoadingScreen = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          {language === "th" && "โปรดรีเฟรชหน้าเว็บเพื่อดำเนินการต่อ" || "Please refresh page to continue."}
+        </h2>
+      </div>
+    </div>
+  );
+
+  // useEffect(() => {
+  //   if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
+  //     ssoLoginAttempts.current++;
+  //     void login({ token: ssoToken ?? undefined, rememberMe: true });
+  //     console.log("🚀 ~ SSO: Logining...");
+  //   }
+  //   else if (state.user) {
+  //     ssoLoginAttempts.current = 0;
+  //     if (!ssoToken) {
+  //       void logout();
+  //       console.log("🚀 ~ SSO: Logouting...");
+  //     }
+  //     else {
+  //       void isSSOLogout();
+  //       console.log("🚀 ~ SSO: Cookie Deleting...");
+  //     }
+  //   }
+  // }, [ssoToken, state.user, state.isLoading, login, logout]);
+
   useEffect(() => {
-    if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
-      ssoLoginAttempts.current++;
-      void login({ token: ssoToken ?? undefined, rememberMe: true });
-      console.log("🚀 ~ SSO: Logining...");
-    }
-    else if (state.user) {
-      ssoLoginAttempts.current = 0;
-      if (!ssoToken) {
+    // SSO MODE ONLY
+    if (authMode === "SSO") {
+      // Auto-login via SSO
+      if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
+        ssoLoginAttempts.current++;
+        void login({ token: ssoToken, rememberMe: true });
+        return;
+      }
+
+      // Parent logged out → child must logout
+      if (state.user && !ssoToken) {
         void logout();
-        console.log("🚀 ~ SSO: Logouting...");
-      }
-      else {
-        void isSSOLogout();
-        console.log("🚀 ~ SSO: Cookie Deleting...");
+        return;
       }
     }
-  }, [ssoToken, state.user, state.isLoading, login, logout]);
+  }, [authMode, ssoToken, state.user, state.isLoading, login, logout]);
 
   if (state.isLoading || state.isRefreshing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
+
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
             {state.isRefreshing ? t("auth.signin.state.is_refreshing") : t("auth.signin.state.is_loading")}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300">{t("auth.signin.state.wating")}</p>
+
+          <p className="text-gray-600 dark:text-gray-300">
+            {t("auth.signin.state.wating")}
+          </p>
         </div>
       </div>
     );
@@ -85,27 +124,39 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // }
 
   if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
-    if (ssoToken) {
-      // If exceeded attempts, fall back to explicit login form
+    // if (ssoToken) {
+    //   // If exceeded attempts, fall back to explicit login form
+    //   if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
+    //     console.log("🚀 ~ Login: Form Displaying...");
+    //     return <LoginForm />;
+    //   }
+
+    //   console.log("🚀 ~ Login: Loading...", null);
+    //   return (
+    //     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+    //       <div className="text-center">
+    //         <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
+    //         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+    //           {t("auth.signin.state.is_loading")}
+    //         </h2>
+    //         <p className="text-gray-600 dark:text-gray-300">
+    //           {t("auth.signin.state.wating")}
+    //         </p>
+    //       </div>
+    //     </div>
+    //   );
+    // }
+
+    // SSO mode → never show login form unless attempts exceeded
+    if (authMode === "SSO") {
       if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
-        console.log("🚀 ~ Login: Form Displaying...");
         return <LoginForm />;
       }
-      
-      console.log("🚀 ~ Login: Loading...", null);
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {t("auth.signin.state.is_loading")}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">{t("auth.signin.state.wating")}</p>
-          </div>
-        </div>
-      );
+
+      return <SSOLoadingScreen />;
     }
 
+    // Standalone mode → always allow login form
     return <LoginForm />;
   }
 
@@ -119,11 +170,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center max-w-md">
             <AlertIcon className="h-16 w-16 text-red-500 dark:text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t("auth.permission.access_denied.title")}</h2>
+
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {t("auth.permission.access_denied.title")}
+            </h2>
+
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              {/* You don't have permission to {action} {module} resources. */}
               {t("auth.permission.access_denied.subtitle")} {action} {module}
             </p>
+
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {t("auth.permission.access_denied.description")}: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{modulePermission}</code>
             </div>
@@ -142,16 +197,27 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="min-h-screen flex items-center justify-center cursor-default">
           <div className="text-center max-w-md">
             <AlertIcon className="h-16 w-16 text-red-500 dark:text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t("auth.permission.insufficient_permissions.title")}</h2>
+
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {t("auth.permission.insufficient_permissions.title")}
+            </h2>
+
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               {t("auth.permission.insufficient_permissions.subtitle")}
             </p>
+
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {t("auth.permission.insufficient_permissions.description")}:
               <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded mt-2">
                 {requiredPermissions.map(perm => (
                   <div key={perm} className="font-mono text-xs">
-                    <span className={PermissionManager.hasPermission(state.user, perm) ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}>
+                    <span
+                      className={
+                        PermissionManager.hasPermission(state.user, perm)
+                          ? 'text-green-600 dark:text-green-300'
+                          : 'text-red-600 dark:text-red-300'
+                      }
+                    >
                       {PermissionManager.hasPermission(state.user, perm) ? '✓' : '✗'}
                     </span> {perm}
                   </div>

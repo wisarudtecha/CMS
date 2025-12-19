@@ -14,7 +14,9 @@ import {
 } from "@/icons";
 import { ToastContainer } from "@/components/crud/ToastContainer";
 import { Modal } from "@/components/ui/modal";
+import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/useToast";
 import {
   // RolePermissionsCreateData,
@@ -28,8 +30,9 @@ import {
   useUpdateUserRolesMutation,
   // useDeleteUserRolesMutation
 } from "@/store/api/userApi";
-import { AuthService } from "@/utils/authService";
+// import { AuthService } from "@/utils/authService";
 import { SYSTEM_ROLE } from "@/utils/constants";
+import { formatDate } from "@/utils/crud";
 import { permissionsByRole } from "@/utils/dataMappers";
 // import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Permission, Role, RoleAnalytics, RoleCreateData, RoleUpdateData, RolePermission, RolesPermissionsUpdateData } from "@/types/role";
@@ -73,9 +76,12 @@ const RoleManagementComponent: React.FC<{
   rolesPerms: RolePermission[];
   perms: Permission[];
 }> = ({ role, rolesPerms, perms }) => {
-  const isSystemAdmin = AuthService.isSystemAdmin();
+  // const isSystemAdmin = AuthService.isSystemAdmin();
+  const isSystemAdmin = useIsSystemAdmin();
+
   const navigate = useNavigate();
   const permissions = usePermissions();
+  const { t } = useTranslation();
   const { toasts, addToast, removeToast } = useToast();
 
   // const [trigger] = useLazyGetUserRolesPermissionsByRoleIdQuery();
@@ -111,6 +117,18 @@ const RoleManagementComponent: React.FC<{
   // });
 
   const [loading, setLoading] = useState(false);
+
+  const isDeleteAvailable = (roleItem: Role) => {
+    const canDelete = permissions.hasPermission("role.delete") || isSystemAdmin;
+    // console.log("🚀 ~ isDeleteAvailable ~ canDelete:", canDelete);
+    return canDelete && roleItem.id !== SYSTEM_ROLE;
+  }
+
+  const isEditAvailable = () => {
+    const canEdit = permissions.hasPermission("role.update");
+    // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
+    return canEdit || isSystemAdmin;
+  }
 
   // ===================================================================
   // Mock Data
@@ -173,8 +191,8 @@ const RoleManagementComponent: React.FC<{
   // ===================================================================
 
   const config = {
-    entityName: "Role",
-    entityNamePlural: "Roles",
+    entityName: t("crud.role_privilege.name"),
+    entityNamePlural: t("crud.role_privilege.name"),
     apiEndpoints: {
       list: "/api/v1/role",
       create: "/api/v1/role",
@@ -187,7 +205,7 @@ const RoleManagementComponent: React.FC<{
     columns: [
       {
         key: "user",
-        label: "User",
+        label: t("crud.role_privilege.list.header.user"),
         sortable: true,
         render: (roleItem: Role) => {
           return (
@@ -199,7 +217,7 @@ const RoleManagementComponent: React.FC<{
       },
       {
         key: "permission",
-        label: "Permissions",
+        label: t("crud.role_privilege.list.header.permission"),
         sortable: false,
         render: (roleItem: Role) => {
           return (
@@ -211,19 +229,20 @@ const RoleManagementComponent: React.FC<{
       },
       {
         key: "updatedAt",
-        label: "Last Modified",
+        label: t("crud.role_privilege.list.header.updatedAt"),
         sortable: true,
         render: (roleItem: Role) => {
           return (
             <div className="text-gray-900 dark:text-white">
-              {new Date(roleItem.updatedAt || "").toLocaleDateString()}
+              {/* {new Date(roleItem.updatedAt || "").toLocaleDateString()} */}
+              {formatDate(roleItem.updatedAt || "")}
             </div>
           )
         }
       },
       {
         key: "groupName",
-        label: "Group",
+        label: t("crud.role_privilege.list.header.groupName"),
         sortable: false,
         render: (roleItem: Role) => {
           const permissionByRole = Object.values(permissionsByRole(perms.filter(p => (roleItem.permissions || []).includes(p.permId)))) || [];
@@ -243,7 +262,7 @@ const RoleManagementComponent: React.FC<{
               })}
               {permissionByRole.length > 2 && (
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  +{permissionByRole.length - 2} more
+                  +{permissionByRole.length - 2} {t("crud.role_privilege.unit.more")}
                 </span>
               )}
             </div>
@@ -262,7 +281,7 @@ const RoleManagementComponent: React.FC<{
       // },
       {
         key: "update",
-        label: "Edit",
+        label: t("common.edit"),
         variant: "warning" as const,
         // icon: PencilIcon,
         // onClick: (roleItem: Role) => navigate(`/role/${roleItem.id}/edit`),
@@ -271,11 +290,12 @@ const RoleManagementComponent: React.FC<{
           setRoleId(roleItem.id);
           setRoleName(roleItem.roleName);
         },
-        condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
+        // condition: () => (permissions.hasPermission("role.update") || isSystemAdmin) as boolean
+        condition: () => isEditAvailable()
       },
       {
         key: "delete",
-        label: "Delete",
+        label: t("common.delete"),
         variant: "outline" as const,
         // icon: TrashBinIcon,
         // onClick: (roleItem: Role) => {
@@ -284,7 +304,8 @@ const RoleManagementComponent: React.FC<{
         //   setRoleName(roleItem.roleName);
         // },
         onClick: (roleItem: Role) => console.log(`Delete role: ${roleItem.id}`),
-        condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
+        // condition: (roleItem: Role) => (roleItem.id !== SYSTEM_ROLE) as boolean
+        condition: (roleItem: Role) => isDeleteAvailable(roleItem)
       }
     ]
   };
@@ -471,52 +492,60 @@ const RoleManagementComponent: React.FC<{
 
   const handlePermissionSave = async () => {
     try {
-      setLoading(true);
-      const payload: RolesPermissionsUpdateData = {
-        body: (roleList).map(rl => {
-          return {
-            roleId: rl.id,
-            permissions: (rl.permissions || []).map(p => {
-              return { permId: p, active: true };
-            })
-          };
+      if (permissions.hasAnyPermission(["role.update"])) {
+        setLoading(true);
+        const payload: RolesPermissionsUpdateData = {
+          body: (roleList).map(rl => {
+            return {
+              roleId: rl.id,
+              permissions: (rl.permissions || []).map(p => {
+                return { permId: p, active: true };
+              })
+            };
+          }
+        )};
+        const response = await updateUserRolesPermissions(payload).unwrap();
+
+        // setUpdateUserRolesPermissionsResponse(response);
+
+        if (response?.status) {
+          // addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
+          addToast("success", t("crud.role_privilege.action.privilege.update.success"));
         }
-      )};
-      const response = await updateUserRolesPermissions(payload).unwrap();
+        else {
+          // throw new Error(response?.desc || response?.msg || "Unknown error");
+          throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
+        }
 
-      // setUpdateUserRolesPermissionsResponse(response);
-
-      if (response?.status) {
-        addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
+        // for (const [, rl] of roleList.entries()) {
+        //   trigger(rl.id);
+        //   const { data: rpsData } = await trigger(rl.id);
+        //   const rps = rpsData as unknown as RolePermission[] || [];
+        //   if (rps.length === 0) {
+        //     const ps = (rl.permissions || []).map(p => {
+        //       return { permId: p, active: true };
+        //     });
+        //     const payload: RolePermissionsCreateData = {
+        //       roleId: rl.id,
+        //       permissions: ps,
+        //     };
+        //     try {
+        //       const response = await createRolePermissions(payload).unwrap();
+        //       console.log("Created role permissions:", response);
+        //     }
+        //     catch (err) {
+        //       console.error("Error creating role permissions:", err);
+        //     }
+        //   }
+        // };
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(t("crud.common.permission_denied"));
       }
-
-      // for (const [, rl] of roleList.entries()) {
-      //   trigger(rl.id);
-      //   const { data: rpsData } = await trigger(rl.id);
-      //   const rps = rpsData as unknown as RolePermission[] || [];
-      //   if (rps.length === 0) {
-      //     const ps = (rl.permissions || []).map(p => {
-      //       return { permId: p, active: true };
-      //     });
-      //     const payload: RolePermissionsCreateData = {
-      //       roleId: rl.id,
-      //       permissions: ps,
-      //     };
-      //     try {
-      //       const response = await createRolePermissions(payload).unwrap();
-      //       console.log("Created role permissions:", response);
-      //     }
-      //     catch (err) {
-      //       console.error("Error creating role permissions:", err);
-      //     }
-      //   }
-      // };
     }
     catch (error) {
-      addToast("error", `Roles Permissions Management: ${error}`);
+      // addToast("error", `Roles Permissions Management: ${error}`);
+      addToast("error", `${t("crud.role_privilege.action.privilege.update.error")}: ${error}`);
     }
     finally {
       setLoading(false);
@@ -651,12 +680,12 @@ const RoleManagementComponent: React.FC<{
   // Validate department
   const validateRole = useCallback((): string => {
     if (!roleName.trim()) {
-      const errors: string = "Role name is required";
+      const errors: string = t("crud.role_privilege.form.roleName.required");
       setRoleValidateErrors(errors);
       return errors;
     }
     return "";
-  }, [roleName]);
+  }, [roleName, t]);
 
   // ===================================================================
   // Role CRUD
@@ -725,26 +754,29 @@ const RoleManagementComponent: React.FC<{
         }
       }
       else {
-        throw new Error("Permission denied");
+        throw new Error(t("crud.common.permission_denied"));
       }
       if (response?.status) {
-        addToast("success", `Role & Privilege Management: ${response?.desc || response?.msg || "Save successfully"}`);
+        // addToast("success", `Role & Privilege Management: ${response?.desc || response?.msg || "Save successfully"}`);
+        addToast("success", roleId && t("crud.role_privilege.action.role.update.success") || t("crud.role_privilege.action.role.create.success"));
         setTimeout(() => {
           window.location.replace(`/role-privilege`);
         }, 1000);
       }
       else {
-        throw new Error(response?.desc || response?.msg || "Unknown error");
+        // throw new Error(response?.desc || response?.msg || "Unknown error");
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
       }
     }
     catch (error) {
-      addToast("error", `Role & Privilege Management: ${error}`);
+      // addToast("error", `Role & Privilege Management: ${error}`);
+      addToast("error", `${roleId && t("crud.role_privilege.action.role.update.error") || t("crud.role_privilege.action.role.create.error")}: ${error}`);
     }
     finally {
       setRoleSaveOpen(false);
       setLoading(false);
     }
-  }, [roleId, roleName, permissions, addToast, createUserRoles, updateUserRoles, validateRole]);
+  }, [roleId, roleName, permissions, addToast, createUserRoles, t, updateUserRoles, validateRole]);
 
   // ===================================================================
   // Custom Rendering
@@ -787,11 +819,11 @@ const RoleManagementComponent: React.FC<{
   // ===================================================================
 
   const attrMetrics = [
-    { key: "totalRoles", title: "Total Roles", icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
-    { key: "activeRoles", title: "Active Roles", icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "totalRoles", title: t("crud.role_privilege.metrics.total"), icon: GroupIcon, color: "blue-light", className: "text-blue-light-600" },
+    { key: "activeRoles", title: t("crud.role_privilege.metrics.active"), icon: CheckLineIcon, color: "green", className: "text-green-600" },
     // { key: "systemRoles", title: "System Roles", icon: LockIcon, color: "purple", className: "text-purple-600" },
     // { key: "customRoles", title: "Custom Roles", icon: PencilIcon, color: "orange", className: "text-orange-600" },
-    { key: "averagePermissions", title: "Avg Permissions", icon: PieChartIcon, color: "blue", className: "text-blue-600" },
+    { key: "averagePermissions", title: t("crud.role_privilege.metrics.avg"), icon: PieChartIcon, color: "blue", className: "text-blue-600" },
     // { key: "mostUsedRole", title: "Most Used", icon: ShootingStarIcon, color: "yellow", className: "text-yellow-600" },
   ];
 
@@ -866,7 +898,7 @@ const RoleManagementComponent: React.FC<{
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {roleId && "Edit" || "Create"} Role
+            {roleId && t("crud.role_privilege.form.header.update") || t("crud.role_privilege.form.header.create")}
           </h3>
           <Button
             onClick={() => setRoleSaveOpen(false)}
@@ -879,11 +911,11 @@ const RoleManagementComponent: React.FC<{
         <div className="space-y-4">
           <div>
             <label htmlFor="roleName" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Role Name
+              {t("crud.role_privilege.form.roleName.label")}
             </label>
             <Input
               id="roleName"
-              placeholder="Fill role name"
+              placeholder={t("crud.role_privilege.form.roleName.placeholder")}
               value={roleName}
               onChange={(e) => setRoleName && setRoleName(e.target.value)}
             />
@@ -893,10 +925,10 @@ const RoleManagementComponent: React.FC<{
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
             <Button onClick={handleRoleReset} variant="outline">
-              Reset
+              {t("crud.role_privilege.action.button.reset")}
             </Button>
             <Button onClick={handleRoleSave} variant="primary">
-              Confirm
+              {t("crud.role_privilege.confirm.button.confirm")}
             </Button>
           </div>
         </div>

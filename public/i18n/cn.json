@@ -799,6 +799,76 @@
         }
       }
     },
+    "role_privilege": {
+      "name": "角色",
+      "metrics": {
+        "total": "角色总数",
+        "active": "活跃角色",
+        "avg": "平均权限"
+      },
+      "list": {
+        "header": {
+          "user": "用户",
+          "permission": "权限",
+          "updatedAt": "最后修改时间",
+          "groupName": "组"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建角色",
+          "update": "编辑角色"
+        },
+        "roleName": {
+          "label": "角色名称",
+          "placeholder": "输入角色名称",
+          "required": "角色名称为必填项"
+        }
+      },
+      "confirm": {
+        "delete": {
+          "title": "删除角色确认",
+          "message": "按照确认要删除 _Role_ 吗？此操作无法撤销。"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "保存中...",
+          "deleting": "删除中..."
+        }
+      },
+      "action": {
+        "role": {
+          "create": {
+            "success": "角色创建成功",
+            "error": "角色创建失败"
+          },
+          "update": {
+            "success": "角色更新成功",
+            "error": "角色更新失败"
+          },
+          "delete": {
+            "success": "角色删除成功",
+            "error": "角色删除失败"
+          }
+        },
+        "privilege": {
+          "update": {
+            "success": "权限更新成功",
+            "error": "权限更新失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "unit": {
+        "more": "更多",
+        "system": "系统"
+      }
+    },
     "organization": {
       "name": "组织机构",
       "list": {

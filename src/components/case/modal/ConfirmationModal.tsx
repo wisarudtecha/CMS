@@ -33,7 +33,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         >
             {/* The content of the confirmation dialog goes here */}
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">{description}</p>
+            <div className="text-gray-600 dark:text-gray-300 mb-4">{description}</div>
 
             {children}
 

@@ -12,6 +12,7 @@ import {
   LockIcon
 } from "@/icons";
 // import { Loader2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 import type {
   Permission,
   Role,
@@ -39,6 +40,8 @@ const PrivilegeMatrixContent: React.FC<{
   handlePermissionSave,
   onPermissionToggle,
 }) => {
+  const { t } = useTranslation();
+
   const selectedRole = "all";
   const filteredPermissions = useMemo(() => {
     if (selectedRole === "all") {
@@ -177,7 +180,7 @@ const PrivilegeMatrixContent: React.FC<{
           <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 cursor-default">
             <tr className="bg-gray-100 dark:bg-gray-800 z-100">
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider sticky left-0 bg-gray-100 dark:bg-gray-800 z-100">
-                Permission
+                {t("crud.role_privilege.list.header.permission")}
               </th>
               {roles.map(role => (
                 <th key={role.id} className="px-3 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 tracking-wider min-w-24 bg-gray-100 dark:bg-gray-800 z-100">
@@ -396,8 +399,12 @@ const PrivilegeMatrixContent: React.FC<{
       {roles.length === 0 && (
         <div className="text-center py-12">
           <LockIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No roles found</h3>
-          <p className="text-gray-500 dark:text-gray-400">Create your first role to get started.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            {t("crud.common.zero_records")}
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            {t("crud.common.no_records").replace("_ENTITY_", t("crud.role_privilege.name"))}
+          </p>
         </div>
       )}
 
@@ -412,7 +419,7 @@ const PrivilegeMatrixContent: React.FC<{
               disabled={loading}
               className={loading ? "opacity-50 cursor-not-allowed" : ""}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? t("crud.role_privilege.confirm.button.saving") : t("crud.role_privilege.action.button.save")}
             </Button>
           </div>
         </div>
