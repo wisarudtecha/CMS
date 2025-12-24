@@ -101,7 +101,7 @@ const DatePickerLocal: React.FC<DatePickerLocalProps> = (props) => {
     const displayYear = getDisplayYear(date, language);
 
     return (
-      <div className="flex justify-between items-center px-2 py-2 bg-white dark:bg-gray-800 dark:text-gray-200">
+      <div className="flex justify-between items-center px-2 py-2 dark:bg-gray-800 dark:text-gray-200">
         {!prevMonthButtonDisabled ?<button
           onClick={decreaseMonth}
           disabled={prevMonthButtonDisabled}
@@ -115,7 +115,7 @@ const DatePickerLocal: React.FC<DatePickerLocalProps> = (props) => {
         </button>:<div></div>}
 
         <div className="flex gap-2">
-          <div className='text-md bg-white dark:bg-gray-800 dark:text-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'>
+          <div className='text-md dark:bg-gray-800 dark:text-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'>
             { monthNames[date.getMonth()]+" "+displayYear}
           </div>
         </div>

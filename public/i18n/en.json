@@ -798,6 +798,17 @@
               "audit_log": "Audit Log"
             }
           }
+        },
+        "skill": {
+          "update": {
+            "title": "Skills update",
+            "success": "User skills updated successfully",
+            "error": "Failed to update user skills",
+            "button": {
+              "save": "Save",
+              "saving": "Saving..."
+            }
+          }
         }
       },
       "unit": {

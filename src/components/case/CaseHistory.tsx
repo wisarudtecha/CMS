@@ -36,7 +36,8 @@ import {
   DepartmentCommandStationDataMerged,
   mergeDeptCommandStation,
   useGetCaseHistoryQuery,
-  useGetListCaseQuery
+  // useGetListCaseQuery,
+  useLazyGetListCaseQuery
 } from "@/store/api/caseApi";
 import { useGetCaseSopQuery } from "@/store/api/dispatch";
 import { useGetUserByUserNameQuery } from "@/store/api/userApi";
@@ -61,7 +62,6 @@ import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerA
 import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import FormViewer from "@/components/form/dynamic-form/FormViewValue";
-import distIdCommaSeparate from "@/components/profile/profileDistId";
 import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
@@ -70,6 +70,7 @@ const CaseHistoryComponent: React.FC<{
   // caseHistories: CaseEntity[];
   // caseHistories: CaseHistories;
   caseStatuses: CaseStatus[];
+  caseStatusesAll: string;
   caseSubTypes: EnhancedCaseSubType[];
   caseTypes: EnhancedCaseType[];
   caseTypesSubTypes: CaseTypeSubType[];
@@ -78,6 +79,7 @@ const CaseHistoryComponent: React.FC<{
   areas,
   // caseHistories,
   caseStatuses,
+  caseStatusesAll,
   caseSubTypes,
   caseTypes,
   caseTypesSubTypes,
@@ -161,15 +163,16 @@ const CaseHistoryComponent: React.FC<{
     start: 0,
     length: 10,
     start_date: "",
-    end_date: "", 
+    end_date: "",
     caseType: "",
     caseSType: "",
-    statusId: "",
+    // statusId: "",
+    statusId: caseStatusesAll || "",
     detail: "",
     caseId: "",
     countryId: "",
     provId: "",
-    distId: distIdCommaSeparate() || "",
+    // distId: distIdCommaSeparate() || "",
     category: "",
     createBy: "",
     orderBy: "",
@@ -219,7 +222,23 @@ const CaseHistoryComponent: React.FC<{
   //   direction: direction ?? ""
   // });
 
-  const { data: response, isLoading } = useGetListCaseQuery(queryParams);
+  // const { data: response, isLoading } = useGetListCaseQuery(queryParams);
+  // const { data: response, isLoading } = useGetListCaseQuery(queryParams, { skip: !caseStatusesAll });
+
+  const [trigger, { data: response, isLoading }] = useLazyGetListCaseQuery();
+
+  useEffect(() => {
+    setQueryParams(prev => ({
+      ...prev,
+      statusId: caseStatusesAll,
+    }));
+  }, [caseStatusesAll]);
+
+  useEffect(() => {
+    if (caseStatusesAll && queryParams?.statusId) {
+      trigger(queryParams); // Manually trigger the query
+    }
+  }, [queryParams, caseStatusesAll, trigger]);
 
   // const { data: caseHistoriesResponse, isLoading } = useGetListCaseQuery(queryParams);
   // const caseHistories = caseHistoriesResponse?.data as unknown as CaseEntity[] || [];
@@ -245,15 +264,16 @@ const CaseHistoryComponent: React.FC<{
       start: 0,
       length: queryParams.length,
       start_date: "",
-      end_date: "", 
+      end_date: "",
       caseType: "",
       caseSType: "",
-      statusId: "",
+      // statusId: "",
+      statusId: caseStatusesAll || "",
       detail: "",
       caseId: "",
       countryId: "",
       provId: "",
-      distId: distIdCommaSeparate() || "",
+      // distId: distIdCommaSeparate() || "",
       category: "",
       createBy: "",
       orderBy: "",
@@ -396,7 +416,7 @@ const CaseHistoryComponent: React.FC<{
   };
 
   const caseStatusOptions = [{
-    value: "",
+    value: caseStatusesAll,
     label: language === "th" ? "ทั้งหมด" : "All"
   }]
 
@@ -989,7 +1009,8 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.phoneNo || "-"}
+                    {/* {caseItem.phoneNo || "-"} */}
+                    {sopData?.phoneNo || "-"}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left">

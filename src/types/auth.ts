@@ -88,6 +88,7 @@ export interface LoginCredentials {
   captcha?: string;
   twoFactorCode?: string;
   token?: string;
+  language?: string;
 }
 
 export interface LoginFormData {

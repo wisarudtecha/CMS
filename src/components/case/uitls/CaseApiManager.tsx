@@ -6,7 +6,6 @@ import { formApi } from "@/store/api/formApi";
 import { CaseTypeSubType } from "../../interface/CaseType";
 import { areaApi } from "@/store/api/area";
 import { unitApi } from "@/store/api/unitApi";
-import distIdCommaSeparate from "@/components/profile/profileDistId";
 import { caseStatusGroup } from "@/components/ui/status/status";
 import { idbStorage } from "@/components/idb/idb";
 
@@ -24,7 +23,7 @@ export const fetchUnitStatus = async () => {
   );
   if (unitStatusDataResult.data?.data)
     localStorage.setItem("unit_status", JSON.stringify(unitStatusDataResult.data?.data));
-  else{
+  else {
     return "apiSetUp.fetchUnitStatusFail"
   }
 };
@@ -56,7 +55,7 @@ export const fetchCase = async (params: CaseListParams) => {
   const getListParams = {
     statusId: statusId,
     length: requestNumber,
-    distId: distIdCommaSeparate(),
+    // distId: distIdCommaSeparate(),
     orderBy: "priority,createdAt",
     direction: "asc,desc"
   };
@@ -64,18 +63,16 @@ export const fetchCase = async (params: CaseListParams) => {
   // Retry helper function
   const fetchWithRetry = async (fetchParams: any, retries = requestRetry): Promise<any> => {
     for (let attempt = 0; attempt <= retries; attempt++) {
+      console.log(attempt, retries)
       try {
         const result = await store.dispatch(
           caseApi.endpoints.getListCase.initiate(fetchParams, { forceRefetch: true })
         );
         // Check if we have a successful response     
-
+        console.log(!!result.error)
         // If result.error exists, retry
-        if (result.error) {
-          if (attempt === retries) {
-            throw new Error("API request failed");
-          }
-          console.warn(`Attempt ${attempt + 1} failed with error:`, result.error);
+        if (!!result.error) {
+          throw new Error("API request failed");
         } else {
           // No data and no error - unexpected state
           if (attempt === retries) {
@@ -90,8 +87,7 @@ export const fetchCase = async (params: CaseListParams) => {
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
 
       } catch (error) {
-        console.error(`Attempt ${attempt + 1} failed:`, error);
-
+        console.error(`Attempt ${attempt + 1} failed:`, error)
         if (attempt === retries) {
           throw error;
         }
@@ -269,7 +265,7 @@ export const fetchCaseStatus = async () => {
   );
   if (result.data?.data)
     localStorage.setItem("caseStatus", JSON.stringify(result.data?.data));
-  else{
+  else {
     return "apiSetUp.fetchCaseStatusFail"
   }
 };
@@ -280,7 +276,7 @@ export const fetchArea = async () => {
   );
   if (result.data?.data)
     localStorage.setItem("area", JSON.stringify(result.data?.data));
-  else{
+  else {
     return "apiSetUp.fetchAreaFail"
   }
 };

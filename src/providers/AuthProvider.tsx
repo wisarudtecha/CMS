@@ -244,7 +244,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         response.refreshToken || response.accessToken, 
         // credentials.rememberMe,
         true,
-        response.user
+        response.user,
+        credentials?.language || ""
       );
 
       const err = (await caseApiSetup()).filter((item)=>{return item!=""});

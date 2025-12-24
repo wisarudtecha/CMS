@@ -89,7 +89,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       // Auto-login via SSO
       if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
         ssoLoginAttempts.current++;
-        void login({ token: ssoToken, rememberMe: true });
+        void login({ token: ssoToken, rememberMe: true, language: "th" });
         return;
       }
 

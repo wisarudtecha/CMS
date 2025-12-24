@@ -1,17 +1,23 @@
 // /src/components/admin/user-management/user/UserManagement.tsx
 import 
   React
-  // ,
-  // {
-  //   useEffect,
-  //   useState
-  // }
+  ,
+  {
+    useCallback,
+    useEffect,
+    // useEffect,
+    useMemo,
+    useState
+  }
 from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import { ToastContainer } from "@/components/crud/ToastContainer";
 import { CheckLineIcon, ChevronUpIcon, CloseIcon, CloseLineIcon, UserIcon } from "@/icons";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import { useGetUserSkillsByUsernameQuery, useUpdateUserWithSkillsBatchMutation } from "@/store/api/userApi";
 import { AuthService } from "@/utils/authService";
 import { formatLastLogin } from "@/utils/crud";
 import { isValidImageUrl } from "@/utils/resourceValidators";
@@ -20,16 +26,20 @@ import { isValidImageUrl } from "@/utils/resourceValidators";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { Command, Department, Station } from "@/types/organization";
 import type { Role } from "@/types/role";
+import type { Skill } from "@/types/skill";
 import type {
   // Address,
   // Department,
   // Meta,
   UserMetrics,
-  UserProfile
+  UserProfile,
+  UserSkill,
+  UserWithSkillsBatchUpdateData
 } from "@/types/user";
 // import AuditTrailViewer from "@/components/admin/user-management/audit-log/AuditTrailViewer";
 import MetricsView from "@/components/admin/MetricsView";
 import UserCardContent from "@/components/admin/user-management/user/UserCard";
+import SkillMatrixContent from "@/components/admin/user-management/user/SkillsMatrixView";
 import UserAuditLog from "@/components/UserProfile/UserAuditLog";
 import UserInfoCard from "@/components/UserProfile/UserInfoCard";
 import UserMetaCard from "@/components/UserProfile/UserMetaCard";
@@ -41,15 +51,19 @@ const UserManagementComponent: React.FC<{
   cmd: Command[];
   stn: Station[];
   role: Role[];
-}> = ({ usr, dept, cmd, stn, role }) => {
+  skill?: Skill[];
+}> = ({ usr, dept, cmd, stn, role, skill }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
   const { language, t } = useTranslation();
+  const { toasts, addToast, removeToast } = useToast();
 
   // const [filterValues, setFilterValues] = useState<FilterConfig>({});
   // const [filteredData, setFilteredData] = useState<UserProfile[]>(usr);
   // const [searchTerm, setSearchTerm] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   // ===================================================================
   // Mock Data
@@ -104,6 +118,87 @@ const UserManagementComponent: React.FC<{
     ...u,
     id: typeof u.id === "string" ? u.id : u.id?.toString?.() ?? u.id?.toString?.() ?? "",
   }));
+
+  const [userName, setUserName] = useState<string>("");
+
+  const { data: userWithSkillsData } = useGetUserSkillsByUsernameQuery(userName, { skip: !userName });
+  // const userWithSkills = userWithSkillsData?.data as unknown as UserSkill[] || [];
+  const userWithSkills = useMemo(
+    () => (userWithSkillsData?.data as unknown as UserSkill[]) || [],
+    [userWithSkillsData?.data]
+  );
+
+  const [skillList, setSkills] = useState<string[]>([]);
+
+  useEffect(() => {
+    // setSkills(userWithSkills);
+    const skillIds: string[] = [];
+    userWithSkills?.map(s => {
+      skillIds.push(s.skillId);
+    });
+    setSkills(skillIds);
+  }, [userWithSkills]);
+
+  // useEffect(() => {
+  //   console.log("🚀 ~ UserManagementComponent ~ skillList:", skillList);
+  // }, [skillList]);
+  
+  const handleSkillsToggle = useCallback(async (userName: string, skillId: string) => {
+    setUserName(userName);
+    setSkills(prev =>
+      prev.includes(skillId)
+        ? prev.filter(id => id !== skillId)
+        : [...prev, skillId]
+    );
+  }, []);
+
+  // const handleSkillsToggle = useCallback(async (roleId: string, permId: string) => {
+  //   setRoles(prevRoles => prevRoles.map(role => {
+  //     if (role.id === roleId) {
+  //       const permissions = role?.permissions?.includes(permId)
+  //         ? role.permissions.filter(p => p !== permId)
+  //         : [...role.permissions || [], permId];
+  //       return {
+  //         ...role,
+  //         permissions,
+  //         lastModified: new Date().toISOString()
+  //       };
+  //     }
+  //     return role;
+  //   }));
+  // }, []);
+
+  const [updateUserWithSkillsBatchMutation] = useUpdateUserWithSkillsBatchMutation();
+
+  const handleUserSkillsSave = async () => {
+    try {
+      if (permissions.hasAnyPermission(["user.update"])) {
+        setLoading(true);
+        const payload: UserWithSkillsBatchUpdateData = {
+          active: true,
+          skillIds: skillList,
+          userName: userName
+        };
+        const response = await updateUserWithSkillsBatchMutation(payload).unwrap();
+        if (response?.status) {
+          addToast("success", t("crud.user.list.skill.update.success"));
+        }
+        else {
+          throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
+        }
+      }
+      else {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+    }
+    catch (error) {
+      addToast("error", `${t("crud.user.list.skill.update.error")}: ${error}`);
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
 
   // ===================================================================
   // CRUD Configuration
@@ -331,14 +426,19 @@ const UserManagementComponent: React.FC<{
         key: "skills",
         label: t("crud.user.list.preview.tab.header.skills"),
         // icon: InfoIcon,
-        render: (
-          // userItem: UserProfile
-        ) => {
+        render: (userItem: UserProfile) => {
           return (
             <div className="space-y-6">
-              
+              <SkillMatrixContent
+                loading={loading}
+                skills={skill || []}
+                skillList={skillList || []}
+                userName={userItem.username || ""}
+                handleUserSkillsSave={handleUserSkillsSave}
+                onUserSkillsToggle={handleSkillsToggle}
+              />
             </div>
-          )
+          );
         }
       },
       // {
@@ -639,6 +739,8 @@ const UserManagementComponent: React.FC<{
         // onUpdate={() => {}}
         renderCard={renderCard as unknown as (item: { id: string }) => React.ReactNode}
       />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>
   );
 };

@@ -20,6 +20,7 @@ const getApiBaseUrl = (): string => {
 
 export interface SSOCookie {
   accessToken: string | null;
+  disabled_audio: string | null;
   refreshToken: string | null;
   tokenExpireTime: string | null;
   workspace: string | null;
@@ -27,19 +28,32 @@ export interface SSOCookie {
 
 export const getSSOCookie = (): SSOCookie => {
   return {
-    accessToken: Cookies?.get("qa_mt_mdss_accesstoken") || Cookies?.get("stg_mt_mdss_accesstoken") || null,
-    refreshToken: Cookies?.get("qa_mt_mdss_refreshtoken") || Cookies?.get("stg_mt_mdss_refreshtoken") || null,
-    tokenExpireTime: Cookies?.get("qa_mt_mdss_token_expire_time") || Cookies?.get("stg_mt_mdss_token_expire_time") || null,
-    workspace: Cookies?.get("qa_mt_mdss_workspace") || Cookies?.get("stg_mt_mdss_workspace") || null,
+    accessToken: Cookies?.get("bma_mt_mdss_accesstoken") || Cookies?.get("qa_mt_mdss_accesstoken") || Cookies?.get("stg_mt_mdss_accesstoken") || null,
+    disabled_audio: Cookies?.get("bma_mt_mdss_disabled_audio") || Cookies?.get("qa_mt_mdss_disabled_audio") || Cookies?.get("stg_mt_mdss_disabled_audio") || null,
+    refreshToken: Cookies?.get("bma_mt_mdss_refreshtoken") || Cookies?.get("qa_mt_mdss_refreshtoken") || Cookies?.get("stg_mt_mdss_refreshtoken") || null,
+    tokenExpireTime: Cookies?.get("bma_mt_mdss_token_expire_time") || Cookies?.get("qa_mt_mdss_token_expire_time") || Cookies?.get("stg_mt_mdss_token_expire_time") || null,
+    workspace: Cookies?.get("bma_mt_mdss_workspace") || Cookies?.get("qa_mt_mdss_workspace") || Cookies?.get("stg_mt_mdss_workspace") || null,
   }
 }
 
 export const forceSSOLogout = (): void => {
+  // Production cookies
+  Cookies.remove("bma_mt_mdss_accesstoken");
+  Cookies.remove("bma_mt_mdss_disabled_audio");
+  Cookies.remove("bma_mt_mdss_refreshtoken");
+  Cookies.remove("bma_mt_mdss_token_expire_time");
+  Cookies.remove("bma_mt_mdss_workspace");
+
+  // QA cookies
   Cookies.remove("qa_mt_mdss_accesstoken");
+  Cookies.remove("qa_mt_mdss_disabled_audio");
   Cookies.remove("qa_mt_mdss_refreshtoken");
   Cookies.remove("qa_mt_mdss_token_expire_time");
   Cookies.remove("qa_mt_mdss_workspace");
+
+  // Staging cookies
   Cookies.remove("stg_mt_mdss_accesstoken");
+  Cookies.remove("stg_mt_mdss_disabled_audio");
   Cookies.remove("stg_mt_mdss_refreshtoken");
   Cookies.remove("stg_mt_mdss_token_expire_time");
   Cookies.remove("stg_mt_mdss_workspace");

@@ -357,6 +357,7 @@ export const {
     usePostTypeSubTypeQuery,
     useGetDeptCommandStationsQuery,
     useGetListCaseQuery,
+    useLazyGetListCaseQuery,
     useGetListCaseHistoryQuery,
     useGetCaseHistoryQuery,
     usePostAddCaseHistoryMutation,

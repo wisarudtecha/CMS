@@ -70,6 +70,8 @@ const CaseHistoryPage: React.FC = () => {
   const { data: usersData } = useGetUsersQuery({ start: 0, length: 1000 });
   const users = usersData?.data as unknown as UserProfile[] || [];
 
+  const caseStatusesAll = caseStatuses.map(item => item.statusId).join(',');
+
   return (
     <>
       <PageMeta
@@ -84,6 +86,7 @@ const CaseHistoryPage: React.FC = () => {
           areas={areas}
           // caseHistories={caseHistories}
           caseStatuses={caseStatuses}
+          caseStatusesAll={caseStatusesAll}
           caseSubTypes={caseSubTypes}
           caseTypes={caseTypes}
           caseTypesSubTypes={caseTypesSubTypes}

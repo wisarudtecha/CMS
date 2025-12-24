@@ -67,16 +67,19 @@ export function getBrowserLanguage(): Language {
 export function getStoredLanguage(): Language | null {
   try {
     const stored = localStorage.getItem("language") as Language;
-    return ["th", "en", "cn"].includes(stored) ? stored : null;
+    // return ["th", "en", "cn"].includes(stored) ? stored : null;
+    return ["th", "en", "cn"].includes(stored) ? stored : "th";
   }
   catch {
-    return null;
+    // return null;
+    return "th";
   }
 }
 
 export function setStoredLanguage(language: Language): void {
   try {
-    localStorage.setItem("language", language);
+    // localStorage.setItem("language", language);
+    localStorage.setItem("language", language || "th");
   }
   catch {
     // Handle localStorage not available

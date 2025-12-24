@@ -7,6 +7,7 @@ export class TokenManager {
   private static STORAGE_KEY = "access_token";
   private static REFRESH_KEY = "refresh_token";
   private static PROFILE_KEY = "profile";
+  private static LANGUAGE_KEY = "language";
 
   // Simple encryption for sensitive data (in production, use proper encryption)
   private static encrypt(data: string): string {
@@ -32,7 +33,8 @@ export class TokenManager {
     refreshToken: string,
     // rememberMe: boolean = false,
     rememberMe: boolean = true,
-    profile?: unknown
+    profile?: unknown,
+    language?: string
   ) {
     this.clearTokens();
 
@@ -45,6 +47,10 @@ export class TokenManager {
 
     if (profile) {
       storage.setItem(this.PROFILE_KEY, JSON.stringify(profile));
+    }
+
+    if (language) {
+      storage.setItem(this.LANGUAGE_KEY, language);
     }
 
     // Set secure cookie as backup (if HTTPS and production)

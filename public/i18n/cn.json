@@ -782,6 +782,17 @@
               "audit_log": "审计日志"
             }
           }
+        },
+        "skill":{
+          "update":{
+            "title": "技能更新",
+            "success": "用户技能更新成功",
+            "error": "无法更新用户技能",
+            "button": {
+              "save": "保存",
+              "saving": "正在保存..."
+            }
+          }       
         }
       },
       "unit": {

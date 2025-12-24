@@ -34,6 +34,12 @@ export interface SkillQueryParams {
   length: number;
 }
 
+export interface UserWithSkillsBatchUpdateData {
+  active: boolean;
+  skillIds: string[];
+  userName: string;
+}
+
 export interface EnhancedUserSkill {
   orgId: string;
   userName: string;

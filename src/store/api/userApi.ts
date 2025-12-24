@@ -23,6 +23,7 @@ import type {
 import type {
   EnhancedSkill,
   SkillQueryParams,
+  UserWithSkillsBatchUpdateData,
   // UserCreateData,
   UserGroup,
   UserGroupQueryParams,
@@ -347,6 +348,14 @@ export const userApi = baseApi.injectEndpoints({
       query: (username) => `/users_with_skills/username/${username}`,
       // providesTags: (_result, _error, username) => [{ type: "User", username }],
     }),
+
+    updateUserWithSkillsBatch: builder.mutation<ApiResponse<UserSkill>, UserWithSkillsBatchUpdateData>({
+      query: data => ({
+        url: `/users_with_skills_batch/add`,
+        method: "POST",
+        body: data
+      })
+    }),
   }),
 });
 
@@ -382,5 +391,6 @@ export const {
   useStopImpersonationMutation,
   useGetUserByUserNameQuery,
   useGetSkillsQuery,
-  useGetUserSkillsByUsernameQuery
+  useGetUserSkillsByUsernameQuery,
+  useUpdateUserWithSkillsBatchMutation,
 } = userApi;

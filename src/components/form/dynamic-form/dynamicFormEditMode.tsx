@@ -352,7 +352,13 @@ export const FormEdit: React.FC<FormEditProps> = ({
     }, [setCurrentForm]); // Removed updateFieldRecursively
 
     const addFieldToDynamicOption = useCallback((dynamicFieldId: string, optionValue: string, formType: string) => {
-        const newField = createDynamicFormField(formConfigurations, formType, true);
+        const newField = createDynamicFormField(
+              formConfigurations.map((item) => {
+                return { ...item, title: t(item.title) };
+              }),
+              formType,
+              true
+            );
         if (!newField) return;
 
         const callback = (field: IndividualFormFieldWithChildren) => {

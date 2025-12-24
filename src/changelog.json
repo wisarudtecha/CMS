@@ -1,4 +1,34 @@
 {
+  "0.5.15": {
+    "date": "2025-12-24",
+    "segment": "PATCH",
+    "notes": "feat: user's skill assignment:\n- Create assign skill to user (batch).",
+    "author": "Wisarud Techa"
+  },
+  "0.5.14": {
+    "date": "2025-12-23",
+    "segment": "PATCH",
+    "notes": "fix: DF_41:\n- Send Work Order statusId all to API if dropdown not selected in Work Order History filter.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.13": {
+    "date": "2025-12-21",
+    "segment": "PATCH",
+    "notes": "fixed toast noti show success when case api return fail.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.12": {
+    "date": "2025-12-22",
+    "segment": "PATCH",
+    "notes": "remove distId param in case api",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.11": {
+    "date": "2025-12-22",
+    "segment": "PATCH",
+    "notes": "fix: schudule header in light mode",
+    "author": "Wisarud Techa"
+  },
   "0.5.10": {
     "date": "2025-12-19",
     "segment": "PATCH",

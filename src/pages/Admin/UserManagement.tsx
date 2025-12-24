@@ -23,8 +23,10 @@ import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGetCommandsQuery, useGetDepartmentsQuery, useGetStationsQuery } from "@/store/api/organizationApi";
+import { useGetSkillQuery } from "@/store/api/skillApi";
 import { useGetUsersQuery, useGetUserRolesQuery } from "@/store/api/userApi";
 import type { Command, Department, Station } from "@/types/organization";
+import type { Skill } from "@/types/skill";
 import type { Role, UserProfile } from "@/types/user";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import PageMeta from "@/components/common/PageMeta";
@@ -58,7 +60,7 @@ const UserManagementPage: React.FC = () => {
   // API Data
   // ===================================================================
 
-  const { data: usersData } = useGetUsersQuery({ start: 0, length: 100 });
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 100000 });
   const users: UserProfile[] = usersData?.data as unknown as UserProfile[] || [];
 
   const { data: departmentsData } = useGetDepartmentsQuery({ start: 0, length: 100});
@@ -73,6 +75,9 @@ const UserManagementPage: React.FC = () => {
   const { data: rolesData } = useGetUserRolesQuery({ start: 0, length: 10 });
   const roles = rolesData?.data as unknown as Role[] || [];
 
+  const { data: skillsData } = useGetSkillQuery({ start: 0, length: 100 });
+  const skills = skillsData?.data as unknown as Skill[] || [];
+
   return (users && departments && roles) ? (
     <>
       <PageMeta
@@ -83,7 +88,7 @@ const UserManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["user.view"]}>
         <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.user.header")} />
 
-        <UserManagementComponent usr={users} dept={departments} cmd={commands} stn={stations} role={roles} />
+        <UserManagementComponent usr={users} dept={departments} cmd={commands} stn={stations} role={roles} skill={skills} />
       </ProtectedRoute>
 
       {/* Toast Notification */}
