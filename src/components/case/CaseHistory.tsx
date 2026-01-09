@@ -1068,7 +1068,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {unitsData?.data?.firstName || ""}{" "}{unitsData?.data?.lastName || ""}
+                    {sopData?.unitLists?.length && unitsData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && unitsData?.data?.lastName || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -1077,7 +1077,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {unitsData?.data?.mobileNo || ""}
+                    {sopData?.unitLists?.length && unitsData?.data?.mobileNo || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -1101,7 +1101,7 @@ const CaseHistoryComponent: React.FC<{
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
                     {/* {unitsData?.data?.email || ""} */}
-                    {userStation && mergeDeptCommandStation(userStation) || ""}
+                    {sopData?.unitLists?.length && userStation && mergeDeptCommandStation(userStation) || ""}
                   </div>
                 </div>
               </div>
@@ -1118,7 +1118,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {assigneesData?.data?.firstName || ""}{" "}{assigneesData?.data?.lastName || ""}
+                    {sopData?.unitLists?.length && assigneesData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && assigneesData?.data?.lastName || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -1127,7 +1127,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {assigneesData?.data?.mobileNo || ""}
+                    {sopData?.unitLists?.length && assigneesData?.data?.mobileNo || ""}
                   </div>
                 </div>
                 <div className="xl:flex items-left justify-left gap-2">
@@ -1136,7 +1136,7 @@ const CaseHistoryComponent: React.FC<{
                     <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {assigneeStation && mergeDeptCommandStation(assigneeStation) || ""}
+                    {sopData?.unitLists?.length && assigneeStation && mergeDeptCommandStation(assigneeStation) || ""}
                   </div>
                 </div>
               </div>

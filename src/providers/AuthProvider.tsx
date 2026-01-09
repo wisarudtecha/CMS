@@ -318,12 +318,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await AuthService.refreshToken(currentRefreshToken);
       
-      TokenManager.setTokens(response.accessToken, response.refreshToken);
+      const storage = localStorage || sessionStorage;
+      const profile = JSON.parse(storage.getItem("profile") || "{}");
+
+      TokenManager.setTokens(
+        response.accessToken,
+        response.refreshToken,
+        true,
+        profile
+      );
+
       dispatch({ 
         type: "REFRESH_SUCCESS", 
-        payload: { 
+        payload: {
+          user: profile,
           token: response.accessToken,
-          refreshToken: response.refreshToken
+          refreshToken: response.refreshToken,
         } 
       });
       console.log("✅ Token refresh successful");

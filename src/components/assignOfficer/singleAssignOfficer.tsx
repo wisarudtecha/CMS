@@ -195,10 +195,10 @@ export default function AssignOfficerModal({
     setDisableAssign(false)
   }, [open, assignedOfficers])
 
-  const workLoadsMock = [
-    { skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
-    { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
-  ]
+  // const workLoadsMock = [
+  //   { skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
+  //   { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
+  // ]
 
   const { t, language } = useTranslation();
 
@@ -337,12 +337,12 @@ export default function AssignOfficerModal({
                   <div className="p-5 w-12">
                     {/* Empty space where select all checkbox was */}
                   </div>
-                  <div className="grid grid-cols-5 flex-1 gap-3 pr-10">
+                  <div className="grid grid-cols-4 flex-1 gap-3 pr-10">
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.status")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.area")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.skills")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div>
+                    {/* <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div> */}
                   </div>
                 </div>
               </div>
@@ -376,7 +376,7 @@ export default function AssignOfficerModal({
                               />
                             </div>
                             <div
-                              className="grid grid-cols-[20%_20%_20%_20%_20%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
+                              className="grid grid-cols-[25%_25%_25%_25%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
                               onClick={() => {
                                 setShowOFFicerData(officer)
                               }}
@@ -427,9 +427,9 @@ export default function AssignOfficerModal({
                               <div className="flex items-center justify-center">
                                 <SkillsDisplay skills={officer.skillLists || []} language={language} />
                               </div>
-                              <div className="flex items-center justify-center">
+                              {/* <div className="flex items-center justify-center">
                                 <SkillsDisplay skills={workLoadsMock || []} language={language} />
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         )

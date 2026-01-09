@@ -2,7 +2,14 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Cctv, Dam, LayoutGrid, Puzzle, RotateCcw, Settings } from "lucide-react";
+import {
+  Cctv,
+  Dam,
+  LayoutGrid,
+  Puzzle,
+  // RotateCcw,
+  // Settings
+} from "lucide-react";
 import { AnimatedNumber, AnimatedPercentage } from "@/components/ui/animation/AnimatedNumber";
 import { LoadingSpinner, ProgressBar, Skeleton } from "@/components/ui/loading/LoadingSystem";
 import { useWebSocket } from "@/components/websocket/websocket";
@@ -662,8 +669,8 @@ const ServiceDashboard: React.FC = () => {
   // ===================================================================
   // Action Button
   // ===================================================================
-  const actionButtonClassName = "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 p-2 text-gray-600 dark:text-gray-300 rounded";
-  const actionButtonIconSize = 20;
+  // const actionButtonClassName = "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 p-2 text-gray-600 dark:text-gray-300 rounded";
+  // const actionButtonIconSize = 20;
 
   // ===================================================================
   // WebSocket Message Handler - Updated for new structure
@@ -758,6 +765,7 @@ const ServiceDashboard: React.FC = () => {
         <h1 className="font-semibold text-2xl text-gray-900 dark:text-white">
           {pageTitle as string}
         </h1>
+        {/*
         <div className="flex gap-2">
           <button className={actionButtonClassName || ""}>
             <Settings size={actionButtonIconSize || 0} />
@@ -766,6 +774,7 @@ const ServiceDashboard: React.FC = () => {
             <RotateCcw size={actionButtonIconSize || 0} />
           </button>
         </div>
+        */}
       </div>
 
       <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">

@@ -297,6 +297,31 @@ export const PreviewDialog = <T extends { id: string }>({
         </div>
 
         {/* Actions */}
+        {((currentTab.actions && currentTab.actions.length > 0) || 
+          (config.actions && config.actions.length > 0)) && (
+          <div className="xl:flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            {/* Use tab-specific actions if available, otherwise use global actions */}
+            {(currentTab.actions || config.actions || [])
+              .filter(action => !action.condition || action.condition(item))
+              .map(action => {
+                const Icon = action.icon;
+                return (
+                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                    <Button
+                      key={action.key}
+                      onClick={() => action.onClick(item, onClose)}
+                      variant={`${action.variant}`}
+                      className="w-full xl:w-auto mb-3 xl:mb-0"
+                    >
+                      {Icon && <Icon />}
+                      {action.label}
+                    </Button>
+                  </PermissionGate>
+                );
+              })}
+          </div>
+        )}
+        {/*
         {config.actions && config.actions.length > 0 && (
           <div className="xl:flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
             {config.actions
@@ -319,6 +344,7 @@ export const PreviewDialog = <T extends { id: string }>({
               })}
           </div>
         )}
+        */}
       </div>
 
       {/*

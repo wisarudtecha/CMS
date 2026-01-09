@@ -7,7 +7,7 @@ type AuthAction =
   | { type: "LOGIN_FAILURE"; payload: string }
   | { type: "LOGOUT" }
   | { type: "REFRESH_START" }
-  | { type: "REFRESH_SUCCESS"; payload: { token: string; refreshToken: string } }
+  | { type: "REFRESH_SUCCESS"; payload: { user: User; token: string; refreshToken: string } }
   | { type: "REFRESH_FAILURE" }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "INCREMENT_FAILED_ATTEMPTS" }
@@ -48,6 +48,7 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
     case "REFRESH_SUCCESS":
       return {
         ...state,
+        user: action.payload.user,
         token: action.payload.token,
         refreshToken: action.payload.refreshToken,
         isRefreshing: false,

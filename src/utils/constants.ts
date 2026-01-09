@@ -17,6 +17,7 @@ export const APP_CONFIG = {
   })(),
 
   WS_URL: import.meta.env.VITE_WS_URL,
+  ENV: import.meta.env.VITE_ENV,
 } as const;
 
 export const API_ENDPOINTS = {
@@ -234,9 +235,8 @@ export const ROUTES = {
   PROFILE: "/profile",
 } as const;
 
-// export const SESSION_TIMEOUT_TIMER = 2; // 2 min.
-export const SESSION_TIMEOUT_TIMER = 60; // 60 min.
-export const SESSION_TIMEOUT_WARNING = 1; // 1 min.
+export const SESSION_TIMEOUT_TIMER = 480; // min.
+export const SESSION_TIMEOUT_WARNING = 1; // min.
 
 export const SLA_STATUS_COLORS = {
   on_time: "text-green-600 bg-green-50",

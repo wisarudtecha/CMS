@@ -1,4 +1,28 @@
 {
+  "0.5.19": {
+    "date": "2026-01-08",
+    "segment": "PATCH",
+    "notes": "fix: refresh token, sessionTimeoutWarning:\n- Set send request to API for refresh token when session timeout and display warning dialog by config.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.18": {
+    "date": "2026-01-07",
+    "segment": "PATCH",
+    "notes": "fix: shortcut menu:\n- Hide shortcut menu for System Admin that display only on local or development.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.17": {
+    "date": "2026-01-06",
+    "segment": "PATCH",
+    "notes": "fix: work order, dashboard, user management:\n- Fix defect when switching between cases, the previous data (SOP, assignee, unit info) remains visible even when the new selection has no data.\n- Hide non-functional buttons in dashboard.\n- Fix user management filter not working properly, hide unnecessary action button in tabs that no need to use.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.16": {
+    "date": "2026-01-06",
+    "segment": "PATCH",
+    "notes": "remove workload mocks in assignment popup.",
+    "author": "Phanuphong Manopkawee"
+  },
   "0.5.15": {
     "date": "2025-12-24",
     "segment": "PATCH",

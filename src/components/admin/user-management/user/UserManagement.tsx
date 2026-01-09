@@ -389,6 +389,30 @@ const UserManagementComponent: React.FC<{
     enableNavigation: true,
     tabs: [
       {
+        actions: [
+          {
+            key: "update",
+            label: t("crud.common.update"),
+            // icon: PencilIcon,
+            variant: "warning",
+            onClick: (userItem: UserProfile, closePreview: () => void) => {
+              closePreview();
+              navigate(`/user/${userItem.id}/edit`);
+            },
+            condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
+          },
+          {
+            key: "delete",
+            label: t("crud.common.delete"),
+            // icon: CheckLineIcon,
+            variant: "outline",
+            onClick: (userItem: UserProfile, closePreview: () => void) => {
+              closePreview();
+              console.log("Delete user:", userItem.id);
+            },
+            condition: () => (permissions.hasPermission("user.delete") || isSystemAdmin) as boolean
+          }
+        ],
         key: "profile",
         label: t("crud.user.list.preview.tab.header.profile"),
         // icon: InfoIcon,
@@ -471,28 +495,28 @@ const UserManagementComponent: React.FC<{
       //   },
       //   condition: () => (permissions.hasPermission("user.view") || isSystemAdmin) as boolean
       // },
-      {
-        key: "update",
-        label: t("crud.common.update"),
-        // icon: PencilIcon,
-        variant: "warning",
-        onClick: (userItem: UserProfile, closePreview: () => void) => {
-          closePreview();
-          navigate(`/user/${userItem.id}/edit`);
-        },
-        condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
-      },
-      {
-        key: "delete",
-        label: t("crud.common.delete"),
-        // icon: CheckLineIcon,
-        variant: "outline",
-        onClick: (userItem: UserProfile, closePreview: () => void) => {
-          closePreview();
-          console.log("Delete user:", userItem.id);
-        },
-        condition: () => (permissions.hasPermission("user.delete") || isSystemAdmin) as boolean
-      }
+      // {
+      //   key: "update",
+      //   label: t("crud.common.update"),
+      //   // icon: PencilIcon,
+      //   variant: "warning",
+      //   onClick: (userItem: UserProfile, closePreview: () => void) => {
+      //     closePreview();
+      //     navigate(`/user/${userItem.id}/edit`);
+      //   },
+      //   condition: () => (permissions.hasPermission("user.update") || isSystemAdmin) as boolean
+      // },
+      // {
+      //   key: "delete",
+      //   label: t("crud.common.delete"),
+      //   // icon: CheckLineIcon,
+      //   variant: "outline",
+      //   onClick: (userItem: UserProfile, closePreview: () => void) => {
+      //     closePreview();
+      //     console.log("Delete user:", userItem.id);
+      //   },
+      //   condition: () => (permissions.hasPermission("user.delete") || isSystemAdmin) as boolean
+      // }
     ]
   };
 
@@ -729,7 +753,7 @@ const UserManagementComponent: React.FC<{
         module="user"
         // previewConfig={previewConfig as unknown as PreviewConfig<{ id: string }>}
         previewConfig={previewConfig as PreviewConfig<UserProfile & { id: string }>}
-        searchFields={["firstName", "lastName", "email"]}
+        searchFields={["username", "firstName", "lastName", "email"]}
         // customFilterFunction={() => true}
         onCreate={() => navigate("/user/create")}
         onDelete={handleDelete}

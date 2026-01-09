@@ -104,10 +104,11 @@ export interface PreviewField<T = string> {
 }
 
 export interface PreviewTab<T = string> {
+  actions?: PreviewAction<T>[];
+  fields?: PreviewField<T>[];
   key: string;
   label: string;
   icon?: React.ComponentType<unknown>;
-  fields?: PreviewField<T>[];
   render?: (item: T) => React.ReactNode;
 }
 

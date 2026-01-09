@@ -410,7 +410,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         key: "edit",
         label: t("crud.common.update"),
         // icon: PencilIcon,
-        variant: "primary",
+        variant: "warning",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
           navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
