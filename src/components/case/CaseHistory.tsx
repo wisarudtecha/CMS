@@ -1,30 +1,35 @@
 // /src/components/case/CaseHistory.tsx
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  // useMemo,
+  useState
+} from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  // AtSign,
-  Building,
-  ChartColumnStacked,
-  CheckCircle,
-  ClockArrowUp,
-  Contact,
-  Cpu,
-  // Mail,
-  MapPin,
-  MapPinHouse,
-  Phone,
-  Share2,
-  Siren,
-  Tag,
-  Ticket,
-  // Truck,
-  User
-} from "lucide-react";
+// import {
+//   // AtSign,
+//   Building,
+//   ChartColumnStacked,
+//   CheckCircle,
+//   ClockArrowUp,
+//   Contact,
+//   Cpu,
+//   // Mail,
+//   MapPin,
+//   MapPinHouse,
+//   Phone,
+//   Share2,
+//   Siren,
+//   Tag,
+//   Ticket,
+//   // Truck,
+//   User
+// } from "lucide-react";
 import { CalenderIcon, ChatIcon, TimeIcon, UserIcon } from "@/icons";
-import { PermissionGate } from "@/components/auth/PermissionGate";
+// import { PermissionGate } from "@/components/auth/PermissionGate";
 // import { CaseTimelineSteps } from "@/components/case/CaseTimelineSteps";
-import { mapSopToOrderedProgress } from "@/components/case/sopStepTranForm";
-import { source } from "@/components/case/constants/caseConstants";
+// import { mapSopToOrderedProgress } from "@/components/case/sopStepTranForm";
+// import { source } from "@/components/case/constants/caseConstants";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
 import { TableSkeleton } from "@/components/ui/loading/LoadingSystem";
 // import { ProgressTimeline } from "@/components/ui/progressTimeline/ProgressTimeline";
@@ -33,14 +38,14 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Area } from "@/store/api/area";
 import {
-  DepartmentCommandStationDataMerged,
-  mergeDeptCommandStation,
+  // DepartmentCommandStationDataMerged,
+  // mergeDeptCommandStation,
   useGetCaseHistoryQuery,
   // useGetListCaseQuery,
   useLazyGetListCaseQuery
 } from "@/store/api/caseApi";
-import { useGetCaseSopQuery } from "@/store/api/dispatch";
-import { useGetUserByUserNameQuery } from "@/store/api/userApi";
+// import { useGetCaseSopQuery } from "@/store/api/dispatch";
+// import { useGetUserByUserNameQuery } from "@/store/api/userApi";
 // import { AuthService } from "@/utils/authService";
 import { CASE_CANNOT_DELETE, CASE_CANNOT_UPDATE, PRIORITY_LABELS_SHORT, PRIORITY_CONFIG } from "@/utils/constants";
 import { formatDate } from "@/utils/crud";
@@ -54,14 +59,16 @@ import type {
   EnhancedCaseSubType,
   EnhancedCaseType
 } from "@/types/case";
-import type { CaseSop, UnitWithSop } from "@/types/dispatch";
+// import type { CaseSop, UnitWithSop } from "@/types/dispatch";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type { UserProfile } from "@/types/user";
-import ProgressStepPreview from "@/components/case/activityTimeline/caseActivityTimeline";
-import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
-import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
+// import AttachedFiles from "@/components/Attachment/AttachmentPreviewList";
+// import ProgressStepPreview from "@/components/case/activityTimeline/caseActivityTimeline";
+// import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
+// import ProgressSummary from "@/components/case/activityTimeline/sumaryUnitProgress";
+import OverviewTab from "@/components/case/OverviewTab";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import FormViewer from "@/components/form/dynamic-form/FormViewValue";
+// import FormViewer from "@/components/form/dynamic-form/FormViewValue";
 import Badge from "@/components/ui/badge/Badge";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
@@ -95,13 +102,13 @@ const CaseHistoryComponent: React.FC<{
   const permissions = usePermissions();
   
   const [crudOpen, ] = useState("block");
-  const [selectedCaseForAssignee, setSelectedCaseForAssignee] = useState<string | null>(null);
+  // const [selectedCaseForAssignee, setSelectedCaseForAssignee] = useState<string | null>(null);
   const [selectedCaseForHistory, setSelectedCaseForHistory] = useState<string | null>(null);
-  const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
-  const [selectedCaseForUnit, setSelectedCaseForUnit] = useState<string | null>(null);
-  const [sopData, setSopData] = useState<CaseSop | null>(null);
-  const [, setAssigneeData] = useState<UnitWithSop | null>(null);
-  const [, setUnitData] = useState<UnitWithSop | null>(null);
+  // const [selectedCaseForSop, setSelectedCaseForSop] = useState<string | null>(null);
+  // const [selectedCaseForUnit, setSelectedCaseForUnit] = useState<string | null>(null);
+  // const [sopData, setSopData] = useState<CaseSop | null>(null);
+  // const [, setAssigneeData] = useState<UnitWithSop | null>(null);
+  // const [, setUnitData] = useState<UnitWithSop | null>(null);
 
   // ===================================================================
   // Fill select option
@@ -334,25 +341,25 @@ const CaseHistoryComponent: React.FC<{
   //   }));
   // };
   
-  const { data: dispatchSOPsData } = useGetCaseSopQuery(
-    { caseId: selectedCaseForSop ?? "" }, 
-    { skip: !selectedCaseForSop }
-  );
+  // const { data: dispatchSOPsData } = useGetCaseSopQuery(
+  //   { caseId: selectedCaseForSop ?? "" }, 
+  //   { skip: !selectedCaseForSop }
+  // );
 
   const { data: caseHistoriesData } = useGetCaseHistoryQuery(
     { caseId: selectedCaseForHistory ?? ""  }, 
     { skip: !selectedCaseForHistory }
   );
 
-  const { data: unitsData } = useGetUserByUserNameQuery(
-    { username: selectedCaseForUnit ?? "" }, 
-    { skip: !selectedCaseForUnit }
-  );
+  // const { data: unitsData } = useGetUserByUserNameQuery(
+  //   { username: selectedCaseForUnit ?? "" }, 
+  //   { skip: !selectedCaseForUnit }
+  // );
 
-  const { data: assigneesData } = useGetUserByUserNameQuery(
-    { username: selectedCaseForAssignee ?? "" }, 
-    { skip: !selectedCaseForAssignee }
-  );
+  // const { data: assigneesData } = useGetUserByUserNameQuery(
+  //   { username: selectedCaseForAssignee ?? "" }, 
+  //   { skip: !selectedCaseForAssignee }
+  // );
 
   const isCancelAvailable = (data: CaseEntity) => {
     const canCancel = permissions.hasPermission("case.delete") && !CASE_CANNOT_DELETE.includes(data.statusId as typeof CASE_CANNOT_DELETE[number]);
@@ -528,31 +535,31 @@ const CaseHistoryComponent: React.FC<{
   // Areas Properties
   // ===================================================================
 
-  const generateAreaConfigs = (data: Area[]) => {
-    return Array.isArray(data) ? data.map((area) => ({
-      distId: area?.distId || "",
-      district: (language === "th" && area?.districtTh) || area?.districtEn || "",
-      province: (language === "th" && area?.provinceTh) || area?.provinceEn || "",
-      country: (language === "th" && area?.countryTh) || area?.countryEn || "",
-    })) : []
-  }
+  // const generateAreaConfigs = (data: Area[]) => {
+  //   return Array.isArray(data) ? data.map((area) => ({
+  //     distId: area?.distId || "",
+  //     district: (language === "th" && area?.districtTh) || area?.districtEn || "",
+  //     province: (language === "th" && area?.provinceTh) || area?.provinceEn || "",
+  //     country: (language === "th" && area?.countryTh) || area?.countryEn || "",
+  //   })) : []
+  // }
 
-  const areaConfigs = generateAreaConfigs(areas);
+  // const areaConfigs = generateAreaConfigs(areas);
 
-  const getAreaConfig = (
-    // caseItem: CaseEntity
-    caseItem: CaseSop
-  ) => {
-    const found = areaConfigs?.find(config => 
-      config?.distId === caseItem?.distId
-    ) || null;
-    return found || {
-      distId: "",
-      district: "", 
-      province: "", 
-      country: ""
-    };
-  };
+  // const getAreaConfig = (
+  //   // caseItem: CaseEntity
+  //   caseItem: CaseSop
+  // ) => {
+  //   const found = areaConfigs?.find(config => 
+  //     config?.distId === caseItem?.distId
+  //   ) || null;
+  //   return found || {
+  //     distId: "",
+  //     district: "", 
+  //     province: "", 
+  //     country: ""
+  //   };
+  // };
 
   // ===================================================================
   // Case History Mock Data
@@ -822,383 +829,387 @@ const CaseHistoryComponent: React.FC<{
   //   return timelineSteps;
   // };
 
-  const OverviewTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
-    useEffect(() => {
-      setSelectedCaseForAssignee(sopData?.unitLists?.length && sopData?.unitLists[0]?.createdBy || null);
-    }, []);
+  // const OverviewTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
+  //   useEffect(() => {
+  //     setSelectedCaseForAssignee(sopData?.unitLists?.length && sopData?.unitLists[0]?.createdBy || null);
+  //   }, []);
 
-    useEffect(() => {
-      setSelectedCaseForSop(caseItem.caseId);
-    }, [caseItem.caseId]);
+  //   useEffect(() => {
+  //     setSelectedCaseForSop(caseItem.caseId);
+  //   }, [caseItem.caseId]);
 
-    useEffect(() => {
-      setSelectedCaseForUnit(sopData?.unitLists?.length && sopData?.unitLists[0]?.username || null);
-    }, []);
+  //   useEffect(() => {
+  //     setSelectedCaseForUnit(sopData?.unitLists?.length && sopData?.unitLists[0]?.username || null);
+  //   }, []);
 
-    useEffect(() => {
-      setSopData((selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : null);
-    }, [caseItem.caseId]);
+  //   useEffect(() => {
+  //     setSopData((selectedCaseForSop === caseItem.caseId) ? dispatchSOPsData?.data as CaseSop : null);
+  //   }, [caseItem.caseId]);
 
-    useEffect(() => {
-      setAssigneeData((sopData?.unitLists?.length && selectedCaseForAssignee === sopData?.unitLists[0].createdBy) ? assigneesData?.data as unknown as UnitWithSop : null);
-    }, [caseItem.caseId]);
+  //   useEffect(() => {
+  //     setAssigneeData((sopData?.unitLists?.length && selectedCaseForAssignee === sopData?.unitLists[0].createdBy) ? assigneesData?.data as unknown as UnitWithSop : null);
+  //   }, [caseItem.caseId]);
 
-    useEffect(() => {
-      setUnitData((sopData?.unitLists?.length && selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
-    }, [caseItem.caseId]);
+  //   useEffect(() => {
+  //     setUnitData((sopData?.unitLists?.length && selectedCaseForUnit === sopData?.unitLists[0].username) ? unitsData?.data as unknown as UnitWithSop : null);
+  //   }, [caseItem.caseId]);
 
-    // const dpcConfig = getAreaConfig(caseItem);
-    const dpcConfig = getAreaConfig(sopData as CaseSop);
-    // const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
-    const dpcDisplay = `${dpcConfig.country || ""}-${dpcConfig.province || ""}-${dpcConfig.district || ""}`;
+  //   // const dpcConfig = getAreaConfig(caseItem);
+  //   const dpcConfig = getAreaConfig(sopData as CaseSop);
+  //   // const dpcDisplay = `${dpcConfig.district || ""}-${dpcConfig.province || ""}-${dpcConfig.country || ""}`;
+  //   const dpcDisplay = `${dpcConfig.country || ""}-${dpcConfig.province || ""}-${dpcConfig.district || ""}`;
 
-    const progressSteps = useMemo(() => {
-      return mapSopToOrderedProgress(sopData as CaseSop, language);
-    }, []);
-    const deptComStn = useMemo(() =>
-      JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
-    );
+  //   const progressSteps = useMemo(() => {
+  //     return mapSopToOrderedProgress(sopData as CaseSop, language);
+  //   }, []);
+  //   const deptComStn = useMemo(() =>
+  //     JSON.parse(localStorage.getItem("DeptCommandStations") ?? "[]") as DepartmentCommandStationDataMerged[], []
+  //   );
 
-    const assigneeStation = deptComStn?.find(items => {
-      return items.commId === assigneesData?.data?.commId && items.stnId === assigneesData?.data?.stnId && items.deptId === assigneesData.data.deptId;
-    }) || null;
-    const userStation = deptComStn?.find(items => {
-      return items.commId === unitsData?.data?.commId && items.stnId === unitsData?.data?.stnId && items.deptId === unitsData.data.deptId;
-    }) || null;
+  //   const assigneeStation = deptComStn?.find(items => {
+  //     return items.commId === assigneesData?.data?.commId && items.stnId === assigneesData?.data?.stnId && items.deptId === assigneesData.data.deptId;
+  //   }) || null;
+  //   const userStation = deptComStn?.find(items => {
+  //     return items.commId === unitsData?.data?.commId && items.stnId === unitsData?.data?.stnId && items.deptId === unitsData.data.deptId;
+  //   }) || null;
 
-    // const contactMethod = source?.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
-    const contactMethod = source?.find(cm => cm.id === sopData?.source) || { name: "-" };
+  //   // const contactMethod = source?.find(cm => cm.id === caseItem.source) || { name: "Unknown" };
+  //   const contactMethod = source?.find(cm => cm.id === sopData?.source) || { name: "-" };
 
-    // const timelineSteps = getTimelineSteps();
+  //   // const timelineSteps = getTimelineSteps();
 
-    return (
-      <>
-        <PermissionGate module="case" action="view_timeline">
-          {/* Progress Timeline and Progress Line */}
-          <ProgressStepPreview progressSteps={progressSteps} />
+  //   return (
+  //     <>
+  //       <PermissionGate module="case" action="view_timeline">
+  //         {/* Progress Timeline and Progress Line */}
+  //         <ProgressStepPreview progressSteps={progressSteps} />
 
-          {/*
-          <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
-            {
-              // getTimelineSteps(caseItem).length
-              timelineSteps.length
-              > 0 ? (
-              <>
-                <div className="hidden xl:block">
-                  <ProgressTimeline
-                    // steps={getTimelineSteps(caseItem)}
-                    steps={timelineSteps}
-                    orientation="horizontal"
-                    size="md"
-                    showTimestamps={true}
-                    showDescriptions={false}
-                    showSLA={true}
-                  />
-                </div>
-                <div className="block xl:hidden">
-                  <ProgressTimeline
-                    // steps={getTimelineSteps(caseItem)}
-                    steps={timelineSteps}
-                    orientation="vertical"
-                    size="sm"
-                    showTimestamps={true}
-                    showDescriptions={false}
-                    showSLA={true}
-                    className="mb-2"
-                  />
-                </div>
-              </>
-            ) : ""}
-          </div>
-          */}
-        </PermissionGate>
+  //         {/*
+  //         <div className="bg-white dark:bg-gray-900 text-white p-6 mb-6">
+  //           {
+  //             // getTimelineSteps(caseItem).length
+  //             timelineSteps.length
+  //             > 0 ? (
+  //             <>
+  //               <div className="hidden xl:block">
+  //                 <ProgressTimeline
+  //                   // steps={getTimelineSteps(caseItem)}
+  //                   steps={timelineSteps}
+  //                   orientation="horizontal"
+  //                   size="md"
+  //                   showTimestamps={true}
+  //                   showDescriptions={false}
+  //                   showSLA={true}
+  //                 />
+  //               </div>
+  //               <div className="block xl:hidden">
+  //                 <ProgressTimeline
+  //                   // steps={getTimelineSteps(caseItem)}
+  //                   steps={timelineSteps}
+  //                   orientation="vertical"
+  //                   size="sm"
+  //                   showTimestamps={true}
+  //                   showDescriptions={false}
+  //                   showSLA={true}
+  //                   className="mb-2"
+  //                 />
+  //               </div>
+  //             </>
+  //           ) : ""}
+  //         </div>
+  //         */}
+  //       </PermissionGate>
 
-        {/* Content */}
-        <div>
-          <div className="grid grid-cols-1 gap-6">
-            {/* Case Information */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.display.case_information")}
-              </h4>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Ticket className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.display.no")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseId || "-"}
-                  </div>
-                </div>
-                <div className="xl:flex items-start justify-left gap-1">
-                  <ChartColumnStacked className="xl:block hidden w-4 h-4 text-gray-900 dark:text-white" />
-                  <div>
-                    <div className="xl:flex items-center justify-left gap-1">
-                      <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                        <ChartColumnStacked className="block xl:hidden w-4 h-4" />
-                        <div className="text-sm font-medium">{t("case.display.types")}:</div>
-                      </div>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || "-"}</div>
-                    </div>
-                    <div className="xl:flex items-center justify-left gap-1 text-sm">
-                      {sopData?.formAnswer && <FormViewer formData={sopData.formAnswer} /> || "-"}
-                    </div>
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <MapPinHouse className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.display.service_center")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {dpcDisplay || "-"}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Siren className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {formatDate(sopData?.startedDate as string) || "-"}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1">
-                    <ClockArrowUp className="w-4 h-4 text-gray-900 dark:text-white" />
-                    <span className="text-red-500 dark:text-red-400 text-sm font-medium">{t("case.display.updateAt")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {/* {formatDate(sopData?.updatedAt as string) || ""} {t("case.display.updateBy")} {caseItem.updatedBy || ""} */}
-                    {formatDate(sopData?.updatedAt as string) || ""} {t("userform.by")} {sopData?.updatedBy || "-"}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //       {/* Content */}
+  //       <div>
+  //         <div className="grid grid-cols-1 gap-6">
+  //           {/* Case Information */}
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+  //               {t("case.display.case_information")}
+  //             </h4>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Ticket className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.display.no")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {caseItem.caseId || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-start justify-left gap-1">
+  //                 <ChartColumnStacked className="xl:block hidden w-4 h-4 text-gray-900 dark:text-white" />
+  //                 <div>
+  //                   <div className="xl:flex items-center justify-left gap-1">
+  //                     <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                       <ChartColumnStacked className="block xl:hidden w-4 h-4" />
+  //                       <div className="text-sm font-medium">{t("case.display.types")}:</div>
+  //                     </div>
+  //                     <div className="text-gray-600 dark:text-gray-300 text-sm">{caseTitle(caseItem) || "-"}</div>
+  //                   </div>
+  //                   <div className="xl:flex items-center justify-left gap-1 text-sm">
+  //                     {sopData?.formAnswer && <FormViewer formData={sopData.formAnswer} /> || "-"}
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <MapPinHouse className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.display.service_center")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {dpcDisplay || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Siren className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.display.iot_alert_date")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {formatDate(sopData?.startedDate as string) || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1">
+  //                   <ClockArrowUp className="w-4 h-4 text-gray-900 dark:text-white" />
+  //                   <span className="text-red-500 dark:text-red-400 text-sm font-medium">{t("case.display.updateAt")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {/* {formatDate(sopData?.updatedAt as string) || ""} {t("case.display.updateBy")} {caseItem.updatedBy || ""} */}
+  //                   {formatDate(sopData?.updatedAt as string) || ""} {t("userform.by")} {sopData?.updatedBy || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-1">
+  //                 <AttachedFiles files={sopData?.attachments} editFormData={false} type={"case"} />
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {/* Location */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="xl:flex items-left justify-left gap-2 mb-4">
-                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
-                  <MapPin className="w-4 h-4" />
-                  <h4>{t("case.display.area")}</h4>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left">
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr || "-"}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //           {/* Location */}
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <div className="xl:flex items-left justify-left gap-2 mb-4">
+  //               <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+  //                 <MapPin className="w-4 h-4" />
+  //                 <h4>{t("case.display.area")}</h4>
+  //               </div>
+  //             </div>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left">
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr || "-"}
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {/* Contact */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="xl:flex items-left justify-left gap-2 mb-4">
-                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
-                  <Contact className="w-4 h-4" />
-                  <h4>{t("case.display.contact")}</h4>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {/* {caseItem.phoneNo || "-"} */}
-                    {sopData?.phoneNo || "-"}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Share2 className="w-4 h-4" />
-                    <span className="text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {contactMethod?.name || "-"}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Cpu className="w-4 h-4" />
-                    <span className="text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {/* {caseItem.deviceId || ""} */}
-                    {sopData?.deviceId || "-"}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //           {/* Contact */}
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <div className="xl:flex items-left justify-left gap-2 mb-4">
+  //               <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+  //                 <Contact className="w-4 h-4" />
+  //                 <h4>{t("case.display.contact")}</h4>
+  //               </div>
+  //             </div>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Phone className="w-4 h-4" />
+  //                   <span className="text-sm font-medium xl:mr-2">{t("case.display.phone_number")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {/* {caseItem.phoneNo || "-"} */}
+  //                   {sopData?.phoneNo || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Share2 className="w-4 h-4" />
+  //                   <span className="text-sm font-medium xl:mr-2">{t("case.display.contact_method")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {contactMethod?.name || "-"}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Cpu className="w-4 h-4" />
+  //                   <span className="text-sm font-medium xl:mr-2">{t("case.display.iot_device")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {/* {caseItem.deviceId || ""} */}
+  //                   {sopData?.deviceId || "-"}
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {/* Detail */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.display.detail")}
-              </h4>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left">
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {caseItem.caseDetail || "-"}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //           {/* Detail */}
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+  //               {t("case.display.detail")}
+  //             </h4>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left">
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {caseItem.caseDetail || "-"}
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {/* Unit Information */}
-            <div className="relative my-4 text-center w-full">
-              <div className="absolute bg-gray-300 dark:bg-gray-600 h-px w-full left-0 top-1/2 -translate-y-1/2" />
-              <span className="relative bg-white dark:bg-gray-900 font-medium px-4 text-gray-600 dark:text-gray-300">
-                {t("case.display.Assigned Officer")}
-              </span>
-            </div>
+  //           {/* Unit Information */}
+  //           <div className="relative my-4 text-center w-full">
+  //             <div className="absolute bg-gray-300 dark:bg-gray-600 h-px w-full left-0 top-1/2 -translate-y-1/2" />
+  //             <span className="relative bg-white dark:bg-gray-900 font-medium px-4 text-gray-600 dark:text-gray-300">
+  //               {t("case.display.Assigned Officer")}
+  //             </span>
+  //           </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.officer_detail.personal_title")}
-              </h4>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <User className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists?.length && unitsData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && unitsData?.data?.lastName || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists?.length && unitsData?.data?.mobileNo || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    {/* <AtSign className="w-4 h-4" /> */}
-                    {/* <span className="text-sm font-medium">{t("case.officer_detail.username")}:</span> */}
-                    <Tag className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.vehicle")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {/* {unitsData?.data?.username || ""} */}
-                    {sopData?.unitLists?.length && sopData?.unitLists[0]?.unitId || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    {/* <Mail className="w-4 h-4" /> */}
-                    {/* <span className="text-sm font-medium">{t("case.officer_detail.email")}:</span> */}
-                    <Building className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {/* {unitsData?.data?.email || ""} */}
-                    {sopData?.unitLists?.length && userStation && mergeDeptCommandStation(userStation) || ""}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+  //               {t("case.officer_detail.personal_title")}
+  //             </h4>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <User className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {sopData?.unitLists?.length && unitsData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && unitsData?.data?.lastName || ""}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Phone className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {sopData?.unitLists?.length && unitsData?.data?.mobileNo || ""}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   {/* <AtSign className="w-4 h-4" /> */}
+  //                   {/* <span className="text-sm font-medium">{t("case.officer_detail.username")}:</span> */}
+  //                   <Tag className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.officer_detail.vehicle")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {/* {unitsData?.data?.username || ""} */}
+  //                   {sopData?.unitLists?.length && sopData?.unitLists[0]?.unitId || ""}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   {/* <Mail className="w-4 h-4" /> */}
+  //                   {/* <span className="text-sm font-medium">{t("case.officer_detail.email")}:</span> */}
+  //                   <Building className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {/* {unitsData?.data?.email || ""} */}
+  //                   {sopData?.unitLists?.length && userStation && mergeDeptCommandStation(userStation) || ""}
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
-                {t("case.officer_detail.assignee_title")}
-              </h4>
-              <div className="grid grid-cols-1 space-y-3">
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <User className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists?.length && assigneesData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && assigneesData?.data?.lastName || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists?.length && assigneesData?.data?.mobileNo || ""}
-                  </div>
-                </div>
-                <div className="xl:flex items-left justify-left gap-2">
-                  <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
-                    <Building className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm">
-                    {sopData?.unitLists?.length && assigneeStation && mergeDeptCommandStation(assigneeStation) || ""}
-                  </div>
-                </div>
-              </div>
-            </div>
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //             <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+  //               {t("case.officer_detail.assignee_title")}
+  //             </h4>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <User className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.officer_detail.fullname")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {sopData?.unitLists?.length && assigneesData?.data?.firstName || ""}{" "}{sopData?.unitLists?.length && assigneesData?.data?.lastName || ""}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Phone className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("case.officer_detail.mobile_number")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {sopData?.unitLists?.length && assigneesData?.data?.mobileNo || ""}
+  //                 </div>
+  //               </div>
+  //               <div className="xl:flex items-left justify-left gap-2">
+  //                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
+  //                   <Building className="w-4 h-4" />
+  //                   <span className="text-sm font-medium">{t("userform.orgInfo")}:</span>
+  //                 </div>
+  //                 <div className="text-gray-600 dark:text-gray-300 text-sm">
+  //                   {sopData?.unitLists?.length && assigneeStation && mergeDeptCommandStation(assigneeStation) || ""}
+  //                 </div>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 pt-4">
-              <div className="xl:flex items-left justify-left gap-2 mb-4">
-                <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
-                  <CheckCircle className="w-4 h-4" />
-                  {t("case.officer_detail.service_progress_title")}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 space-y-3">
-                <ProgressStepPreviewUnit progressSteps={progressSteps} sliceIndex={false} />
-                <ProgressSummary progressSteps={progressSteps} sliceIndex={false} />
-              </div>
-            </div>
-          </div>
+  //           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 pt-4">
+  //             <div className="xl:flex items-left justify-left gap-2 mb-4">
+  //               <div className="flex items-center justify-left gap-1 font-medium text-blue-500 dark:text-blue-400">
+  //                 <CheckCircle className="w-4 h-4" />
+  //                 {t("case.officer_detail.service_progress_title")}
+  //               </div>
+  //             </div>
+  //             <div className="grid grid-cols-1 space-y-3">
+  //               <ProgressStepPreviewUnit progressSteps={progressSteps} sliceIndex={false} />
+  //               <ProgressSummary progressSteps={progressSteps} sliceIndex={false} />
+  //               <AttachedFiles files={sopData?.attachments} editFormData={false} type={"close"} />
+  //             </div>
+  //           </div>
+  //         </div>
 
-          {/* Attachments Section */}
-          {/*
-          {caseItem.attachments.length && (
-            <div className="mt-6">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <h4 className="font-medium text-blue-500 dark:text-blue-400">
-                    Attachments ({caseItem.attachments.length})
-                  </h4>
-                </div>
+  //         {/* Attachments Section */}
+  //         {/*
+  //         {caseItem.attachments.length && (
+  //           <div className="mt-6">
+  //             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+  //               <div className="flex items-center gap-2 mb-4">
+  //                 <h4 className="font-medium text-blue-500 dark:text-blue-400">
+  //                   Attachments ({caseItem.attachments.length})
+  //                 </h4>
+  //               </div>
                 
-                {caseItem.attachments.length > 0 ? (
-                  <div className="space-y-2">
-                    {caseItem.attachments.map(attachment => (
-                      <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                        <div className="flex items-center gap-3">
-                          <FileIcon className="w-4 h-4 text-gray-500" />
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {attachment.filename}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          Download
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
-                )}
-              </div>
-            </div>
-          )}
-          */}
-        </div>
-      </>
-    );
-  };
+  //               {caseItem.attachments.length > 0 ? (
+  //                 <div className="space-y-2">
+  //                   {caseItem.attachments.map(attachment => (
+  //                     <div key={attachment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+  //                       <div className="flex items-center gap-3">
+  //                         <FileIcon className="w-4 h-4 text-gray-500" />
+  //                         <div>
+  //                           <div className="text-sm font-medium text-gray-900 dark:text-white">
+  //                             {attachment.filename}
+  //                           </div>
+  //                           <div className="text-xs text-gray-500 dark:text-gray-400">
+  //                             {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy}
+  //                           </div>
+  //                         </div>
+  //                       </div>
+  //                       <Button variant="ghost" size="sm">
+  //                         Download
+  //                       </Button>
+  //                     </div>
+  //                   ))}
+  //                 </div>
+  //               ) : (
+  //                 <p className="text-sm text-gray-500 dark:text-gray-400">No attachments</p>
+  //               )}
+  //             </div>
+  //           </div>
+  //         )}
+  //         */}
+  //       </div>
+  //     </>
+  //   );
+  // };
 
   const ActivityTab: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
     useEffect(() => {
@@ -1311,9 +1322,12 @@ const CaseHistoryComponent: React.FC<{
         key: "overview",
         label: t("crud.case_history.list.preview.tab.header.overview"),
         // icon: InfoIcon,
-        render: (caseItem: CaseEntity) => {
-          return (<OverviewTab caseItem={caseItem} />)
-        }
+        // render: (caseItem: CaseEntity) => {
+        //   return (<OverviewTab caseItem={caseItem} />)
+        // }
+        render: (caseItem) => (
+          <OverviewTab caseItem={caseItem} areas={areas} caseTitle={caseTitle} />
+        )
       },
       {
         key: "activity",
@@ -1402,11 +1416,17 @@ const CaseHistoryComponent: React.FC<{
       options: distIdOptions?.length && distIdOptions || [],
       placeholder: t("crud.case_history.list.toolbar.advanced_filter.distId.placeholder"),
     },
+    // {
+    //   key: "category",
+    //   label: t("crud.case_history.list.toolbar.advanced_filter.category.label"),
+    //   type: "text" as const,
+    //   placeholder: t("crud.case_history.list.toolbar.advanced_filter.category.placeholder"),
+    // },
     {
-      key: "category",
-      label: t("crud.case_history.list.toolbar.advanced_filter.category.label"),
+      key: "detail",
+      label: t("crud.case_history.list.toolbar.advanced_filter.caseDetail.label"),
       type: "text" as const,
-      placeholder: t("crud.case_history.list.toolbar.advanced_filter.category.placeholder"),
+      placeholder: t("crud.case_history.list.toolbar.advanced_filter.caseDetail.placeholder"),
     },
     {
       key: "createBy",
@@ -1675,7 +1695,8 @@ const CaseHistoryComponent: React.FC<{
           loading={isLoading}
           module="case"
           previewConfig={previewConfig as PreviewConfig<CaseEntity & { id: string }>}
-          searchFields={["caseId", "caseDetail", "createdBy", "createdAt"]}
+          // searchFields={["caseId", "caseDetail", "createdBy", "createdAt"]}
+          searchFields={["caseId"]}
           // customFilterFunction={() => true}
           // onAdvancedFilter={handleAdvancedFilter}
           onChangePageSize={handlePageSizeChange}

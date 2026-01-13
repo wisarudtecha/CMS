@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/components/crud/EnhancedCrudContainer";
+import { Modal } from "@/components/ui/modal";
 import {
   // BoltIcon,
   CheckLineIcon,
+  CloseIcon,
   CloseLineIcon,
   GroupIcon, 
   // ListIcon,
@@ -16,12 +18,14 @@ import {
 import { usePermissions } from "@/hooks/usePermissions";
 import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useGetCaseTypesSubTypesQuery } from "@/store/api/serviceApi";
 import {
   // useDeleteWorkflowMutation,
   useGetWorkflowsQuery
 } from "@/store/api/workflowApi";
 // import { AuthService } from "@/utils/authService";
 import { formatDate } from "@/utils/crud";
+import type { CaseTypeSubType } from "@/types/case";
 import type { PreviewConfig } from "@/types/enhanced-crud";
 import type {
   Workflow,
@@ -30,6 +34,7 @@ import type {
 } from "@/types/workflow";
 import MetricsView from "@/components/admin/MetricsView";
 // import Badge from "@/components/ui/badge/Badge";
+import Button from "@/components/ui/button/Button";
 // import workflowList from "@/mocks/workflowList.json";
 
 const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows }) => {
@@ -39,19 +44,30 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
   const isSystemAdmin = useIsSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
+
   const [data, setData] = useState<(Workflow & { id: string })[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [workflowData, setWorkflowData] = useState<{ wfId: string, title: string, subTypeName: string }>(
+    { wfId: "", title: "", subTypeName: "" }
+  );
   const [workflowAnalytics, setWorkflowAnalytics] = useState<WorkflowAnalytics>();
 
-  const isDeleteAvailable = (publish: boolean) => {
-    const canDelete = permissions.hasPermission("workflow.delete") && !publish;
+  const isDeleteAvailable = (
+    // publish: boolean
+  ) => {
+    // const canDelete = permissions.hasPermission("workflow.delete") && !publish;
+    const canDelete = permissions.hasPermission("workflow.delete");
     // console.log("🚀 ~ isDeleteAvailable ~ canDelete:", canDelete);
     // console.log("🚀 ~ isDeleteAvailable ~ publish:", publish);
     return canDelete || isSystemAdmin;
   }
 
-  const isEditAvailable = (publish: boolean) => {
-    const canEdit = permissions.hasPermission("workflow.update") && !publish;
+  const isEditAvailable = (
+    // publish: boolean
+  ) => {
+    // const canEdit = permissions.hasPermission("workflow.update") && !publish;
+    const canEdit = permissions.hasPermission("workflow.update");
     // console.log("🚀 ~ isEditAvailable ~ canEdit:", canEdit);
     // console.log("🚀 ~ isEditAvailable ~ publish:", publish);
     return canEdit || isSystemAdmin;
@@ -134,6 +150,14 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
     return str.slice(0, maxLength - 3) + "...";
   }
 
+  const { data: caseTypesSubTypesData } = useGetCaseTypesSubTypesQuery(null);
+  const caseTypesSubTypes = caseTypesSubTypesData?.data as unknown as CaseTypeSubType[] || [];
+
+  const wfExistInSubTypes = (wfId: string) => {
+    const wfSubTypes = caseTypesSubTypes.find(st => st.wfId === wfId);
+    return language === "th" && wfSubTypes?.th || wfSubTypes?.en;
+  }
+    
   // ===================================================================
   // CRUD Configuration
   // ===================================================================
@@ -237,9 +261,20 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         label: t("crud.common.update"),
         variant: "warning" as const,
         // icon: PencilIcon,
-        onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}/edit`),
+        // onClick: (workflow: Workflow) => navigate(`/workflow/editor/v3/${workflow.wfId}/edit`),
+        onClick: (workflow: Workflow) => {
+          const subTypeName = wfExistInSubTypes(workflow.wfId);
+          if (subTypeName) {
+            setWorkflowData({ wfId: workflow.wfId, title: workflow.title, subTypeName: subTypeName });
+            setIsOpen(true);
+          }
+          else {
+            navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
+          }
+        },
         // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
-        condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
+        // condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
+        condition: () => isEditAvailable()
       },
       {
         key: "delete",
@@ -251,7 +286,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           console.log("Delete action triggered for:", workflow.wfId);
         },
         // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
-        condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
+        // condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
+        condition: () => isDeleteAvailable()
       }
     ]
   };
@@ -413,10 +449,19 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         variant: "warning",
         onClick: (workflow: Workflow, closePreview: () => void) => {
           closePreview();
-          navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
+          // navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
+          const subTypeName = wfExistInSubTypes(workflow.wfId);
+          if (subTypeName) {
+            setWorkflowData({ wfId: workflow.wfId, title: workflow.title, subTypeName: subTypeName });
+            setIsOpen(true);
+          }
+          else {
+            navigate(`/workflow/editor/v3/${workflow.wfId}/edit`);
+          }
         },
         // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.update") && !workflow.publish) || isSystemAdmin) as boolean
-        condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
+        // condition: (workflow: Workflow) => isEditAvailable(workflow.publish)
+        condition: () => isEditAvailable()
       },
       // {
       //   key: "duplicate",
@@ -439,7 +484,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
           closePreview();
         },
         // condition: (workflow: Workflow) => ((permissions.hasPermission("workflow.delete") && !workflow.publish) || isSystemAdmin) as boolean
-        condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
+        // condition: (workflow: Workflow) => isDeleteAvailable(workflow.publish)
+        condition: () => isDeleteAvailable()
       }
     ]
   };
@@ -677,6 +723,47 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[] }> = ({ workflows 
         renderCard={renderCard}
         // renderCard={renderCard as (item: Workflow) => React.ReactNode}
       />
+
+      {workflowData.wfId && (
+        <Modal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+              {t("crud.workflow.list.confirm.warning.title")}
+            </h3>
+            <Button
+              onClick={() => setIsOpen(false)}
+              variant="ghost"
+              size="sm"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {
+              t("crud.workflow.list.confirm.warning.message")
+                .replace("_WORKFLOW_", `"${workflowData.title || ""}"`)
+                .replace("_SUB_TYPE_", `"${workflowData.subTypeName || ""}"`)
+            }
+          </div>
+          <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setIsOpen(false)}
+                variant="outline"
+              >
+                {t("crud.skill.confirm.button.cancel")}
+              </Button>
+              <Button onClick={() => navigate(`/workflow/editor/v3/${workflowData.wfId}/edit`)} variant="warning">
+                {t("crud.skill.confirm.button.confirm")}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

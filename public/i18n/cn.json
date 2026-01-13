@@ -489,6 +489,10 @@
               "label": "类别",
               "placeholder": "输入类别"
             },
+            "caseDetail": {
+              "label": "细节",
+              "placeholder": "输入细节"
+            },
             "createBy": {
               "label": "创建通过",
               "placeholder": "选择用户名"
@@ -713,6 +717,12 @@
               "header": "工作流活动",
               "no_activity": "该工作流暂无活动记录"
             }
+          }
+        },
+        "confirm": {
+          "warning": {
+            "title": "修改工作流 (Workflow Modification)",
+            "message": "您正在尝试编辑 _WORKFLOW_, 而该工作流当前正被 _SUB_TYPE_ 使用 修改此工作流可能会导致现有操作流程出现错误 请确保您编辑的工作流符合要求，否则系统将无法保存更改"
           }
         }
       },
@@ -1306,6 +1316,26 @@
           "required": "技能名称（英语）为必填项"
         }
       },
+      "confirm": {
+        "create": {
+          "title": "创建技能确认",
+          "message": "请确认以创建 _SKILL_"
+        },
+        "update": {
+          "title": "更新技能确认",
+          "message": "请确认以更新 _SKILL_"
+        },
+        "delete": {
+          "title": "删除技能确认",
+          "message": "确定要删除 _SKILL_ 吗？此操作无法撤销"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存...",
+          "deleting": "正在删除..."
+        }
+      },
       "action": {
         "create": {
           "success": "技能创建成功",
@@ -1314,6 +1344,11 @@
         "update": {
           "success": "技能更新成功",
           "error": "技能更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
         }
       }
     },

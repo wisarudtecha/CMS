@@ -489,6 +489,10 @@
               "label": "Category",
               "placeholder": "Enter category"
             },
+            "caseDetail": {
+              "label": "Detail",
+              "placeholder": "Enter detail"
+            },
             "createBy": {
               "label": "Create By",
               "placeholder": "Select username"
@@ -729,6 +733,12 @@
               "header": "Workflow Activity",
               "no_activity": "No activity recorded for this workflow"
             }
+          }
+        },
+        "confirm": {
+          "warning": {
+            "title": "Warning: Workflow Modification",
+            "message": "You are attempting to edit _WORKFLOW_, which is currently being used by _SUB_TYPE_. Modifying this may cause errors in existing operational processes. Please ensure your edited workflow meets the requirements, otherwise, the system cannot save the changes"
           }
         }
       },
@@ -1322,6 +1332,26 @@
           "required": "Skill name (English) is required"
         }
       },
+      "confirm": {
+        "create": {
+          "title": "Create skill confirmation",
+          "message": "Please confirm to create _SKILL_."
+        },
+        "update": {
+          "title": "Update skill confirmation",
+          "message": "Please confirm to update _SKILL_."
+        },
+        "delete": {
+          "title": "Delete skill confirmation",
+          "message": "Are you sure you want to delete _SKILL_? This action cannot be undone."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
       "action": {
         "create": {
           "success": "Skill created successfully",
@@ -1330,6 +1360,11 @@
         "update": {
           "success": "Skill updated successfully",
           "error": "Failed to update skill"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
         }
       }
     },

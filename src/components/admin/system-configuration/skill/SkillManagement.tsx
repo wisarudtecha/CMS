@@ -27,7 +27,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
   const [createSkill] = useCreateSkillMutation();
   const [updateSkill] = useUpdateSkillMutation();
 
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [skillId, setSkillId] = useState("");
@@ -38,6 +38,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
 
   const handleSkillReset = () => {
     setActive(true);
+    setSkillId("");
     setTh("");
     setEn("");
     setIsOpen(false);
@@ -431,7 +432,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {skillId && "Edit" || "Create"} Skill
+            {skillId && t("crud.skill.form.header.update") || t("crud.skill.form.header.create")}
           </h3>
           <Button
             onClick={() => setIsOpen(false)}
@@ -444,11 +445,11 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         <div className="space-y-4">
           <div>
             <label htmlFor="th" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Name (TH)
+              {t("crud.skill.form.th.label")}
             </label>
             <Input
               id="th"
-              placeholder="Fill skill name in Thai language"
+              placeholder={t("crud.skill.form.th.placeholder")}
               value={th}
               onChange={(e) => setTh && setTh(e.target.value)}
             />
@@ -456,11 +457,11 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
           </div>
           <div>
             <label htmlFor="en" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              Name (EN)
+              {t("crud.skill.form.en.label")}
             </label>
             <Input
               id="en"
-              placeholder="Fill skill name in English language"
+              placeholder={t("crud.skill.form.en.placeholder")}
               value={en}
               onChange={(e) => setEn && setEn(e.target.value)}
             />
@@ -470,7 +471,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
             <Button onClick={handleSkillReset} variant="outline">
-              Reset
+              {t("crud.skill.action.button.reset")}
             </Button>
             <Button
               onClick={() => {
@@ -479,7 +480,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
               }}
               variant="primary"
             >
-              Confirm
+              {t("crud.skill.action.button.save")}
             </Button>
           </div>
         </div>
@@ -495,7 +496,7 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            Confirm {skillId && "Edit" || "Create"} Skill
+            {skillId && t("crud.skill.confirm.update.title") || t("crud.skill.confirm.create.title")}
           </h3>
           <Button
             onClick={() => {
@@ -509,7 +510,10 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
           </Button>
         </div>
         <div className="space-y-4">
-          Please confirm to {skillId && "edit" || "create"} {th} {en}
+          {skillId
+            && t("crud.skill.confirm.update.message").replace("_SKILL_", language === "th" && th || en)
+            || t("crud.skill.confirm.create.message").replace("_SKILL_", language === "th" && th || en)
+          }
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">
@@ -520,10 +524,10 @@ const SkillManagementComponent: React.FC<SkillManagementProps> = ({ skills }) =>
               }}
               variant="outline"
             >
-              Cancel
+              {t("crud.skill.confirm.button.cancel")}
             </Button>
             <Button onClick={handleSkillSave} variant="success">
-              Confirm
+              {loading && t("crud.skill.confirm.button.saving") || t("crud.skill.confirm.button.confirm")}
             </Button>
           </div>
         </div>

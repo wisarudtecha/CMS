@@ -24,7 +24,7 @@ export const LoginForm: React.FC = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: "",
     password: "",
-    organization: "",
+    organization: "BMA",
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -323,7 +323,8 @@ export const LoginForm: React.FC = () => {
                       </Label>
                       <Autocomplete
                         id="organization"
-                        value={credentials.organization || "SKY-AI"}
+                        // value={credentials.organization || "SKY-AI"}
+                        value={credentials.organization}
                         onSelect={(value) => handleInputChange("organization", value)}
                         placeholder={t("auth.signin.organization.placeholder")}
                         disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
