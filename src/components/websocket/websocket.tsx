@@ -1,10 +1,8 @@
 // contexts/WebSocketContext.tsx
 import React, { createContext, useContext, useRef, useEffect, useState, ReactNode } from 'react';
-import {  getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
+import { getNewCaseDataByCaseId } from '../case/caseLocalStorage.tsx/caseListUpdate';
 import { CaseEntity } from '@/types/case';
 import { idbStorage } from '../idb/idb';
-
-const isLocalhost: boolean = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "[::1]";
 
 export interface WebSocketMessage {
   type: string;
@@ -51,7 +49,8 @@ export const defalutWebsocketConfig = {
   url: `${WEBSOCKET}/api/v1/notifications/register`,
   reconnectInterval: 5000,
   maxReconnectAttempts: 10,
-  heartbeatInterval: 60000,
+  // heartbeatInterval: 60000,
+  heartbeatInterval: 25000,
 
 
 } as WebSocketConfig;
@@ -129,6 +128,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const isConnectingRef = useRef(false);
+  const lastPongRef = useRef<number>(Date.now());
 
   const clearTimers = () => {
     if (reconnectTimeoutRef.current) {
@@ -148,6 +148,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     heartbeatIntervalRef.current = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ type: 'ping' }));
+
+        // wsRef.current.send(JSON.stringify({ EVENT: 'PING' }));
+
+        if (Date.now() - lastPongRef.current > (config.heartbeatInterval ?? 25000) * 3) {
+          console.warn("Heartbeat timeout, closing socket");
+          wsRef.current.close();
+        }
       }
     }, config.heartbeatInterval);
   };
@@ -160,6 +167,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   };
 
   const attemptReconnect = () => {
+    if (isConnectingRef.current) return;
+
     const config = configRef.current;
     // if (!config) return;
 
@@ -174,9 +183,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
 
     reconnectAttemptsRef.current++;
-    if (!isLocalhost) {
-      console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
-    }
+    console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxAttempts})`);
 
     reconnectTimeoutRef.current = setTimeout(() => {
       websocket(config || defalutWebsocketConfig);
@@ -217,13 +224,27 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         // setIsConnected(true);
         // setConnectionState('connected');
         isConnectingRef.current = false;
-        // reconnectAttemptsRef.current = 0;
+        reconnectAttemptsRef.current = 0;
         startHeartbeat();
       };
 
       ws.onmessage = (event) => {
         try {
           const parsed = JSON.parse(event.data);
+
+          if (parsed?.P === "0") {
+            lastPongRef.current = Date.now();
+            return;
+          }
+          
+          if (!parsed?.EVENT && !parsed?.type) {
+            return;
+          }
+          if (parsed.type === 'pong' || parsed.EVENT === 'PONG') {
+            lastPongRef.current = Date.now();
+            return;
+          }
+
           const message: WebSocketMessage = {
             type: parsed.type || 'message',
             data: parsed,
@@ -261,9 +282,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onclose = (event) => {
-        if (!isLocalhost) {
-          console.log('WebSocket disconnected:', event.code, event.reason);
-        }
+        console.log('WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
         setConnectionState('disconnected');
         isConnectingRef.current = false;
@@ -276,13 +295,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onerror = (error) => {
-        if (!isLocalhost) {
-          console.error('WebSocket error:', error);
-        }
+        console.error('WebSocket error:', error);
         setConnectionState('error');
         isConnectingRef.current = false;
         // connect(defalutWebsocketConfig)
-        reconnectAttemptsRef.current = 0;
+        // reconnectAttemptsRef.current = 0;
         attemptReconnect();
 
       };
@@ -300,9 +317,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     configRef.current = null;
 
     if (wsRef.current) {
-      if (!isLocalhost) {
-        wsRef.current.close(1000, 'Manual disconnect');
-      }
+      wsRef.current.close(1000, 'Manual disconnect');
       wsRef.current = null;
     }
 

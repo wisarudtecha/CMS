@@ -3,6 +3,11 @@ import type { User } from "@/types/auth";
 import type { Permission } from "@/types/role";
 
 export class PermissionManager {
+  // Flatten permissions from object structure to array
+  private static flattenPermissions(permissions: Record<string, string[]>): string[] {
+    return Object.values(permissions).flat();
+  }
+  
   // Extract permission IDs from permission objects
   static extractPermissionIds(permissions: Permission[]): string[] {
     return permissions.filter(p => p.active).map(p => p.permId);
@@ -13,7 +18,10 @@ export class PermissionManager {
     if (!user || !user.permission) {
       return false;
     }
-    return user.permission.includes(permissionId);
+    // return user.permission.includes(permissionId);
+
+    const flatPermissions = this.flattenPermissions(user.permission);
+    return flatPermissions.includes(permissionId);
   }
 
   // Check if user has any of the specified permissions
@@ -21,13 +29,21 @@ export class PermissionManager {
     if (!user || !user.permission) {
       return false;
     }
-    return permissionIds.some(permId => user.permission.includes(permId));
+    // return permissionIds.some(permId => user.permission.includes(permId));
+
+    const flatPermissions = this.flattenPermissions(user.permission);
+    return permissionIds.some(permId => flatPermissions.includes(permId));
   }
 
   // Check if user has all specified permissions
   static hasAllPermissions(user: User | null, permissionIds: string[]): boolean {
-    if (!user || !user.permission) return false;
-    return permissionIds.every(permId => user.permission.includes(permId));
+    if (!user || !user.permission) {
+      return false;
+    }
+    // return permissionIds.every(permId => user.permission.includes(permId));
+
+    const flatPermissions = this.flattenPermissions(user.permission);
+    return permissionIds.every(permId => flatPermissions.includes(permId));
   }
 
   // Group permissions by module (e.g., dispatch, user, report)
@@ -47,16 +63,35 @@ export class PermissionManager {
     if (!user || !user.permission) {
       return [];
     }
-    return user.permission.filter(permId => permId.startsWith(`${module}.`)).map(permId => permId.split(".")[1]);
+    // return user.permission.filter(permId => permId.startsWith(`${module}.`)).map(permId => permId.split(".")[1]);
+
+    const flatPermissions = this.flattenPermissions(user.permission);
+    return flatPermissions.filter(permId => permId.startsWith(`${module}.`)).map(permId => permId.split(".")[1]);
+  }
+
+  // Get permissions by category (e.g., "cms")
+  static getPermissionsByCategory(user: User | null, category: string): string[] {
+    if (!user || !user.permission) {
+      return [];
+    }
+    return user.permission[category] || [];
+  }
+
+  // Get all permission categories
+  static getPermissionCategories(user: User | null): string[] {
+    if (!user || !user.permission) {
+      return [];
+    }
+    return Object.keys(user.permission);
   }
 
   // Check if user can perform CRUD operations on a module
   static canView(user: User | null, module: string): boolean {
-    return this.hasPermission(user, `${module}.view`);
+    return this.hasPermission(user, `${module}.read`) || this.hasPermission(user, `${module}.view`);
   }
 
   static canCreate(user: User | null, module: string): boolean {
-    return this.hasPermission(user, `${module}.create`);
+    return this.hasPermission(user, `${module}.create`) || this.hasPermission(user, `${module}.add`);
   }
 
   static canUpdate(user: User | null, module: string): boolean {
@@ -64,6 +99,6 @@ export class PermissionManager {
   }
 
   static canDelete(user: User | null, module: string): boolean {
-    return this.hasPermission(user, `${module}.delete`);
+    return this.hasPermission(user, `${module}.delete`) || this.hasPermission(user, `${module}.remove`);
   }
 }

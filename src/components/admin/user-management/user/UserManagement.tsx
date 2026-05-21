@@ -6,7 +6,7 @@ import
     useCallback,
     useEffect,
     // useEffect,
-    useMemo,
+    // useMemo,
     useState
   }
 from "react";
@@ -123,21 +123,35 @@ const UserManagementComponent: React.FC<{
 
   const { data: userWithSkillsData } = useGetUserSkillsByUsernameQuery(userName, { skip: !userName });
   // const userWithSkills = userWithSkillsData?.data as unknown as UserSkill[] || [];
-  const userWithSkills = useMemo(
-    () => (userWithSkillsData?.data as unknown as UserSkill[]) || [],
-    [userWithSkillsData?.data]
-  );
+  // const userWithSkills = useMemo(
+  //   () => (userWithSkillsData?.data as unknown as UserSkill[]) || [],
+  //   [userWithSkillsData?.data]
+  // );
 
   const [skillList, setSkills] = useState<string[]>([]);
 
+  // useEffect(() => {
+  //   // setSkills(userWithSkills);
+  //   const skillIds: string[] = [];
+  //   userWithSkills?.map(s => {
+  //     skillIds.push(s.skillId);
+  //   });
+  //   setSkills(skillIds);
+  // }, [userWithSkills]);
+
   useEffect(() => {
-    // setSkills(userWithSkills);
-    const skillIds: string[] = [];
-    userWithSkills?.map(s => {
-      skillIds.push(s.skillId);
-    });
-    setSkills(skillIds);
-  }, [userWithSkills]);
+    if (!userName) {
+      setSkills([]);
+      return;
+    }
+    if (userWithSkillsData?.data) {
+      const ids = (userWithSkillsData.data as UserSkill[]).map(s => s.skillId);
+      setSkills(ids);
+    }
+    else {
+      setSkills([]);
+    }
+  }, [userName, userWithSkillsData]);
 
   // useEffect(() => {
   //   console.log("🚀 ~ UserManagementComponent ~ skillList:", skillList);
@@ -198,7 +212,6 @@ const UserManagementComponent: React.FC<{
       setLoading(false);
     }
   };
-
 
   // ===================================================================
   // CRUD Configuration
@@ -451,14 +464,19 @@ const UserManagementComponent: React.FC<{
         label: t("crud.user.list.preview.tab.header.skills"),
         // icon: InfoIcon,
         render: (userItem: UserProfile) => {
+          // if (userItem.username !== userName) {
+          //   setUserName(userItem.username);
+          // }
           return (
             <div className="space-y-6">
               <SkillMatrixContent
+                key={userItem.username}
                 loading={loading}
                 skills={skill || []}
                 skillList={skillList || []}
                 userName={userItem.username || ""}
                 handleUserSkillsSave={handleUserSkillsSave}
+                onUserChange={setUserName}
                 onUserSkillsToggle={handleSkillsToggle}
               />
             </div>

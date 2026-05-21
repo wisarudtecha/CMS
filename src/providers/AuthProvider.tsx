@@ -1,17 +1,34 @@
 // /src/providers/AuthProvider.tsx
 import React, { useCallback, useEffect, useReducer, useState } from "react";
+import { caseApiSetup } from "@/components/case/uitls/CaseApiManager";
+import { useToastContext } from "@/components/crud/ToastGlobal";
 import { AuthContext } from "@/context/AuthContext";
 import { authReducer } from "@/hooks/useAuthContext";
 import { AuthService } from "@/utils/authService";
-import { SESSION_TIMEOUT_TIMER, SESSION_TIMEOUT_WARNING } from "@/utils/constants";
+import { AUTH_LOCK_KEY, SESSION_TIMEOUT_TIMER, SESSION_TIMEOUT_WARNING } from "@/utils/constants";
 import { TokenManager } from "@/utils/tokenManager";
 import type { AuthState, LoginCredentials, RegisterData } from "@/types/auth";
-import { caseApiSetup } from "@/components/case/uitls/CaseApiManager";
-import { useToastContext } from "@/components/crud/ToastGlobal";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const getInitialAuthState = (): AuthState => {
     // console.log("🔍 Initializing auth state...");
+    const isAuthLocked = sessionStorage.getItem(AUTH_LOCK_KEY) === "true";
+    if (isAuthLocked) {
+      return {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isRefreshing: false,
+        error: null,
+        sessionTimeout: null,
+        failedAttempts: 0,
+        isLocked: true, // <-- true so UI can detect locked state if needed
+        networkStatus: navigator.onLine ? "online" : "offline",
+        lastActivity: Date.now()
+      };
+    }
 
     const token = TokenManager.getToken();
     const user = TokenManager.getStoredUser();
@@ -22,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const updatedUser = AuthService.createMockUser(user.username);
         TokenManager.setTokens(
           token,
-          TokenManager.getRefreshToken() || '',
+          TokenManager.getRefreshToken() || "",
           // false,
           true,
           updatedUser
@@ -38,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionTimeout: null,
           failedAttempts: 0,
           isLocked: false,
-          networkStatus: navigator.onLine ? 'online' : 'offline',
+          networkStatus: navigator.onLine ? "online" : "offline",
           lastActivity: Date.now()
         };
       }
@@ -113,9 +130,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const logout = React.useCallback(async () => {
+  // const logout = React.useCallback(async () => {
+  //   try {
+  //     // await AuthService.logout();
+  //   }
+  //   catch (error) {
+  //     console.error("Logout error:", error);
+  //   }
+  //   finally {
+  //     TokenManager.clearTokens();
+  //     dispatch({ type: "LOGOUT" });
+  //     if (sessionTimer) {
+  //       clearTimeout(sessionTimer);
+  //     }
+  //     if (refreshTimer) {
+  //       clearTimeout(refreshTimer);
+  //     }
+  //   }
+  // }, [sessionTimer, refreshTimer]);
+
+  const logout = useCallback(async (mode: "manual" | "sso" | "takeover" = "manual") => {
     try {
-      // await AuthService.logout();
+      if (mode === "sso") {
+        sessionStorage.setItem(AUTH_LOCK_KEY, "true");
+      }
+      else {
+        sessionStorage.removeItem(AUTH_LOCK_KEY);
+      }
     }
     catch (error) {
       console.error("Logout error:", error);
@@ -248,12 +289,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         credentials?.language || ""
       );
 
-      const err = (await caseApiSetup()).filter((item)=>{return item!=""});
+      const err = (await caseApiSetup()).filter(item => { return item != "" });
       
-      if(err.length !=0){
-        err.map((item)=>{addToast('error',item,5000,true)})
+      if (err.length != 0) {
+        err.map(item => { addToast("error", item, 5000, true) })
       }
-      
 
       dispatch({ 
         type: "LOGIN_SUCCESS", 
@@ -301,6 +341,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshToken = useCallback(async () => {
+    if (!state.isAuthenticated) {
+      console.warn("⛔ Refresh blocked: not authenticated");
+      return;
+    }
+
     const currentRefreshToken = TokenManager.getRefreshToken();
     if (!currentRefreshToken || state.isRefreshing) {
       console.log("🔄 Token refresh already in progress.");
@@ -318,8 +363,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await AuthService.refreshToken(currentRefreshToken);
       
-      const storage = localStorage || sessionStorage;
-      const profile = JSON.parse(storage.getItem("profile") || "{}");
+      // const storage = localStorage || sessionStorage;
+      // const profile = JSON.parse(storage.getItem("profile") || "{}");
+      const profile = state.user;
+
+      if (!profile) {
+        throw new Error("User profile not available for token refresh");
+      }
 
       TokenManager.setTokens(
         response.accessToken,
@@ -348,7 +398,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout();
       }
     }
-  }, [state.isRefreshing, logout]);
+  }, [
+    state.isAuthenticated,
+    state.isRefreshing,
+    state.user,
+    logout
+  ]);
 
   const forgotPassword = async (email: string) => {
     try {

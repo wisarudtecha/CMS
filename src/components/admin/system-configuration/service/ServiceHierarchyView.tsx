@@ -51,6 +51,7 @@ interface ServiceHierarchyViewProps {
   setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
   setCaseSla: (sla: string) => void;
   setMDeviceType: (deviceType: string) => void;
+  setMDeviceTypeName: (deviceTypeName: string) => void;
   setMWorkOrderType: (workOrderType: string) => void;
   setPriority: (priority: string) => void;
   setSTypeCode: (code: string) => void;
@@ -86,6 +87,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   // setSearchQuery,
   setCaseSla,
   setMDeviceType,
+  setMDeviceTypeName,
   setMWorkOrderType,
   setPriority,
   setSTypeCode,
@@ -224,6 +226,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
           metadata: {
             caseSla: subType.caseSla,
             mDeviceType: subType.mDeviceType,
+            mDeviceTypeName: subType.mDeviceTypeName,
             mWorkOrderType: subType.mWorkOrderType,
             priority: subType.priority,
             skillRequirements: subType.userSkillList,
@@ -329,6 +332,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     handleTypeReset();
     setCaseSla(item.metadata?.caseSla as string || "");
     setMDeviceType(item.metadata?.mDeviceType as string || "");
+    setMDeviceTypeName(item.metadata?.mDeviceTypeName as string || "");
     setMWorkOrderType(item.metadata?.mWorkOrderType as string || "");
     setPriority(item.metadata?.priority as string || "");
     setSTypeCode(item.metadata?.sTypeCode as string || "");
@@ -344,7 +348,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   }, [
     language,
     handleSTypeReset, handleTypeReset,
-    setCaseSla, setMDeviceType, setMWorkOrderType, setPriority, setSTypeCode, setSTypeEn, setSTypeId, setSTypeIsOpen, setSTypeTh, setSTypeTypeId,
+    setCaseSla, setMDeviceType, setMDeviceTypeName, setMWorkOrderType, setPriority, setSTypeCode, setSTypeEn, setSTypeId, setSTypeIsOpen, setSTypeTh, setSTypeTypeId,
     setTypeIsOpen,
     setUnitPropLists, setUserSkillList, setWfId
   ]);

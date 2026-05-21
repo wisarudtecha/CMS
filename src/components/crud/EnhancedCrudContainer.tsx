@@ -154,7 +154,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   // const bulkDeleteApi = useApi(apiService.bulkDelete as (...args: unknown[]) => Promise<unknown>);
   const deleteApi = useApi(((endpoint: string) => apiService.delete(endpoint)) as (...args: unknown[]) => Promise<unknown>);
   // API functionality (custom)
-  const cancelApi = useApi(((endpoint: string, data: unknown) => apiService.patch(endpoint, data)) as (...args: unknown[]) => Promise<unknown>);
+  // const cancelApi = useApi(((endpoint: string, data: unknown) => apiService.patch(endpoint, data)) as (...args: unknown[]) => Promise<unknown>);
+  const cancelApi = useApi(((endpoint: string, data: unknown) => apiService.post(endpoint, data)) as (...args: unknown[]) => Promise<unknown>);
 
   // ===================================================================
   // Debug
@@ -263,7 +264,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
         try {
           if (apiConfig?.endpoints?.delete) {
             if (module === "case" && "caseId" in item) {
-              await cancelApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`, { statusId: "S014" });
+              // await cancelApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`, { statusId: "S014" });
+              await cancelApi.execute(`${apiConfig.endpoints.delete}`, { caseId: item.caseId, resId: "cf443fd2-ddad-4438-99ea-fcdeec875680" });
             }
             else {
               await deleteApi.execute(`${apiConfig.endpoints.delete.replace(":id", id)}`);

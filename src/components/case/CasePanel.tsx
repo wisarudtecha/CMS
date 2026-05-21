@@ -36,15 +36,15 @@ interface PanelProps {
 }
 const Panel: React.FC<PanelProps> = ({ onClose, caseItem, referCaseList }) => {
     const [activeRightPanel, setActiveRightPanel] = useState<"customer" | "cases">("customer");
-    const [activeTab, setActiveTab] = useState("Device info");
+    const [activeTab, setActiveTab] = useState("customer-info");
     // const [device, setDevice] = useState<Device>()
     const [referCase, setReferCase] = useState<CaseEntity[]>([]);
     const { t } = useTranslation();
     const tabs = [
-        { id: "Device info", label: t("case.panel.device_info") },
         import.meta.env.VITE_SHOW_CASE_CONTRACT === "true"
             ? { id: "customer-info", label: t("common.info") }
             : undefined,
+        { id: "Device info", label: t("case.panel.device_info") },
     ].filter(Boolean);
     const [customer, setCustomer] = useState<Customer | undefined>(undefined);
     const navigate = useNavigate()

@@ -14,6 +14,7 @@ const SkillMatrixContent: React.FC<{
   userName: string;
   // userWithSkills: UserSkill[];
   handleUserSkillsSave: () => void;
+  onUserChange: (userName: string) => void;
   onUserSkillsToggle: (userName: string, skillId: string) => Promise<void>;
 }> = ({
   loading,
@@ -22,6 +23,7 @@ const SkillMatrixContent: React.FC<{
   userName,
   // userWithSkills,
   handleUserSkillsSave,
+  onUserChange,
   onUserSkillsToggle,
 }) => {
   const { language, t } = useTranslation();
@@ -53,14 +55,34 @@ const SkillMatrixContent: React.FC<{
     }
   }, [userName, initializedUser]);
 
-  const handleUserSkillsToggle = async (userName: string, skillId: string) => {
-    try {
-      onUserSkillsToggle(userName, skillId);
-    }
-    catch (error) {
-      console.error("Error toggling user with skills:", error);
-    }
+  // const handleUserSkillsToggle = async (userName: string, skillId: string) => {
+  //   try {
+  //     onUserSkillsToggle(userName, skillId);
+  //   }
+  //   catch (error) {
+  //     console.error("Error toggling user with skills:", error);
+  //   }
+  // };
+
+  const [localSkillList, setLocalSkillList] = useState<string[]>([]);
+
+  useEffect(() => {
+    setLocalSkillList(skillList);
+  }, [skillList]);
+
+  const toggleSkill = (skillId: string) => {
+    setLocalSkillList(prev =>
+      prev.includes(skillId)
+        ? prev.filter(id => id !== skillId)
+        : [...prev, skillId]
+    );
+
+    onUserSkillsToggle(userName, skillId);
   };
+
+  useEffect(() => {
+    onUserChange(userName);
+  }, [userName, onUserChange]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState<number>(0);
@@ -103,7 +125,8 @@ const SkillMatrixContent: React.FC<{
             {skills.map(skill => {
               // const hasSkill = userWithSkills?.some(userSkill => userSkill.skillId === skill.skillId);
               // Use skillList prop instead of userWithSkills for checkbox state
-              const hasSkill = skillList.includes(skill.skillId);
+              // const hasSkill = skillList.includes(skill.skillId);
+              const hasSkill = localSkillList.includes(skill.skillId);
               return (
                 <tr
                   key={skill.skillId}
@@ -121,7 +144,8 @@ const SkillMatrixContent: React.FC<{
                   <td key={`${userName}-${skill.skillId}`} className="px-3 py-3">
                     <div className="flex items-center justify-center">
                       <button
-                        onClick={() => handleUserSkillsToggle(userName, skill.skillId)}
+                        // onClick={() => handleUserSkillsToggle(userName, skill.skillId)}
+                        onClick={() => toggleSkill(skill.skillId)}
                         disabled={!userName}
                         // className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors
                         //   ${

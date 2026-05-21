@@ -6,7 +6,8 @@ export const AuthContext = createContext<{
   state: AuthState;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
+  // logout: () => Promise<void>;
+  logout: (mode?: "manual" | "sso" | "takeover") => Promise<void>;
   refreshToken: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   clearError: () => void;

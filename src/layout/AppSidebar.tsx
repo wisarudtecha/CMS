@@ -25,6 +25,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { APP_CONFIG } from "@/utils/constants";
 // import { AuthService } from "@/utils/authService";
 import changelog from "@/changelog.json";
 // import Button from "@/components/ui/button/Button";
@@ -367,20 +368,7 @@ const AppSidebar: React.FC = () => {
         { name: t("navigation.sidebar.archives.case_management.nested.case_history"), path: "/kanban", },
       ],
     },
-    {
-      icon: <BoxCubeIcon />,
-      name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v1"),
-      subItems: [
-        { name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v1"), path: "/workflow/editor/v1", },
-      ],
-    },
-    {
-      icon: <BoxCubeIcon />,
-      name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v2"),
-      subItems: [
-        { name: t("navigation.sidebar.archives.workflow.nested.workflow_builder_v2"), path: "/workflow/editor/v2", },
-      ],
-    },
+
   ];
 
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -817,13 +805,15 @@ const AppSidebar: React.FC = () => {
       >
         {(isExpanded || isHovered || isMobileOpen) && isSystemAdmin ? (
           <div className="absolute bottom-16 lg:bottom-0 left-0 flex items-center justify-between p-6 w-full bg-white dark:bg-gray-900 z-100">
-            <button
-              onClick={() => handleMenuDisplay()}
-              className="rounded-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900"
-              title="Show / Hide Template Menu"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </button>
+            {(APP_CONFIG?.ENV?.includes("local") || APP_CONFIG?.ENV?.includes("development")) && (
+              <button
+                onClick={() => handleMenuDisplay()}
+                className="rounded-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900"
+                title="Show / Hide Template Menu"
+              >
+                <PencilIcon className="h-4 w-4" />
+              </button>
+            )}
             
             <div className="font-light flex gap-1 items-center text-gray-500 dark:text-gray-400 text-sm">
               <span className="cursor-default">v{versionInfo[0]?.version || __APP_VERSION__}</span>

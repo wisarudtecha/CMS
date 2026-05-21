@@ -1,5 +1,5 @@
 // src/components/ServiceDashboard.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import {
@@ -13,11 +13,13 @@ import {
 import { AnimatedNumber, AnimatedPercentage } from "@/components/ui/animation/AnimatedNumber";
 import { LoadingSpinner, ProgressBar, Skeleton } from "@/components/ui/loading/LoadingSystem";
 import { useWebSocket } from "@/components/websocket/websocket";
+import { useRealtimeDateTime } from "@/hooks/useRealtimeDateTime";
 import { useTranslation } from "@/hooks/useTranslation";
 
 type JSONValue = string | number | boolean | null | JSONArray | JSONObject;
 type JSONArray = Array<JSONValue>;
 type JSONObject = { [key: string]: JSONValue };
+type ViewMode = "monthly" | "daily";
 
 interface MonthlyRangeResult {
   monthsTh: string[];
@@ -170,7 +172,101 @@ const filterMonthlyRangeWithSeries = (
   return { monthsTh, monthsEn, records: filtered.map(e => e.obj), series, latestMonthStats };
 }
 
+const getLatestDailyStats = (data: JSONObject): number[] => {
+  const additionalJson = data["additionalJson"] as JSONObject;
+  const rawData = additionalJson?.["data"] as JSONArray;
+
+  if (!Array.isArray(rawData) || rawData.length === 0) {
+    return [0, 0, 0];
+  }
+
+  const dailyRecords = rawData.filter(item => {
+    if (typeof item === "object" && item !== null) {
+      return Object.keys(item).some(k => /^m\d+_en$/.test(k));
+    }
+    return false;
+  }) as JSONObject[];
+
+  if (dailyRecords.length === 0) {
+    return [0, 0, 0];
+  }
+
+  const latest = dailyRecords[dailyRecords.length - 1];
+
+  return [
+    (latest["complete"] as number) ?? 0,
+    (latest["inprogress"] as number) ?? 0,
+    (latest["new"] as number) ?? 0,
+  ];
+};
+
+const transformDailyToSeries = (
+  data: JSONObject,
+  labels = {
+    complete: "Complete",
+    inProgress: "In Progress",
+    new: "New"
+  }
+) => {
+  const additionalJson = data["additionalJson"] as JSONObject;
+  const rawData = additionalJson?.["data"] as JSONArray;
+
+  if (!Array.isArray(rawData)) {
+    return {
+      categories: [],
+      series: []
+    };
+  }
+
+  // filter เฉพาะ m1 - m7
+  const dailyRecords = rawData.filter(item => {
+    if (typeof item === "object" && item !== null) {
+      return Object.keys(item).some(k => /^m\d+_en$/.test(k));
+    }
+    return false;
+  }) as JSONObject[];
+
+  const categoriesTh: string[] = [];
+  const categoriesEn: string[] = [];
+
+  const complete: number[] = [];
+  const inprogress: number[] = [];
+  const newData: number[] = [];
+
+  dailyRecords.forEach(item => {
+    const enKey = Object.keys(item).find(k => k.endsWith("_en"))!;
+    const thKey = Object.keys(item).find(k => k.endsWith("_th"))!;
+
+    categoriesEn.push(item[enKey] as string);
+    categoriesTh.push(item[thKey] as string);
+
+    complete.push(Math.max(0, (item["complete"] as number) ?? 0));
+    inprogress.push(Math.max(0, (item["inprogress"] as number) ?? 0));
+    newData.push(Math.max(0, (item["new"] as number) ?? 0));
+  });
+
+  return {
+    categoriesTh,
+    categoriesEn,
+    series: [
+      { name: labels.complete, data: complete },
+      { name: labels.inProgress, data: inprogress },
+      { name: labels.new, data: newData },
+    ]
+  };
+};
+
 const ServiceDashboard: React.FC = () => {
+  const dateTime = useRealtimeDateTime(
+    // {
+    //   weekday: "short",
+    //   year: "numeric",
+    //   month: "short",
+    //   hour: "2-digit",
+    //   minute: "2-digit",
+    //   second: "2-digit",
+    // }
+  );
   const { language } = useTranslation();
   const { connectionState, isConnected, onMessage, send } = useWebSocket();
   const [isMounted, setIsMounted] = useState(false);
@@ -322,30 +418,6 @@ const ServiceDashboard: React.FC = () => {
   //   }
   // };
 
-  const DASHBOARD_MONTHLY: JSONObject = {
-    EVENT: "DASHBOARD",
-    eventType: "hidden",
-    additionalJson: {
-      type: "CASE-MONTHLY-SUMMARY",
-      title_en: "Work Order in Monthly Summary",
-      title_th: "สรุปคำสั่งงานประจำเดือน",
-      data: [
-        { "total_en": "Total", "total_th": "ทั้งหมด", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m11_en": "Nov 2025", "m11_th": "พ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
-        { "m12_en": "Dec 2025", "m12_th": "ธ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 }
-      ]
-    }
-  };
   // const DASHBOARD_MONTHLY: JSONObject = {
   //   EVENT: "DASHBOARD",
   //   eventType: "hidden",
@@ -354,17 +426,17 @@ const ServiceDashboard: React.FC = () => {
   //     title_en: "Work Order in Monthly Summary",
   //     title_th: "สรุปคำสั่งงานประจำเดือน",
   //     data: [
-  //       { "total_en": "Total", "total_th": "ทั้งหมด", "new": 376, "inprogress": 3, "complete": 3 },
-  //       { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 685 },
-  //       { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 485 },
-  //       { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 645 },
-  //       { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 450 },
-  //       { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 550 },
-  //       { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 600 },
-  //       { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 379 },
-  //       { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 525 },
-  //       { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 537 },
-  //       { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 85, "inprogress": 212, "complete": 79 },
+  //       { "total_en": "Total", "total_th": "ทั้งหมด", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m1_en": "Jan 2025", "m1_th": "ม.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m2_en": "Feb 2025", "m2_th": "ก.พ. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m3_en": "Mar 2025", "m3_th": "มี.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m4_en": "Apr 2025", "m4_th": "เม.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m5_en": "May 2025", "m5_th": "พ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m6_en": "June 2025", "m6_th": "มิ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m7_en": "Jul 2025", "m7_th": "ก.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m8_en": "Aug 2025", "m8_th": "ส.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m9_en": "Sep 2025", "m9_th": "ก.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
+  //       { "m10_en": "Oct 2025", "m10_th": "ต.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 },
   //       { "m11_en": "Nov 2025", "m11_th": "พ.ย. 2568", "new": 0, "inprogress": 0, "complete": 0 },
   //       { "m12_en": "Dec 2025", "m12_th": "ธ.ค. 2568", "new": 0, "inprogress": 0, "complete": 0 }
   //     ]
@@ -374,6 +446,8 @@ const ServiceDashboard: React.FC = () => {
   // ===================================================================
   // WebSocket State Management
   // ===================================================================
+  const [viewMode, setViewMode] = useState<ViewMode>("daily");
+
   const [dashboardCase, setDashboardCase] = useState<JSONObject>({
     EVENT: "DASHBOARD",
     eventType: "hidden",
@@ -398,15 +472,29 @@ const ServiceDashboard: React.FC = () => {
     }
   });
 
-  const [dashboardMonthly, setDashboardMonthly] = useState<JSONObject>({
+  const [
+    dashboardMonthly,
+    setDashboardMonthly
+  ] = useState<JSONObject>({
     EVENT: "DASHBOARD-MONTHLY",
     eventType: "hidden",
     additionalJson: {
       type: "CASE-MONTHLY-SUMMARY",
       title_en: "Work Order in Monthly Summary",
       title_th: "สรุปคำสั่งงานประจำเดือน",
-      // data: []
-      data: (DASHBOARD_MONTHLY.additionalJson as JSONObject)?.data
+      data: []
+      // data: (DASHBOARD_MONTHLY.additionalJson as JSONObject)?.data
+    }
+  });
+
+  const [dashboardDaily, setDashboardDaily] = useState<JSONObject>({
+    EVENT: "DASHBOARD-DAILY",
+    eventType: "hidden",
+    additionalJson: {
+      type: "CASE-DAILY-SUMMARY",
+      title_en: "Work Order in Daily Summary",
+      title_th: "สรุปคำสั่งงานประจำวัน",
+      data: []
     }
   });
 
@@ -471,27 +559,82 @@ const ServiceDashboard: React.FC = () => {
   // ===================================================================
   const chartWidgetHeight = 580;
 
-  const monthlyOfCases = filterMonthlyRangeWithSeries(
-    dashboardMonthly,
-    6,
-    undefined,
-    undefined,
-    {
-      complete: labels.complete,
-      inProgress: labels.inProgress,
-      new: labels.new
-    }
-  );
+  // const monthlyOfCases = filterMonthlyRangeWithSeries(
+  //   dashboardMonthly,
+  //   6,
+  //   undefined,
+  //   undefined,
+  //   {
+  //     complete: labels.complete,
+  //     inProgress: labels.inProgress,
+  //     new: labels.new
+  //   }
+  // );
 
-  const monthsTh = monthlyOfCases.monthsTh;
-  const monthsEn = monthlyOfCases.monthsEn;
-  const seriesOfMonthlyCases = monthlyOfCases.series;
-  const seriesOfCaseStatusOverview = monthlyOfCases.latestMonthStats;
+  // const monthsTh = monthlyOfCases.monthsTh;
+  // const monthsEn = monthlyOfCases.monthsEn;
+  // const seriesOfMonthlyCases = monthlyOfCases.series;
+  // const seriesOfCaseStatusOverview = monthlyOfCases.latestMonthStats;
+  const seriesOfCaseStatusOverview = getLatestDailyStats(dashboardDaily);
+
+  // const dailyOfCases = transformDailyToSeries(
+  //   dashboardDaily,
+  //   {
+  //     complete: labels.complete,
+  //     inProgress: labels.inProgress,
+  //     new: labels.new
+  //   }
+  // );
+
+  // const monthsTh = dailyOfCases.categoriesTh;
+  // const monthsEn = dailyOfCases.categoriesEn;
+  // const seriesOfMonthlyCases = dailyOfCases.series;
 
   const seriesOfMonthlyCasesRate = seriesOfCaseStatusOverview.map(item => {
     const total = seriesOfCaseStatusOverview.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     return total > 0 ? (item / total) * 100 : 0;
   });
+
+  const chartData = useMemo(() => {
+    if (viewMode === "daily") {
+      const daily = transformDailyToSeries(dashboardDaily, {
+        complete: labels.complete,
+        inProgress: labels.inProgress,
+        new: labels.new
+      });
+
+      return {
+        categoriesTh: daily.categoriesTh,
+        categoriesEn: daily.categoriesEn,
+        series: daily.series,
+        title: (dashboardDaily.additionalJson as JSONObject)?.[
+          language === "th" ? "title_th" : "title_en"
+        ]
+      };
+    }
+
+    // default = monthly
+    const monthly = filterMonthlyRangeWithSeries(
+      dashboardMonthly,
+      6,
+      undefined,
+      undefined,
+      {
+        complete: labels.complete,
+        inProgress: labels.inProgress,
+        new: labels.new
+      }
+    );
+
+    return {
+      categoriesTh: monthly.monthsTh,
+      categoriesEn: monthly.monthsEn,
+      series: monthly.series,
+      title: (dashboardMonthly.additionalJson as JSONObject)?.[
+        language === "th" ? "title_th" : "title_en"
+      ]
+    };
+  }, [viewMode, dashboardDaily, dashboardMonthly, labels.complete, labels.inProgress, labels.new, language]);
 
   const optionsOfMonthlyCases: ApexOptions = {
     colors: colors,
@@ -541,12 +684,18 @@ const ServiceDashboard: React.FC = () => {
       width: 0
     },
     xaxis: {
-      categories: language === "th" ? monthsTh : monthsEn,
+      // categories: language === "th" ? monthsTh : monthsEn,
+      categories: language === "th" ? chartData.categoriesTh : chartData.categoriesEn,
       axisBorder: {
         show: false
       },
       axisTicks: {
         show: false
+      },
+      labels: {
+        formatter: val => {
+          return val.split(" ");
+        }
       }
     },
     yaxis: {
@@ -564,14 +713,33 @@ const ServiceDashboard: React.FC = () => {
     }
   };
 
-  const dashboardMonthlyJson = dashboardMonthly.additionalJson as JSONObject;
+  // const dashboardMonthlyJson = dashboardMonthly.additionalJson as JSONObject;
+  // const monthlyCases = {
+  //   name: language === "th" ? dashboardMonthlyJson?.title_th : dashboardMonthlyJson?.title_en || "",
+  //   data: {
+  //     options: optionsOfMonthlyCases,
+  //     series: seriesOfMonthlyCases
+  //   }
+  // };
+
+  // const dashboardDailyJson = dashboardDaily.additionalJson as JSONObject;
+
   const monthlyCases = {
-    name: language === "th" ? dashboardMonthlyJson?.title_th : dashboardMonthlyJson?.title_en || "",
+    name: chartData.title || "",
     data: {
       options: optionsOfMonthlyCases,
-      series: seriesOfMonthlyCases
+      series: chartData.series
     }
   };
+  // const monthlyCases = {
+  //   name: language === "th"
+  //     ? dashboardDailyJson?.title_th
+  //     : dashboardDailyJson?.title_en || "",
+  //   data: {
+  //     options: optionsOfMonthlyCases,
+  //     series: seriesOfMonthlyCases
+  //   }
+  // };
 
   // ===================================================================
   // SLAMonitorWidget
@@ -709,6 +877,11 @@ const ServiceDashboard: React.FC = () => {
             console.log("📅 Updating DASHBOARD_MONTHLY data");
             setDashboardMonthly(data);
             break;
+          
+          case "CASE-DAILY-SUMMARY":
+            console.log("📆 Updating DASHBOARD_DAILY data");
+            setDashboardDaily(data);
+            break;
             
           default:
             // console.warn("⚠️ Unknown message type:", messageType);
@@ -775,6 +948,33 @@ const ServiceDashboard: React.FC = () => {
           </button>
         </div>
         */}
+
+        <div className="flex gap-2 mb-2">
+          <span className="px-3 py-1 text-gray-900 dark:text-white">
+            {dateTime}
+          </span>
+
+          <button
+            onClick={() => setViewMode("monthly")}
+            className={`px-3 py-1 rounded ${
+              viewMode === "monthly"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-400"
+            }`}
+          >
+            {language === "th" ? "รายเดือน" : "Monthly"}
+          </button>
+          <button
+            onClick={() => setViewMode("daily")}
+            className={`px-3 py-1 rounded ${
+              viewMode === "daily"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-400"
+            }`}
+          >
+            {language === "th" ? "รายวัน" : "Daily"}
+          </button>
+        </div>
       </div>
 
       <div className="gap-4 grid grid-cols-1 xl:grid-cols-4">

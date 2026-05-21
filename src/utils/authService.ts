@@ -6,6 +6,7 @@ import { PermissionManager } from "@/utils/permissionManager";
 import { TokenManager } from "@/utils/tokenManager";
 import type { LoginCredentials, LoginResponse, RegisterData, User } from "@/types/auth";
 import type { Permission, Role } from "@/types/role";
+import { AUTH_AUTHORITY_KEY, AUTH_LOCK_KEY, AUTH_SOURCE_KEY, SSO_TAKEOVER_KEY } from "@/utils/constants";
 
 export class AuthService {
   private static httpClient = HttpClient.getInstance();
@@ -107,7 +108,18 @@ export class AuthService {
       department: "IT",
       lastLogin: new Date(),
       // permissions: role === "admin" ? ["read", "write", "delete", "admin"] : ["read", "write"],
-      permission: permissions,
+      // permission: permissions,
+      permission: permissions.reduce((acc: Record<string, string[]>, perm) => {
+        const group = (typeof perm === "string")
+          ? perm.split('.')[0]
+          : (perm as Permission).groupName;
+        const permId = (typeof perm === "string")
+          ? perm
+          : (perm as Permission).permId;
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(permId);
+        return acc;
+      }, {}),
       organization: "SKY-AI",
       avatar: undefined,
       isEmailVerified: true,
@@ -187,6 +199,14 @@ export class AuthService {
 
         if (!response.data) {
           throw new Error(response.message || "Login failed");
+        }
+
+        // manual login success
+        if (!verify) {
+          sessionStorage.removeItem(AUTH_LOCK_KEY); // clear lock
+          sessionStorage.setItem(AUTH_SOURCE_KEY, "manual");
+          sessionStorage.setItem(AUTH_AUTHORITY_KEY, "manual");
+          sessionStorage.removeItem(SSO_TAKEOVER_KEY); // optional
         }
 
         // const roleId = response?.data?.user?.roleId || ""

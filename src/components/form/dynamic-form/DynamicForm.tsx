@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { v4 as uuidv4 } from 'uuid';
 import {
   DndContext,
   closestCenter,
@@ -79,7 +78,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
   const [isLoadingForm, setIsLoadingForm] = useState<boolean>(false);
   const [currentForm, setCurrentForm] = useState<FormFieldWithChildren>(
     {
-      formId: uuidv4(),
+      formId: "",
       formName: "New Dynamic Form", // This is default data, i18n might not be applicable for initial state logic
       formColSpan: 1,
       formFieldJson: [],
@@ -133,7 +132,7 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       });
     } else {
       setCurrentForm({
-        formId: uuidv4(),
+        formId: "",
         formName: "New Dynamic Form", // This is default data
         formColSpan: 1,
         formFieldJson: [],
@@ -279,24 +278,24 @@ function DynamicForm({ initialForm, edit = true, showDynamicForm, onFormSubmit, 
       };
 
       //Checking for update or create
-      const response: any = initialForm
+      const response: any = currentForm.formId != ""
         ? await updateFormData({ formId: currentForm.formId, ...payload }).unwrap()
         : await createFormData(payload).unwrap();
 
       // Handle missing formId that gen form backend (for create)
-      if (!initialForm && !response?.data) {
+      if (currentForm.formId == "" && !response?.data) {
         addToast("error", response?.desc || t("dynamicForm.toasts.unexpectedResponse"));
         return;
       }
 
       // If form is newly created, store formId and metadata
-      if (!initialForm && response?.data) {
+      if (currentForm.formId == "" && response?.data) {
         setCurrentForm((prev) => ({ ...prev, formId: response?.data?.formId }));
         setFormMeta((prev) =>
           ({ ...prev, currentVersions: response?.data?.version, publish: false, selectVersion: response?.data?.version, versionsInfoList: [...(prev?.versionsInfoList ?? []), response?.data?.version].sort((a, b) => a - b) }));
       }
 
-      if (response.msg === "Success") {
+      if (response.msg.toLowerCase() === "success") {
         addToast("success", t("common.success"));
       } else {
         addToast("error", response?.desc || t("dynamicForm.toasts.somethingWentWrong"));

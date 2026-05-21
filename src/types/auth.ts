@@ -7,7 +7,8 @@ export interface User {
   role: "admin" | "manager" | "agent" | "viewer";
   department: string;
   lastLogin: Date;
-  permission: string[];
+  // permission: string[];
+  permission: Record<string, string[]>;
   organization: string;
   orgId: string;
   roleId: string;

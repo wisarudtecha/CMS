@@ -34,7 +34,7 @@ export interface AdvancedFilter {
   label: string;
   // type: "select" | "multiselect" | "customizable-select" | "date-range" | "number-range" | "text" | "boolean";
   type: "boolean" | "checkbox" | "checkbox-group" | "color" | "customizable-select"
-    | "date" | "date-range" | "multiselect" | "number" | "number-range"
+    | "date" | "date-range" | "datetime-local" | "multiselect" | "number" | "number-range"
     | "radio" | "select" | "tags" | "text" | "toggle";
   placeholder?: string;
   // options?: { value: string; label: string }[];

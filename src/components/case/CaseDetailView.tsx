@@ -24,7 +24,7 @@ import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, doneStatus, RequestCloesStage } from "../ui/status/status"
+import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, doneStatus } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { useWebSocket } from "../websocket/websocket"
 import { useTranslation } from "@/hooks/useTranslation";
@@ -267,8 +267,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         JSON.parse(localStorage.getItem("caseResultsList") ?? "[]") as caseResults[], []
     );
     const { toasts, addToast, removeToast } = useToast();
-    const isCloseStage = RequestCloesStage.find(status => status === caseState?.status);
-    const [disableButton, setDisableButton] = useState<boolean>(false);
+    // const isCloseStage = RequestCloesStage.find(status => status === caseState?.status);
+    const [_disableButton, setDisableButton] = useState<boolean>(false);
     const [disableCloseCancelForm, setDisableCloseCancelForm] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
         JSON.parse(localStorage.getItem("caseTypeSubType") ?? "[]") as CaseTypeSubType[], []
@@ -477,18 +477,19 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         const dispatchjson = {
             caseId: caseState?.workOrderNummber,
             status: sopData?.data?.nextStage?.data?.data?.config?.action,
+            nodeId:sopData?.data?.nextStage?.nodeId,
             resId: closeCaseData?.resId,
             resDetail: caseState?.resultDetail
         } as dispatchInterface;
         try {
-            if (!dispatchjson ||
-                !dispatchjson.caseId ||
-                !dispatchjson.status ||
-                dispatchjson.resId === undefined ||
-                Object.keys(dispatchjson).length === 0) {
-                console.log(dispatchjson)
-                throw t("case.display.toast.missing_close_case_data");
-            }
+            // if (!dispatchjson ||
+            //     !dispatchjson.caseId ||
+            //     !dispatchjson.status ||
+            //     dispatchjson.resId === undefined ||
+            //     Object.keys(dispatchjson).length === 0) {
+            //     console.log(dispatchjson)
+            //     throw t("case.display.toast.missing_close_case_data");
+            // }
             const payload = await postDispatch(dispatchjson).unwrap();
             if (payload.msg?.toLocaleLowerCase() !== "success") {
                 throw Error
@@ -573,6 +574,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 scheduleDate: sopData.data?.scheduleDate || "",
                 deviceMetaData: sopData.data.deviceMetaData,
                 resultDetail: sopData.data.resDetail,
+                sopMetaData:sopData.data.sop_metadata,
                 resultId: closeCaseOption.find(result => {
                     if (sopData.data?.resId === result.resId) return result
                 })?.[language == "th" ? "th" : "en"]
@@ -900,6 +902,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             </div>
         );
     }
+    console.log(sopData)
     return (
         <div className="flex flex-col">
             {!disablePageMeta && <PageMeta title="Case Detail" description="Case Detail Page" />}
@@ -1027,9 +1030,9 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                                     {caseState?.status !== doneStatus && <div className="justify-end items-end flex">
                                                         <Button size="sm" onClick={() => setShowCancelCaseModal(true)} variant="outline">{t("case.display.cancel_case")}</Button>
                                                     </div>}
-                                                    {permissions.hasPermission("case.close") &&
+                                                    {permissions.hasPermission("case.close") && sopData?.data?.nextStage.data.data.label &&
                                                         <div className="ml-2">
-                                                            <Button size="sm" variant="primary" onClick={() => setShowCloseCaseModal(true)} disabled={!isCloseStage || disableButton}>{t("case.display.close_case")}</Button>
+                                                            <Button size="sm" variant="primary" onClick={() => setShowCloseCaseModal(true)} >{sopData?.data?.nextStage.data.data.label}</Button>
                                                         </div>
                                                     }
                                                 </div>

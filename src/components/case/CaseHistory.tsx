@@ -1373,12 +1373,12 @@ const CaseHistoryComponent: React.FC<{
     {
       key: "start_date",
       label: t("crud.case_history.list.toolbar.advanced_filter.start_date.label"),
-      type: "date" as const,
+      type: "datetime-local" as const,
     },
     {
       key: "end_date", 
       label: t("crud.case_history.list.toolbar.advanced_filter.end_date.label"),
-      type: "date" as const,
+      type: "datetime-local" as const,
     },
     {
       key: "caseType",
@@ -1652,7 +1652,8 @@ const CaseHistoryComponent: React.FC<{
               create: "/case",
               read: "/case/:id",
               // update: "/case/:id",
-              delete: "/case/:id",
+              // delete: "/case/:id",
+              delete: "/dispatch/cancel/case",
               // bulkDelete: "/case/bulk",
               export: "/case/export"
             },

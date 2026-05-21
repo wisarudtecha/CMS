@@ -7,7 +7,7 @@ import { FormField, formType } from "@/components/interface/FormField";
 import { Area, mergeArea } from "@/store/api/area";
 import { Customer } from "@/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType, FileItem } from "@/types/case";
-import { ChangeEvent, memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { detailsStringLimit, source } from "./constants/caseConstants";
 import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
 import { REQUIRED_ELEMENT as requireElements, COMMON_INPUT_CSS as commonInputCss } from "./constants/caseConstants";
@@ -206,13 +206,13 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         });
     }, [setCaseState]);
 
-    const handleIotDevice = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        updateCaseState({ iotDevice: e.target.value });
-    }, [updateCaseState]);
+    // const handleIotDevice = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    //     updateCaseState({ iotDevice: e.target.value });
+    // }, [updateCaseState]);
 
-    const handleIotDeviceDate = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        updateCaseState({ iotDate: e.target.value });
-    }, [updateCaseState]);
+    // const handleIotDeviceDate = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    //     updateCaseState({ iotDate: e.target.value });
+    // }, [updateCaseState]);
 
     const handleDetailChange = useCallback((data: string) => {
         updateCaseState({ description: data });
@@ -231,9 +231,9 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         updateCaseState({ customerData: data });
     }, [updateCaseState]);
 
-    const handleLocationChange = useCallback((data: string) => {
-        updateCaseState({ location: data });
-    }, [updateCaseState]);
+    // const handleLocationChange = useCallback((data: string) => {
+    //     updateCaseState({ location: data });
+    // }, [updateCaseState]);
 
 
     const handleFilesChange = useCallback((newFiles: FileItem[]) => {
@@ -340,7 +340,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     </div>
                 )}
 
-                <div className="px-3 mb-3">
+                {/* <div className="px-3 mb-3">
                     <h3 className="text-gray-900 dark:text-gray-400 mb-3">{t("case.display.iot_device")} :</h3>
                     <input
                         required
@@ -363,7 +363,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                         value={caseState?.iotDate || ''}
                         placeholder="Work Order"
                     />
-                </div>
+                </div> */}
             </div>
 
             {/* Case Details */}
@@ -402,7 +402,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                 />
 
                 {/* Location Information */}
-                <div className="pr-6 col-span-2">
+                {/* <div className="pr-6 col-span-2">
                     <h3 className="text-gray-900 dark:text-gray-400 mx-3">{t("case.display.area")} :</h3>
                     <textarea
                         onChange={(e) => handleLocationChange(e.target.value)}
@@ -410,7 +410,7 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                         placeholder={t("case.display.area_placeholder")}
                         className={`w-full mx-3 my-2 h-20 p-2 ${commonInputCss}`}
                     />
-                </div>
+                </div> */}
             </div>
             {/* <FilePreviewAttachmentCard file={ca} /> */}
             {/* File Upload for new cases */}

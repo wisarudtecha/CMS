@@ -125,6 +125,16 @@ export const AdvancedFilterPanel: React.FC<AdvancedFilterPanelProps> = ({
           />
         );
 
+      case "datetime-local":
+        return (
+          <Input
+            type="datetime-local"
+            value={value as string || ""}
+            onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+            className="cursor-pointer dark:[&::-webkit-calendar-picker-indicator]:invert dark:[&::-webkit-calendar-picker-indicator]:opacity-90"
+          />
+        );
+
       case "select":
         return (
           <Select

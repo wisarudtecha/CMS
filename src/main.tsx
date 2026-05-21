@@ -9,6 +9,7 @@ import { ToastProvider } from "@/components/crud/ToastGlobal";
 import { WebSocketProvider } from "@/components/websocket/websocket";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { enforceEmbedPolicy } from '@/guards/embedGuard';
 import { AuthProvider } from "@/providers/AuthProvider";
 import { store } from "@/store";
 import App from "@/App.tsx";
@@ -16,6 +17,8 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 import "@/index.css";
 import "swiper/swiper-bundle.css";
 import "flatpickr/dist/flatpickr.css";
+
+enforceEmbedPolicy();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -28,6 +28,7 @@ import { source } from "@/components/case/constants/caseConstants";
 import { mergeDeptCommandStation } from "@/store/api/caseApi";
 // import Badge from "@/components/ui/badge/Badge";
 import AttachedFiles from "@/components/Attachment/AttachmentPreviewList";
+import SOPMetaData from "@/components/case/CaseSopMetaData";
 import FormViewer from "@/components/form/dynamic-form/FormViewValue";
 import ProgressStepPreview from "@/components/case/activityTimeline/caseActivityTimeline";
 import ProgressStepPreviewUnit from "@/components/case/activityTimeline/officerActivityTimeline";
@@ -444,9 +445,25 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
               </div>
             </div>
             <div className="grid grid-cols-1 space-y-3">
-              <ProgressStepPreviewUnit progressSteps={progressSteps} sliceIndex={false} />
-              <ProgressSummary progressSteps={progressSteps} sliceIndex={false} />
-              <AttachedFiles files={sopData?.attachments} editFormData={false} type={"close"} />
+              {progressSteps && (
+                <>
+                  <ProgressStepPreviewUnit progressSteps={progressSteps} sliceIndex={false} />
+                  <ProgressSummary progressSteps={progressSteps} sliceIndex={false} />
+                </>
+              )}
+              {sopData?.attachments && (
+                <AttachedFiles files={sopData?.attachments} editFormData={false} type={"close"} />
+              )}
+              {sopData?.sop_metadata && (
+                <>
+                  <h4 className="font-medium text-blue-500 dark:text-blue-400 mb-4">
+                    {t("case.display.audit")}
+                  </h4>
+                  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                    <SOPMetaData sopMetadata={sopData?.sop_metadata || []} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

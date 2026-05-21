@@ -14,6 +14,9 @@ interface PaginationProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  disablePageSizeOptions?: boolean;
+  disablePrevAndNextButton?: boolean;
+  showAllPage?: boolean
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
@@ -29,7 +32,10 @@ export const Pagination: React.FC<PaginationProps> = ({
   // totalFiltered,
   totalPages,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  disablePageSizeOptions = false,
+  disablePrevAndNextButton = false,
+  showAllPage = false
 }) => {
   const { language, t } = useTranslation();
 
@@ -44,8 +50,22 @@ export const Pagination: React.FC<PaginationProps> = ({
   const renderPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    const startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    let startPage: number;
+    let endPage: number;
+
+    if (showAllPage) {
+      startPage = 1;
+      endPage = totalPages;
+    } else {
+      // Calculate start and end for the sliding window
+      startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
+      endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      // Adjust startPage if we are near the end of the list to keep 5 buttons visible
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+    }
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
@@ -67,7 +87,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     .replace("_START_", `${startEntry}`)
     .replace("_END_", `${endEntry}`)
     .replace("_TOTAL_", `${pagination.total || 0}`);
-    // .replace("_TOTAL_", `${totalFiltered || 0}`);
+  // .replace("_TOTAL_", `${totalFiltered || 0}`);
 
   const paginationInfo = t("crud.common.paginate.info")
     .replace("_PAGE_", `${pagination.page}`)
@@ -75,7 +95,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div className="xl:flex items-center justify-between">
-      <div className="xl:flex items-center gap-4">
+      {!disablePageSizeOptions ? <div className="xl:flex items-center gap-4">
         <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
           {/* Showing {startEntry}-{endEntry} of {pagination.total || 0} entries */}
           {info}
@@ -93,15 +113,15 @@ export const Pagination: React.FC<PaginationProps> = ({
           </span>
           <span className="text-sm text-gray-600 dark:text-gray-300 cursor-default">{t("crud.common.length_menu.entries")}</span>
         </div>
-      </div>
+      </div> : <div></div>}
 
       <div className="xl:flex items-center gap-2">
         <div className="flex text-sm text-gray-600 dark:text-gray-300 mb-2 xl:mb-0 cursor-default">
           {/* Page {pagination.page} of {totalPages} */}
           {paginationInfo}
         </div>
-        
-        <div className="flex items-center gap-1">
+
+        {!disablePrevAndNextButton && <div className="flex items-center gap-1">
           <Button
             onClick={() => onPageChange(pagination.page - 1)}
             disabled={pagination.page === 1}
@@ -109,20 +129,20 @@ export const Pagination: React.FC<PaginationProps> = ({
           >
             {t("crud.common.paginate.previous")}
           </Button>
-        </div>
-        
+        </div>}
+
         <div className="flex items-center gap-1">
           {renderPageNumbers()}
         </div>
 
-        <div className="flex items-center gap-1">
+        {!disablePrevAndNextButton && <div className="flex items-center gap-1">
           <Button
             onClick={() => onPageChange(pagination.page + 1)}
             disabled={pagination.page === totalPages}
           >
             {t("crud.common.paginate.next")}
           </Button>
-        </div>
+        </div>}
       </div>
     </div>
   );

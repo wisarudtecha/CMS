@@ -81,8 +81,12 @@ export const DEV_CONFIG = {
 
 export const INTERNAL_UNIT_SOURCE_ID = "3c48bb37-22a4-4aca-b659-955feadeb5c1" as const;
 
+export const AUTH_AUTHORITY_KEY = "auth_authority" as const; // manual | sso
+export const AUTH_LOCK_KEY = "auth_lock" as const; // true | false
+export const AUTH_SOURCE_KEY = "auth_source" as const; // manual | sso
 export const MAX_LOGIN_ATTEMPTS_INTERVAL_MS = 1000 as const; // 1 seconds
-export const MAX_SSO_LOGIN_ATTEMPTS = 3 as const;
+export const MAX_SSO_LOGIN_ATTEMPTS = 3 as const; // 3 times
+export const SSO_TAKEOVER_KEY = "sso_takeover_active" as const; // true | false
 
 export const PERMISSIONS = {
   TICKETS: {

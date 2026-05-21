@@ -63,14 +63,12 @@ export const fetchCase = async (params: CaseListParams) => {
   // Retry helper function
   const fetchWithRetry = async (fetchParams: any, retries = requestRetry): Promise<any> => {
     for (let attempt = 0; attempt <= retries; attempt++) {
-      console.log(attempt, retries)
+
       try {
         const result = await store.dispatch(
           caseApi.endpoints.getListCase.initiate(fetchParams, { forceRefetch: true })
         );
-        // Check if we have a successful response     
-        console.log(!!result.error)
-        // If result.error exists, retry
+
         if (!!result.error) {
           throw new Error("API request failed");
         } else {

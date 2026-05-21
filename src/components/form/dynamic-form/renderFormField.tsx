@@ -133,7 +133,9 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
             {field.label} {field.required && <span className="text-red-500">*</span>}
         </label>
     ) : (
-        field.required && <span className="text-red-500">*</span>
+         <label htmlFor={field.id} className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">
+        {"\u00A0"} {field.required && <span className="text-red-500">*</span>}
+        </label>
     );
 
     const FieldError: React.FC<{ field: IndividualFormFieldWithChildren }> = useCallback(({ field }) => {

@@ -8,6 +8,7 @@ import { formatDate } from "@/utils/crud";
 import { cancelAndCloseStatus, closeStatus } from "../ui/status/status";
 import AttachedFiles from "../Attachment/AttachmentPreviewList";
 import Badge from "../ui/badge/Badge";
+import SOPMetaData from "./CaseSopMetaData";
 const requireElements = <span className=" text-red-500 text-sm font-bold">*</span>
 interface FormFieldValueDisplayProps {
     caseData?: CaseDetails;
@@ -106,18 +107,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
                 </div>}
-                 <div className="mb-2">
-                        <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
-                            <CalendarDays className="h-4 w-4 mr-2" />
-                            <span>{t("case.display.request_schedule_date")} {requireElements}</span>
-                        </div>
-                        <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
-                            {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
-                                formatDate(caseData.scheduleDate,{includeTime:false}) :
-                                "-"
-                            }
-                        </div>
+                <div className="mb-2">
+                    <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
+                        <CalendarDays className="h-4 w-4 mr-2" />
+                        <span>{t("case.display.request_schedule_date")} {requireElements}</span>
                     </div>
+                    <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
+                        {caseData?.scheduleDate != "" && caseData?.scheduleDate != null ?
+                            formatDate(caseData.scheduleDate, { includeTime: false }) :
+                            "-"
+                        }
+                    </div>
+                </div>
             </div>
             <div className="col-span-2 sm:col-span-1 flex flex-col h-full">
                 <div className="mb-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg flex-1">
@@ -241,6 +242,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
                 </div>
             </div>
+            {caseData?.sopMetaData && caseData?.sopMetaData.length != 0 &&
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg col-span-2">
+                    <div className="mb-2">
+                        <span className="flex mb-2 text-blue-500 dark:text-blue-400"><span>{t("case.display.audit")} </span></span>
+                        <SOPMetaData sopMetadata={caseData?.sopMetaData} />
+                    </div>
+                </div>
+            }
 
             {cancelAndCloseStatus.includes(caseData?.status || "") &&
                 <div className=" col-span-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-3">

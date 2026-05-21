@@ -35,6 +35,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   setSearchQuery,
   setCaseSla,
   setMDeviceType,
+  setMDeviceTypeName,
   setMWorkOrderType,
   setPriority,
   setSTypeCode,
@@ -100,6 +101,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       setSearchQuery={setSearchQuery}
       setCaseSla={setCaseSla!}
       setMDeviceType={setMDeviceType!}
+      setMDeviceTypeName={setMDeviceTypeName!}
       setMWorkOrderType={setMWorkOrderType!}
       setPriority={setPriority!}
       setSTypeCode={setSTypeCode!}

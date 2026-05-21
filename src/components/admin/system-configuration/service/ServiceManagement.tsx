@@ -504,6 +504,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     setUserSkillList([]);
     setWfId("");
     setMDeviceType("");
+    setMDeviceTypeName("");
     setMWorkOrderType("");
     setSTypeValidateErrors({
       sTypeTh: "",
@@ -540,16 +541,16 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       userSkillList: userSkillList,
       wfId: wfId,
       mDeviceType: mDeviceType,
+      mDeviceTypeName: mDeviceTypeName,
       mWorkOrderType: mWorkOrderType
     };
     try {
       // console.log("🚀 ~ ServiceManagementComponent ~ handleSTypeSave - id:", sTypeId, "data:", sTypeData);
       // throw new Error("");
-
       setLoading(true);
       let response;
       if (permissions.hasAnyPermission(["service.create", "service.update"])) {
-        if (sTypeId) {
+        if (sTypeId) {          
           response = await updateCaseSubTypes({
             id: sTypeId, data: sTypeData
           }).unwrap();
@@ -581,7 +582,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       setLoading(false);
     }
   }, [
-    caseSla, permissions, priority, sTypeCode, sTypeEn, sTypeId, sTypeTh, sTypeTypeId, unitPropLists, userSkillList, wfId, mDeviceType, mWorkOrderType,
+    caseSla, permissions, priority, sTypeCode, sTypeEn, sTypeId, sTypeTh, sTypeTypeId, unitPropLists, userSkillList, wfId, mDeviceType, mDeviceTypeName, mWorkOrderType,
     addToast, createCaseSubTypes, t, updateCaseSubTypes, validateSubType
   ]);
 
@@ -639,6 +640,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       setSearchQuery={setSearchQuery}
       setCaseSla={setCaseSla}
       setMDeviceType={setMDeviceType}
+      setMDeviceTypeName={setMDeviceTypeName}
       setMWorkOrderType={setMWorkOrderType}
       setPriority={setPriority}
       setSTypeCode={setSTypeCode}

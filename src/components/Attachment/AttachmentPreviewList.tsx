@@ -49,9 +49,9 @@ export const ZoomImage: React.FC<ZoomImageProps> = ({
             showCloseButton={true}
             disableBgColor={true}
         >
-            <div className="rounded-2xl flex flex-col h-full max-h-[85vh] overflow-hidden">
+            <div className="rounded-2xl flex flex-col h-full ">
                 {/* Media Container */}
-                <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+                <div className="flex-1 flex items-center justify-center relative overflow-auto custom-scrollbar">
                     {isLoading && (
                         <div className="text-center absolute">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
@@ -62,7 +62,7 @@ export const ZoomImage: React.FC<ZoomImageProps> = ({
                         <img
                             src={mediaUrl}
                             alt={mediaName}
-                            className="max-w-full max-h-full w-auto h-auto object-contain rounded-2xl"
+                            className="w-auto h-auto object-contain rounded-2xl"
                             onLoad={() => setIsLoading(false)}
                             onError={() => setIsLoading(false)}
                         />
@@ -71,7 +71,7 @@ export const ZoomImage: React.FC<ZoomImageProps> = ({
                         <video
                             src={mediaUrl}
                             controls
-                            className="max-w-full max-h-full w-auto h-auto object-contain rounded-2xl"
+                            className="w-auto h-auto object-contain rounded-2xl"
                             onLoadedData={() => setIsLoading(false)}
                             onError={() => setIsLoading(false)}
                         >

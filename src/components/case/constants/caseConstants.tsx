@@ -16,4 +16,4 @@ export const detailsStringLimit=4000
 
 export const resultStringLimit=1000
 
-export const source = [{ name: "CALL", id: "01" }, { name: "METTLINK", id: "02" }, { name: "METTRIQ", id: "04" }, { name: "IOT-Alert", id: "05" }, { name: "Other", id: "06" }];
+export const source = [{ name: "CALL", id: "01" }, { name: "LINE", id: "02" }, { name: "FACEBOOK", id: "04" },{ name: "EMAIL", id: "04" }, { name: "Other", id: "05" }];

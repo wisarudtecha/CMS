@@ -1,5 +1,10 @@
 // /src/utils/tokenManager.ts
 import { JWTUtils } from "@/utils/jwt";
+import {
+  // AUTH_AUTHORITY_KEY,
+  AUTH_LOCK_KEY,
+  // AUTH_SOURCE_KEY
+} from "@/utils/constants";
 import type { User } from "@/types/auth";
 import type { DecodedJWT, JWTHeader, JWTPayload, TokenValidationResult } from "@/types/auth";
 
@@ -36,6 +41,11 @@ export class TokenManager {
     profile?: unknown,
     language?: string
   ) {
+    if (sessionStorage.getItem(AUTH_LOCK_KEY) === "true") {
+      console.warn("🔒 Token set blocked by AUTH_LOCK");
+      return;
+    }
+
     this.clearTokens();
 
     // const storage = rememberMe ? localStorage : sessionStorage;
@@ -112,6 +122,9 @@ export class TokenManager {
     sessionStorage.removeItem(this.REFRESH_KEY);
     sessionStorage.removeItem(this.PROFILE_KEY);
 
+    // sessionStorage.removeItem(AUTH_AUTHORITY_KEY);
+    // sessionStorage.removeItem(AUTH_SOURCE_KEY);
+    // sessionStorage.removeItem(AUTH_LOCK_KEY);
 
     // Clear secure cookies
     if (typeof document !== "undefined") {
@@ -281,7 +294,10 @@ export class TokenManager {
           lastLogin: new Date(),
           isEmailVerified: true, // Default for demo
           twoFactorEnabled: false, // Default for demo
-          permission: decoded.payload.permissions || ["read"]
+          // permission: decoded.payload.permissions || ["read"]
+          permission: Array.isArray(decoded.payload.permissions)
+            ? { default: decoded.payload.permissions }
+            : decoded.payload.permissions || { default: ["read"] }
         };
         
         result.expiresAt = new Date(decoded.payload.exp * 1000);

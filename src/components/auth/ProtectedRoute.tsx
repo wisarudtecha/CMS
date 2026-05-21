@@ -18,7 +18,7 @@ import { useIsSystemAdmin } from "@/hooks/useIsSystemAdmin";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AlertIcon } from "@/icons";
 // import { AuthService } from "@/utils/authService";
-import { MAX_SSO_LOGIN_ATTEMPTS } from "@/utils/constants";
+import { AUTH_AUTHORITY_KEY, AUTH_LOCK_KEY, AUTH_SOURCE_KEY, MAX_SSO_LOGIN_ATTEMPTS, SSO_TAKEOVER_KEY } from "@/utils/constants";
 import { PermissionManager } from "@/utils/permissionManager";
 import type {
   ProtectedRouteProps,
@@ -37,6 +37,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { state, login, logout } = useAuth();
   const { language, t } = useTranslation();
 
+  const authMode = useAuthMode();
+  const isSystemAdmin = useIsSystemAdmin();
+  const ssoToken = isSSOAvailable();
+  const authority = sessionStorage.getItem(AUTH_AUTHORITY_KEY);
+  const isSSOReady = Boolean(ssoToken);
+  const ssoLoginAttempts = useRef(0);
+  const isSSOTakeover = sessionStorage.getItem(SSO_TAKEOVER_KEY) === "true";
+  const authPhaseRef = useRef<"idle" | "logging-in" | "logging-out" | "switching">("idle");
+
   // const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   // useEffect(() => {
   //   const fetchAuthService = async () => {
@@ -44,25 +53,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   //   }
   //   fetchAuthService();
   // }, [isSystemAdmin]);
-  const isSystemAdmin = useIsSystemAdmin();
-
-  const authMode = useAuthMode();
-  const ssoToken = isSSOAvailable();
-
+  
   // Max attempts for automatic SSO login to avoid infinite retries
-  const ssoLoginAttempts = useRef(0);
   // const ssoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* ---------------------------------- UI ---------------------------------- */
 
   const SSOLoadingScreen = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
       <div className="text-center">
         <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600 mb-6"></div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          {language === "th" && "โปรดรีเฟรชหน้าเว็บเพื่อดำเนินการต่อ" || "Please refresh page to continue."}
+          {/* {language === "th" && "โปรดรีเฟรชหน้าเว็บเพื่อดำเนินการต่อ" || "Please refresh page to continue."} */}
+          {language === "th" ? "กำลังตรวจสอบสิทธิ์ SSO" : "Verifying SSO session"}
         </h2>
       </div>
     </div>
   );
+
+  /* -------------------------- SSO Authority Monitor ------------------------- */
 
   // useEffect(() => {
   //   if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
@@ -83,23 +92,146 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   //   }
   // }, [ssoToken, state.user, state.isLoading, login, logout]);
 
+  // useEffect(() => {
+  //   // SSO MODE ONLY
+  //   if (authMode === "SSO") {
+  //     // Auto-login via SSO
+  //     if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
+  //       ssoLoginAttempts.current++;
+  //       void login({ token: ssoToken, rememberMe: true, language: "th" });
+  //       return;
+  //     }
+  //     // Parent logged out → child must logout
+  //     if (state.user && !ssoToken) {
+  //       void logout();
+  //       return;
+  //     }
+  //   }
+  // }, [authMode, ssoToken, state.user, state.isLoading, login, logout]);
+
   useEffect(() => {
-    // SSO MODE ONLY
-    if (authMode === "SSO") {
-      // Auto-login via SSO
-      if (!state.user && !state.isLoading && ssoToken && ssoLoginAttempts.current < MAX_SSO_LOGIN_ATTEMPTS) {
-        ssoLoginAttempts.current++;
-        void login({ token: ssoToken, rememberMe: true, language: "th" });
+    if (authMode !== "SSO") {
+      return;
+    }
+    let lastSSOToken = ssoToken;
+    const interval = setInterval(() => {
+      if (authPhaseRef.current !== "idle") {
+        return;
+      }
+      const currentSSOToken = isSSOAvailable();
+
+      // const authority = sessionStorage.getItem(AUTH_AUTHORITY_KEY);
+
+      /**
+       * 1. Parent logout → logout child (ONLY if SSO authority)
+       */
+      if (authority === "sso" && state.user && !currentSSOToken) {
+        // sessionStorage.setItem(AUTH_LOCK_KEY, "true");
+
+        sessionStorage.setItem(AUTH_AUTHORITY_KEY, "sso");
+        sessionStorage.setItem(AUTH_SOURCE_KEY, "sso");
+        authPhaseRef.current = "logging-out";
+
+        // logout();
+        // logout("takeover");
+        logout("takeover").finally(() => { authPhaseRef.current = "idle" });
+
+        // DO NOT remove AUTH_* or SSO_TAKEOVER here — leave the lock intact.
+        // Flags will be cleared only by manual login success path.
+        // sessionStorage.removeItem(AUTH_AUTHORITY_KEY);
+        // sessionStorage.removeItem(AUTH_SOURCE_KEY);
+        // sessionStorage.removeItem(SSO_TAKEOVER_KEY);
+
+        ssoLoginAttempts.current = 0;
+        lastSSOToken = null;
         return;
       }
 
-      // Parent logged out → child must logout
-      if (state.user && !ssoToken) {
-        void logout();
+      /**
+       * 2. SSO takeover manual session
+       */
+      if (authority === "manual" && currentSSOToken && currentSSOToken !== lastSSOToken) {
+        sessionStorage.setItem(AUTH_AUTHORITY_KEY, "sso");
+        sessionStorage.setItem(AUTH_SOURCE_KEY, "sso");
+        sessionStorage.setItem(SSO_TAKEOVER_KEY, "true");
+        authPhaseRef.current = "switching";
+
+        // logout();
+        // logout("takeover");
+        logout("takeover").finally(() => { authPhaseRef.current = "idle" });
+
+        ssoLoginAttempts.current = 0;
+        lastSSOToken = currentSSOToken;
         return;
       }
+      lastSSOToken = currentSSOToken;
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [authMode, authority, state.user, logout, ssoToken]);
+
+  /* ---------------------------- Auto SSO Login ----------------------------- */
+
+  useEffect(() => {
+    if (authPhaseRef.current !== "idle") {
+      return;
     }
-  }, [authMode, ssoToken, state.user, state.isLoading, login, logout]);
+    if (ssoToken && authority === "manual" && state.user && !state.isLoading) {
+      console.info("🔁 SSO takeover manual session");
+      sessionStorage.setItem(AUTH_AUTHORITY_KEY, "sso");
+      sessionStorage.setItem(AUTH_LOCK_KEY, "true");
+      sessionStorage.setItem(AUTH_SOURCE_KEY, "sso");
+
+      // logout();
+      logout("takeover");
+
+      return;
+    }
+    if (authMode !== "SSO") {
+      return;
+    }
+    if (!ssoToken) {
+      return;
+    }
+
+    // if (state.user) {
+    //   return;
+    // }
+
+    if (state.user && authority === "sso") {
+      return;
+    }
+    if (state.isLoading) {
+      return;
+    }
+    if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
+      return;
+    }
+    if (sessionStorage.getItem(AUTH_LOCK_KEY) === "true") {
+      // Locked — do not auto-login or allow setTokens
+      return;
+    }
+    ssoLoginAttempts.current += 1;
+    sessionStorage.removeItem(AUTH_LOCK_KEY);
+    sessionStorage.setItem(AUTH_AUTHORITY_KEY, "sso");
+    sessionStorage.setItem(AUTH_SOURCE_KEY, "sso");
+    authPhaseRef.current = "logging-in";
+
+    // void login({ token: ssoToken, rememberMe: true, language: "th" });
+    void login({ token: ssoToken, rememberMe: true, language: "th" }).finally(() => {
+      authPhaseRef.current = "idle";
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    authMode,
+    // authority,
+    ssoToken,
+    state.user,
+    state.isLoading,
+    // login,
+    // logout
+  ]);
+
+  /* ------------------------------- Loading --------------------------------- */
 
   if (state.isLoading || state.isRefreshing) {
     return (
@@ -119,18 +251,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  /* -------------------------- Unauthenticated -------------------------- */
+
   // if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
   //   return <LoginForm />;
   // }
 
   if (!state.user || !state.token || !state.refreshToken || !state.isAuthenticated) {
+    if (authPhaseRef.current !== "idle") {
+      return <SSOLoadingScreen />;
+    }
+
     // if (ssoToken) {
     //   // If exceeded attempts, fall back to explicit login form
     //   if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
     //     console.log("🚀 ~ Login: Form Displaying...");
     //     return <LoginForm />;
     //   }
-
     //   console.log("🚀 ~ Login: Loading...", null);
     //   return (
     //     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800">
@@ -148,19 +285,50 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // }
 
     // SSO mode → never show login form unless attempts exceeded
+    // if (authMode === "SSO") {
+    //   if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
+    //     return <LoginForm />;
+    //   }
+    //   return <SSOLoadingScreen />;
+    // }
+    // Standalone mode → always allow login form
+    // return <LoginForm />;
+
+    /**
+     * SSO takeover finished → allow manual login
+     */
+    if (isSSOTakeover) {
+      sessionStorage.removeItem(SSO_TAKEOVER_KEY);
+      return <LoginForm />;
+    }
+
+    /**
+     * SSO mode but no token → fallback immediately
+     */
+
+    if (authMode === "SSO" && !isSSOReady) {
+      return <LoginForm />;
+    }
+
+    /**
+     * SSO auto login flow
+     */
+
     if (authMode === "SSO") {
       if (ssoLoginAttempts.current >= MAX_SSO_LOGIN_ATTEMPTS) {
         return <LoginForm />;
       }
-
       return <SSOLoadingScreen />;
     }
 
-    // Standalone mode → always allow login form
+    /**
+     * Standalone
+     */
     return <LoginForm />;
   }
 
-  // Check module-based permission (e.g., 'dispatch.view')
+  /* -------------------------- Permission Checks -------------------------- */
+
   if (module) {
     const modulePermission = `${module}.${action}`;
     if (!PermissionManager.hasPermission(state.user, modulePermission) && !isSystemAdmin) {
@@ -188,7 +356,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
-  // Check specific required permissions (all must be present)
   if (requiredPermissions.length > 0 && !isSystemAdmin) {
     if (!PermissionManager.hasAllPermissions(state.user, requiredPermissions) && !isSystemAdmin) {
       return Fallback ? (

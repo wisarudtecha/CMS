@@ -167,6 +167,28 @@ export interface CaseSop {
     attachments: Attachment[];
     scheduleFlag:boolean;
     scheduleDate:string;
+    sop_metadata:SOPStage[]
+}
+
+export interface SOPFile {
+  id: number;
+  size: number;
+  fileUrl: string;
+  isImage: boolean;
+  originalFileName: string;
+  fileTempUrl?: string;
+}
+
+export interface SOPComponent {
+  type: "InsertFile" | "TextArea" | "TextInput" | "Topic" | "Radio" | string;
+  label: string;
+  value: string | number | SOPFile[] | null;
+}
+
+export interface SOPStage {
+  stageNo: number;
+  displayName: string;
+  components: SOPComponent[];
 }
 
 export interface DeviceMetaData {

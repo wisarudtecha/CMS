@@ -9,8 +9,8 @@ export function isAttachment(item: FileItem): item is Attachment {
 
 export const getFileIcon = (item: FileItem) => {
     const fileType = isAttachment(item)
-        ? getMimeTypeFromUrl(item.attUrl)
-            ? item.type : item.type : "";
+        ? (item.type || getMimeTypeFromUrl(item.attUrl))
+        : (item.type || "");
 
     if (fileType.startsWith('image/')) {
         return <ImageIcon className="w-6 h-6 text-blue-500" />

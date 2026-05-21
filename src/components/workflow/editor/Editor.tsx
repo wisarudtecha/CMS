@@ -15,7 +15,7 @@ import DynamicForm from "@/components/form/dynamic-form/DynamicForm";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Select from "@/components/form/Select";
-import Alert from "@/components/ui/alert/Alert";
+// import Alert from "@/components/ui/alert/Alert";
 import Button from "@/components/ui/button/Button";
 
 // Grid configuration
@@ -964,7 +964,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     setValidationErrors(errors);
 
     if (errors?.length > 0) {
-      return; // Don"t save if there are validation errors
+      // return; // Don"t save if there are validation errors
     }
 
     const workflowData: WorkflowData = {
@@ -1020,10 +1020,12 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
 
   // Show JSON preview before save
   const handleSaveClick = useCallback(() => {
-    const errors = validateWorkflow();
-    setValidationErrors(errors);
+    // const errors = validateWorkflow();
+    // setValidationErrors(errors);
     setShowJsonPreview(true);
-  }, [validateWorkflow]);
+  }, [
+    // validateWorkflow
+  ]);
 
   // Get node position by ID
   const getNodePosition = useCallback((nodeId: string): Position => {
@@ -1558,7 +1560,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
           </div>
 
           {/* Validation Errors */}
-          {validationErrors?.length > 0 && (
+          {/* {validationErrors?.length > 0 && (
             <div className="cursor-default mb-2">
               <Alert
                 title={t("crud.workflow.builder.node.validation.header")}
@@ -1567,7 +1569,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
                 variant="error"
               />
             </div>
-          )}
+          )} */}
 
           {selectedNode ? (
             <div className="space-y-2">

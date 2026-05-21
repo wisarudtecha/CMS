@@ -6,7 +6,7 @@ import type { BaseEntity, Custommer, sourceInterface } from "@/types";
 import type { Property } from "@/types/unit";
 import type { EnhancedSkill } from "@/types/user";
 import type { Workflow } from "@/types/workflow";
-import { CaseSop, DeviceMetaData } from "./dispatch";
+import { CaseSop, DeviceMetaData, SOPStage } from "./dispatch";
 
 export interface Attachment {
     id: number;
@@ -119,6 +119,7 @@ export interface CaseTypeManagementProps {
   setSearchQuery?: React.Dispatch<React.SetStateAction<string>>;
   setCaseSla?: (sla: string) => void;
   setMDeviceType?: (deviceType: string) => void;
+  setMDeviceTypeName?: (deviceTypeName: string) => void;
   setMWorkOrderType?: (workOrderType: string) => void;
   setPriority?: (priority: string) => void;
   setSTypeCode?: (code: string) => void;
@@ -208,6 +209,7 @@ export interface EnhancedCaseSubType {
   createdBy: string;
   updatedBy: string;
   mDeviceType: string;
+  mDeviceTypeName: string;
   mWorkOrderType: string;
   // Enhanced fields
   automationRules?: AutomationRule[];
@@ -231,6 +233,7 @@ export interface CaseSubTypesCreateData {
   userSkillList: string[];
   wfId: string;
   mDeviceType: string;
+  mDeviceTypeName: string;
   mWorkOrderType: string;
 }
 
@@ -246,6 +249,7 @@ export interface CaseSubTypesUpdateData {
   userSkillList: string[];
   wfId: string;
   mDeviceType: string;
+  mDeviceTypeName: string;
   mWorkOrderType: string;
 }
 
@@ -389,6 +393,7 @@ export interface CaseDetails {
   deviceMetaData?: DeviceMetaData
   resultDetail?: string
   resultId?: string
+  sopMetaData?:SOPStage[]
 }
 
 export interface caseResults {

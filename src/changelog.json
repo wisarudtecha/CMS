@@ -1,4 +1,118 @@
 {
+  "1.4.2": {
+    "date": "2026-04-10",
+    "segment": "PATCH",
+    "notes": "fix(case): change API endpoint for cancel case:\n- Update cancel case API endpoint in EnhancedCrudContainer to match backend changes.",
+    "author": "Wisarud Techa"
+  },
+  "1.4.1": {
+    "date": "2026-02-17",
+    "segment": "MINOR",
+    "notes": "fixed bug : when create and edit value get error.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.4.0": {
+    "date": "2026-02-10",
+    "segment": "MINOR",
+    "notes": "feat(input): support datetime-local and fix calendar icon in dark mode:\n- Add datetime-local input type support to Input component.\n- Adjust calendar picker icon styling for dark mode only.\n- Prevent light mode icon visibility issues.",
+    "author": "Wisarud Techa"
+  },
+  "1.3.0": {
+    "date": "2026-02-06",
+    "segment": "MINOR",
+    "notes": "feat: embed policy:\n- Implement embed policy enforcement based on environment variables.\n- Add utility functions to check embedding status and allowed origins.",
+    "author": "Wisarud Techa"
+  },
+  "1.2.4": {
+    "date": "2026-01-26",
+    "segment": "PATCH",
+    "notes": "fixed image",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.2.3": {
+    "date": "2026-01-26",
+    "segment": "PATCH",
+    "notes": "fixed image",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.2.2": {
+    "date": "2026-01-26",
+    "segment": "PATCH",
+    "notes": "add show all page in paginate componet and fixed bug when button near total show in correct",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.2.1": {
+    "date": "2026-01-23",
+    "segment": "PATCH",
+    "notes": "perf: sop metadata:\n- Enhance SOPMetaData component to accept sopMetadata prop for dynamic data rendering.\n- Update OverviewTab to pass sop_metadata from sopData to SOPMetaData component.",
+    "author": "Wisarud Techa"
+  },
+  "1.2.0": {
+    "date": "2026-01-23",
+    "segment": "MINOR",
+    "notes": "refactor: permission:\n- Refactor permission structure to support categorized permissions.\n- Update permission checking methods to handle new structure.",
+    "author": "Wisarud Techa"
+  },
+  "1.1.7": {
+    "date": "2026-01-23",
+    "segment": "PATCH",
+    "notes": "fix image using a same component",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.6": {
+    "date": "2026-01-23",
+    "segment": "PATCH",
+    "notes": "fix insertfile type in sop meta data",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.5": {
+    "date": "2026-01-22",
+    "segment": "PATCH",
+    "notes": "fix insertfile type in sop meta data",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.4": {
+    "date": "2026-01-22",
+    "segment": "PATCH",
+    "notes": "idb create when get",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.3": {
+    "date": "2026-01-22",
+    "segment": "PATCH",
+    "notes": "add idb storage presistance.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.2": {
+    "date": "2026-01-19",
+    "segment": "PATCH",
+    "notes": "fix hide section sop meta when len is 0 in api data.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.1": {
+    "date": "2026-01-19",
+    "segment": "PATCH",
+    "notes": "fixed turn off enablelable in dynamicform make empty space for title",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.0": {
+    "date": "2026-01-16",
+    "segment": "PATCH",
+    "notes": "add sopMetaData",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.0.1": {
+    "date": "2026-01-15",
+    "segment": "PATCH",
+    "notes": "fix: system configuration:\n- Fix mDeviceTypeName not saving to backend when create/edit service management.",
+    "author": "Wisarud Techa"
+  },
+  "1.0.0": {
+    "date": "2026-01-15",
+    "segment": "MAJOR",
+    "notes": "Initial Production Release.",
+    "author": "Wisarud Techa"
+  },
   "0.5.22": {
     "date": "2026-01-13",
     "segment": "PATCH",

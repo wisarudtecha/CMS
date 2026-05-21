@@ -511,6 +511,9 @@ const RoleManagementComponent: React.FC<{
         if (response?.status) {
           // addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
           addToast("success", t("crud.role_privilege.action.privilege.update.success"));
+          setTimeout(() => {
+            window.location.replace(`/role-privilege`);
+          }, 1000);
         }
         else {
           // throw new Error(response?.desc || response?.msg || "Unknown error");

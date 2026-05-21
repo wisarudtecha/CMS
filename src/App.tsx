@@ -50,8 +50,7 @@ import FormManagement from "@/pages/Forms/FormManagement"
 import WorkflowListPage from "@/pages/Workflow/List";
 import WorkflowEditorPage from "@/pages/Workflow/Editor";
 // Workflow (Archived Version) Imports
-import WorkflowEditorV1Page from "@/pages/Workflow/v1/Editor";
-import WorkflowEditorV2Page from "@/pages/Workflow/v2/Editor";
+
 
 // User Management Imports
 import UserManagementPage from "@/pages/Admin/UserManagement";
@@ -109,14 +108,14 @@ export default function App() {
           <Route path="/" element={<ServiceDashboard />} />
 
           {/* Case Management (Latest) */}
-          <Route path="/case/assignment" element={<CasesAssignment />} />
+          <Route path="/case/assignment" element={<ProtectedRoute requiredPermissions={["case.assign"]}><CasesAssignment /></ProtectedRoute>} />
           <Route path="/case/creation" element={<ProtectedRoute requiredPermissions={["case.create"]}><CaseCreation/></ProtectedRoute>} />
           <Route path="/case/creation_schedule_date" element={<ProtectedRoute requiredPermissions={["case.create"]}><CaseDetailViewSchedule caseData={undefined}/></ProtectedRoute>}/>
           <Route path="/case/history" element={<CaseHistoryPage />} />
           {/* Case Management (Archived) */}
           <Route path="/case-assignment" element={<CasesAssignment />} />
           <Route path="/case-creation" element={<ProtectedRoute requiredPermissions={["case.create"]}><CaseCreation/></ProtectedRoute>} />
-          <Route path="/case/:caseId" element={<ProtectedRoute requiredPermissions={["case.assign"]}><CaseDetailView /></ProtectedRoute>} />
+          <Route path="/case/:caseId" element={<CaseDetailView />} />
           {/* Case Management (No Longer Used) */}
           {/* <Route path="/case-view" element={<CasesView />} /> */}
           {/* <Route path="/kanban" element={<Kanban />} /> */}
@@ -143,14 +142,7 @@ export default function App() {
           <Route path="/workflow/editor/v3/:id" element={<WorkflowEditorPage />} />
           <Route path="/workflow/editor/v3/:id/:action" element={<WorkflowEditorPage />} />
           {/* Workflow Builder (Archived Version: v0.1.0) */}
-          <Route path="/workflow/editor/v1" element={<WorkflowEditorV1Page />} />
-          <Route path="/workflow/editor/v1/:id" element={<WorkflowEditorV1Page />} />
-          <Route path="/workflow/editor/v1/:id/:action" element={<WorkflowEditorV1Page />} />
-          {/* Workflow Builder (Archived Version: v0.2.0) */}
-          <Route path="/workflow/editor/v2" element={<WorkflowEditorV2Page />} />
-          <Route path="/workflow/editor/v2/:id" element={<WorkflowEditorV2Page />} />
-          <Route path="/workflow/editor/v2/:id/:action" element={<WorkflowEditorV2Page />} />
-	  
+
           {/* Report */}
           <Route path="/report" element={<ReportPage />} />
 
